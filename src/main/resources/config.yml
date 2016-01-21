@@ -1,0 +1,22 @@
+#######################################
+#
+#     DriveBackup   -   by Ratismal
+#
+#######################################
+
+#Where the backups are stored
+dir: "backups"
+
+#What their naming scheme is
+#For more information about timedate formatting, see
+# http://docs.oracle.com/javase/6/docs/api/java/text/SimpleDateFormat.html
+#To verify they are being formatted correctly, do /drivebackup list
+#Correct formatting is important, as this is how the plugin knows
+# which backup is the most recent!
+format: "'Backup-world-'yyyy-M-d--HH-mm'.zip'"
+
+#Folder in Google Drive to save them in
+destination: "backups"
+
+#Messages
+no-perm: "You don't have permission to do this!"

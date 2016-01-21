@@ -1,0 +1,11 @@
+target/*
+ref/*
+src/test/*
+src/com/*
+.m2/*
+.idea/*
+.settings/*
+.classpath
+.project
+*.iml
+lib/*

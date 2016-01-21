@@ -1,0 +1,9 @@
+name: DriveBackup
+version: 1.0.0
+description: Uploads backups to Google Drive
+main: ratismal.drivebackup.DriveBackup
+author: Ratismal
+commands:
+  driveBackup:
+    description: See all DriveBackup commands
+    usage: /drivebackup
