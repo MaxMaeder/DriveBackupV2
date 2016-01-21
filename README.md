@@ -1,20 +1,11 @@
-# Exchequer
+# DriveBackup
 
-This plugin will provide periodic payments to players who have done services such as mining.
+This plugin will back up world backups to Google Drive
 
 # Todo:
- - Payment timer
- - Payments for mining
- - Payments for digging
- - Payments for logging
- - Payments for killing mobs
- - Payments for killing players
- - Payments for smelting
- - Payments for using anvils
- - Payments for crafting items
- - Payments for voting
- - Payments for staying online
- - Configurable MySQL support for logs
- - Custom config files for values 
+ - Ability to create backups
+ - Ability to back up plugin configs
+ - Ability to back up mod configs
  
 # Complete:
+ - Back up world backups
