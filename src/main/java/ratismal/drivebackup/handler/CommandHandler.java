@@ -5,13 +5,10 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import ratismal.drivebackup.DriveBackup;
+import ratismal.drivebackup.UploadThread;
 import ratismal.drivebackup.config.Config;
-import ratismal.drivebackup.net.UploadThread;
-import ratismal.drivebackup.net.Uploader;
 import ratismal.drivebackup.util.FileUtil;
 import ratismal.drivebackup.util.MessageUtil;
-
-import java.io.File;
 
 /**
  * Created by Ratismal on 2016-01-20.
@@ -56,15 +53,11 @@ public class CommandHandler implements CommandExecutor {
                         break;
                     case "backup":
                         if (hasPerm(sender, "drivebackup.backup")) {
-                            //if (Uploader.isGoodToGo()) {
-                            MessageUtil.sendMessageToAllPlayers("Backing up backup, server may lag for a little while...");
-                            Runnable t = new UploadThread(sender);
+                            //if (GoogleUploader.isGoodToGo()) {
+                            MessageUtil.sendMessage(sender, "Forcing a backup.");
+                            Runnable t = new UploadThread();
                             new Thread(t).start();
-                        }
-                        break;
-                    case "list":
-                        if (hasPerm(sender, "drivebackup.list")) {
-                            FileUtil.getFileToUpload(sender, true);
+                            //MessageUtil.sendMessage(sender, "This command has been deprecated.");
                         }
                         break;
                     default:
@@ -103,6 +96,7 @@ public class CommandHandler implements CommandExecutor {
     void help(CommandSender sender) {
         sender.sendMessage(ChatColor.GOLD + "|=======DriveBackup=======|");
         sender.sendMessage(ChatColor.LIGHT_PURPLE + "/drivebackup" + ChatColor.GOLD + " - Display this menu");
+        sender.sendMessage(ChatColor.LIGHT_PURPLE + "/drivebackup v" + ChatColor.GOLD + " - Displays plugin version");
         sender.sendMessage(ChatColor.LIGHT_PURPLE + "/drivebackup reloadconfig" + ChatColor.GOLD + " - Reload configs");
         sender.sendMessage(ChatColor.LIGHT_PURPLE + "/drivebackup backup" + ChatColor.GOLD + " - Backups the latest backup");
     }
@@ -113,7 +107,7 @@ public class CommandHandler implements CommandExecutor {
      * @param sender player
      */
     void version(CommandSender sender) {
-        sender.sendMessage(ChatColor.GOLD + "MoneyThief" + ChatColor.LIGHT_PURPLE + " is running on version " + plugin.getDescription().getVersion());
+        sender.sendMessage(ChatColor.GOLD + "DriveBackup" + ChatColor.LIGHT_PURPLE + " is running on version " + plugin.getDescription().getVersion());
     }
 
     /**
@@ -133,7 +127,7 @@ public class CommandHandler implements CommandExecutor {
      * @param sender player
      */
     public void reloadConfig(CommandSender sender) {
-        config.reload();
+        plugin.reloadConfig();
         sender.sendMessage(ChatColor.GOLD + "Configs reloaded!");
     }
 

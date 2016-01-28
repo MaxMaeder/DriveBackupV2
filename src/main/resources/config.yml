@@ -4,19 +4,53 @@
 #
 #######################################
 
-#Where the backups are stored
+# Should metrics be enabled
+metrics: true
+
+# How often to do backups (in minutes)
+# A restart is required for this to take effect
+delay: 60
+
+# Should this plugin make backups? (For if you don't have another utility that makes backups)
+backup: true
+# Expandable list of things to back up.
+backup-list:
+# The backup list is comprised of three things:
+#   - folder names
+#   - file name formats
+#   - whether this plugin should create the backup
+# The file name format is what the backup's naming scheme is
+# For more information about timedate formatting, see
+#   http://docs.oracle.com/javase/6/docs/api/java/text/SimpleDateFormat.html
+# To verify they are being formatted correctly, do /drivebackup list
+# Correct formatting is important, as this is how the plugin knows
+#   which backup is the most recent!
+#
+# For example, if you wanted to back up crash reports, you would do:
+#  crash-reports:
+#    format: "'crash-'yyyy-MM-dd_HH.mm.ss'-server.zip'"
+#    create: true
+# The 'crash-reports:' part refers to the folder, and the "'crash-'yyyy-MM-dd_HH.mm.ss'-server.txt'" refers to
+#   what format the file name is. Since create is set to true, the plugin will take the crash-reports folder,
+#   zip it into a file according to the format, and upload it.
+  world:
+    format: "'Backup-world-'yyyy-M-d--HH-mm'.zip'"
+    create: true
+  plugins:
+    format: "'Backup-plugins-'yyyy-M-d--HH-mm'.zip'"
+    create: true
+
+# Where the backups are stored locally
 dir: "backups"
 
-#What their naming scheme is
-#For more information about timedate formatting, see
-# http://docs.oracle.com/javase/6/docs/api/java/text/SimpleDateFormat.html
-#To verify they are being formatted correctly, do /drivebackup list
-#Correct formatting is important, as this is how the plugin knows
-# which backup is the most recent!
 format: "'Backup-world-'yyyy-M-d--HH-mm'.zip'"
 
-#Folder in Google Drive to save them in
+# Folder in to save backups on remote server
 destination: "backups"
 
-#Messages
+# Google Drive configs
+googledrive:
+  enabled: true
+
+# Messages
 no-perm: "You don't have permission to do this!"

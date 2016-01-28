@@ -4,10 +4,12 @@ import org.bukkit.command.CommandSender;
 import ratismal.drivebackup.DriveBackup;
 import ratismal.drivebackup.config.Config;
 
-import java.io.File;
+import java.io.*;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 /**
  * Created by Ratismal on 2016-01-20.
@@ -16,44 +18,33 @@ import java.util.*;
 public class FileUtil {
 
     public static TreeMap<Date, File> backupList = new TreeMap<>();
-   // public static List<File> backupList = new ArrayList<>();
+    public static List<String> fileList = new ArrayList<String>();
 
-    public static File getFileToUpload(CommandSender sender, boolean output) {
+    public static File getFileToUpload(String type, String format, boolean output) {
         backupList.clear();
-        String path = new File(Config.getDir()).getAbsolutePath();
-        MessageUtil.sendMessage(sender, "Searching for backups in " + path);
+        String path = new File(Config.getDir()).getAbsolutePath() + "\\" + type;
+        //MessageUtil.sendConsoleMessage("Searching for backups in " + path);
         File[] files = new File(path).listFiles();
-        subFiles(files);
+        subFiles(format, files);
         if (output) {
             for (Map.Entry<Date, File> entry : backupList.descendingMap().entrySet()) {
-                MessageUtil.sendMessage(sender, entry.getValue().getName() + " - " + entry.getKey());
+                MessageUtil.sendConsoleMessage(entry.getValue().getName() + " - " + entry.getKey());
             }
-            MessageUtil.sendMessage(sender, "The most recent is " + backupList.descendingMap().firstEntry().getValue());
-            /*TreeMap<Date, File> sortedMap = new TreeMap<Date, File>(backupList);
-            for (Date date : sortedMap.descendingMap().keySet()) {
-                MessageUtil.sendMessage(sender, date.toString());
-            }
-            MessageUtil.sendMessage(sender, "The most recent is " + sortedMap.descendingMap().firstEntry().getValue());
-            */
+            MessageUtil.sendConsoleMessage("The most recent is " + backupList.descendingMap().firstEntry().getValue());
         }
         return backupList.descendingMap().firstEntry().getValue();
     }
 
-    public static void subFiles(File[] files) {
+    public static void subFiles(String formatString, File[] files) {
         for (File file : files) {
             if (file.isDirectory()) {
-                //System.out.println("Directory: " + file.getName());
-                subFiles(file.listFiles()); // Calls same method again.
+                subFiles(formatString, file.listFiles()); // Calls same method again.
             } else {
-                //System.out.println("File: " + file.getName());
                 if (file.getName().endsWith(".zip")) {
                     String dateString = file.getName();
-                    String formatString = Config.getFormat();
-                    // "Backup-world--%M-%D--%h-%s.zip"
                     DateFormat format = new SimpleDateFormat(formatString, Locale.ENGLISH);
                     try {
                         Date date = format.parse(dateString);
-                        //System.out.println(date);
                         backupList.put(date, file);
                     } catch (Exception e) {
                         e.printStackTrace();
@@ -62,4 +53,92 @@ public class FileUtil {
             }
         }
     }
+
+    public static void makeBackup(String type, String formatString) {
+        try {
+            fileList.clear();
+            DateFormat format = new SimpleDateFormat(formatString, Locale.ENGLISH);
+            String fileName = format.format(new Date());
+            File path = new File(Config.getDir());
+            if (!path.exists()) {
+                path.mkdir();
+            }
+            path = new File(Config.getDir() + "\\" + type);
+            if (!path.exists()) {
+                path.mkdir();
+            }
+
+            generateFileList(new File(type), type);
+            zipIt(Config.getDir() + "\\" + type + "\\" + fileName, type);
+        } catch (Exception e) {
+            e.printStackTrace();
+            MessageUtil.sendConsoleMessage("Backup creation failed.");
+        }
+    }
+
+
+
+    public static void zipIt(String zipFile, String sourceFolder) {
+        byte[] buffer = new byte[1024];
+        String source = "";
+        FileOutputStream fos = null;
+        ZipOutputStream zos = null;
+
+        try {
+            try {
+                source = sourceFolder.substring(sourceFolder.lastIndexOf("\\") + 1, sourceFolder.length());
+            } catch (Exception e) {
+                source = sourceFolder;
+            }
+            fos = new FileOutputStream(zipFile);
+            zos = new ZipOutputStream(fos);
+
+          //  MessageUtil.sendConsoleMessage("Output to Zip : " + zipFile);
+            FileInputStream in = null;
+
+            for (String file : fileList) {
+                ZipEntry ze = new ZipEntry(source + File.separator + file);
+                zos.putNextEntry(ze);
+                try {
+                    in = new FileInputStream(sourceFolder + File.separator + file);
+                    int len;
+                    while ((len = in.read(buffer)) > 0) {
+                        zos.write(buffer, 0, len);
+                    }
+                } finally {
+                    in.close();
+                }
+            }
+            zos.closeEntry();
+           // MessageUtil.sendConsoleMessage("Folder successfully compressed");
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        } finally {
+            try {
+                zos.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public static void generateFileList(File node, String sourceFolder) {
+
+        // add file only
+        if (node.isFile()) {
+            fileList.add(generateZipEntry(node.toString(), sourceFolder));
+        }
+
+        if (node.isDirectory()) {
+            String[] subNote = node.list();
+            for (String filename : subNote) {
+                generateFileList(new File(node, filename), sourceFolder);
+            }
+        }
+    }
+
+    private static String generateZipEntry(String file, String sourceFolder) {
+        return file.substring(sourceFolder.length() + 1, file.length());
+    }
 }
+
