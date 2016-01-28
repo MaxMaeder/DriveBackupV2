@@ -4,6 +4,7 @@ This plugin will back up world backups to Google Drive
 
 # Todo:
  - OneDrive support
+ - Delete old backups
  
 # Complete:
  - Back up world backups

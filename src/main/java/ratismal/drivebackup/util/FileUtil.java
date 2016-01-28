@@ -22,7 +22,7 @@ public class FileUtil {
 
     public static File getFileToUpload(String type, String format, boolean output) {
         backupList.clear();
-        String path = new File(Config.getDir()).getAbsolutePath() + "\\" + type;
+        String path = new File(Config.getDir()).getAbsolutePath() + "/" + type;
         //MessageUtil.sendConsoleMessage("Searching for backups in " + path);
         File[] files = new File(path).listFiles();
         subFiles(format, files);
@@ -63,13 +63,13 @@ public class FileUtil {
             if (!path.exists()) {
                 path.mkdir();
             }
-            path = new File(Config.getDir() + "\\" + type);
+            path = new File(Config.getDir() + "/" + type);
             if (!path.exists()) {
                 path.mkdir();
             }
 
             generateFileList(new File(type), type);
-            zipIt(Config.getDir() + "\\" + type + "\\" + fileName, type);
+            zipIt(Config.getDir() + "/" + type + "/" + fileName, type);
         } catch (Exception e) {
             e.printStackTrace();
             MessageUtil.sendConsoleMessage("Backup creation failed.");
@@ -86,7 +86,7 @@ public class FileUtil {
 
         try {
             try {
-                source = sourceFolder.substring(sourceFolder.lastIndexOf("\\") + 1, sourceFolder.length());
+                source = sourceFolder.substring(sourceFolder.lastIndexOf("/") + 1, sourceFolder.length());
             } catch (Exception e) {
                 source = sourceFolder;
             }

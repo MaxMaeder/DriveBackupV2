@@ -11,8 +11,6 @@ metrics: true
 # A restart is required for this to take effect
 delay: 60
 
-# Should this plugin make backups? (For if you don't have another utility that makes backups)
-backup: true
 # Expandable list of things to back up.
 backup-list:
 # The backup list is comprised of three things:
@@ -42,8 +40,6 @@ backup-list:
 
 # Where the backups are stored locally
 dir: "backups"
-
-format: "'Backup-world-'yyyy-M-d--HH-mm'.zip'"
 
 # Folder in to save backups on remote server
 destination: "backups"
