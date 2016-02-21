@@ -46,6 +46,9 @@ public class UploadThread implements Runnable {
                 e.printStackTrace();
             }
         }
+
+        MessageUtil.sendMessageToAllPlayers("Backup complete. The next backup is in " + Config.getBackupDelay() / 20 / 60 + " minutes.");
+
     }
 
 }

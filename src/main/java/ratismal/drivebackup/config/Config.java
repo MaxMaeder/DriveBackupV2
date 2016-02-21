@@ -19,17 +19,16 @@ public class Config {
      * General
      */
     private static long backupDelay;
+    private static int keepCount;
 
     /**
      * Metrics
      */
-
     private static boolean metrics;
 
     /**
      * Backups
      */
-
     private static String dir;
     private static boolean backup;
     private static HashMap<String, HashMap<String, String>> backupList;
@@ -37,19 +36,16 @@ public class Config {
     /**
      * Uploading
      */
-
     private static String destination;
 
     /**
      * Google Drive
      */
-
     private static boolean googleEnabled;
 
     /**
      * OneDrive
      */
-
     private static boolean onedriveEnabled;
     private static String onedriveUsername;
     private static String onedrivePassword;
@@ -71,6 +67,11 @@ public class Config {
         this.pluginconfig = pluginconfig;
     }
 
+    public void reload(FileConfiguration pluginconfig) {
+        this.pluginconfig = pluginconfig;
+        reload();
+    }
+
     public void reload() {
         this.metrics = pluginconfig.getBoolean("metrics");
         this.destination = pluginconfig.getString("destination");
@@ -87,6 +88,7 @@ public class Config {
         this.onedriveUsername = pluginconfig.getString("onedrive.username");
 
         this.backupDelay = pluginconfig.getLong("delay") * 60 * 20;
+        this.keepCount = pluginconfig.getInt("keep-count") - 1;
         //MessageUtil.sendConsoleMessage("Scheduling backups for every " + backupDelay + " ticks.");
 
         HashMap<String, HashMap<String, String>> temp = new HashMap<String, HashMap<String, String>>();
@@ -158,6 +160,10 @@ public class Config {
 
     public static long getBackupDelay() {
         return backupDelay;
+    }
+
+    public static int getKeepCount() {
+        return keepCount;
     }
 }
 

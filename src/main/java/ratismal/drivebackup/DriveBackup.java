@@ -13,17 +13,17 @@ import java.io.IOException;
 
 public class DriveBackup extends JavaPlugin {
 
-    private Config pluginconfig;
+    private static Config pluginconfig;
     private static DriveBackup plugin;
 
     public void onEnable() {
         getConfig().options().copyDefaults(true);
         saveDefaultConfig();
 
-        this.pluginconfig = new Config(this, getConfig());
+        pluginconfig = new Config(this, getConfig());
         pluginconfig.reload();
         getCommand("drivebackup").setExecutor(new CommandHandler(this, pluginconfig));
-        this.plugin = this;
+        plugin = this;
 
         if (Config.isMetrics()) {
             try {
@@ -34,9 +34,7 @@ public class DriveBackup extends JavaPlugin {
                 MessageUtil.sendConsoleMessage("Metrics failed to start");
             }
         }
-
-        BukkitScheduler scheduler = Bukkit.getServer().getScheduler();
-        scheduler.scheduleSyncRepeatingTask(this, new UploadThread(), Config.getBackupDelay(), Config.getBackupDelay());
+        startThread();
 
     }
 
@@ -46,5 +44,18 @@ public class DriveBackup extends JavaPlugin {
 
     public static DriveBackup getInstance() {
         return plugin;
+    }
+
+    public static void startThread() {
+        if (Config.getBackupDelay()/60/20 != -1) {
+            MessageUtil.sendConsoleMessage("Starting the backup thread for every " + Config.getBackupDelay() + " ticks.");
+            BukkitScheduler scheduler = Bukkit.getServer().getScheduler();
+            scheduler.scheduleSyncRepeatingTask(getInstance(), new UploadThread(), Config.getBackupDelay(), Config.getBackupDelay());
+        }
+    }
+
+    public static void reloadLocalConfig() {
+        getInstance().reloadConfig();
+        pluginconfig.reload(getInstance().getConfig());
     }
 }

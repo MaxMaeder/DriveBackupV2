@@ -70,10 +70,31 @@ public class FileUtil {
 
             generateFileList(new File(type), type);
             zipIt(Config.getDir() + "/" + type + "/" + fileName, type);
+
+
         } catch (Exception e) {
             e.printStackTrace();
             MessageUtil.sendConsoleMessage("Backup creation failed.");
         }
+
+        if (Config.getKeepCount() != -1) {
+            try {
+                while (backupList.size() > Config.getKeepCount()) {
+                    File fileToDelete = backupList.descendingMap().lastEntry().getValue();
+                    Date dateOfFile = backupList.descendingMap().lastKey();
+                    if (fileToDelete.delete()) {
+                        MessageUtil.sendConsoleMessage("Old backup deleted.");
+                    } else {
+                        MessageUtil.sendConsoleMessage("Failed to delete backup " + backupList.descendingMap().lastEntry().getValue().getName());
+                    }
+                    backupList.remove(dateOfFile);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                MessageUtil.sendConsoleMessage("Backup deletion failed.");
+            }
+        }
+
     }
 
 

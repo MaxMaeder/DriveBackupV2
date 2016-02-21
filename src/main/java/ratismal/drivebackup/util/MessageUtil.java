@@ -11,6 +11,7 @@ public class MessageUtil {
         for (Player p : Bukkit.getOnlinePlayers()) {
             p.sendMessage(getMessage(message));
         }
+        Bukkit.getConsoleSender().sendMessage(getMessage(message));
     }
 
     public static void sendMessage(CommandSender sender, String message) {

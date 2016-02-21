@@ -7,9 +7,10 @@
 # Should metrics be enabled
 metrics: true
 
-# How often to do backups (in minutes)
-# A restart is required for this to take effect
+# How often to do backups (in minutes). Set to -1 to disable automatic backups.
 delay: 60
+# How many backups to keep before deleting the oldest one. Set to -1 to disable automatic deletes.
+keep-count: 20
 
 # Expandable list of things to back up.
 backup-list:

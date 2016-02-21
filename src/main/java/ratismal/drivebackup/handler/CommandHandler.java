@@ -1,9 +1,12 @@
 package ratismal.drivebackup.handler;
 
+import com.google.api.services.drive.Drive;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.scheduler.BukkitScheduler;
 import ratismal.drivebackup.DriveBackup;
 import ratismal.drivebackup.UploadThread;
 import ratismal.drivebackup.config.Config;
@@ -127,7 +130,10 @@ public class CommandHandler implements CommandExecutor {
      * @param sender player
      */
     public void reloadConfig(CommandSender sender) {
-        plugin.reloadConfig();
+        DriveBackup.reloadLocalConfig();
+        BukkitScheduler scheduler = Bukkit.getServer().getScheduler();
+        scheduler.cancelTasks(DriveBackup.getInstance());
+        DriveBackup.startThread();
         sender.sendMessage(ChatColor.GOLD + "Configs reloaded!");
     }
 
