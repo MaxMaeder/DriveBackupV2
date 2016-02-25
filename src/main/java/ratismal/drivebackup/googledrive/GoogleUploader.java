@@ -21,7 +21,10 @@ import ratismal.drivebackup.config.Config;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * Created by Ratismal on 2016-01-20.
@@ -144,5 +147,56 @@ public class GoogleUploader {
             e.printStackTrace();
         }
         return null;
+    }
+
+    public List<File> processFiles() throws IOException{
+        Drive service = getDriveService();
+
+        //Create a List to store results
+        List<File> result = new ArrayList<>();
+
+        //Set up a request to query all files from all pages.
+        //We are also making sure the files are sorted  by created Date. Oldest at the beginning of List.
+        Drive.Files.List request = service.files().list().setOrderBy("createdDate");
+
+        //While there is a page available, request files and add them to the Result List.
+        do{
+            try {
+                FileList files = request.execute();
+                result.addAll(files.getItems());
+                request.setPageToken(files.getNextPageToken());
+            } catch(IOException e){
+                e.printStackTrace();
+                request.setPageToken(null);
+            }
+        }while (request.getPageToken() != null &&
+                request.getPageToken().length() > 0);
+
+        return result;
+    }
+
+    public void deleteFiles() throws IOException{
+        Drive service = getDriveService();
+        //Set a limit for files
+        int fileLimit = 3;
+
+        List<File> queriedFilesfromDrive = processFiles();
+        if(queriedFilesfromDrive.size() > fileLimit){
+            System.out.print("There are " + queriedFilesfromDrive.size() + " file(s) which exceeds the limit of " +  fileLimit + ", deleting.");
+
+            for(Iterator<File> iterator = queriedFilesfromDrive.iterator(); iterator.hasNext();){
+                if(queriedFilesfromDrive.size() == fileLimit){
+                    break;
+                }
+                System.out.println(queriedFilesfromDrive.size());
+                File file = iterator.next();
+                System.out.println(file.getTitle());
+                Drive.Files.Delete removeItem = service.files().delete(file.getId());
+                removeItem.execute();
+                System.out.println(file.getId());
+                iterator.remove();
+                System.out.println(queriedFilesfromDrive.size());
+            }
+        }
     }
 }
