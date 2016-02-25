@@ -1,8 +1,8 @@
 package ratismal.drivebackup;
 
-import org.bukkit.command.CommandSender;
 import ratismal.drivebackup.config.Config;
 import ratismal.drivebackup.googledrive.GoogleUploader;
+import ratismal.drivebackup.onedrive.OneDriveUploader;
 import ratismal.drivebackup.util.FileUtil;
 import ratismal.drivebackup.util.MessageUtil;
 
@@ -24,8 +24,10 @@ public class UploadThread implements Runnable {
     public void run() {
         MessageUtil.sendMessageToAllPlayers("Creating backups, server may lag for a little while...");
 
-        // Create Backup Here
+        //Couldn't get around static issue, declared a new Instance.
+        OneDriveUploader onedrive = new OneDriveUploader();
 
+        // Create Backup Here
         HashMap<String, HashMap<String, String>> backupList = Config.getBackupList();
         for (Map.Entry<String, HashMap<String, String>> set : backupList.entrySet()) {
             String type = set.getKey();
@@ -39,8 +41,13 @@ public class UploadThread implements Runnable {
             File file = FileUtil.getFileToUpload(type, format, false);
 
             try {
-                MessageUtil.sendConsoleMessage("Uploading file to GoogleDrive");
-                GoogleUploader.uploadFile(file, false, type);
+                if(Config.isGoogleEnabled()) {
+                    MessageUtil.sendConsoleMessage("Uploading file to GoogleDrive");
+                    GoogleUploader.uploadFile(file, false, type);
+                } else if(Config.isOnedriveEnabled()){
+                    MessageUtil.sendConsoleMessage("Uploading file to OneDrive");
+                    onedrive.uploadFile(file);
+                }
                 MessageUtil.sendConsoleMessage("File Uploaded.");
             } catch (Exception e) {
                 e.printStackTrace();

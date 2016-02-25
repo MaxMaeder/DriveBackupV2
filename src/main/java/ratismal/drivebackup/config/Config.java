@@ -1,14 +1,10 @@
 package ratismal.drivebackup.config;
 
 import org.bukkit.configuration.ConfigurationSection;
-import ratismal.drivebackup.DriveBackup;
 import org.bukkit.configuration.file.FileConfiguration;
-import ratismal.drivebackup.util.MessageUtil;
+import ratismal.drivebackup.DriveBackup;
 
 import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 public class Config {
 
@@ -47,8 +43,6 @@ public class Config {
      * OneDrive
      */
     private static boolean onedriveEnabled;
-    private static String onedriveUsername;
-    private static String onedrivePassword;
 
     /**
      * Messages
@@ -81,11 +75,9 @@ public class Config {
 
         this.backup = pluginconfig.getBoolean("backup");
 
-        this.googleEnabled = pluginconfig.getBoolean("google.enabled");
+        this.googleEnabled = pluginconfig.getBoolean("googledrive.enabled");
 
         this.onedriveEnabled = pluginconfig.getBoolean("onedrive.enabled");
-        this.onedrivePassword = pluginconfig.getString("onedrive.password");
-        this.onedriveUsername = pluginconfig.getString("onedrive.username");
 
         this.backupDelay = pluginconfig.getLong("delay") * 60 * 20;
         this.keepCount = pluginconfig.getInt("keep-count") - 1;
@@ -144,14 +136,6 @@ public class Config {
 
     public static boolean isOnedriveEnabled() {
         return onedriveEnabled;
-    }
-
-    public static String getOnedriveUsername() {
-        return onedriveUsername;
-    }
-
-    public static String getOnedrivePassword() {
-        return onedrivePassword;
     }
 
     public static HashMap<String, HashMap<String, String>> getBackupList() {

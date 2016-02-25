@@ -48,6 +48,8 @@ destination: "backups"
 # Google Drive configs
 googledrive:
   enabled: true
+onedrive:
+  enabled: false
 
 # Messages
 no-perm: "You don't have permission to do this!"
