@@ -94,10 +94,7 @@ public class FileUtil {
                 MessageUtil.sendConsoleMessage("Backup deletion failed.");
             }
         }
-
     }
-
-
 
     private static void zipIt(String zipFile, String sourceFolder) {
         byte[] buffer = new byte[1024];
