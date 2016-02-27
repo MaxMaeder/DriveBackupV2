@@ -52,6 +52,9 @@ public class GoogleUploader {
      */
     private static Credential authorize() throws IOException {
         // Load client secrets.
+   //     GoogleClientSecrets clientSecrets = GoogleClientSecrets.load(JSON_FACTORY,
+   //             new InputStreamReader(DriveBackup.getInstance().getResource("googledrive_client_secrets.json")));
+
         GoogleClientSecrets clientSecrets = GoogleClientSecrets.load(JSON_FACTORY,
                 new InputStreamReader(DriveBackup.getInstance().getResource("googledrive_client_secrets.json")));
 

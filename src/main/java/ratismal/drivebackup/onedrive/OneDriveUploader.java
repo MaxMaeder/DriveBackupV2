@@ -1,8 +1,11 @@
 package ratismal.drivebackup.onedrive;
 
 import com.jayway.restassured.response.Response;
+import org.apache.commons.io.IOUtils;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
+import ratismal.drivebackup.DriveBackup;
 import ratismal.drivebackup.config.Config;
 
 import java.io.*;
@@ -26,8 +29,10 @@ public class OneDriveUploader {
     private String userCode;
 
     private static final int CHUNK_SIZE = 5 * 1024 * 1024;
-    private final String oneDriveConfig = getClass().getResource("/onedrive_client_secrets.json").toString();
+    //private final String oneDriveConfig = DriveBackup.getInstance().getResource("onedrive_client_secrets.json").toString();
     private RandomAccessFile raf;
+    private static final String CLIENT_JSON_PATH = DriveBackup.getInstance().getDataFolder().getAbsolutePath()
+            + "/OneDriveCredential.json";
 
     private static class Range {
         private final long start;
@@ -39,16 +44,17 @@ public class OneDriveUploader {
         }
     }
 
-    public OneDriveUploader(){
+    public OneDriveUploader() {
         try {
             processOneDriveConfig();
             setExistingTokens();
-        } catch (Exception e){
+            retrieveTokens();
+            retrieveNewAccessToken();
+            setRanges(new String[0]);
+        } catch (Exception e) {
             e.printStackTrace();
         }
-        retrieveTokens();
-        retrieveNewAccessToken();
-        setRanges(new String[0]);
+
     }
 
     private void setRanges(String[] stringRanges) {
@@ -86,8 +92,9 @@ public class OneDriveUploader {
         return bytes;
     }
 
-    private void processOneDriveConfig() throws Exception{
-        String jsonData = readFile(oneDriveConfig);
+    private void processOneDriveConfig() throws Exception {
+
+        String jsonData = readFile("onedrive_client_secrets.json");
         JSONParser jsonParser = new JSONParser();
         JSONObject jsonObject = (JSONObject) jsonParser.parse(jsonData);
         JSONObject structure = (JSONObject) jsonObject.get("installed");
@@ -95,10 +102,11 @@ public class OneDriveUploader {
         setClientSecret(structure.get("client_secret").toString());
     }
 
-    private void setExistingTokens() throws Exception{
+    private void setExistingTokens() throws Exception {
         //Reading the OneDriveCredential.json and assigning variables if they exist for further processing.
-        String clientJSONPath = new File(Config.getDir()).getAbsolutePath() + "/OneDriveCredential.json";
-        String clientJSON = readFile(clientJSONPath);
+       // String clientJSONPath = new File(Config.getDir()).getAbsolutePath() + "/OneDriveCredential.json";
+        //String clientJSONPath = readFile();
+        String clientJSON = readFile();
         JSONParser jsonParser = new JSONParser();
         JSONObject clientJsonObject = (JSONObject) jsonParser.parse(clientJSON);
         this.userCode = (String) clientJsonObject.get("code");
@@ -107,53 +115,60 @@ public class OneDriveUploader {
         String refreshKey = (String) clientJsonObject.get("refresh_key");
 
 
-        if(authKey != null && !authKey.isEmpty()) {
+        if (authKey != null && !authKey.isEmpty()) {
             setAccessToken(authKey);
         } else
             setAccessToken("");
 
-        if(refreshKey != null && !refreshKey.isEmpty()) {
+        if (refreshKey != null && !refreshKey.isEmpty()) {
             setRefreshToken(refreshKey);
         } else
             setRefreshToken("");
     }
 
-    private void retrieveTokens(){
-        if(returnAccessToken().isEmpty() && returnRefreshToken().isEmpty()) {
+    private void retrieveTokens() throws ParseException {
+        if (returnAccessToken().isEmpty() && returnRefreshToken().isEmpty()) {
             String query = "https://login.live.com/oauth20_token.srf?client_id=" + returnClientID() + "&client_secret=" + returnClientSecret() + "&code=" + this.userCode + "&grant_type=authorization_code";
 
             Response response = given().contentType("application/x-www-form-urlencoded").get(query);
-            response.prettyPrint();
+            //response.prettyPrint();
 
             setAccessToken(response.getBody().jsonPath().getString("access_token"));
             setRefreshToken(response.getBody().jsonPath().getString("refresh_token"));
+
+            String clientJSONPath = new File(Config.getDir()).getAbsolutePath() + "/OneDriveCredential.json";
+            String clientJSON = readFile(clientJSONPath);
+            JSONParser jsonParser = new JSONParser();
+            JSONObject jsonObject = (JSONObject) jsonParser.parse(clientJSON);
+            jsonObject.put("auth_key", returnAccessToken());
+            jsonObject.put("refresh_key", returnRefreshToken());
         }
     }
 
-    private void retrieveNewAccessToken(){
+    private void retrieveNewAccessToken() {
         String query = "https://login.live.com/oauth20_token.srf?client_id=" + returnClientID() + "&client_secret=" + returnClientSecret() + "&refresh_token=" + returnRefreshToken() + "&grant_type=refresh_token";
         Response response = given().contentType("application/x-www-form-urlencoded").get(query);
         setAccessToken(response.getBody().jsonPath().getString("access_token"));
     }
 
-    private boolean checkDestinationExists(){
+    private boolean checkDestinationExists() {
         String query = "https://api.onedrive.com/v1.0/drive/root?expand=children&access_token=" + returnAccessToken();
         Response rootQuery = get(query);
         List<String> availableFolders = rootQuery.getBody().jsonPath().getList("children.name");
-       return availableFolders.contains("backups");
+        return availableFolders.contains("backups");
     }
 
     //Uses config specified Destination to createBackupDirectory
-    private void createDestinationFolder(){
+    private void createDestinationFolder() {
         String query = "https://apis.live.net/v5.0/me/skydrive?access_token=" + returnAccessToken();
         given().contentType("application/json").body("{\"name\": \"" + Config.getDestination() + "\"}").post(query);
     }
 
-    public void uploadFile(File file) throws Exception{
+    public void uploadFile(File file) throws Exception {
         // URL Root = https://api.onedrive.com/v1.0
         // Two Accessible Models = Drive/Item
 
-        if(!checkDestinationExists()) {
+        if (!checkDestinationExists()) {
             createDestinationFolder();
         }
 
@@ -163,7 +178,7 @@ public class OneDriveUploader {
         //Assign our backup to Random Access File
         this.raf = new RandomAccessFile(file, "r");
 
-        if(openConnection.statusCode() == 200) {
+        if (openConnection.statusCode() == 200) {
             String uploadURL = openConnection.getBody().jsonPath().get("uploadUrl");
 
             long fileSizeInBytes = file.length();
@@ -172,7 +187,7 @@ public class OneDriveUploader {
 
             Response uploadFile;
 
-            if(fileSizeInMB > 100){
+            if (fileSizeInMB > 100) {
                 /* Implements 100mb limit since using Rest API */
                 String uploadQuery = "https://api.onedrive.com/v1.0/drive/root:/" + Config.getDestination() + "/" + file.getName() + ":/content?access_token=" + returnAccessToken();
                 given().contentType("application/zip").body(file).put(uploadQuery);
@@ -213,10 +228,33 @@ public class OneDriveUploader {
         }
     }
 
-    private static String readFile(String filename) {
+    private static String readFile(String fileName) {
+        try {
+
+            StringWriter writer = new StringWriter();
+            System.out.println(DriveBackup.getInstance().getResource("onedrive_client_secrets.json"));
+           // DriveBackup.getInstance().getResource("googledrive_client_secrets.json")
+            IOUtils.copy(DriveBackup.getInstance().getResource("onedrive_client_secrets.json"), writer, "UTF-8");
+
+            String secret = writer.toString();
+            writer.close();
+            return secret;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return "lolyousuck.jpeg";
+    }
+
+    private static String readFile() {
         String result = "";
         try {
-            BufferedReader br = new BufferedReader(new FileReader(filename));
+
+          //  StringWriter writer = new StringWriter();
+          //  IOUtils.copy(DriveBackup.getInstance().getResource("onedrive_client_secrets.json"), writer, "UTF-8");
+         //   String line = writer.toString();
+
+        //    InputStreamReader sr = new InputStreamReader(DriveBackup.getInstance().getResource("onedrive_client_secrets.json"));
+            BufferedReader br = new BufferedReader(new FileReader(CLIENT_JSON_PATH));
             StringBuilder sb = new StringBuilder();
             String line = br.readLine();
             while (line != null) {
@@ -225,11 +263,12 @@ public class OneDriveUploader {
             }
             result = sb.toString();
             br.close();
-        } catch(Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return result;
     }
+
 
     private static String readableFileSize(long size) {
         if (size <= 0) return "0";
@@ -241,39 +280,40 @@ public class OneDriveUploader {
     private long getTotalUploaded() {
         return totalUploaded;
     }
+
     private long getLastUploaded() {
         return lastUploaded;
     }
 
-    private void setAccessToken(String accessTokenValue){
+    private void setAccessToken(String accessTokenValue) {
         this.accessToken = accessTokenValue;
     }
 
-    private void setRefreshToken(String refreshTokenValue){
+    private void setRefreshToken(String refreshTokenValue) {
         this.refreshToken = refreshTokenValue;
     }
 
-    private void setClientID(String clientIdValue){
+    private void setClientID(String clientIdValue) {
         this.clientID = clientIdValue;
     }
 
-    private void setClientSecret(String clientSecretValue){
+    private void setClientSecret(String clientSecretValue) {
         this.clientSecret = clientSecretValue;
     }
 
-    private String returnAccessToken(){
+    private String returnAccessToken() {
         return this.accessToken;
     }
 
-    private String returnRefreshToken(){
+    private String returnRefreshToken() {
         return this.refreshToken;
     }
 
-    private String returnClientID(){
+    private String returnClientID() {
         return this.clientID;
     }
 
-    private String returnClientSecret(){
+    private String returnClientSecret() {
         return this.clientSecret;
     }
 }

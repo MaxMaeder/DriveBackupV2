@@ -24,8 +24,7 @@ public class UploadThread implements Runnable {
     public void run() {
         MessageUtil.sendMessageToAllPlayers("Creating backups, server may lag for a little while...");
 
-        //Couldn't get around static issue, declared a new Instance.
-        OneDriveUploader onedrive = new OneDriveUploader();
+
 
         // Create Backup Here
         HashMap<String, HashMap<String, String>> backupList = Config.getBackupList();
@@ -46,6 +45,8 @@ public class UploadThread implements Runnable {
                     GoogleUploader.uploadFile(file, type);
                 } else if(Config.isOnedriveEnabled()){
                     MessageUtil.sendConsoleMessage("Uploading file to OneDrive");
+                    //Couldn't get around static issue, declared a new Instance.
+                    OneDriveUploader onedrive = new OneDriveUploader();
                     onedrive.uploadFile(file);
                 }
                 MessageUtil.sendConsoleMessage("File Uploaded.");
