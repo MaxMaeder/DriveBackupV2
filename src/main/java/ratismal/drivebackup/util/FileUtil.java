@@ -1,10 +1,11 @@
 package ratismal.drivebackup.util;
 
-import org.bukkit.command.CommandSender;
-import ratismal.drivebackup.DriveBackup;
 import ratismal.drivebackup.config.Config;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -17,13 +18,12 @@ import java.util.zip.ZipOutputStream;
 
 public class FileUtil {
 
-    public static TreeMap<Date, File> backupList = new TreeMap<>();
-    public static List<String> fileList = new ArrayList<String>();
+    private static final TreeMap<Date, File> backupList = new TreeMap<>();
+    private static final List<String> fileList = new ArrayList<>();
 
     public static File getFileToUpload(String type, String format, boolean output) {
         backupList.clear();
         String path = new File(Config.getDir()).getAbsolutePath() + "/" + type;
-        //MessageUtil.sendConsoleMessage("Searching for backups in " + path);
         File[] files = new File(path).listFiles();
         subFiles(format, files);
         if (output) {
@@ -35,7 +35,7 @@ public class FileUtil {
         return backupList.descendingMap().firstEntry().getValue();
     }
 
-    public static void subFiles(String formatString, File[] files) {
+    private static void subFiles(String formatString, File[] files) {
         for (File file : files) {
             if (file.isDirectory()) {
                 subFiles(formatString, file.listFiles()); // Calls same method again.
@@ -99,10 +99,10 @@ public class FileUtil {
 
 
 
-    public static void zipIt(String zipFile, String sourceFolder) {
+    private static void zipIt(String zipFile, String sourceFolder) {
         byte[] buffer = new byte[1024];
-        String source = "";
-        FileOutputStream fos = null;
+        String source;
+        FileOutputStream fos;
         ZipOutputStream zos = null;
 
         try {
@@ -115,19 +115,15 @@ public class FileUtil {
             zos = new ZipOutputStream(fos);
 
           //  MessageUtil.sendConsoleMessage("Output to Zip : " + zipFile);
-            FileInputStream in = null;
 
             for (String file : fileList) {
                 ZipEntry ze = new ZipEntry(source + File.separator + file);
                 zos.putNextEntry(ze);
-                try {
-                    in = new FileInputStream(sourceFolder + File.separator + file);
+                try (FileInputStream in = new FileInputStream(sourceFolder + File.separator + file)) {
                     int len;
                     while ((len = in.read(buffer)) > 0) {
                         zos.write(buffer, 0, len);
                     }
-                } finally {
-                    in.close();
                 }
             }
             zos.closeEntry();
@@ -136,14 +132,16 @@ public class FileUtil {
             ex.printStackTrace();
         } finally {
             try {
-                zos.close();
+                if(zos != null) {
+                    zos.close();
+                }
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
     }
 
-    public static void generateFileList(File node, String sourceFolder) {
+    private static void generateFileList(File node, String sourceFolder) {
 
         // add file only
         if (node.isFile()) {

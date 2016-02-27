@@ -24,8 +24,8 @@ public class MessageUtil {
         Bukkit.getConsoleSender().sendMessage(getMessage(message));
     }
 
-    public static String getMessage(String message){
-        return new StringBuilder().append("\2476[\2474DriveBackup\2476]\2473 ").append(message).toString();
+    private static String getMessage(String message){
+        return "\2476[\2474DriveBackup\2476]\2473 " + message;
     }
 
     /**

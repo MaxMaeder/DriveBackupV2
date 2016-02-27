@@ -2,14 +2,12 @@ package ratismal.drivebackup.config;
 
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
-import ratismal.drivebackup.DriveBackup;
 
 import java.util.HashMap;
 
 public class Config {
 
-    DriveBackup plugin;
-    FileConfiguration pluginconfig;
+    private FileConfiguration pluginconfig;
 
     /**
      * General
@@ -53,11 +51,9 @@ public class Config {
     /**
      * config constructor
      *
-     * @param driveBackup  - DriveBackup class
      * @param pluginconfig - Plugin config
      */
-    public Config(DriveBackup driveBackup, FileConfiguration pluginconfig) {
-        this.plugin = driveBackup;
+    public Config(FileConfiguration pluginconfig) {
         this.pluginconfig = pluginconfig;
     }
 
@@ -66,28 +62,29 @@ public class Config {
         reload();
     }
 
+    @SuppressWarnings("unchecked")
     public void reload() {
-        this.metrics = pluginconfig.getBoolean("metrics");
-        this.destination = pluginconfig.getString("destination");
+        metrics = pluginconfig.getBoolean("metrics");
+        destination = pluginconfig.getString("destination");
 
-        this.dir = pluginconfig.getString("dir");
-        this.noPerms = pluginconfig.getString("no-perm");
+        dir = pluginconfig.getString("dir");
+        noPerms = pluginconfig.getString("no-perm");
 
-        this.backup = pluginconfig.getBoolean("backup");
+        backup = pluginconfig.getBoolean("backup");
 
-        this.googleEnabled = pluginconfig.getBoolean("googledrive.enabled");
+        googleEnabled = pluginconfig.getBoolean("googledrive.enabled");
 
-        this.onedriveEnabled = pluginconfig.getBoolean("onedrive.enabled");
+        onedriveEnabled = pluginconfig.getBoolean("onedrive.enabled");
 
-        this.backupDelay = pluginconfig.getLong("delay") * 60 * 20;
-        this.keepCount = pluginconfig.getInt("keep-count") - 1;
+        backupDelay = pluginconfig.getLong("delay") * 60 * 20;
+        keepCount = pluginconfig.getInt("keep-count") - 1;
         //MessageUtil.sendConsoleMessage("Scheduling backups for every " + backupDelay + " ticks.");
 
-        HashMap<String, HashMap<String, String>> temp = new HashMap<String, HashMap<String, String>>();
+        HashMap<String, HashMap<String, String>> temp = new HashMap<>();
         ConfigurationSection groupSection = pluginconfig.getConfigurationSection("backup-list");
         if (groupSection != null) {
             for (String name : groupSection.getKeys(false)) {
-                HashMap<String, String> temp2 = new HashMap<String, String>();
+                HashMap<String, String> temp2 = new HashMap<>();
                 ConfigurationSection subSection = groupSection.getConfigurationSection(name);
                 for (String name2 : subSection.getKeys(false)) {
                     String value = subSection.getString(name2);
@@ -96,13 +93,7 @@ public class Config {
                 temp.put(name, temp2);
             }
         }
-        this.backupList = (HashMap<String, HashMap<String, String>>) temp.clone();
-        /*
-        for (Map.Entry<String, HashMap<String, String>> set : backupList.entrySet()) {
-            MessageUtil.sendConsoleMessage("Backup: " + set.getKey() + " Format: " + set.getValue().get("format") +
-                    " Create: " + set.getValue().get("create"));
-        }
-        */
+        backupList = (HashMap<String, HashMap<String, String>>) temp.clone();
     }
 
 

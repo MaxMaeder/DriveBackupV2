@@ -22,7 +22,7 @@ import ratismal.drivebackup.config.Config;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -37,7 +37,7 @@ public class GoogleUploader {
     /**
      * Global instance of the HTTP transport.
      */
-    private static HttpTransport httpTransport = new NetHttpTransport();
+    private static final HttpTransport httpTransport = new NetHttpTransport();
 
     /**
      * Global instance of the JSON factory.
@@ -47,23 +47,19 @@ public class GoogleUploader {
     private static final java.io.File DATA_STORE_DIR = new java.io.File(
             DriveBackup.getInstance().getDataFolder().getAbsolutePath());
 
-    private static FileDataStoreFactory DATA_STORE_FACTORY;
-
     /**
      * Global Drive API client.
      */
-    private static boolean goodToGo = false;
-
-    public static Credential authorize() throws IOException {
+    private static Credential authorize() throws IOException {
         // Load client secrets.
         GoogleClientSecrets clientSecrets = GoogleClientSecrets.load(JSON_FACTORY,
                 new InputStreamReader(DriveBackup.getInstance().getResource("googledrive_client_secrets.json")));
 
-        DATA_STORE_FACTORY = new FileDataStoreFactory(DATA_STORE_DIR);
+        FileDataStoreFactory DATA_STORE_FACTORY = new FileDataStoreFactory(DATA_STORE_DIR);
         // Build flow and trigger user authorization request.
         GoogleAuthorizationCodeFlow flow =
                 new GoogleAuthorizationCodeFlow.Builder(
-                        httpTransport, JSON_FACTORY, clientSecrets, Arrays.asList(DriveScopes.DRIVE))
+                        httpTransport, JSON_FACTORY, clientSecrets, Collections.singletonList(DriveScopes.DRIVE))
                         .setDataStoreFactory(DATA_STORE_FACTORY)
                         .setAccessType("offline")
                         .build();
@@ -74,7 +70,7 @@ public class GoogleUploader {
         return credential;
     }
 
-    public static Drive getDriveService() throws IOException {
+    private static Drive getDriveService() throws IOException {
         Credential credential = authorize();
         return new Drive.Builder(
                 httpTransport, JSON_FACTORY, credential)
@@ -83,20 +79,17 @@ public class GoogleUploader {
     }
 
 
-    public static void uploadFile(java.io.File file, boolean useDirectUpload, String type) throws IOException {
+    public static void uploadFile(java.io.File file, String type) throws IOException {
         Drive service = getDriveService();
 
         File body = new File();
         body.setTitle(file.getName());
         body.setDescription("DriveBackup plugin");
         body.setMimeType("application/zip");
-        //if (destination != null && destination.length() > 0) {
-        //    body.setParents(Arrays.asList(new ParentReference().setId(destination)));
-        //}
+
         String destination = Config.getDestination();
 
-        java.io.File fileContent = file;
-        FileContent mediaContent = new FileContent("application/zip", fileContent);
+        FileContent mediaContent = new FileContent("application/zip", file);
 
         File parentFolder = getFolder(destination, service);
         if (parentFolder == null) {
@@ -115,14 +108,14 @@ public class GoogleUploader {
             childFolder = new File();
             childFolder.setTitle(type);
             childFolder.setMimeType("application/vnd.google-apps.folder");
-            childFolder.setParents(Arrays.asList(childFolderParent));
+            childFolder.setParents(Collections.singletonList(childFolderParent));
 
             childFolder = service.files().insert(childFolder).execute();
         }
 
         ParentReference newParent = new ParentReference();
         newParent.setId(childFolder.getId());
-        body.setParents(Arrays.asList(newParent));
+        body.setParents(Collections.singletonList(newParent));
 
         try {
             service.files().insert(body, mediaContent).execute();
@@ -132,7 +125,7 @@ public class GoogleUploader {
         }
     }
 
-    public static File getFolder(String name, Drive service) {
+    private static File getFolder(String name, Drive service) {
         try {
             Drive.Files.List request = service.files().list().setQ(
                     "mimeType='application/vnd.google-apps.folder' and trashed=false");
@@ -149,7 +142,7 @@ public class GoogleUploader {
         return null;
     }
 
-    public List<File> processFiles() throws IOException{
+    private List<File> processFiles() throws IOException{
         Drive service = getDriveService();
 
         //Create a List to store results

@@ -1,6 +1,5 @@
 package ratismal.drivebackup.handler;
 
-import com.google.api.services.drive.Drive;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
@@ -10,7 +9,6 @@ import org.bukkit.scheduler.BukkitScheduler;
 import ratismal.drivebackup.DriveBackup;
 import ratismal.drivebackup.UploadThread;
 import ratismal.drivebackup.config.Config;
-import ratismal.drivebackup.util.FileUtil;
 import ratismal.drivebackup.util.MessageUtil;
 
 /**
@@ -20,17 +18,14 @@ import ratismal.drivebackup.util.MessageUtil;
 public class CommandHandler implements CommandExecutor {
 
     private DriveBackup plugin;
-    private Config config;
 
     /**
      * CommandHandler constructor
      *
-     * @param plugin MoneyThief plugin
-     * @param config config
+     * @param plugin DriveBackup plugin
      */
-    public CommandHandler(DriveBackup plugin, Config config) {
+    public CommandHandler(DriveBackup plugin) {
         this.plugin = plugin;
-        this.config = config;
     }
 
     /**

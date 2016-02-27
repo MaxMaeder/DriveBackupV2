@@ -1,13 +1,12 @@
 package ratismal.drivebackup;
 
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
+import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitScheduler;
 import org.mcstats.Metrics;
 import ratismal.drivebackup.config.Config;
 import ratismal.drivebackup.handler.CommandHandler;
 import ratismal.drivebackup.util.MessageUtil;
-import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.IOException;
 
@@ -20,9 +19,9 @@ public class DriveBackup extends JavaPlugin {
         getConfig().options().copyDefaults(true);
         saveDefaultConfig();
 
-        pluginconfig = new Config(this, getConfig());
+        pluginconfig = new Config(getConfig());
         pluginconfig.reload();
-        getCommand("drivebackup").setExecutor(new CommandHandler(this, pluginconfig));
+        getCommand("drivebackup").setExecutor(new CommandHandler(this));
         plugin = this;
 
         if (Config.isMetrics()) {

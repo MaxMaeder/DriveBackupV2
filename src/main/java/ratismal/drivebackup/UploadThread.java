@@ -43,7 +43,7 @@ public class UploadThread implements Runnable {
             try {
                 if(Config.isGoogleEnabled()) {
                     MessageUtil.sendConsoleMessage("Uploading file to GoogleDrive");
-                    GoogleUploader.uploadFile(file, false, type);
+                    GoogleUploader.uploadFile(file, type);
                 } else if(Config.isOnedriveEnabled()){
                     MessageUtil.sendConsoleMessage("Uploading file to OneDrive");
                     onedrive.uploadFile(file);
