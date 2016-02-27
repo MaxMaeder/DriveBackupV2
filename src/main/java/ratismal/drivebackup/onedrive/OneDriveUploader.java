@@ -4,9 +4,9 @@ import com.jayway.restassured.response.Response;
 import org.apache.commons.io.IOUtils;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 import ratismal.drivebackup.DriveBackup;
 import ratismal.drivebackup.config.Config;
+import ratismal.drivebackup.util.MessageUtil;
 
 import java.io.*;
 import java.text.DecimalFormat;
@@ -29,7 +29,6 @@ public class OneDriveUploader {
     private String userCode;
 
     private static final int CHUNK_SIZE = 5 * 1024 * 1024;
-    //private final String oneDriveConfig = DriveBackup.getInstance().getResource("onedrive_client_secrets.json").toString();
     private RandomAccessFile raf;
     private static final String CLIENT_JSON_PATH = DriveBackup.getInstance().getDataFolder().getAbsolutePath()
             + "/OneDriveCredential.json";
@@ -94,7 +93,7 @@ public class OneDriveUploader {
 
     private void processOneDriveConfig() throws Exception {
 
-        String jsonData = readFile("onedrive_client_secrets.json");
+        String jsonData = readResourceFile();
         JSONParser jsonParser = new JSONParser();
         JSONObject jsonObject = (JSONObject) jsonParser.parse(jsonData);
         JSONObject structure = (JSONObject) jsonObject.get("installed");
@@ -104,9 +103,7 @@ public class OneDriveUploader {
 
     private void setExistingTokens() throws Exception {
         //Reading the OneDriveCredential.json and assigning variables if they exist for further processing.
-       // String clientJSONPath = new File(Config.getDir()).getAbsolutePath() + "/OneDriveCredential.json";
-        //String clientJSONPath = readFile();
-        String clientJSON = readFile();
+        String clientJSON = processClientJsonFile();
         JSONParser jsonParser = new JSONParser();
         JSONObject clientJsonObject = (JSONObject) jsonParser.parse(clientJSON);
         this.userCode = (String) clientJsonObject.get("code");
@@ -126,22 +123,28 @@ public class OneDriveUploader {
             setRefreshToken("");
     }
 
-    private void retrieveTokens() throws ParseException {
+    @SuppressWarnings("unchecked")
+    private void retrieveTokens() throws Exception {
         if (returnAccessToken().isEmpty() && returnRefreshToken().isEmpty()) {
             String query = "https://login.live.com/oauth20_token.srf?client_id=" + returnClientID() + "&client_secret=" + returnClientSecret() + "&code=" + this.userCode + "&grant_type=authorization_code";
 
             Response response = given().contentType("application/x-www-form-urlencoded").get(query);
-            //response.prettyPrint();
-
             setAccessToken(response.getBody().jsonPath().getString("access_token"));
             setRefreshToken(response.getBody().jsonPath().getString("refresh_token"));
 
-            String clientJSONPath = new File(Config.getDir()).getAbsolutePath() + "/OneDriveCredential.json";
-            String clientJSON = readFile(clientJSONPath);
+            // Process the OneDriveCredential JSON file for future use
+            String clientJSON = processClientJsonFile();
             JSONParser jsonParser = new JSONParser();
             JSONObject jsonObject = (JSONObject) jsonParser.parse(clientJSON);
+            jsonObject.remove("auth_key");
+            jsonObject.remove("refresh_key");
             jsonObject.put("auth_key", returnAccessToken());
             jsonObject.put("refresh_key", returnRefreshToken());
+
+            // Write new keys to pre-existing file. Overwrites existing file
+            FileWriter file = new FileWriter(CLIENT_JSON_PATH, false);
+            file.write(jsonObject.toJSONString());
+            file.close();
         }
     }
 
@@ -187,11 +190,11 @@ public class OneDriveUploader {
 
             Response uploadFile;
 
-            if (fileSizeInMB > 100) {
+            if (fileSizeInMB <= 100) {
                 /* Implements 100mb limit since using Rest API */
                 String uploadQuery = "https://api.onedrive.com/v1.0/drive/root:/" + Config.getDestination() + "/" + file.getName() + ":/content?access_token=" + returnAccessToken();
                 given().contentType("application/zip").body(file).put(uploadQuery);
-                System.out.println("Uploaded " + fileSizeInMB + " of file" + file.getAbsolutePath());
+                MessageUtil.sendConsoleMessage("Uploaded " + fileSizeInMB + "MB of file " + file.getAbsolutePath());
             } else {
                 boolean isComplete = false;
 
@@ -203,7 +206,6 @@ public class OneDriveUploader {
                         uploadFile = given().contentType("application/zip")
                                 .header("Content-Range", String.format("bytes %d-%d/%d", getTotalUploaded(), getTotalUploaded() + bytesToUpload.length - 1, file.length()))
                                 .body(bytesToUpload).put(uploadURL);
-
                         try {
                             List<String> test = uploadFile.getBody().jsonPath().getList("nextExpectedRanges");
                             setRanges(test.toArray(new String[test.size()]));
@@ -218,7 +220,7 @@ public class OneDriveUploader {
                     }
 
                     long elapsedTimeInner = System.currentTimeMillis() - startTimeInner;
-                    System.out.println(String.format("Uploaded chunk (progress %.1f%%) of %s (%s/s) for file %s",
+                    MessageUtil.sendConsoleMessage(String.format("Uploaded chunk (progress %.1f%%) of %s (%s/s) for file %s",
                             ((double) getTotalUploaded() / file.length()) * 100,
                             readableFileSize(getLastUploaded()),
                             elapsedTimeInner > 0 ? readableFileSize(getLastUploaded() / new Double(elapsedTimeInner / 1000d).longValue()) : 0,
@@ -228,32 +230,24 @@ public class OneDriveUploader {
         }
     }
 
-    private static String readFile(String fileName) {
+    private static String readResourceFile() {
+        String result = "";
         try {
-
             StringWriter writer = new StringWriter();
-            System.out.println(DriveBackup.getInstance().getResource("onedrive_client_secrets.json"));
-           // DriveBackup.getInstance().getResource("googledrive_client_secrets.json")
             IOUtils.copy(DriveBackup.getInstance().getResource("onedrive_client_secrets.json"), writer, "UTF-8");
 
-            String secret = writer.toString();
+            result = writer.toString();
             writer.close();
-            return secret;
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return "lolyousuck.jpeg";
+
+        return result;
     }
 
-    private static String readFile() {
+    private static String processClientJsonFile() {
         String result = "";
         try {
-
-          //  StringWriter writer = new StringWriter();
-          //  IOUtils.copy(DriveBackup.getInstance().getResource("onedrive_client_secrets.json"), writer, "UTF-8");
-         //   String line = writer.toString();
-
-        //    InputStreamReader sr = new InputStreamReader(DriveBackup.getInstance().getResource("onedrive_client_secrets.json"));
             BufferedReader br = new BufferedReader(new FileReader(CLIENT_JSON_PATH));
             StringBuilder sb = new StringBuilder();
             String line = br.readLine();

@@ -24,8 +24,6 @@ public class UploadThread implements Runnable {
     public void run() {
         MessageUtil.sendMessageToAllPlayers("Creating backups, server may lag for a little while...");
 
-
-
         // Create Backup Here
         HashMap<String, HashMap<String, String>> backupList = Config.getBackupList();
         for (Map.Entry<String, HashMap<String, String>> set : backupList.entrySet()) {
