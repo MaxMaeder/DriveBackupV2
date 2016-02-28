@@ -126,6 +126,8 @@ public class GoogleUploader {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
+
+        deleteFiles();
     }
 
     private static File getFolder(String name, Drive service) {
@@ -145,7 +147,7 @@ public class GoogleUploader {
         return null;
     }
 
-    private List<File> processFiles() throws IOException{
+    private static List<File> processFiles() throws IOException{
         Drive service = getDriveService();
 
         //Create a List to store results
@@ -171,7 +173,7 @@ public class GoogleUploader {
         return result;
     }
 
-    public void deleteFiles() throws IOException{
+    public static void deleteFiles() throws IOException{
         Drive service = getDriveService();
         //Set a limit for files
         int fileLimit = 3;
