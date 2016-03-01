@@ -79,6 +79,7 @@ public class FileUtil {
 
         if (Config.getKeepCount() != -1) {
             try {
+                getFileToUpload(type, formatString, false);
                 while (backupList.size() > Config.getKeepCount()) {
                     File fileToDelete = backupList.descendingMap().lastEntry().getValue();
                     Date dateOfFile = backupList.descendingMap().lastKey();
@@ -97,6 +98,7 @@ public class FileUtil {
     }
 
     private static void zipIt(String zipFile, String sourceFolder) {
+        System.out.println("Making new zip " + zipFile);
         byte[] buffer = new byte[1024];
         String source;
         FileOutputStream fos;

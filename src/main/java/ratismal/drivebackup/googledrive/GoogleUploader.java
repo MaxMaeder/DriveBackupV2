@@ -16,6 +16,7 @@ import com.google.api.services.drive.DriveScopes;
 import com.google.api.services.drive.model.*;
 import ratismal.drivebackup.DriveBackup;
 import ratismal.drivebackup.config.Config;
+import ratismal.drivebackup.util.MessageUtil;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -213,20 +214,21 @@ public class GoogleUploader {
 
         List<ChildReference> queriedFilesfromDrive = processFiles(folder);
         if (queriedFilesfromDrive.size() > fileLimit) {
-            System.out.print("There are " + queriedFilesfromDrive.size() + " file(s) which exceeds the limit of " + fileLimit + ", deleting.");
+            MessageUtil.sendConsoleMessage("There are " + queriedFilesfromDrive.size() + " file(s) which exceeds the " +
+                    "limit of " + fileLimit + ", deleting.");
 
             for (Iterator<ChildReference> iterator = queriedFilesfromDrive.iterator(); iterator.hasNext(); ) {
                 if (queriedFilesfromDrive.size() == fileLimit) {
                     break;
                 }
-                System.out.println(queriedFilesfromDrive.size());
+                //System.out.println(queriedFilesfromDrive.size());
                 ChildReference file = iterator.next();
                 //System.out.println(file.get);
                 Drive.Files.Delete removeItem = service.files().delete(file.getId());
                 removeItem.execute();
-                System.out.println(file.getId());
+               // System.out.println(file.getId());
                 iterator.remove();
-                System.out.println(queriedFilesfromDrive.size());
+               // System.out.println(queriedFilesfromDrive.size());
             }
         }
     }
