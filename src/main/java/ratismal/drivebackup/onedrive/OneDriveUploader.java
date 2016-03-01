@@ -15,6 +15,7 @@ import java.util.List;
 
 import static com.jayway.restassured.RestAssured.get;
 import static com.jayway.restassured.RestAssured.given;
+import static com.jayway.restassured.RestAssured.post;
 
 /**
  * Created by Redemption on 2/24/2016.
@@ -161,22 +162,65 @@ public class OneDriveUploader {
         String query = "https://api.onedrive.com/v1.0/drive/root?expand=children&access_token=" + returnAccessToken();
         Response rootQuery = get(query);
         List<String> availableFolders = rootQuery.getBody().jsonPath().getList("children.name");
-        return availableFolders.contains("backups");
+        return availableFolders.contains(Config.getDestination());
     }
 
     //Uses config specified Destination to createBackupDirectory
     private void createDestinationFolder() {
+        System.out.println("Folder " + Config.getDestination() + " doesn't exist, creating");
+
         String query = "https://apis.live.net/v5.0/me/skydrive?access_token=" + returnAccessToken();
         given().contentType("application/json").body("{\"name\": \"" + Config.getDestination() + "\"}").post(query);
+    }
+
+    private boolean checkDestinationExists(String type) {
+        //String query = "https://api.onedrive.com/v1.0/drive/root/" + Config.getDestination() + "?expand=children&access_token=" + returnAccessToken();
+        //String uploadQuery = "https://api.onedrive.com/v1.0/drive/root:/" + Config.getDestination() + "/" + type + "/" + ":/content?access_token=" + returnAccessToken();
+        String query = "https://api.onedrive.com/v1.0/drive/root:/" + Config.getDestination() + ":/children?access_token=" + returnAccessToken();
+       // System.out.println(query);
+        Response rootQuery = get(query);
+
+        //rootQuery.getBody().jsonPath().
+        try {
+            List<String> availableFolders = rootQuery.getBody().jsonPath().getList("children.name");
+            return availableFolders.contains(type);
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    //Uses config specified Destination to createBackupDirectory
+    private void createDestinationFolder(String type) {
+       // System.out.println("Folder " + type + " doesn't exist, creating");
+        //String query = "https://api.onedrive.com/v1.0/drive/root/" + Config.getDestination() + "?expand=children&access_token=" + returnAccessToken();
+        //String uploadQuery = "https://api.onedrive.com/v1.0/drive/root:/" + Config.getDestination() + "/" + type + "/" + ":/content?access_token=" + returnAccessToken();
+        String query1 = "https://api.onedrive.com/v1.0/drive/root:/" + Config.getDestination() + "?access_token=" + returnAccessToken();
+        String id = get(query1).jsonPath().getString("id");
+
+        String query2 = "https://api.onedrive.com/v1.0/drive/items/" + id + "/children" + "?access_token=" + returnAccessToken();
+        //get(query).prettyPrint();
+        //post(query).prettyPrint();
+        //   System.out.println(query);
+       // String query_ = "https://apis.live.net/v5.0/folder." + id + "?access_token=" + returnAccessToken();
+
+        Response response = given().contentType("application/json").body("{" +
+                " \"name\": \"" + type + "\"," +
+                " \"folder\": {}," +
+                " \"@name.conflictBehavior\": \"fail\"" +
+                "}").post(query2);
+        // response.jsonPath().prettyPrint();
+        response.getBody().prettyPrint();
     }
 
     public void uploadFile(File file, String type) throws Exception {
         // URL Root = https://api.onedrive.com/v1.0
         // Two Accessible Models = Drive/Item
 
-        if (!checkDestinationExists()) {
+        if (!checkDestinationExists())
             createDestinationFolder();
-        }
+
+       // if (!checkDestinationExists(type))
+            createDestinationFolder(type);
 
         String openQuery = "https://api.onedrive.com/v1.0/drive/root:/" + Config.getDestination() + "/" + type + "/" + file.getName() + ":/upload.createSession?access_token=" + returnAccessToken();
         Response openConnection = given().contentType("application/json").post(openQuery);
@@ -195,7 +239,7 @@ public class OneDriveUploader {
 
             if (fileSizeInMB <= 100) {
                 /* Implements 100mb limit since using Rest API */
-                String uploadQuery = "https://api.onedrive.com/v1.0/drive/root:/" + Config.getDestination() + "/" + file.getName() + ":/content?access_token=" + returnAccessToken();
+                String uploadQuery = "https://api.onedrive.com/v1.0/drive/root:/" + Config.getDestination() + "/" + type + "/" + file.getName() + ":/content?access_token=" + returnAccessToken();
                 given().contentType("application/zip").body(file).put(uploadQuery);
                 MessageUtil.sendConsoleMessage("Uploaded " + fileSizeInMB + "MB of file " + file.getAbsolutePath());
             } else {
