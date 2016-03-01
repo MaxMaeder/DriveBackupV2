@@ -13,9 +13,7 @@ import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.client.util.store.FileDataStoreFactory;
 import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.DriveScopes;
-import com.google.api.services.drive.model.File;
-import com.google.api.services.drive.model.FileList;
-import com.google.api.services.drive.model.ParentReference;
+import com.google.api.services.drive.model.*;
 import ratismal.drivebackup.DriveBackup;
 import ratismal.drivebackup.config.Config;
 
@@ -32,7 +30,7 @@ import java.util.List;
 
 public class GoogleUploader {
 
-    private static final String APPLICATION_NAME = "";
+    private static final String APPLICATION_NAME = "DriveBackup";
 
     /**
      * Global instance of the HTTP transport.
@@ -47,29 +45,37 @@ public class GoogleUploader {
     private static final java.io.File DATA_STORE_DIR = new java.io.File(
             DriveBackup.getInstance().getDataFolder().getAbsolutePath());
 
+    private static FileDataStoreFactory DATA_STORE_FACTORY;
+
+    private static final String CLIENT_ID = "848896104658-shap5e212clkamtac4lrjvledm0ni1hl.apps.googleusercontent.com";
+    private static final String CLIENT_SECRET = "hIdUmBNGRGRiV5wVAC65ES0Y";
+
     /**
      * Global Drive API client.
      */
     private static Credential authorize() throws IOException {
         // Load client secrets.
-   //     GoogleClientSecrets clientSecrets = GoogleClientSecrets.load(JSON_FACTORY,
-   //             new InputStreamReader(DriveBackup.getInstance().getResource("googledrive_client_secrets.json")));
+        //     GoogleClientSecrets clientSecrets = GoogleClientSecrets.load(JSON_FACTORY,
+        //             new InputStreamReader(DriveBackup.getInstance().getResource("googledrive_client_secrets.json")));
 
-        GoogleClientSecrets clientSecrets = GoogleClientSecrets.load(JSON_FACTORY,
-                new InputStreamReader(DriveBackup.getInstance().getResource("googledrive_client_secrets.json")));
-
-        FileDataStoreFactory DATA_STORE_FACTORY = new FileDataStoreFactory(DATA_STORE_DIR);
+       // GoogleClientSecrets clientSecrets = GoogleClientSecrets.load(JSON_FACTORY,
+     //           new InputStreamReader(DriveBackup.getInstance().getResource("googledrive_client_secrets.json")));
+        if (DATA_STORE_FACTORY == null) {
+            DATA_STORE_FACTORY = new FileDataStoreFactory(DATA_STORE_DIR);
+        }
         // Build flow and trigger user authorization request.
         GoogleAuthorizationCodeFlow flow =
                 new GoogleAuthorizationCodeFlow.Builder(
-                        httpTransport, JSON_FACTORY, clientSecrets, Collections.singletonList(DriveScopes.DRIVE))
+                        httpTransport, JSON_FACTORY,
+                        CLIENT_ID, CLIENT_SECRET, Collections.singletonList(DriveScopes.DRIVE))
                         .setDataStoreFactory(DATA_STORE_FACTORY)
                         .setAccessType("offline")
                         .build();
         Credential credential = new AuthorizationCodeInstalledApp(
                 flow, new LocalServerReceiver()).authorize("user");
-        System.out.println(
-                "Credentials saved to " + DATA_STORE_DIR.getAbsolutePath());
+
+       // System.out.println(
+       //         "Credentials saved to " + DATA_STORE_DIR.getAbsolutePath());
         return credential;
     }
 
@@ -94,7 +100,7 @@ public class GoogleUploader {
 
         FileContent mediaContent = new FileContent("application/zip", file);
 
-        File parentFolder = getFolder(destination, service);
+        File parentFolder = getFolder(destination);
         if (parentFolder == null) {
             System.out.println("Creating a folder");
             parentFolder = new File();
@@ -103,7 +109,7 @@ public class GoogleUploader {
             parentFolder = service.files().insert(parentFolder).execute();
         }
 
-        File childFolder = getFolder(type, service);
+        File childFolder = getFolder(type, parentFolder);
         ParentReference childFolderParent = new ParentReference();
         childFolderParent.setId(parentFolder.getId());
         if (childFolder == null) {
@@ -127,16 +133,18 @@ public class GoogleUploader {
             e.printStackTrace();
         }
 
-        deleteFiles();
+        deleteFiles(type);
     }
 
-    private static File getFolder(String name, Drive service) {
+    private static File getFolder(String name, File parent) {
         try {
+            Drive service = getDriveService();
             Drive.Files.List request = service.files().list().setQ(
-                    "mimeType='application/vnd.google-apps.folder' and trashed=false");
+                    "mimeType='application/vnd.google-apps.folder' and trashed=false and '" + parent.getId() + "' in parents");
             FileList files = request.execute();
             for (File folderfiles : files.getItems()) {
                 if (folderfiles.getTitle().equals(name)) {
+
                     return folderfiles;
                 }
             }
@@ -147,48 +155,73 @@ public class GoogleUploader {
         return null;
     }
 
-    private static List<File> processFiles() throws IOException{
+
+    private static File getFolder(String name) {
+        try {
+            Drive service = getDriveService();
+            Drive.Files.List request = service.files().list().setQ(
+                    "mimeType='application/vnd.google-apps.folder' and trashed=false");
+            FileList files = request.execute();
+            for (File folderfiles : files.getItems()) {
+                if (folderfiles.getTitle().equals(name)) {
+
+                    return folderfiles;
+                }
+            }
+            return null;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    private static List<ChildReference> processFiles(File folder) throws IOException {
         Drive service = getDriveService();
 
         //Create a List to store results
-        List<File> result = new ArrayList<>();
+        List<ChildReference> result = new ArrayList<>();
 
         //Set up a request to query all files from all pages.
         //We are also making sure the files are sorted  by created Date. Oldest at the beginning of List.
-        Drive.Files.List request = service.files().list().setOrderBy("createdDate");
-
+        //Drive.Files.List request = service.files().list().setOrderBy("createdDate");
+        //folder.getId();
+        Drive.Children.List request = service.children().list(folder.getId()).setOrderBy("createdDate");
         //While there is a page available, request files and add them to the Result List.
-        do{
+        do {
             try {
-                FileList files = request.execute();
+                ChildList files = request.execute();
                 result.addAll(files.getItems());
                 request.setPageToken(files.getNextPageToken());
-            } catch(IOException e){
+            } catch (IOException e) {
                 e.printStackTrace();
                 request.setPageToken(null);
             }
-        }while (request.getPageToken() != null &&
+        } while (request.getPageToken() != null &&
                 request.getPageToken().length() > 0);
 
         return result;
     }
 
-    public static void deleteFiles() throws IOException{
+    public static void deleteFiles(String type) throws IOException {
         Drive service = getDriveService();
         //Set a limit for files
-        int fileLimit = 3;
+        int fileLimit = Config.getKeepCount();
 
-        List<File> queriedFilesfromDrive = processFiles();
-        if(queriedFilesfromDrive.size() > fileLimit){
-            System.out.print("There are " + queriedFilesfromDrive.size() + " file(s) which exceeds the limit of " +  fileLimit + ", deleting.");
+        File parentFolder = getFolder(Config.getDestination());
 
-            for(Iterator<File> iterator = queriedFilesfromDrive.iterator(); iterator.hasNext();){
-                if(queriedFilesfromDrive.size() == fileLimit){
+        File folder = getFolder(type, parentFolder);
+
+        List<ChildReference> queriedFilesfromDrive = processFiles(folder);
+        if (queriedFilesfromDrive.size() > fileLimit) {
+            System.out.print("There are " + queriedFilesfromDrive.size() + " file(s) which exceeds the limit of " + fileLimit + ", deleting.");
+
+            for (Iterator<ChildReference> iterator = queriedFilesfromDrive.iterator(); iterator.hasNext(); ) {
+                if (queriedFilesfromDrive.size() == fileLimit) {
                     break;
                 }
                 System.out.println(queriedFilesfromDrive.size());
-                File file = iterator.next();
-                System.out.println(file.getTitle());
+                ChildReference file = iterator.next();
+                //System.out.println(file.get);
                 Drive.Files.Delete removeItem = service.files().delete(file.getId());
                 removeItem.execute();
                 System.out.println(file.getId());

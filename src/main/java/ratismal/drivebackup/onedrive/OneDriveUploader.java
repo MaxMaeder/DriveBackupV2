@@ -33,6 +33,9 @@ public class OneDriveUploader {
     private static final String CLIENT_JSON_PATH = DriveBackup.getInstance().getDataFolder().getAbsolutePath()
             + "/OneDriveCredential.json";
 
+    private static final String CLIENT_ID = "000000004417D081";
+    private static final String CLIENT_SECRET = "8e7pfZFCtJkaTiAEjq-FliLqfXhBSCQO";
+
     private static class Range {
         private final long start;
         private final long end;

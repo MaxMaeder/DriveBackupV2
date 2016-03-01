@@ -77,7 +77,7 @@ public class Config {
         onedriveEnabled = pluginconfig.getBoolean("onedrive.enabled");
 
         backupDelay = pluginconfig.getLong("delay") * 60 * 20;
-        keepCount = pluginconfig.getInt("keep-count") - 1;
+        keepCount = pluginconfig.getInt("keep-count");
         //MessageUtil.sendConsoleMessage("Scheduling backups for every " + backupDelay + " ticks.");
 
         HashMap<String, HashMap<String, String>> temp = new HashMap<>();
