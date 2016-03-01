@@ -98,7 +98,7 @@ public class FileUtil {
     }
 
     private static void zipIt(String zipFile, String sourceFolder) {
-        System.out.println("Making new zip " + zipFile);
+       // System.out.println("Making new zip " + zipFile);
         byte[] buffer = new byte[1024];
         String source;
         FileOutputStream fos;

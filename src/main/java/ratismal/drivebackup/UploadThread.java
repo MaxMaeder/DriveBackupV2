@@ -45,7 +45,7 @@ public class UploadThread implements Runnable {
                     MessageUtil.sendConsoleMessage("Uploading file to OneDrive");
                     //Couldn't get around static issue, declared a new Instance.
                     OneDriveUploader onedrive = new OneDriveUploader();
-                    onedrive.uploadFile(file);
+                    onedrive.uploadFile(file, type);
                 }
                 MessageUtil.sendConsoleMessage("File Uploaded.");
             } catch (Exception e) {

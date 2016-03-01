@@ -170,7 +170,7 @@ public class OneDriveUploader {
         given().contentType("application/json").body("{\"name\": \"" + Config.getDestination() + "\"}").post(query);
     }
 
-    public void uploadFile(File file) throws Exception {
+    public void uploadFile(File file, String type) throws Exception {
         // URL Root = https://api.onedrive.com/v1.0
         // Two Accessible Models = Drive/Item
 
@@ -178,7 +178,7 @@ public class OneDriveUploader {
             createDestinationFolder();
         }
 
-        String openQuery = "https://api.onedrive.com/v1.0/drive/root:/" + Config.getDestination() + "/" + file.getName() + ":/upload.createSession?access_token=" + returnAccessToken();
+        String openQuery = "https://api.onedrive.com/v1.0/drive/root:/" + Config.getDestination() + "/" + type + "/" + file.getName() + ":/upload.createSession?access_token=" + returnAccessToken();
         Response openConnection = given().contentType("application/json").post(openQuery);
 
         //Assign our backup to Random Access File
