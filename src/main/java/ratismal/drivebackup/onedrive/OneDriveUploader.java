@@ -209,7 +209,7 @@ public class OneDriveUploader {
                 " \"@name.conflictBehavior\": \"fail\"" +
                 "}").post(query2);
         // response.jsonPath().prettyPrint();
-        response.getBody().prettyPrint();
+        //response.getBody().prettyPrint();
     }
 
     public void uploadFile(File file, String type) throws Exception {
