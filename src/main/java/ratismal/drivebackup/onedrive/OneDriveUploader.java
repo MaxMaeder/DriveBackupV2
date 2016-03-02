@@ -1,7 +1,6 @@
 package ratismal.drivebackup.onedrive;
 
 import com.jayway.restassured.response.Response;
-import org.apache.commons.io.IOUtils;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import ratismal.drivebackup.DriveBackup;
@@ -11,11 +10,11 @@ import ratismal.drivebackup.util.MessageUtil;
 import java.io.*;
 import java.text.DecimalFormat;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 
 import static com.jayway.restassured.RestAssured.get;
 import static com.jayway.restassured.RestAssured.given;
-import static com.jayway.restassured.RestAssured.post;
 
 /**
  * Created by Redemption on 2/24/2016.
@@ -95,14 +94,9 @@ public class OneDriveUploader {
         return bytes;
     }
 
-    private void processOneDriveConfig() throws Exception {
-
-        String jsonData = readResourceFile();
-        JSONParser jsonParser = new JSONParser();
-        JSONObject jsonObject = (JSONObject) jsonParser.parse(jsonData);
-        JSONObject structure = (JSONObject) jsonObject.get("installed");
-        setClientID(structure.get("client_id").toString());
-        setClientSecret(structure.get("client_secret").toString());
+    private void processOneDriveConfig() {
+        setClientID();
+        setClientSecret();
     }
 
     private void setExistingTokens() throws Exception {
@@ -174,13 +168,9 @@ public class OneDriveUploader {
     }
 
     private boolean checkDestinationExists(String type) {
-        //String query = "https://api.onedrive.com/v1.0/drive/root/" + Config.getDestination() + "?expand=children&access_token=" + returnAccessToken();
-        //String uploadQuery = "https://api.onedrive.com/v1.0/drive/root:/" + Config.getDestination() + "/" + type + "/" + ":/content?access_token=" + returnAccessToken();
         String query = "https://api.onedrive.com/v1.0/drive/root:/" + Config.getDestination() + ":/children?access_token=" + returnAccessToken();
-       // System.out.println(query);
         Response rootQuery = get(query);
 
-        //rootQuery.getBody().jsonPath().
         try {
             List<String> availableFolders = rootQuery.getBody().jsonPath().getList("children.name");
             return availableFolders.contains(type);
@@ -191,36 +181,30 @@ public class OneDriveUploader {
 
     //Uses config specified Destination to createBackupDirectory
     private void createDestinationFolder(String type) {
-       // System.out.println("Folder " + type + " doesn't exist, creating");
-        //String query = "https://api.onedrive.com/v1.0/drive/root/" + Config.getDestination() + "?expand=children&access_token=" + returnAccessToken();
-        //String uploadQuery = "https://api.onedrive.com/v1.0/drive/root:/" + Config.getDestination() + "/" + type + "/" + ":/content?access_token=" + returnAccessToken();
         String query1 = "https://api.onedrive.com/v1.0/drive/root:/" + Config.getDestination() + "?access_token=" + returnAccessToken();
         String id = get(query1).jsonPath().getString("id");
 
         String query2 = "https://api.onedrive.com/v1.0/drive/items/" + id + "/children" + "?access_token=" + returnAccessToken();
-        //get(query).prettyPrint();
-        //post(query).prettyPrint();
-        //   System.out.println(query);
-       // String query_ = "https://apis.live.net/v5.0/folder." + id + "?access_token=" + returnAccessToken();
-
-        Response response = given().contentType("application/json").body("{" +
+        given().contentType("application/json").body("{" +
                 " \"name\": \"" + type + "\"," +
                 " \"folder\": {}," +
                 " \"@name.conflictBehavior\": \"fail\"" +
                 "}").post(query2);
-        // response.jsonPath().prettyPrint();
-        //response.getBody().prettyPrint();
     }
 
     public void uploadFile(File file, String type) throws Exception {
         // URL Root = https://api.onedrive.com/v1.0
         // Two Accessible Models = Drive/Item
 
-        if (!checkDestinationExists())
-            createDestinationFolder();
+        //deleteFiles(type);
 
-       // if (!checkDestinationExists(type))
-            createDestinationFolder(type);
+        if (!checkDestinationExists()) {
+            createDestinationFolder();
+        }
+
+       if (!checkDestinationExists(type)) {
+           createDestinationFolder(type);
+       }
 
         String openQuery = "https://api.onedrive.com/v1.0/drive/root:/" + Config.getDestination() + "/" + type + "/" + file.getName() + ":/upload.createSession?access_token=" + returnAccessToken();
         Response openConnection = given().contentType("application/json").post(openQuery);
@@ -275,21 +259,39 @@ public class OneDriveUploader {
                 }
             }
         }
+
+        if (!checkDestinationExists(type)) {
+            deleteFiles(type);
+        }
     }
 
-    private static String readResourceFile() {
-        String result = "";
-        try {
-            StringWriter writer = new StringWriter();
-            IOUtils.copy(DriveBackup.getInstance().getResource("onedrive_client_secrets.json"), writer, "UTF-8");
 
-            result = writer.toString();
-            writer.close();
-        } catch (Exception e) {
-            e.printStackTrace();
+    private void deleteFiles(String type) {
+        int fileLimit = Config.getKeepCount();
+
+        String childFolderQuery = "https://api.onedrive.com/v1.0/drive/root:/" + Config.getDestination() + "/" + type + ":/children?sort_by=createdDateTime&access_token=" + returnAccessToken();
+        Response childResponse = get(childFolderQuery);
+
+        List<String> availableFileIDs = childResponse.getBody().jsonPath().getList("value.id");
+
+        if(fileLimit < availableFileIDs.size()){
+            MessageUtil.sendConsoleMessage("There are " + availableFileIDs.size() + " file(s) which exceeds the " +
+                    "limit of " + fileLimit + ", deleting.");
         }
 
-        return result;
+        for (Iterator<String> iterator = availableFileIDs.listIterator(); iterator.hasNext(); ) {
+            String fileIDValue = iterator.next();
+            if (fileLimit < availableFileIDs.size()) {
+                String deleteQuery = "https://api.onedrive.com/v1.0/drive/items/" + fileIDValue + "?access_token=" + returnAccessToken();
+                MessageUtil.sendConsoleMessage("Removing file with ID: " + fileIDValue);
+                given().delete(deleteQuery);
+                iterator.remove();
+            }
+
+            if(availableFileIDs.size() <= fileLimit){
+                break;
+            }
+        }
     }
 
     private static String processClientJsonFile() {
@@ -334,12 +336,12 @@ public class OneDriveUploader {
         this.refreshToken = refreshTokenValue;
     }
 
-    private void setClientID(String clientIdValue) {
-        this.clientID = clientIdValue;
+    private void setClientID() {
+        this.clientID = OneDriveUploader.CLIENT_ID;
     }
 
-    private void setClientSecret(String clientSecretValue) {
-        this.clientSecret = clientSecretValue;
+    private void setClientSecret() {
+        this.clientSecret = OneDriveUploader.CLIENT_SECRET;
     }
 
     private String returnAccessToken() {
