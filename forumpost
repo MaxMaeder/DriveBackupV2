@@ -12,6 +12,8 @@ DriveBackup is a plugin that aims to provide an extra layer of security to your 
 * Can create a backup out of any folder in the root directory
 * If you already have a utility creating certain backups (eg. world) you can choose not to create that kind of backup and instead upload the existing ones
 
+When choosing between Google Drive and OneDrive, keep in mind that OneDrive has a 10GB upload limit and uploads substantially slower than Google Drive.
+
 === How do I use it? ===
 Setup is a little bit tricky if your server doesn't have a UI, as Google Drive requires an oauth2 authentication to upload files to your account. You have two options:
 
