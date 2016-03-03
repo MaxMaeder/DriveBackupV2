@@ -54,7 +54,7 @@ public class UploadThread implements Runnable {
                     double speed = Double.valueOf(df.format((file.length() / 1024) / length));
 
                     MessageUtil.sendConsoleMessage("File uploaded in " +
-                            length + " seconds (" + speed + "KB/s)");
+                            length + " seconds (" + speed + " KB/s)");
                 }
                 if (Config.isOnedriveEnabled()) {
                     MessageUtil.sendConsoleMessage("Uploading file to OneDrive");
@@ -68,7 +68,7 @@ public class UploadThread implements Runnable {
                     double speed = Double.valueOf(df.format((file.length() / 1024) / length));
 
                     MessageUtil.sendConsoleMessage("File uploaded in " +
-                            length + " seconds (" + +speed + "KB/s)");
+                            length + " seconds (" + speed + " KB/s)");
                 }
                 //MessageUtil.sendConsoleMessage("File Uploaded.");
             } catch (Exception e) {
