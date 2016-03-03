@@ -47,7 +47,7 @@ Make sure to do the config! You need to direct it to the backup folder, and give
 ** uploads backup to Google Drive - drivebackup.backup
 
 == Config ==
-The default config file can be found [[http://dev.bukkit.org/bukkit-plugins/drivebackup/pages/config/|here]].
+The most recent default config file can be found [[https://github.com/Ratismal/DriveBackup/blob/master/src/main/resources/config.yml|here]].
 
 == Metrics ==
 This plugin uses [[https://bukkit.org/threads/mcstats-plugin-metrics-r7-easy-advanced-plugin-statistics.77352/|Metrics]] for anonymous usage statistics collections. You can opt out of the statistics collection for this plugin specifically at any time by disabling it in the config. You can opt out of Metrics altogether by editing plugins/Plugin Metrics/config.yml and changing the "opt-out" node to true.You can view the collected statistics at [[http://mcstats.org/plugin/DriveBackup|mcstats.org/plugin/DriveBackup]]. Collected stats are:
