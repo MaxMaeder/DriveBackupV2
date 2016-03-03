@@ -7,24 +7,31 @@ Maybe your hard drive died. Maybe you used a web hosting service that terminated
 DriveBackup is a plugin that aims to provide an extra layer of security to your data.
 
 === What does it do? ===
-* Creates and uploads backups to Google Drive
+* Creates and uploads backups to Google Drive or OneDrive
+* Deletes backups locally and remotely if they exceed a specified amount
 * Can create a backup out of any folder in the root directory
 * If you already have a utility creating certain backups (eg. world) you can choose not to create that kind of backup and instead upload the existing ones
-
-=== What does it not do? ===
-* At the moment, it cannot upload to anything but Google Drive. OneDrive will likely be implemented in the future
-* At the moment, uploading to Google Drive can't be disabled.
 
 === How do I use it? ===
 Setup is a little bit tricky if your server doesn't have a UI, as Google Drive requires an oauth2 authentication to upload files to your account. You have two options:
 
 ==== Option 1 ====
-Run the plugin on a computer with a UI. Run the backup command. The plugin will open a webpage asking for permission to use your Google Drive. After saying 'allow', copy the StoredCredential file from the plugins/DriveBackup folder onto your server's plugins/DriveBackup folder.
+For Google Drive, run the plugin on a computer with a UI. Run the backup command. The plugin will open a webpage asking for permission to use your Google Drive. After saying 'allow', copy the StoredCredential file from the plugins/DriveBackup folder onto your server's plugins/DriveBackup folder.
+
+For OneDrive, go [[https://login.live.com/oauth20_authorize.srf?client_id=000000004417D081&scope=wl.signin%20wl.basic%20wl.offline_access%20wl.skydrive_update&response_type=code|here]]. After saying 'allow', it will redirect you to another webpage. Take the URL and find where it says '?code=' and copy the code that follows it. You then need to create a file called OneDriveCredential.json. Fill the file with the following:
+<<code>>
+{
+    "code": "<your code here>"
+}
+<</code>>
+Place the OneDriveCredential.json file in your plugins/DriveBackup folder.
 
 ==== Option 2 ====
 I have made a companion program to generate the StoredCredential file without running the plugin. It is available [[https://github.com/Ratismal/DriveCredentials/releases|here]]. Simply extract, run the .bat file, and follow the instructions. Afterwards, copy the StoredCredential file into the plugins/DriveBackup folder.
 
 ==== After That ====
+For OneDrive, you must do a backup within 3600 seconds (1 hour) of generating the credential or it will expire! After that, your backups can be as far apart as you want.
+
 Make sure to do the config! You need to direct it to the backup folder, and give it the naming format that your backups are in. Instructions can be found in the config file.
 
 == Commands ==
