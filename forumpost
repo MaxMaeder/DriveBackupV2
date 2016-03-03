@@ -41,7 +41,7 @@ Make sure to do the config! You need to direct it to the backup folder, and give
 ** base command, shows a list of commands - drivebackup
 * /drivebackup v
 ** displays plugin version - drivebackup
-* drivebackup reloadconfig
+* /drivebackup reloadconfig
 ** reloads configs - drivebackup.reloadconfig
 * /drivebackup backup
 ** uploads backup to Google Drive - drivebackup.backup
