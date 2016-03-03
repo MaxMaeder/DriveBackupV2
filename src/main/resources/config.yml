@@ -4,6 +4,9 @@
 #
 #######################################
 
+# Should the plugin look for updates?
+update-check: true
+
 # Should metrics be enabled
 metrics: true
 

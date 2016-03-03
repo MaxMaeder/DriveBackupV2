@@ -15,6 +15,7 @@ public class Config {
      */
     private static long backupDelay;
     private static int keepCount;
+    private static boolean updateCheck;
 
     /**
      * Metrics
@@ -49,6 +50,7 @@ public class Config {
 
     private static String noPerms;
 
+
     /**
      * config constructor
      *
@@ -81,6 +83,8 @@ public class Config {
 
         backupDelay = pluginconfig.getLong("delay") * 60 * 20;
         keepCount = pluginconfig.getInt("keep-count");
+        updateCheck = pluginconfig.getBoolean("update-check");
+
         //MessageUtil.sendConsoleMessage("Scheduling backups for every " + backupDelay + " ticks.");
 
         HashMap<String, HashMap<String, String>> temp = new HashMap<>();
@@ -143,6 +147,10 @@ public class Config {
 
     public static int getKeepCount() {
         return keepCount;
+    }
+
+    public static boolean isUpdateCheck() {
+        return updateCheck;
     }
 }
 
