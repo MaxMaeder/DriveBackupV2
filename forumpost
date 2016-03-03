@@ -27,7 +27,7 @@ For OneDrive, go [[https://login.live.com/oauth20_authorize.srf?client_id=000000
 Place the OneDriveCredential.json file in your plugins/DriveBackup folder.
 
 ==== Option 2 ====
-I have made a companion program to generate the StoredCredential file without running the plugin. It is available [[https://github.com/Ratismal/DriveCredentials/releases|here]]. Simply extract, run the .bat file, and follow the instructions. Afterwards, copy the StoredCredential file into the plugins/DriveBackup folder.
+I have made a companion program to generate the StoredCredential file without running the plugin. It is available [[https://github.com/Ratismal/DriveCredentials/releases|here]]. Simply extract, run the .bat file, and follow the instructions. Afterwards, copy the StoredCredential/OneDriveCredential.json file into the plugins/DriveBackup folder.
 
 ==== After That ====
 For OneDrive, you must do a backup within 3600 seconds (1 hour) of generating the credential or it will expire! After that, your backups can be as far apart as you want.
