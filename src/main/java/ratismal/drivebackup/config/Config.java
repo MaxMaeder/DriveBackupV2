@@ -85,6 +85,7 @@ public class Config {
 
         HashMap<String, HashMap<String, String>> temp = new HashMap<>();
         ConfigurationSection groupSection = pluginconfig.getConfigurationSection("backup-list");
+        //groupSection.getKeys(false)
         if (groupSection != null) {
             for (String name : groupSection.getKeys(false)) {
                 HashMap<String, String> temp2 = new HashMap<>();

@@ -19,8 +19,11 @@ public class DriveBackup extends JavaPlugin {
         getConfig().options().copyDefaults(true);
         saveDefaultConfig();
 
+        reloadConfig();
+
         pluginconfig = new Config(getConfig());
         pluginconfig.reload();
+        //reloadLocalConfig();
         getCommand("drivebackup").setExecutor(new CommandHandler(this));
         plugin = this;
 
