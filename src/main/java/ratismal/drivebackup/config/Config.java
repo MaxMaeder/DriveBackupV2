@@ -2,6 +2,7 @@ package ratismal.drivebackup.config;
 
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
+import ratismal.drivebackup.util.MessageUtil;
 
 import java.util.HashMap;
 
@@ -65,6 +66,7 @@ public class Config {
     @SuppressWarnings("unchecked")
     public void reload() {
         metrics = pluginconfig.getBoolean("metrics");
+
         destination = pluginconfig.getString("destination");
 
         dir = pluginconfig.getString("dir");
@@ -75,6 +77,7 @@ public class Config {
         googleEnabled = pluginconfig.getBoolean("googledrive.enabled");
 
         onedriveEnabled = pluginconfig.getBoolean("onedrive.enabled");
+
 
         backupDelay = pluginconfig.getLong("delay") * 60 * 20;
         keepCount = pluginconfig.getInt("keep-count");
