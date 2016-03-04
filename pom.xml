@@ -3,8 +3,9 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>ratismal</groupId>
     <artifactId>DriveBackup</artifactId>
-    <version>1.0.5</version>
+    <version>1.0.6</version>
     <build>
+        <finalName>${project.artifactId}</finalName>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
