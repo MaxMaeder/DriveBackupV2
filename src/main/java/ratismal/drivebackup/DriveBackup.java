@@ -1,6 +1,7 @@
 package ratismal.drivebackup;
 
 import org.bukkit.Bukkit;
+import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitScheduler;
 import org.json.simple.JSONArray;
@@ -9,6 +10,7 @@ import org.json.simple.JSONValue;
 import org.mcstats.Metrics;
 import ratismal.drivebackup.config.Config;
 import ratismal.drivebackup.handler.CommandHandler;
+import ratismal.drivebackup.handler.PlayerListener;
 import ratismal.drivebackup.util.MessageUtil;
 
 import java.io.BufferedReader;
@@ -30,6 +32,7 @@ public class DriveBackup extends JavaPlugin {
     public Logger log = getLogger();
 
 
+
     public void onEnable() {
         getConfig().options().copyDefaults(true);
         saveDefaultConfig();
@@ -41,6 +44,10 @@ public class DriveBackup extends JavaPlugin {
         //reloadLocalConfig();
         getCommand("drivebackup").setExecutor(new CommandHandler(this));
         plugin = this;
+
+        PluginManager pm = this.getServer().getPluginManager();
+        pm.registerEvents(new PlayerListener(), this);
+
 
         currentVersionTitle = getDescription().getVersion().split("-")[0];
         currentVersion = Double.valueOf(currentVersionTitle.replaceFirst("\\.", ""));

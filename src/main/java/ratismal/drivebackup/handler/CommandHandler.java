@@ -53,7 +53,7 @@ public class CommandHandler implements CommandExecutor {
                         if (hasPerm(sender, "drivebackup.backup")) {
                             //if (GoogleUploader.isGoodToGo()) {
                             MessageUtil.sendMessage(sender, "Forcing a backup.");
-                            Runnable t = new UploadThread();
+                            Runnable t = new UploadThread(true);
                             new Thread(t).start();
                             //MessageUtil.sendMessage(sender, "This command has been deprecated.");
                         }
