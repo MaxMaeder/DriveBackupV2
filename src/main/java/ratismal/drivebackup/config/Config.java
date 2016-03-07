@@ -2,7 +2,6 @@ package ratismal.drivebackup.config;
 
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
-import ratismal.drivebackup.util.MessageUtil;
 
 import java.util.HashMap;
 
@@ -16,6 +15,7 @@ public class Config {
     private static long backupDelay;
     private static int keepCount;
     private static boolean updateCheck;
+    private static boolean keepLocal;
 
     /**
      * Metrics
@@ -26,7 +26,6 @@ public class Config {
      * Backups
      */
     private static String dir;
-    private static boolean backup;
     private static HashMap<String, HashMap<String, String>> backupList;
 
     /**
@@ -74,8 +73,6 @@ public class Config {
         dir = pluginconfig.getString("dir");
         noPerms = pluginconfig.getString("no-perm");
 
-        backup = pluginconfig.getBoolean("backup");
-
         googleEnabled = pluginconfig.getBoolean("googledrive.enabled");
 
         onedriveEnabled = pluginconfig.getBoolean("onedrive.enabled");
@@ -84,6 +81,7 @@ public class Config {
         backupDelay = pluginconfig.getLong("delay") * 60 * 20;
         keepCount = pluginconfig.getInt("keep-count");
         updateCheck = pluginconfig.getBoolean("update-check");
+        keepLocal = pluginconfig.getBoolean("keep-local-backup-after-upload");
 
         //MessageUtil.sendConsoleMessage("Scheduling backups for every " + backupDelay + " ticks.");
 
@@ -125,10 +123,6 @@ public class Config {
         return destination;
     }
 
-    public static boolean isBackup() {
-        return backup;
-    }
-
     public static boolean isGoogleEnabled() {
         return googleEnabled;
     }
@@ -151,6 +145,10 @@ public class Config {
 
     public static boolean isUpdateCheck() {
         return updateCheck;
+    }
+
+    public static boolean keepLocalBackup(){
+        return keepLocal;
     }
 }
 

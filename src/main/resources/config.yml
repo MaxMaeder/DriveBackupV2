@@ -48,6 +48,9 @@ dir: "backups"
 # Folder in to save backups on remote server
 destination: "backups"
 
+#Option to keep local backup directory clean after remote upload
+keep-local-backup-after-upload: true
+
 # Google Drive configs
 googledrive:
   enabled: true

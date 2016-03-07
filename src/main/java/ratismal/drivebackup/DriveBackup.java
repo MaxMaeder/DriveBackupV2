@@ -71,13 +71,13 @@ public class DriveBackup extends JavaPlugin {
 
                     @Override
                     public void run() {
-                        if (getServer().getConsoleSender().hasPermission("moneythief.update") && Config.isUpdateCheck()) {
+                        if (Config.isUpdateCheck()) {
                             try {
                                 MessageUtil.sendConsoleMessage("Running update checker...");
                                 newVersion = updateCheck(currentVersion);
                                 if (newVersion > currentVersion) {
                                     MessageUtil.sendConsoleMessage("Version " + newVersionTitle + " has been released." + " You are currently running version " + currentVersionTitle);
-                                    MessageUtil.sendConsoleMessage("Update at: http://dev.bukkit.org/bukkit-plugins/moneythief/");
+                                    MessageUtil.sendConsoleMessage("Update at: http://dev.bukkit.org/bukkit-plugins/drivebackup/");
                                 } else if (currentVersion > newVersion) {
                                     MessageUtil.sendConsoleMessage("You are running an unsupported build!");
                                     MessageUtil.sendConsoleMessage("The recommended version is " + newVersionTitle + ", and you are running " + currentVersionTitle);

@@ -13,7 +13,6 @@ import java.text.DecimalFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Created by Ratismal on 2016-01-22.
@@ -28,6 +27,16 @@ public class UploadThread implements Runnable {
     }
 
     public UploadThread() {
+    }
+
+    private void getTimes(Date start, Date end, File file){
+        DecimalFormat df = new DecimalFormat("#.##");
+        double difference = end.getTime() - start.getTime();
+        double length = Double.valueOf(df.format(difference / 1000));
+        double speed = Double.valueOf(df.format((file.length() / 1024) / length));
+
+        MessageUtil.sendConsoleMessage("File uploaded in " +
+                length + " seconds (" + speed + "KB/s)");
     }
 
     @Override
@@ -48,20 +57,15 @@ public class UploadThread implements Runnable {
                 }
 
                 File file = FileUtil.getFileToUpload(type, format, false);
-                DecimalFormat df = new DecimalFormat("#.##");
+
                 try {
                     if (Config.isGoogleEnabled()) {
                         MessageUtil.sendConsoleMessage("Uploading file to GoogleDrive");
                         Date startTime = new Date();
                         GoogleUploader.uploadFile(file, type);
                         Date endTime = new Date();
-                        double difference = endTime.getTime() - startTime.getTime();
+                        getTimes(startTime, endTime, file);
 
-                        double length = Double.valueOf(df.format(difference / 1000));
-                        double speed = Double.valueOf(df.format((file.length() / 1024) / length));
-
-                        MessageUtil.sendConsoleMessage("File uploaded in " +
-                                length + " seconds (" + speed + "KB/s)");
                     }
                     if (Config.isOnedriveEnabled()) {
                         MessageUtil.sendConsoleMessage("Uploading file to OneDrive");
@@ -70,12 +74,15 @@ public class UploadThread implements Runnable {
                         Date startTime = new Date();
                         onedrive.uploadFile(file, type);
                         Date endTime = new Date();
-                        double difference = endTime.getTime() - startTime.getTime();
-                        double length = Double.valueOf(df.format(difference / 1000));
-                        double speed = Double.valueOf(df.format((file.length() / 1024) / length));
+                        getTimes(startTime, endTime, file);
+                    }
 
-                        MessageUtil.sendConsoleMessage("File uploaded in " +
-                                length + " seconds (" + speed + "KB/s)");
+                    if(!Config.keepLocalBackup()){
+                        if (file.delete()) {
+                            MessageUtil.sendConsoleMessage("Old backup deleted.");
+                        } else {
+                            MessageUtil.sendConsoleMessage("Failed to delete backup " + file.getAbsolutePath());
+                        }
                     }
                     //MessageUtil.sendConsoleMessage("File Uploaded.");
                 } catch (Exception e) {
