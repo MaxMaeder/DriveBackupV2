@@ -10,9 +10,7 @@ import ratismal.drivebackup.util.MessageUtil;
 
 import java.io.File;
 import java.text.DecimalFormat;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by Ratismal on 2016-01-22.
@@ -44,16 +42,24 @@ public class UploadThread implements Runnable {
         if (PlayerListener.doBackups || forced) {
             MessageUtil.sendMessageToAllPlayers("Creating backups, server may lag for a little while...");
             // Create Backup Here
-            HashMap<String, HashMap<String, String>> backupList = Config.getBackupList();
-            for (Map.Entry<String, HashMap<String, String>> set : backupList.entrySet()) {
+            HashMap<String, HashMap<String, Object>> backupList = Config.getBackupList();
+            for (Map.Entry<String, HashMap<String, Object>> set : backupList.entrySet()) {
 
                 String type = set.getKey();
-                String format = set.getValue().get("format");
-                String create = set.getValue().get("create");
+                String format = set.getValue().get("format").toString();
+                String create = set.getValue().get("create").toString();
+
+                List<String> blackList = new ArrayList<>();
+                if (set.getValue().containsKey("blacklist")) {
+                    Object tempObject = set.getValue().get("blacklist");
+                    if (tempObject instanceof List<?>) {
+                        blackList = (List<String>) tempObject;
+                    }
+                }
 
                 MessageUtil.sendConsoleMessage("Doing backups for " + type);
                 if (create.equalsIgnoreCase("true")) {
-                    FileUtil.makeBackup(type, format);
+                    FileUtil.makeBackup(type, format, blackList);
                 }
 
                 File file = FileUtil.getFileToUpload(type, format, false);

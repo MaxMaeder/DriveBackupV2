@@ -20,6 +20,7 @@ public class FileUtil {
 
     private static final TreeMap<Date, File> backupList = new TreeMap<>();
     private static final List<String> fileList = new ArrayList<>();
+    private static List<String> blackList;
 
     public static File getFileToUpload(String type, String format, boolean output) {
         backupList.clear();
@@ -54,12 +55,20 @@ public class FileUtil {
         }
     }
 
-    public static void makeBackup(String type, String formatString) {
+
+    /**
+     * Creates a backup
+     *
+     * @param type         What we're backing up (world, plugin, etc)
+     * @param formatString Format of the file name
+     */
+    public static void makeBackup(String type, String formatString, List<String> _blackList) {
         try {
             fileList.clear();
             DateFormat format = new SimpleDateFormat(formatString, Locale.ENGLISH);
             String fileName = format.format(new Date());
             File path = new File(Config.getDir());
+            blackList = _blackList;
             if (!path.exists()) {
                 path.mkdir();
             }
@@ -98,7 +107,7 @@ public class FileUtil {
     }
 
     private static void zipIt(String zipFile, String sourceFolder) {
-       // System.out.println("Making new zip " + zipFile);
+        // System.out.println("Making new zip " + zipFile);
         byte[] buffer = new byte[1024];
         String source;
         FileOutputStream fos;
@@ -113,7 +122,7 @@ public class FileUtil {
             fos = new FileOutputStream(zipFile);
             zos = new ZipOutputStream(fos);
 
-          //  MessageUtil.sendConsoleMessage("Output to Zip : " + zipFile);
+            //  MessageUtil.sendConsoleMessage("Output to Zip : " + zipFile);
 
             for (String file : fileList) {
                 ZipEntry ze = new ZipEntry(source + File.separator + file);
@@ -126,12 +135,12 @@ public class FileUtil {
                 }
             }
             zos.closeEntry();
-           // MessageUtil.sendConsoleMessage("Folder successfully compressed");
+            // MessageUtil.sendConsoleMessage("Folder successfully compressed");
         } catch (IOException ex) {
             ex.printStackTrace();
         } finally {
             try {
-                if(zos != null) {
+                if (zos != null) {
                     zos.close();
                 }
             } catch (IOException e) {
@@ -144,13 +153,15 @@ public class FileUtil {
 
         // add file only
         if (node.isFile()) {
-            fileList.add(generateZipEntry(node.toString(), sourceFolder));
+            if (!blackList.contains(node.getName()))
+                fileList.add(generateZipEntry(node.toString(), sourceFolder));
         }
 
         if (node.isDirectory()) {
             String[] subNote = node.list();
             for (String filename : subNote) {
-                generateFileList(new File(node, filename), sourceFolder);
+                if (!blackList.contains(node.getName()))
+                    generateFileList(new File(node, filename), sourceFolder);
             }
         }
     }

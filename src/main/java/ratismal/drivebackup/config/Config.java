@@ -26,7 +26,7 @@ public class Config {
      * Backups
      */
     private static String dir;
-    private static HashMap<String, HashMap<String, String>> backupList;
+    private static HashMap<String, HashMap<String, Object>> backupList;
 
     /**
      * Uploading
@@ -85,21 +85,21 @@ public class Config {
 
         //MessageUtil.sendConsoleMessage("Scheduling backups for every " + backupDelay + " ticks.");
 
-        HashMap<String, HashMap<String, String>> temp = new HashMap<>();
+        HashMap<String, HashMap<String, Object>> temp = new HashMap<>();
         ConfigurationSection groupSection = pluginconfig.getConfigurationSection("backup-list");
         //groupSection.getKeys(false)
         if (groupSection != null) {
             for (String name : groupSection.getKeys(false)) {
-                HashMap<String, String> temp2 = new HashMap<>();
+                HashMap<String, Object> temp2 = new HashMap<>();
                 ConfigurationSection subSection = groupSection.getConfigurationSection(name);
                 for (String name2 : subSection.getKeys(false)) {
-                    String value = subSection.getString(name2);
+                    Object value = subSection.get(name2);
                     temp2.put(name2, value);
                 }
                 temp.put(name, temp2);
             }
         }
-        backupList = (HashMap<String, HashMap<String, String>>) temp.clone();
+        backupList = (HashMap<String, HashMap<String, Object>>) temp.clone();
     }
 
 
@@ -131,7 +131,7 @@ public class Config {
         return onedriveEnabled;
     }
 
-    public static HashMap<String, HashMap<String, String>> getBackupList() {
+    public static HashMap<String, HashMap<String, Object>> getBackupList() {
         return backupList;
     }
 

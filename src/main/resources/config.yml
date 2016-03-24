@@ -35,6 +35,11 @@ backup-list:
 # The 'crash-reports:' part refers to the folder, and the "'crash-'yyyy-MM-dd_HH.mm.ss'-server.txt'" refers to
 #   what format the file name is. Since create is set to true, the plugin will take the crash-reports folder,
 #   zip it into a file according to the format, and upload it.
+# You can also use the blacklist key to not include specified files
+#    blacklist:
+#    - "dontbackup"
+#    - "thesefolders"
+#    - "orthisfile.txt"
   world:
     format: "'Backup-world-'yyyy-M-d--HH-mm'.zip'"
     create: true
@@ -48,7 +53,7 @@ dir: "backups"
 # Folder in to save backups on remote server
 destination: "backups"
 
-#Option to keep local backup directory clean after remote upload
+# Option to keep local backup directory clean after remote upload
 keep-local-backup-after-upload: true
 
 # Google Drive configs
