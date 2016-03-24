@@ -32,7 +32,9 @@ public class DriveBackup extends JavaPlugin {
     public Logger log = getLogger();
 
 
-
+    /**
+     * What to do when plugin is enabled (init)
+     */
     public void onEnable() {
         getConfig().options().copyDefaults(true);
         saveDefaultConfig();
@@ -63,6 +65,9 @@ public class DriveBackup extends JavaPlugin {
         }
         startThread();
 
+        /**
+         * Starts update checker
+         */
         this.getServer().getScheduler().runTask(this, new Runnable() {
 
             @Override
@@ -98,22 +103,36 @@ public class DriveBackup extends JavaPlugin {
 
     }
 
+    /**
+     * What to do when plugin is disabled
+     */
     public void onDisable() {
         MessageUtil.sendConsoleMessage("Stopping plugin!");
     }
 
+    /**
+     * Gets an instance of the plugin
+     *
+     * @return DriveBackup plugin
+     */
     public static DriveBackup getInstance() {
         return plugin;
     }
 
+    /**
+     * Starts the backup thread
+     */
     public static void startThread() {
-        if (Config.getBackupDelay()/60/20 != -1) {
+        if (Config.getBackupDelay() / 60 / 20 != -1) {
             MessageUtil.sendConsoleMessage("Starting the backup thread for every " + Config.getBackupDelay() + " ticks.");
             BukkitScheduler scheduler = Bukkit.getServer().getScheduler();
             scheduler.scheduleSyncRepeatingTask(getInstance(), new UploadThread(), Config.getBackupDelay(), Config.getBackupDelay());
         }
     }
 
+    /**
+     * Reloads config
+     */
     public static void reloadLocalConfig() {
         getInstance().reloadConfig();
         pluginconfig.reload(getInstance().getConfig());

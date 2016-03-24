@@ -22,6 +22,14 @@ public class FileUtil {
     private static final List<String> fileList = new ArrayList<>();
     private static List<String> blackList;
 
+    /**
+     * Gets the file to upload
+     *
+     * @param type   What we're backing up (world, plugin, etc)
+     * @param format Format of the file name
+     * @param output Should we upload the available files to console?
+     * @return The file to upload
+     */
     public static File getFileToUpload(String type, String format, boolean output) {
         backupList.clear();
         String path = new File(Config.getDir()).getAbsolutePath() + "/" + type;
@@ -36,6 +44,12 @@ public class FileUtil {
         return backupList.descendingMap().firstEntry().getValue();
     }
 
+    /**
+     * Gets a list of backups
+     *
+     * @param formatString Format of the file name
+     * @param files        A list of files
+     */
     private static void subFiles(String formatString, File[] files) {
         for (File file : files) {
             if (file.isDirectory()) {
@@ -106,6 +120,12 @@ public class FileUtil {
         }
     }
 
+    /**
+     * Zips files into a zip file
+     *
+     * @param zipFile      The name of the zip file
+     * @param sourceFolder The name of the folder to put it in
+     */
     private static void zipIt(String zipFile, String sourceFolder) {
         // System.out.println("Making new zip " + zipFile);
         byte[] buffer = new byte[1024];
@@ -149,6 +169,12 @@ public class FileUtil {
         }
     }
 
+    /**
+     * Gets a list of files to put in the zip
+     *
+     * @param node         File or folder to add
+     * @param sourceFolder Folder that we are looking in
+     */
     private static void generateFileList(File node, String sourceFolder) {
 
         // add file only
@@ -166,6 +192,13 @@ public class FileUtil {
         }
     }
 
+    /**
+     * Gets the name of the file to put into the zip
+     *
+     * @param file         File name
+     * @param sourceFolder Folder name
+     * @return New name of the file
+     */
     private static String generateZipEntry(String file, String sourceFolder) {
         return file.substring(sourceFolder.length() + 1, file.length());
     }

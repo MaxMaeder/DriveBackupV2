@@ -20,14 +20,29 @@ public class UploadThread implements Runnable {
 
     private boolean forced = false;
 
+    /**
+     * Forced upload constructor
+     *
+     * @param forced Is the backup forced?
+     */
     public UploadThread(boolean forced) {
         this.forced = forced;
     }
 
+    /**
+     * Base constructor
+     */
     public UploadThread() {
     }
 
-    private void getTimes(Date start, Date end, File file){
+    /**
+     * Calculates the time it took to do the backup
+     *
+     * @param start Start time
+     * @param end   End time
+     * @param file  File uploaded
+     */
+    private void getTimes(Date start, Date end, File file) {
         DecimalFormat df = new DecimalFormat("#.##");
         double difference = end.getTime() - start.getTime();
         double length = Double.valueOf(df.format(difference / 1000));
@@ -37,6 +52,9 @@ public class UploadThread implements Runnable {
                 length + " seconds (" + speed + "KB/s)");
     }
 
+    /**
+     * Run function in the upload thread
+     */
     @Override
     public void run() {
         if (PlayerListener.doBackups || forced) {
@@ -83,7 +101,7 @@ public class UploadThread implements Runnable {
                         getTimes(startTime, endTime, file);
                     }
 
-                    if(!Config.keepLocalBackup()){
+                    if (!Config.keepLocalBackup()) {
                         if (file.delete()) {
                             MessageUtil.sendConsoleMessage("Old backup deleted.");
                         } else {
@@ -102,7 +120,7 @@ public class UploadThread implements Runnable {
             }
             if (Bukkit.getOnlinePlayers().size() == 0 && PlayerListener.doBackups) {
                 MessageUtil.sendMessageToAllPlayers("Disabling automatic backups due to inactivity.");
-                    PlayerListener.doBackups = false;
+                PlayerListener.doBackups = false;
             }
         } else {
             MessageUtil.sendConsoleMessage("Skipping backup.");
