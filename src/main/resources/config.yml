@@ -61,6 +61,11 @@ googledrive:
   enabled: true
 onedrive:
   enabled: false
+ftp:
+  enabled: false
+  hostname: ftp.example.com
+  username: user
+  password: Password1
 
 # Messages
 no-perm: "You don't have permission to do this!"

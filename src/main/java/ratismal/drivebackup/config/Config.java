@@ -47,6 +47,7 @@ public class Config {
      * FTP
      */
     private static boolean ftpEnabled;
+    private static String ftpHost;
     private static String ftpUser;
     private static String ftpPass;
 
@@ -85,6 +86,7 @@ public class Config {
         onedriveEnabled = pluginconfig.getBoolean("onedrive.enabled");
 
         ftpEnabled = pluginconfig.getBoolean("ftp.enabled");
+        ftpHost = pluginconfig.getString("ftp.hostname");
         ftpUser = pluginconfig.getString("ftp.username");
         ftpPass = pluginconfig.getString("ftp.password");
 

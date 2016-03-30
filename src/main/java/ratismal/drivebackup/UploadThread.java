@@ -5,8 +5,8 @@ import ratismal.drivebackup.config.Config;
 import ratismal.drivebackup.googledrive.GoogleUploader;
 import ratismal.drivebackup.handler.PlayerListener;
 import ratismal.drivebackup.onedrive.OneDriveUploader;
-import ratismal.drivebackup.util.FileUtil;
-import ratismal.drivebackup.util.MessageUtil;
+import ratismal.drivebackup.util.*;
+import ratismal.drivebackup.util.Timer;
 
 import java.io.File;
 import java.text.DecimalFormat;
@@ -33,23 +33,6 @@ public class UploadThread implements Runnable {
      * Base constructor
      */
     public UploadThread() {
-    }
-
-    /**
-     * Calculates the time it took to do the backup
-     *
-     * @param start Start time
-     * @param end   End time
-     * @param file  File uploaded
-     */
-    private void getTimes(Date start, Date end, File file) {
-        DecimalFormat df = new DecimalFormat("#.##");
-        double difference = end.getTime() - start.getTime();
-        double length = Double.valueOf(df.format(difference / 1000));
-        double speed = Double.valueOf(df.format((file.length() / 1024) / length));
-
-        MessageUtil.sendConsoleMessage("File uploaded in " +
-                length + " seconds (" + speed + "KB/s)");
     }
 
     /**
@@ -81,24 +64,23 @@ public class UploadThread implements Runnable {
                 }
 
                 File file = FileUtil.getFileToUpload(type, format, false);
-
+                ratismal.drivebackup.util.Timer timer = new Timer();
                 try {
                     if (Config.isGoogleEnabled()) {
                         MessageUtil.sendConsoleMessage("Uploading file to GoogleDrive");
-                        Date startTime = new Date();
+                        timer.start();
                         GoogleUploader.uploadFile(file, type);
-                        Date endTime = new Date();
-                        getTimes(startTime, endTime, file);
-
+                        timer.end();
+                        MessageUtil.sendConsoleMessage(timer.getUploadTimeMessage(file));
                     }
                     if (Config.isOnedriveEnabled()) {
                         MessageUtil.sendConsoleMessage("Uploading file to OneDrive");
                         //Couldn't get around static issue, declared a new Instance.
-                        OneDriveUploader onedrive = new OneDriveUploader();
-                        Date startTime = new Date();
-                        onedrive.uploadFile(file, type);
-                        Date endTime = new Date();
-                        getTimes(startTime, endTime, file);
+                        OneDriveUploader oneDrive = new OneDriveUploader();
+                        timer.start();
+                        oneDrive.uploadFile(file, type);
+                        timer.end();
+                        MessageUtil.sendConsoleMessage(timer.getUploadTimeMessage(file));
                     }
 
                     if (!Config.keepLocalBackup()) {

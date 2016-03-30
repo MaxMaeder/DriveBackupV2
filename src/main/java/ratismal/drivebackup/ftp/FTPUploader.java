@@ -7,4 +7,8 @@ package ratismal.drivebackup.ftp;
 public class FTPUploader {
 
 
+    public void init() {
+
+    }
+
 }
