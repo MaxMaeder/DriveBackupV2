@@ -63,9 +63,18 @@ onedrive:
   enabled: false
 ftp:
   enabled: false
+  # Server to connect to
   hostname: ftp.example.com
+  # Port to connect with
+  port: 21
+  # Set to true to use FTPS instead of FTP
+  FTPS: false
+  # Username
   username: user
+  # Password
   password: Password1
+  # The directory to work in (leave blank for default)
+  working-dir:
 
 # Messages
 no-perm: "You don't have permission to do this!"

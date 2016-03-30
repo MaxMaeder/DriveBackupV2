@@ -48,8 +48,11 @@ public class Config {
      */
     private static boolean ftpEnabled;
     private static String ftpHost;
+    private static int ftpPort;
+    private static boolean ftpFTPS;
     private static String ftpUser;
     private static String ftpPass;
+    private static String ftpDir;
 
     /**
      * Messages
@@ -87,8 +90,12 @@ public class Config {
 
         ftpEnabled = pluginconfig.getBoolean("ftp.enabled");
         ftpHost = pluginconfig.getString("ftp.hostname");
+        ftpPort = pluginconfig.getInt("ftp.port");
+        ftpFTPS = pluginconfig.getBoolean("ftp.FTPS");
+
         ftpUser = pluginconfig.getString("ftp.username");
         ftpPass = pluginconfig.getString("ftp.password");
+        ftpDir = pluginconfig.getString("ftp.working-dir");
 
         backupDelay = pluginconfig.getLong("delay") * 60 * 20;
         keepCount = pluginconfig.getInt("keep-count");
@@ -147,12 +154,28 @@ public class Config {
         return ftpEnabled;
     }
 
+    public static String getFtpHost() {
+        return ftpHost;
+    }
+
+    public static int getFtpPort() {
+        return ftpPort;
+    }
+
+    public static boolean isFtpFTPS() {
+        return ftpFTPS;
+    }
+
     public static String getFtpPass() {
         return ftpPass;
     }
 
     public static String getFtpUser() {
         return ftpUser;
+    }
+
+    public static String getFtpDir() {
+        return ftpDir;
     }
 
     public static HashMap<String, HashMap<String, Object>> getBackupList() {

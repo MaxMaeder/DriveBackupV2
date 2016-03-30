@@ -2,6 +2,7 @@ package ratismal.drivebackup;
 
 import org.bukkit.Bukkit;
 import ratismal.drivebackup.config.Config;
+import ratismal.drivebackup.ftp.FTPUploader;
 import ratismal.drivebackup.googledrive.GoogleUploader;
 import ratismal.drivebackup.handler.PlayerListener;
 import ratismal.drivebackup.onedrive.OneDriveUploader;
@@ -81,6 +82,14 @@ public class UploadThread implements Runnable {
                         oneDrive.uploadFile(file, type);
                         timer.end();
                         MessageUtil.sendConsoleMessage(timer.getUploadTimeMessage(file));
+                    }
+                    if (Config.isFtpEnabled()) {
+                        MessageUtil.sendConsoleMessage("Uploading file to FTP");
+                        timer.start();
+                        FTPUploader.uploadFile(file, type);
+                        timer.end();
+                        MessageUtil.sendConsoleMessage(timer.getUploadTimeMessage(file));
+
                     }
 
                     if (!Config.keepLocalBackup()) {
