@@ -51,9 +51,17 @@ public class FTPUploader {
 
             MessageUtil.sendConsoleMessage(f.printWorkingDirectory());
 
+            deleteFiles(f, type);
+
             f.disconnect();
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public static void deleteFiles(FTPClient f, String type) throws Exception {
+        FTPFile[] files = f.listFiles();
+
+        if (files)
     }
 }

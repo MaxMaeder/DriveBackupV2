@@ -204,9 +204,13 @@ public class GoogleUploader {
     }
 
     public static void deleteFiles(String type) throws IOException {
+        int fileLimit = Config.getKeepCount();
+
+        if (fileLimit == -1) {
+            return;
+        }
         Drive service = getDriveService();
         //Set a limit for files
-        int fileLimit = Config.getKeepCount();
 
         File parentFolder = getFolder(Config.getDestination());
 

@@ -269,6 +269,10 @@ public class OneDriveUploader {
     private void deleteFiles(String type) {
         int fileLimit = Config.getKeepCount();
 
+        if (fileLimit == -1) {
+            return;
+        }
+
         String childFolderQuery = "https://api.onedrive.com/v1.0/drive/root:/" + Config.getDestination() + "/" + type + ":/children?sort_by=createdDateTime&access_token=" + returnAccessToken();
         Response childResponse = get(childFolderQuery);
 
