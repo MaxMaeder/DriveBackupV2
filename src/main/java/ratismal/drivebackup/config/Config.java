@@ -44,6 +44,13 @@ public class Config {
     private static boolean onedriveEnabled;
 
     /**
+     * FTP
+     */
+    private static boolean ftpEnabled;
+    private static String ftpUser;
+    private static String ftpPass;
+
+    /**
      * Messages
      */
 
@@ -77,6 +84,9 @@ public class Config {
 
         onedriveEnabled = pluginconfig.getBoolean("onedrive.enabled");
 
+        ftpEnabled = pluginconfig.getBoolean("ftp.enabled");
+        ftpUser = pluginconfig.getString("ftp.username");
+        ftpPass = pluginconfig.getString("ftp.password");
 
         backupDelay = pluginconfig.getLong("delay") * 60 * 20;
         keepCount = pluginconfig.getInt("keep-count");
@@ -129,6 +139,18 @@ public class Config {
 
     public static boolean isOnedriveEnabled() {
         return onedriveEnabled;
+    }
+
+    public static boolean isFtpEnabled() {
+        return ftpEnabled;
+    }
+
+    public static String getFtpPass() {
+        return ftpPass;
+    }
+
+    public static String getFtpUser() {
+        return ftpUser;
     }
 
     public static HashMap<String, HashMap<String, Object>> getBackupList() {

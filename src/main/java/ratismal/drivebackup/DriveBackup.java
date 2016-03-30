@@ -56,13 +56,13 @@ public class DriveBackup extends JavaPlugin {
 
         if (Config.isMetrics()) {
             try {
-                Metrics metrics = new Metrics(this);
-                metrics.start();
+                initMetrics();
                 MessageUtil.sendConsoleMessage("Metrics started");
             } catch (IOException e) {
                 MessageUtil.sendConsoleMessage("Metrics failed to start");
             }
         }
+
         startThread();
 
         /**
@@ -101,6 +101,35 @@ public class DriveBackup extends JavaPlugin {
 
         });
 
+    }
+
+    public void initMetrics() throws IOException {
+        Metrics metrics = new Metrics(this);
+
+        Metrics.Graph enabledModes = metrics.createGraph("Enabled Services");
+
+        enabledModes.addPlotter(new Metrics.Plotter("Google Drive") {
+            @Override
+            public int getValue() {
+                return Config.isGoogleEnabled() ? 1 : 0;
+            }
+        });
+
+        enabledModes.addPlotter(new Metrics.Plotter("OneDrive") {
+            @Override
+            public int getValue() {
+                return Config.isOnedriveEnabled() ? 1 : 0;
+            }
+        });
+
+        enabledModes.addPlotter(new Metrics.Plotter("None") {
+            @Override
+            public int getValue() {
+                return Config.isOnedriveEnabled() && Config.isGoogleEnabled() ? 0 : 1;
+            }
+        });
+
+        metrics.start();
     }
 
     /**
