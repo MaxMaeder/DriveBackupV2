@@ -114,7 +114,8 @@ public class FileUtil {
                     backupList.remove(dateOfFile);
                 }
             } catch (Exception e) {
-                e.printStackTrace();
+                if (Config.isDebug())
+                    e.printStackTrace();
                 MessageUtil.sendConsoleMessage("Backup deletion failed.");
             }
         }
@@ -164,7 +165,8 @@ public class FileUtil {
                     zos.close();
                 }
             } catch (IOException e) {
-                e.printStackTrace();
+                if (Config.isDebug())
+                    e.printStackTrace();
             }
         }
     }

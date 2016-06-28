@@ -122,10 +122,17 @@ public class DriveBackup extends JavaPlugin {
             }
         });
 
+        enabledModes.addPlotter(new Metrics.Plotter("FTP") {
+            @Override
+            public int getValue() {
+                return Config.isFtpEnabled() ? 1 : 0;
+            }
+        });
+
         enabledModes.addPlotter(new Metrics.Plotter("None") {
             @Override
             public int getValue() {
-                return Config.isOnedriveEnabled() && Config.isGoogleEnabled() ? 0 : 1;
+                return Config.isOnedriveEnabled() || Config.isGoogleEnabled() || Config.isFtpEnabled() ? 0 : 1;
             }
         });
 

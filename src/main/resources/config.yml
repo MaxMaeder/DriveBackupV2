@@ -77,4 +77,15 @@ ftp:
   working-dir:
 
 # Messages
-no-perm: "You don't have permission to do this!"
+messages:
+  no-perm: "You don't have permission to do this!"
+  # What to say to all players when backup starts
+  backup-start: "Creating backups, server may lag for a little while..."
+  # What to say to all players when backup is complete
+  backup-complete: "Backup complete."
+  # What to say to all players when backup is complete and there is another scheduled backup. This message is sent along with "backup-complete".
+  #    %TIME is the amount of time until the next backup, in minutes
+  next-backup: "The next backup is in %TIME minutes"
+
+# If set to true, most stacktraces will be suppressed
+suppress-errors: false

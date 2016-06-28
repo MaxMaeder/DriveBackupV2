@@ -42,7 +42,7 @@ public class UploadThread implements Runnable {
     @Override
     public void run() {
         if (PlayerListener.doBackups || forced) {
-            MessageUtil.sendMessageToAllPlayers("Creating backups, server may lag for a little while...");
+            MessageUtil.sendMessageToAllPlayers(Config.getBackupStart());
             // Create Backup Here
             HashMap<String, HashMap<String, Object>> backupList = Config.getBackupList();
             for (Map.Entry<String, HashMap<String, Object>> set : backupList.entrySet()) {
@@ -89,7 +89,6 @@ public class UploadThread implements Runnable {
                         FTPUploader.uploadFile(file, type);
                         timer.end();
                         MessageUtil.sendConsoleMessage(timer.getUploadTimeMessage(file));
-
                     }
 
                     if (!Config.keepLocalBackup()) {
@@ -101,16 +100,17 @@ public class UploadThread implements Runnable {
                     }
                     //MessageUtil.sendConsoleMessage("File Uploaded.");
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    if (Config.isDebug())
+                        e.printStackTrace();
                 }
             }
             if (forced) {
-                MessageUtil.sendMessageToAllPlayers("Backup complete.");
+                MessageUtil.sendMessageToAllPlayers(Config.getBackupDone());
             } else {
-                MessageUtil.sendMessageToAllPlayers("Backup complete. The next backup is in " + Config.getBackupDelay() / 20 / 60 + " minutes.");
+                MessageUtil.sendMessageToAllPlayers(Config.getBackupDone() + " " + Config.getBackupNext().replaceAll("%TIME", String.valueOf(Config.getBackupDelay() / 20 / 60)));
             }
             if (Bukkit.getOnlinePlayers().size() == 0 && PlayerListener.doBackups) {
-                MessageUtil.sendMessageToAllPlayers("Disabling automatic backups due to inactivity.");
+                MessageUtil.sendConsoleMessage("Disabling automatic backups due to inactivity.");
                 PlayerListener.doBackups = false;
             }
         } else {

@@ -59,8 +59,8 @@ public class GoogleUploader {
         //     GoogleClientSecrets clientSecrets = GoogleClientSecrets.load(JSON_FACTORY,
         //             new InputStreamReader(DriveBackup.getInstance().getResource("googledrive_client_secrets.json")));
 
-       // GoogleClientSecrets clientSecrets = GoogleClientSecrets.load(JSON_FACTORY,
-     //           new InputStreamReader(DriveBackup.getInstance().getResource("googledrive_client_secrets.json")));
+        // GoogleClientSecrets clientSecrets = GoogleClientSecrets.load(JSON_FACTORY,
+        //           new InputStreamReader(DriveBackup.getInstance().getResource("googledrive_client_secrets.json")));
         if (DATA_STORE_FACTORY == null) {
             DATA_STORE_FACTORY = new FileDataStoreFactory(DATA_STORE_DIR);
         }
@@ -75,8 +75,8 @@ public class GoogleUploader {
         Credential credential = new AuthorizationCodeInstalledApp(
                 flow, new LocalServerReceiver()).authorize("user");
 
-       // System.out.println(
-       //         "Credentials saved to " + DATA_STORE_DIR.getAbsolutePath());
+        // System.out.println(
+        //         "Credentials saved to " + DATA_STORE_DIR.getAbsolutePath());
         return credential;
     }
 
@@ -131,7 +131,8 @@ public class GoogleUploader {
             service.files().insert(body, mediaContent).execute();
         } catch (IOException e) {
             // TODO Auto-generated catch block
-            e.printStackTrace();
+            if (Config.isDebug())
+                e.printStackTrace();
         }
 
         deleteFiles(type);
@@ -151,7 +152,8 @@ public class GoogleUploader {
             }
             return null;
         } catch (Exception e) {
-            e.printStackTrace();
+            if (Config.isDebug())
+                e.printStackTrace();
         }
         return null;
     }
@@ -171,7 +173,8 @@ public class GoogleUploader {
             }
             return null;
         } catch (Exception e) {
-            e.printStackTrace();
+            if (Config.isDebug())
+                e.printStackTrace();
         }
         return null;
     }
@@ -194,7 +197,8 @@ public class GoogleUploader {
                 result.addAll(files.getItems());
                 request.setPageToken(files.getNextPageToken());
             } catch (IOException e) {
-                e.printStackTrace();
+                if (Config.isDebug())
+                    e.printStackTrace();
                 request.setPageToken(null);
             }
         } while (request.getPageToken() != null &&
@@ -230,9 +234,9 @@ public class GoogleUploader {
                 //System.out.println(file.get);
                 Drive.Files.Delete removeItem = service.files().delete(file.getId());
                 removeItem.execute();
-               // System.out.println(file.getId());
+                // System.out.println(file.getId());
                 iterator.remove();
-               // System.out.println(queriedFilesfromDrive.size());
+                // System.out.println(queriedFilesfromDrive.size());
             }
         }
     }

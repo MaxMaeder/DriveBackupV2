@@ -16,6 +16,7 @@ public class Config {
     private static int keepCount;
     private static boolean updateCheck;
     private static boolean keepLocal;
+    private static boolean debug;
 
     /**
      * Metrics
@@ -59,6 +60,9 @@ public class Config {
      */
 
     private static String noPerms;
+    private static String backupStart;
+    private static String backupDone;
+    private static String backupNext;
 
 
     /**
@@ -82,7 +86,10 @@ public class Config {
         destination = pluginconfig.getString("destination");
 
         dir = pluginconfig.getString("dir");
-        noPerms = pluginconfig.getString("no-perm");
+        noPerms = pluginconfig.getString("messages.no-perm");
+        backupStart = pluginconfig.getString("messages.backup-start");
+        backupDone = pluginconfig.getString("messages.backup-complete");
+        backupNext = pluginconfig.getString("messages.next-backup");
 
         googleEnabled = pluginconfig.getBoolean("googledrive.enabled");
 
@@ -101,6 +108,7 @@ public class Config {
         keepCount = pluginconfig.getInt("keep-count");
         updateCheck = pluginconfig.getBoolean("update-check");
         keepLocal = pluginconfig.getBoolean("keep-local-backup-after-upload");
+        debug = !pluginconfig.getBoolean("suppress-errors");
 
         //MessageUtil.sendConsoleMessage("Scheduling backups for every " + backupDelay + " ticks.");
 
@@ -196,6 +204,22 @@ public class Config {
 
     public static boolean keepLocalBackup(){
         return keepLocal;
+    }
+
+    public static String getBackupDone() {
+        return backupDone;
+    }
+
+    public static String getBackupNext() {
+        return backupNext;
+    }
+
+    public static String getBackupStart() {
+        return backupStart;
+    }
+
+    public static boolean isDebug() {
+        return debug;
     }
 }
 

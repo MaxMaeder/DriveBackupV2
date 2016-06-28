@@ -241,7 +241,8 @@ public class OneDriveUploader {
                             List<String> test = uploadFile.getBody().jsonPath().getList("nextExpectedRanges");
                             setRanges(test.toArray(new String[test.size()]));
                         } catch (NullPointerException e) {
-                            e.printStackTrace();
+                            if (Config.isDebug())
+                                e.printStackTrace();
                         }
                     } else {
                         given().contentType("application/zip")

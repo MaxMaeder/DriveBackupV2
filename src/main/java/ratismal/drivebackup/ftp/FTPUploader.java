@@ -59,8 +59,11 @@ public class FTPUploader {
             deleteFiles(f, type);
 
             f.disconnect();
+
+
         } catch (Exception e) {
-            e.printStackTrace();
+            if (Config.isDebug())
+                e.printStackTrace();
         }
     }
 
@@ -85,7 +88,7 @@ public class FTPUploader {
         TreeMap<Date, FTPFile> result = new TreeMap<Date, FTPFile>();
         for (FTPFile file : f.mlistDir()) {
             if (file.getName().endsWith(".zip"))
-            result.put(file.getTimestamp().getTime(), file);
+                result.put(file.getTimestamp().getTime(), file);
         }
         return result;
     }
