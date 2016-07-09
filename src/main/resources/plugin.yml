@@ -1,5 +1,5 @@
 name: DriveBackup
-version: 1.1.0
+version: 1.1.1
 description: Uploads backups to Google Drive
 main: ratismal.drivebackup.DriveBackup
 author: Ratismal

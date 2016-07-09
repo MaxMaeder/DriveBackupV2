@@ -5,6 +5,7 @@ import com.google.api.client.extensions.java6.auth.oauth2.AuthorizationCodeInsta
 import com.google.api.client.extensions.jetty.auth.oauth2.LocalServerReceiver;
 import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeFlow;
 import com.google.api.client.googleapis.auth.oauth2.GoogleClientSecrets;
+import com.google.api.client.googleapis.media.MediaHttpDownloader;
 import com.google.api.client.http.FileContent;
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.http.javanet.NetHttpTransport;
@@ -18,8 +19,10 @@ import ratismal.drivebackup.DriveBackup;
 import ratismal.drivebackup.config.Config;
 import ratismal.drivebackup.util.MessageUtil;
 
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -136,6 +139,70 @@ public class GoogleUploader {
         }
 
         deleteFiles(type);
+    }
+
+    public static void downloadFile(String name, String type) {
+        try {
+            Drive service = getDriveService();
+            String destination = Config.getDestination();
+
+            File parentFolder = getFolder(destination);
+            File childFolder = getFolder(type, parentFolder);
+            File backupToDownload = getFile(name, childFolder);
+
+            java.io.File dirFile = new java.io.File("downloads/" + type);
+            if (!dirFile.exists()) {
+                dirFile.mkdirs();
+            }
+            OutputStream out = new FileOutputStream("downloads/" + type + "/" + name);
+
+            Drive.Files.Get request = service.files().get(backupToDownload.getId());
+            request.executeMediaAndDownloadTo(out);
+            MessageUtil.sendConsoleMessage("Done downloading '" + name + "' from google drive");
+            out.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static File getFile(String name, File parent) {
+        try {
+            Drive service = getDriveService();
+            Drive.Files.List request = service.files().list().setQ(
+                    "mimeType='application/zip' and trashed=false and '" + parent.getId() + "' in parents");
+            FileList files = request.execute();
+            for (File folderfiles : files.getItems()) {
+                if (folderfiles.getTitle().equals(name)) {
+
+                    return folderfiles;
+                }
+            }
+            return null;
+        } catch (Exception e) {
+            if (Config.isDebug())
+                e.printStackTrace();
+        }
+        return null;
+    }
+
+    private static File getFile(String name) {
+        try {
+            Drive service = getDriveService();
+            Drive.Files.List request = service.files().list().setQ(
+                    "mimeType='application/vnd.google-apps.folder' and trashed=false");
+            FileList files = request.execute();
+            for (File folderfiles : files.getItems()) {
+                if (folderfiles.getTitle().equals(name)) {
+
+                    return folderfiles;
+                }
+            }
+            return null;
+        } catch (Exception e) {
+            if (Config.isDebug())
+                e.printStackTrace();
+        }
+        return null;
     }
 
     private static File getFolder(String name, File parent) {

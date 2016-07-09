@@ -9,6 +9,8 @@ import ratismal.drivebackup.util.MessageUtil;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -19,6 +21,36 @@ import java.util.*;
 
 public class FTPUploader {
 
+
+    public static void downloadFile(String name, String type) {
+        try {
+            FTPClient f = new FTPClient();
+            if (Config.isFtpFTPS()) {
+                f = new FTPSClient();
+            }
+            f.connect(Config.getFtpHost(), Config.getFtpPort());
+            f.login(Config.getFtpUser(), Config.getFtpPass());
+            //f.log
+
+            File dirFile = new java.io.File("downloads/" + type);
+            if (!dirFile.exists()) {
+                dirFile.mkdirs();
+            }
+            f.changeWorkingDirectory(Config.getDestination());
+            f.changeWorkingDirectory(type);
+            for (FTPFile file : f.listFiles()) {
+                MessageUtil.sendConsoleMessage(file.getName());
+            }
+            OutputStream out = new FileOutputStream("downloads/" + type + "/" + name);
+            f.retrieveFile(name, out);
+            MessageUtil.sendConsoleMessage("Done downloading '" + name + "' from FTP");
+            out.flush();
+            out.close();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
     public static void uploadFile(File file, String type) {
         try {

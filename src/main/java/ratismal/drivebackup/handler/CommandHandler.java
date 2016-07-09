@@ -6,6 +6,7 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.scheduler.BukkitScheduler;
+import ratismal.drivebackup.DownloadThread;
 import ratismal.drivebackup.DriveBackup;
 import ratismal.drivebackup.UploadThread;
 import ratismal.drivebackup.config.Config;
@@ -57,6 +58,10 @@ public class CommandHandler implements CommandExecutor {
                             new Thread(t).start();
                             //MessageUtil.sendMessage(sender, "This command has been deprecated.");
                         }
+                        break;
+                    case "download":
+                        Runnable t = new DownloadThread(args[1], args[2], args[3]);
+                        new Thread(t).start();
                         break;
                     default:
                         help(sender);
