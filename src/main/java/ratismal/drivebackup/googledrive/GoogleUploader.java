@@ -51,8 +51,8 @@ public class GoogleUploader {
 
     private static FileDataStoreFactory DATA_STORE_FACTORY;
 
-    private static final String CLIENT_ID = "848896104658-shap5e212clkamtac4lrjvledm0ni1hl.apps.googleusercontent.com";
-    private static final String CLIENT_SECRET = "hIdUmBNGRGRiV5wVAC65ES0Y";
+    private static final String CLIENT_ID = "602937851350-ojcmpig3eh9p6sn5ae505hqaboim6bac.apps.googleusercontent.com";
+    private static final String CLIENT_SECRET = "MZOoXODQ2vle02SWmyxggaRT";
 
     /**
      * Global Drive API client.
