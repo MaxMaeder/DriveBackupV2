@@ -1,10 +1,10 @@
-target/*
+target/
 ref/*
 src/test/*
 src/com/*
 .m2/*
 .idea/*
-.settings/*
+.settings/
 .classpath
 .project
 *.iml

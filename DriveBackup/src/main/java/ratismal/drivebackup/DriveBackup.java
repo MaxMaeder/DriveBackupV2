@@ -10,6 +10,7 @@ import org.json.simple.JSONValue;
 import org.mcstats.Metrics;
 import ratismal.drivebackup.config.Config;
 import ratismal.drivebackup.handler.CommandHandler;
+import ratismal.drivebackup.handler.CommandTabComplete;
 import ratismal.drivebackup.handler.PlayerListener;
 import ratismal.drivebackup.util.MessageUtil;
 
@@ -44,6 +45,7 @@ public class DriveBackup extends JavaPlugin {
         pluginconfig = new Config(getConfig());
         pluginconfig.reload();
         //reloadLocalConfig();
+        getCommand("drivebackup").setTabCompleter(new CommandTabComplete(this));
         getCommand("drivebackup").setExecutor(new CommandHandler(this));
         plugin = this;
 
