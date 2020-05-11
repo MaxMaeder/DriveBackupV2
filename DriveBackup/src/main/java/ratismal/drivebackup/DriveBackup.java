@@ -164,7 +164,7 @@ public class DriveBackup extends JavaPlugin {
         if (Config.getBackupDelay() / 60 / 20 != -1) {
             MessageUtil.sendConsoleMessage("Starting the backup thread for every " + Config.getBackupDelay() + " ticks.");
             BukkitScheduler scheduler = Bukkit.getServer().getScheduler();
-            scheduler.scheduleSyncRepeatingTask(getInstance(), new UploadThread(), Config.getBackupDelay(), Config.getBackupDelay());
+            scheduler.runTaskTimerAsynchronously(getInstance(), new UploadThread(), Config.getBackupDelay(), Config.getBackupDelay());
         }
     }
 
