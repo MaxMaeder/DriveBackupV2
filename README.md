@@ -1,6 +1,6 @@
 # DriveBackup
 
-*This is an updated version of the unmantained Bukkit plugin that's available [here](https://dev.bukkit.org/projects/drivebackup). Due to changes in the Google Drive/OneDrive APIs, that plugin no longer fully works. More details [here]().*
+*This is an updated version of the unmantained Bukkit plugin that's available [here](https://dev.bukkit.org/projects/drivebackup). Due to changes in the Google Drive/OneDrive APIs, that plugin no longer fully works. More details [here](https://github.com/MaxMaeder/DriveBackup#how-is-this-better-than-the-original-plugin).*
 
 ## What is this?
 Have you ever lost your world before?
