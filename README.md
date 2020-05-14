@@ -53,7 +53,7 @@ Recommended permission holders: server owner, admins
 - Now uploads backups *asynchronously*, previously uploading a large backup would cause players to get kicked from the server
 - Made it **much** easier to authenticate with Google Drive/OneDrive
   - Now, instead of running a companion program and copying the outputted files to the server, users now just have to run a single command
-- Fixed issue causing backups in OneDrive past the number to keep to not get deleted
+- Fixed issue causing backups in OneDrive past the configured number to keep to not get deleted
 - Commands now have tab suggestions
 - Now requests very limited access from Google Drive and OneDrive
   - This means if there ever is a glitch in the plugin, it can't delete your sensitive Google Drive and/or OneDrive data
