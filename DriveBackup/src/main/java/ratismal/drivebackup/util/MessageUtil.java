@@ -5,6 +5,8 @@ import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import ratismal.drivebackup.config.Config;
+
 public class MessageUtil {
 
     /**
@@ -40,6 +42,18 @@ public class MessageUtil {
         Bukkit.getConsoleSender().sendMessage(getMessage(message));
     }
 
+    /**
+     * Sends the stack trace corresponding to the specified exception to the console, only if suppress errors is disabled
+     * <p>
+     * Whether suppress errors is enabled is specified by the user in the {@code config.yml}
+     * @param exception Exception to send the stack trace of
+     */
+    public static void sendConsoleException(Exception exception) {
+    	if (Config.isDebug()) {
+    		exception.printStackTrace();
+    	}
+    }
+    
     /**
      * Processes a message
      *

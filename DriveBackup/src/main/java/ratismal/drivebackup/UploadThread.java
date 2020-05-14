@@ -1,9 +1,12 @@
 package ratismal.drivebackup;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.entity.Player;
+
 import ratismal.drivebackup.config.Config;
 import ratismal.drivebackup.ftp.FTPUploader;
-import ratismal.drivebackup.googledrive.GoogleUploader;
+import ratismal.drivebackup.googledrive.GoogleDriveUploader;
 import ratismal.drivebackup.handler.PlayerListener;
 import ratismal.drivebackup.onedrive.OneDriveUploader;
 import ratismal.drivebackup.util.*;
@@ -43,6 +46,10 @@ public class UploadThread implements Runnable {
     public void run() {
         if (PlayerListener.doBackups || forced) {
             MessageUtil.sendMessageToAllPlayers(Config.getBackupStart());
+
+            GoogleDriveUploader googleDriveUploader = new GoogleDriveUploader();
+            OneDriveUploader oneDriveUploader = new OneDriveUploader();
+
             // Create Backup Here
             HashMap<String, HashMap<String, Object>> backupList = Config.getBackupList();
             for (Map.Entry<String, HashMap<String, Object>> set : backupList.entrySet()) {
@@ -68,18 +75,16 @@ public class UploadThread implements Runnable {
                 ratismal.drivebackup.util.Timer timer = new Timer();
                 try {
                     if (Config.isGoogleEnabled()) {
-                        MessageUtil.sendConsoleMessage("Uploading file to GoogleDrive");
+                        MessageUtil.sendConsoleMessage("Uploading file to Google Drive");
                         timer.start();
-                        GoogleUploader.uploadFile(file, type);
+                        googleDriveUploader.uploadFile(file, type);
                         timer.end();
                         MessageUtil.sendConsoleMessage(timer.getUploadTimeMessage(file));
                     }
                     if (Config.isOnedriveEnabled()) {
                         MessageUtil.sendConsoleMessage("Uploading file to OneDrive");
-                        //Couldn't get around static issue, declared a new Instance.
-                        OneDriveUploader oneDrive = new OneDriveUploader();
                         timer.start();
-                        oneDrive.uploadFile(file, type);
+                        oneDriveUploader.uploadFile(file, type);
                         timer.end();
                         MessageUtil.sendConsoleMessage(timer.getUploadTimeMessage(file));
                     }
@@ -100,10 +105,25 @@ public class UploadThread implements Runnable {
                     }
                     //MessageUtil.sendConsoleMessage("File Uploaded.");
                 } catch (Exception e) {
-                    if (Config.isDebug())
-                        e.printStackTrace();
+                    MessageUtil.sendConsoleException(e);
                 }
             }
+
+            for (Player player : Bukkit.getServer().getOnlinePlayers()) {
+            	if (!player.hasPermission("drivebackup.linkAccounts")) continue;
+            	
+	            if (googleDriveUploader.isErrorWhileUploading()) {
+	                MessageUtil.sendMessage(player, "Failed to backup to Google Drive, please run " + ChatColor.GOLD + "/drivebackup linkaccount googledrive");
+	            } else {
+	            	MessageUtil.sendMessage(player, "Backup to " + ChatColor.GOLD + "Google Drive " + ChatColor.DARK_AQUA + "complete");
+	            }
+	            if (oneDriveUploader.isErrorWhileUploading()) {
+	            	MessageUtil.sendMessage(player, "Failed to backup to OneDrive, please run " + ChatColor.GOLD + "/drivebackup linkaccount onedrive");
+	            } else {
+	            	MessageUtil.sendMessage(player, "Backup to " + ChatColor.GOLD + "OneDrive " + ChatColor.DARK_AQUA + "complete");
+	            }
+            }
+
             if (forced) {
                 MessageUtil.sendMessageToAllPlayers(Config.getBackupDone());
             } else {

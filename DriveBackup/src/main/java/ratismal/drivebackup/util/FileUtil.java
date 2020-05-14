@@ -62,7 +62,7 @@ public class FileUtil {
                         Date date = format.parse(dateString);
                         backupList.put(date, file);
                     } catch (Exception e) {
-                        e.printStackTrace();
+                        MessageUtil.sendConsoleException(e);
                     }
                 }
             }
@@ -96,7 +96,7 @@ public class FileUtil {
 
 
         } catch (Exception e) {
-            e.printStackTrace();
+            MessageUtil.sendConsoleException(e);
             MessageUtil.sendConsoleMessage("Backup creation failed.");
         }
 
@@ -114,8 +114,7 @@ public class FileUtil {
                     backupList.remove(dateOfFile);
                 }
             } catch (Exception e) {
-                if (Config.isDebug())
-                    e.printStackTrace();
+                MessageUtil.sendConsoleException(e);
                 MessageUtil.sendConsoleMessage("Backup deletion failed.");
             }
         }
@@ -158,15 +157,14 @@ public class FileUtil {
             zos.closeEntry();
             // MessageUtil.sendConsoleMessage("Folder successfully compressed");
         } catch (IOException ex) {
-            ex.printStackTrace();
+            MessageUtil.sendConsoleException(ex);
         } finally {
             try {
                 if (zos != null) {
                     zos.close();
                 }
             } catch (IOException e) {
-                if (Config.isDebug())
-                    e.printStackTrace();
+                MessageUtil.sendConsoleException(e);
             }
         }
     }

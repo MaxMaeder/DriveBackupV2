@@ -1,8 +1,6 @@
-#######################################
-#
-#     DriveBackup   -   by Ratismal
-#
-#######################################
+###############################################
+# DriveBackup   -   by Max Maeder (MaxTheGinus)
+###############################################
 
 # Should the plugin look for updates?
 update-check: true
@@ -24,7 +22,6 @@ backup-list:
 # The file name format is what the backup's naming scheme is
 # For more information about timedate formatting, see
 #   http://docs.oracle.com/javase/6/docs/api/java/text/SimpleDateFormat.html
-# To verify they are being formatted correctly, do /drivebackup list
 # Correct formatting is important, as this is how the plugin knows
 #   which backup is the most recent!
 #
