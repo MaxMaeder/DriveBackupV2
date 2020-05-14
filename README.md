@@ -31,21 +31,24 @@ Simply run `/drivebackup linkaccount onedrive` and follow the on-screen instruct
 ## Usage:
 By default, the plugin initiates a backup every hour. You can configure how often and what folders to backup in the `config.yml`.
 
-You can also manually initiate a backup by running `/drivebackup backup`
+You can also manually initiate a backup by running `/drivebackup backup`.
 
 ## Permissions
 OPs have all permissions by default
 
 ### `drivebackup.reloadConfig`
 Allows user to reload the plugin's `config.yml`
+
 Recommended permission holders: server owner, admins
 
 ### `drivebackup.linkAccounts`
 Allows user to link their Google Drive and/or OneDrive account to the plugin for use as the backup destination
+
 Recommended permission holders: server owner
 
 ### `drivebackup.backup`
 Allows user to manulally initiate a backup
+
 Recommended permission holders: server owner, admins
 
 ## How is this better than the original plugin?
