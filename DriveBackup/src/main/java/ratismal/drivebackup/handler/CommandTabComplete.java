@@ -36,14 +36,24 @@ public class CommandTabComplete implements TabCompleter {
      */
 		@Override
 		public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
-			if (cmd.getName().equalsIgnoreCase("drivebackup") && args.length == 1) {
+			if (cmd.getName().equalsIgnoreCase("drivebackup")) {
+				if (args.length == 1) {
 
-				List<String> commandList = new ArrayList<>();
-				commandList.add("v");
-				commandList.add("reloadconfig");
-				commandList.add("backup");
+					List<String> commandList = new ArrayList<>();
+					commandList.add("v");
+					commandList.add("reloadconfig");
+					commandList.add("linkaccount");
+					commandList.add("backup");
+						
+					return commandList;
+				} else if (args[0].equalsIgnoreCase("linkaccount") && args.length == 2) {
 					
-				return commandList;
+					List<String> commandList = new ArrayList<>();
+					commandList.add("googledrive");
+					commandList.add("onedrive");
+					
+					return commandList;
+				}
 			}
 			
 			return null;

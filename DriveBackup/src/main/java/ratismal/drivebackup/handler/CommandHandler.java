@@ -6,10 +6,11 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.scheduler.BukkitScheduler;
-import ratismal.drivebackup.DownloadThread;
 import ratismal.drivebackup.DriveBackup;
 import ratismal.drivebackup.UploadThread;
 import ratismal.drivebackup.config.Config;
+import ratismal.drivebackup.googledrive.GoogleDriveUploader;
+import ratismal.drivebackup.onedrive.OneDriveUploader;
 import ratismal.drivebackup.util.MessageUtil;
 
 /**
@@ -50,18 +51,41 @@ public class CommandHandler implements CommandExecutor {
                             reloadConfig(sender);
                         }
                         break;
+                    case "linkaccount":
+                    	if (hasPerm(sender, "drivebackup.linkAccounts")) {
+                    		switch (args[1].toLowerCase()) {
+                                case "googledrive":
+                                    try {
+                                        GoogleDriveUploader.authenticateUser(plugin, sender);
+                                    } catch (Exception e) {
+                                        MessageUtil.sendMessage(sender, "Failed to link your Google Drive account");
+                                    
+                                        MessageUtil.sendConsoleException(e);
+                                    }
+                                    break;
+                      		    case "onedrive":
+                      			    try {
+                      				    OneDriveUploader.authenticateUser(plugin, sender);
+                      			    } catch (Exception e) {
+                      				    MessageUtil.sendMessage(sender, "Failed to link your OneDrive account");
+                      				
+                      				    MessageUtil.sendConsoleException(e);
+                      			    }
+                      			    break;
+                                default:
+                                    help(sender);
+                                    break;
+                    		}
+                    	}
+                    	break;
                     case "backup":
                         if (hasPerm(sender, "drivebackup.backup")) {
                             //if (GoogleUploader.isGoodToGo()) {
-                            MessageUtil.sendMessage(sender, "Forcing a backup.");
+                            MessageUtil.sendMessage(sender, "Forcing a backup");
                             Runnable t = new UploadThread(true);
                             new Thread(t).start();
                             //MessageUtil.sendMessage(sender, "This command has been deprecated.");
                         }
-                        break;
-                    case "download":
-                        Runnable t = new DownloadThread(args[1], args[2], args[3]);
-                        new Thread(t).start();
                         break;
                     default:
                         help(sender);
@@ -73,6 +97,7 @@ public class CommandHandler implements CommandExecutor {
                 return true;
             }
         }
+        
         return false;
     }
 
@@ -97,11 +122,13 @@ public class CommandHandler implements CommandExecutor {
      * @param sender player
      */
     void help(CommandSender sender) {
-        sender.sendMessage(ChatColor.GOLD + "|=======DriveBackup=======|");
-        sender.sendMessage(ChatColor.LIGHT_PURPLE + "/drivebackup" + ChatColor.GOLD + " - Display this menu");
-        sender.sendMessage(ChatColor.LIGHT_PURPLE + "/drivebackup v" + ChatColor.GOLD + " - Displays plugin version");
-        sender.sendMessage(ChatColor.LIGHT_PURPLE + "/drivebackup reloadconfig" + ChatColor.GOLD + " - Reload configs");
-        sender.sendMessage(ChatColor.LIGHT_PURPLE + "/drivebackup backup" + ChatColor.GOLD + " - Backups the latest backup");
+        sender.sendMessage(ChatColor.GOLD + "|=======" + ChatColor.DARK_RED + "DriveBackup" + ChatColor.GOLD + "=======|");
+        sender.sendMessage(ChatColor.GOLD + "/drivebackup" + ChatColor.DARK_AQUA + " - Display this menu");
+        sender.sendMessage(ChatColor.GOLD + "/drivebackup v" + ChatColor.DARK_AQUA + " - Displays plugin version");
+        sender.sendMessage(ChatColor.GOLD + "/drivebackup linkaccount googledrive" + ChatColor.DARK_AQUA + " - Links your Google Drive account for backups");
+        sender.sendMessage(ChatColor.GOLD + "/drivebackup linkaccount onedrive" + ChatColor.DARK_AQUA + " - Links your OneDrive account for backups");
+        sender.sendMessage(ChatColor.GOLD + "/drivebackup reloadconfig" + ChatColor.DARK_AQUA + " - Reload configs");
+        sender.sendMessage(ChatColor.GOLD + "/drivebackup backup" + ChatColor.DARK_AQUA + " - Backups the latest backup");
     }
 
     /**
@@ -110,7 +137,7 @@ public class CommandHandler implements CommandExecutor {
      * @param sender player
      */
     void version(CommandSender sender) {
-        sender.sendMessage(ChatColor.GOLD + "DriveBackup" + ChatColor.LIGHT_PURPLE + " is running on version " + plugin.getDescription().getVersion());
+    	MessageUtil.sendMessage(sender, "Currently running on version " + plugin.getDescription().getVersion());
     }
 
     /**
@@ -121,7 +148,7 @@ public class CommandHandler implements CommandExecutor {
     public void noPerms(CommandSender sender) {
         String noPerms = Config.getNoPerms();
         noPerms = MessageUtil.processGeneral(noPerms);
-        sender.sendMessage(noPerms);
+        MessageUtil.sendMessage(sender, noPerms);
     }
 
     /**
@@ -134,7 +161,7 @@ public class CommandHandler implements CommandExecutor {
         BukkitScheduler scheduler = Bukkit.getServer().getScheduler();
         scheduler.cancelTasks(DriveBackup.getInstance());
         DriveBackup.startThread();
-        sender.sendMessage(ChatColor.GOLD + "Configs reloaded!");
+        MessageUtil.sendMessage(sender, "Config reloaded!");
     }
 
 }

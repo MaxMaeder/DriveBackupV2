@@ -48,7 +48,7 @@ public class FTPUploader {
             out.close();
 
         } catch (Exception e) {
-            e.printStackTrace();
+            MessageUtil.sendConsoleException(e);
         }
     }
 
@@ -95,7 +95,7 @@ public class FTPUploader {
 
         } catch (Exception e) {
             if (Config.isDebug())
-                e.printStackTrace();
+                MessageUtil.sendConsoleException(e);
         }
     }
 
