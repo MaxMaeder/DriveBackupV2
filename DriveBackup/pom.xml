@@ -20,11 +20,9 @@
                 <artifactId>maven-shade-plugin</artifactId>
                 <version>2.3</version>
                 <configuration>
-                    <artifactSet>
-                    </artifactSet>
                     <relocations>
                         <relocation>
-                            <pattern>org.mcstats</pattern>
+                            <pattern>org.bstats</pattern>
                             <shadedPattern>ratismal.drivebackup.DriveBackup</shadedPattern>
                         </relocation>
                     </relocations>
@@ -48,13 +46,10 @@
             <id>bukkit-repo</id>
             <url>https://hub.spigotmc.org/nexus/content/groups/public/</url>
         </repository>
-        <repository>
-            <id>Plugin Metrics</id>
-            <url>http://repo.mcstats.org/content/repositories/public</url>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-        </repository>
+		<repository>
+  			<id>CodeMC</id>
+  			<url>https://repo.codemc.org/repository/maven-public</url>
+		</repository>
     </repositories>
     <dependencies>
         <dependency>
@@ -79,34 +74,17 @@
             <artifactId>commons-io</artifactId>
             <version>2.4</version>
         </dependency>
-        <dependency>
-            <groupId>org.mcstats.bukkit</groupId>
-            <artifactId>metrics</artifactId>
-            <version>R8-SNAPSHOT</version>
-            <scope>compile</scope>
-        </dependency>
+		<dependency>
+			<groupId>org.bstats</groupId>
+			<artifactId>bstats-bukkit</artifactId>
+			<version>1.7</version>
+			<scope>compile</scope>
+		</dependency>
         <dependency>
             <groupId>com.jayway.restassured</groupId>
             <artifactId>rest-assured</artifactId>
             <version>2.8.0</version>
         </dependency>
-        <!--
-        <dependency>
-            <groupId>org.apache.httpcomponents</groupId>
-            <artifactId>httpclient</artifactId>
-            <version>4.3.6</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.httpcomponents</groupId>
-            <artifactId>httpasyncclient</artifactId>
-            <version>4.0.2</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.httpcomponents</groupId>
-            <artifactId>httpmime</artifactId>
-            <version>4.3.6</version>
-        </dependency>
-        -->
         <dependency>
             <groupId>commons-net</groupId>
             <artifactId>commons-net</artifactId>
