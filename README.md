@@ -1,4 +1,4 @@
-# DriveBackup
+# DriveBackupV2
 
 *This is an updated version of the unmaintained Bukkit plugin that's available [here](https://dev.bukkit.org/projects/drivebackup). Due to changes in the Google Drive/OneDrive APIs, that plugin no longer fully works. More details [here](https://github.com/MaxMaeder/DriveBackup#how-is-this-better-than-the-original-plugin).*
 
@@ -7,7 +7,7 @@ Have you ever lost your world before?
 
 Maybe your hard drive died. Maybe you used a web hosting service that terminated without warning. Maybe you just accidentally deleted it.
 
-DriveBackup is a plugin that aims to provide an extra layer of security to your data.
+DriveBackupV2 is a plugin that aims to provide an extra layer of security to your data.
 
 ## What does it do?
 - Creates and uploads backups to Google Drive, OneDrive, or a remote FTP server
