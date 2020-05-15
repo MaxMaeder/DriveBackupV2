@@ -33,6 +33,8 @@ By default, the plugin initiates a backup every hour. You can configure how ofte
 
 You can also manually initiate a backup by running `/drivebackup backup`.
 
+View other commands by running `/drivebackup`.
+
 ## Permissions
 OPs have all permissions by default.
 
