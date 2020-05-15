@@ -1,5 +1,6 @@
 package ratismal.drivebackup;
 
+import org.bstats.bukkit.*;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -7,7 +8,6 @@ import org.bukkit.scheduler.BukkitScheduler;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
-import org.mcstats.Metrics;
 import ratismal.drivebackup.config.Config;
 import ratismal.drivebackup.handler.CommandHandler;
 import ratismal.drivebackup.handler.CommandTabComplete;
@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.concurrent.Callable;
 import java.util.logging.Logger;
 
 public class DriveBackup extends JavaPlugin {
@@ -31,8 +32,8 @@ public class DriveBackup extends JavaPlugin {
     private static Config pluginconfig;
     private static DriveBackup plugin;
     public Logger log = getLogger();
-
-
+    
+    
     /**
      * What to do when plugin is enabled (init)
      */
@@ -106,39 +107,28 @@ public class DriveBackup extends JavaPlugin {
     }
 
     public void initMetrics() throws IOException {
-        Metrics metrics = new Metrics(this);
-
-        Metrics.Graph enabledModes = metrics.createGraph("Enabled Services");
-
-        enabledModes.addPlotter(new Metrics.Plotter("Google Drive") {
+        Metrics metrics = new Metrics(this, 7537);
+        
+        metrics.addCustomChart(new Metrics.SimplePie("googleDriveEnabled", new Callable<String>() {
             @Override
-            public int getValue() {
-                return Config.isGoogleEnabled() ? 1 : 0;
+            public String call() throws Exception {
+                return Config.isGoogleEnabled() ? "Enabled" : "Disabled";
             }
-        });
-
-        enabledModes.addPlotter(new Metrics.Plotter("OneDrive") {
+        }));
+        
+        metrics.addCustomChart(new Metrics.SimplePie("oneDriveEnabled", new Callable<String>() {
             @Override
-            public int getValue() {
-                return Config.isOnedriveEnabled() ? 1 : 0;
+            public String call() throws Exception {
+            	return Config.isOnedriveEnabled() ? "Enabled" : "Disabled";
             }
-        });
+        }));
 
-        enabledModes.addPlotter(new Metrics.Plotter("FTP") {
+        metrics.addCustomChart(new Metrics.SimplePie("ftpEnabled", new Callable<String>() {
             @Override
-            public int getValue() {
-                return Config.isFtpEnabled() ? 1 : 0;
+            public String call() throws Exception {
+            	return Config.isFtpEnabled() ? "Enabled" : "Disabled";
             }
-        });
-
-        enabledModes.addPlotter(new Metrics.Plotter("None") {
-            @Override
-            public int getValue() {
-                return Config.isOnedriveEnabled() || Config.isGoogleEnabled() || Config.isFtpEnabled() ? 0 : 1;
-            }
-        });
-
-        metrics.start();
+        }));
     }
 
     /**
