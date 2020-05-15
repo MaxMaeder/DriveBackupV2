@@ -2,8 +2,8 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>ratismal</groupId>
-    <artifactId>DriveBackup</artifactId>
-    <version>1.1.0</version>
+    <artifactId>DriveBackupV2</artifactId>
+    <version>1.0.0</version>
     <build>
         <finalName>${project.artifactId}</finalName>
         <plugins>
