@@ -17,7 +17,7 @@ DriveBackup is a plugin that aims to provide an extra layer of security to your 
   - If you already have a utility creating certain backups (eg. world) you can choose not to create that kind of backup and instead upload the existing ones
 
 ## Setup:
-First, download the plugin [here](https://github.com/MaxMaeder/DriveBackup/releases) and copy it to the `plugins` folder on your server. Then, restart your server. Finally, follow the instructions below for the backup method of your choice.
+First, download the plugin [here](https://dev.bukkit.org/projects/drivebackupv2) and copy it to the `plugins` folder on your server. Then, restart your server. Finally, follow the instructions below for the backup method of your choice.
 
 ### FTP
 Fill in the `config.yml` with the FTP server login information.
