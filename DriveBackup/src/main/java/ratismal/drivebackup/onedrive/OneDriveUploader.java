@@ -190,44 +190,37 @@ public class OneDriveUploader {
             //Assign our backup to Random Access File
             this.raf = new RandomAccessFile(file, "r");
 
-            if (openConnection.statusCode() == 200) {
-                String uploadURL = openConnection.getBody().jsonPath().get("uploadUrl");
+            String uploadURL = openConnection.getBody().jsonPath().get("uploadUrl");
 
-                Response uploadFile;
+            Response uploadFile;
 
-                boolean isComplete = false;
+            boolean isComplete = false;
 
-                while (!isComplete) {
-                    long startTimeInner = System.currentTimeMillis();
-                    byte[] bytesToUpload = getChunk();
+            while (!isComplete) {
+                long startTimeInner = System.currentTimeMillis();
+                byte[] bytesToUpload = getChunk();
 
-                    if (getTotalUploaded() + bytesToUpload.length < file.length()) {
-                        uploadFile = given().contentType("application/zip")
-                            .header("Content-Range", String.format("bytes %d-%d/%d", getTotalUploaded(), getTotalUploaded() + bytesToUpload.length - 1, file.length()))
-                            .body(bytesToUpload).put(uploadURL);
+                uploadFile = given().contentType("application/zip")
+                    .header("Content-Range", String.format("bytes %d-%d/%d", getTotalUploaded(), getTotalUploaded() + bytesToUpload.length - 1, file.length()))
+                    .body(bytesToUpload).put(uploadURL);
 
-
-                        try {
-                            List<String> test = uploadFile.getBody().jsonPath().getList("nextExpectedRanges");
-                            setRanges(test.toArray(new String[test.size()]));
-                        } catch (NullPointerException e) {
-                            MessageUtil.sendConsoleException(e);
-                        }
-                    } else {
-                        given().contentType("application/zip")
-                            .header("Content-Range", String.format("bytes %d-%d/%d", getTotalUploaded(), getTotalUploaded() + bytesToUpload.length - 1, file.length()))
-                            .body(bytesToUpload).put(uploadURL);
-                        
-                        isComplete = true;
+                if (getTotalUploaded() + bytesToUpload.length < file.length()) {
+                    try {
+                        List<String> test = uploadFile.getBody().jsonPath().getList("nextExpectedRanges");
+                        setRanges(test.toArray(new String[test.size()]));
+                    } catch (NullPointerException e) {
+                        MessageUtil.sendConsoleException(e);
                     }
-
-                    long elapsedTimeInner = System.currentTimeMillis() - startTimeInner;
-                    MessageUtil.sendConsoleMessage(String.format("Uploaded chunk (progress %.1f%%) of %s (%s/s) for file %s",
-                        ((double) getTotalUploaded() / file.length()) * 100,
-                        readableFileSize(getLastUploaded()),
-                        (long) ((double) elapsedTimeInner / 1000d) > 0 ? readableFileSize(getLastUploaded() / (long) ((double) elapsedTimeInner / 1000d)) : readableFileSize(getLastUploaded()),
-                        file.getAbsoluteFile()));
+                } else {
+                    isComplete = true;
                 }
+
+                long elapsedTimeInner = System.currentTimeMillis() - startTimeInner;
+                MessageUtil.sendConsoleMessage(String.format("Uploaded chunk (progress %.1f%%) of %s (%s/s) for file %s",
+                    ((double) getTotalUploaded() / file.length()) * 100,
+                    readableFileSize(getLastUploaded()),
+                    (long) ((double) elapsedTimeInner / 1000d) > 0 ? readableFileSize(getLastUploaded() / (long) ((double) elapsedTimeInner / 1000d)) : readableFileSize(getLastUploaded()),
+                    file.getAbsoluteFile()));
             }
 
             if (checkDestinationExists(type)) {
