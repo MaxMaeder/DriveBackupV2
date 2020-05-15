@@ -84,7 +84,7 @@ public class DriveBackup extends JavaPlugin {
                                 newVersion = updateCheck(currentVersion);
                                 if (newVersion > currentVersion) {
                                     MessageUtil.sendConsoleMessage("Version " + newVersionTitle + " has been released." + " You are currently running version " + currentVersionTitle);
-                                    MessageUtil.sendConsoleMessage("Update at: http://dev.bukkit.org/bukkit-plugins/drivebackup/");
+                                    MessageUtil.sendConsoleMessage("Update at: http://dev.bukkit.org/bukkit-plugins/drivebackupv2/");
                                 } else if (currentVersion > newVersion) {
                                     MessageUtil.sendConsoleMessage("You are running an unsupported build!");
                                     MessageUtil.sendConsoleMessage("The recommended version is " + newVersionTitle + ", and you are running " + currentVersionTitle);
@@ -184,7 +184,7 @@ public class DriveBackup extends JavaPlugin {
      */
     public double updateCheck(double currentVersion) {
         try {
-            URL url = new URL("https://api.curseforge.com/servermods/files?projectids=97321");
+            URL url = new URL("https://api.curseforge.com/servermods/files?projectids=383461");
             URLConnection conn = url.openConnection();
             conn.setReadTimeout(5000);
             conn.addRequestProperty("User-Agent", "DriveBackup Update Checker");
