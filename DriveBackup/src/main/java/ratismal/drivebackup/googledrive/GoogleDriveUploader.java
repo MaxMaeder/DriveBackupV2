@@ -9,13 +9,13 @@ import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.model.*;
-import com.jayway.restassured.response.Response;
+import io.restassured.response.Response;
 
 import ratismal.drivebackup.DriveBackup;
 import ratismal.drivebackup.config.Config;
 import ratismal.drivebackup.util.MessageUtil;
 
-import static com.jayway.restassured.RestAssured.given;
+import static io.restassured.RestAssured.given;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
