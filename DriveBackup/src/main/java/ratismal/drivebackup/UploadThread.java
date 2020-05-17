@@ -13,7 +13,6 @@ import ratismal.drivebackup.util.*;
 import ratismal.drivebackup.util.Timer;
 
 import java.io.File;
-import java.text.DecimalFormat;
 import java.util.*;
 
 /**

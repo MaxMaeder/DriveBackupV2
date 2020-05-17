@@ -1,6 +1,6 @@
 package ratismal.drivebackup.onedrive;
 
-import com.jayway.restassured.response.Response;
+import io.restassured.response.Response;
 
 import org.bukkit.Bukkit;
 import org.bukkit.scheduler.BukkitScheduler;
@@ -19,7 +19,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
-import static com.jayway.restassured.RestAssured.given;
+import static io.restassured.RestAssured.given;
 
 /**
  * Created by Redemption on 2/24/2016.

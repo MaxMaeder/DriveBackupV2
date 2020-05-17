@@ -18,7 +18,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
-                <version>2.3</version>
+                <version>3.2.3</version>
                 <configuration>
                     <relocations>
                         <relocation>
@@ -81,9 +81,9 @@
 			<scope>compile</scope>
 		</dependency>
         <dependency>
-            <groupId>com.jayway.restassured</groupId>
+            <groupId>io.rest-assured</groupId>
             <artifactId>rest-assured</artifactId>
-            <version>2.8.0</version>
+            <version>4.3.0</version>
         </dependency>
         <dependency>
             <groupId>commons-net</groupId>
