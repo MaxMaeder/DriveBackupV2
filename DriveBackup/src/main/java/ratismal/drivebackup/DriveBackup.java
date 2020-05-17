@@ -188,7 +188,7 @@ public class DriveBackup extends JavaPlugin {
                 return currentVersion;
             }
             // Pull the last version from the JSON
-            newVersionTitle = ((String) ((JSONObject) array.get(array.size() - 1)).get("name")).replace("DriveBackup-", "").trim();
+            newVersionTitle = ((String) ((JSONObject) array.get(array.size() - 1)).get("name")).replace("DriveBackupV2-", "").trim();
             return Double.valueOf(newVersionTitle.replaceFirst("\\.", "").trim());
         } catch (Exception e) {
             MessageUtil.sendConsoleMessage("There was an issue attempting to check for the latest version.");
