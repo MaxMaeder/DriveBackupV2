@@ -13,6 +13,7 @@ public class Config {
      * General
      */
     private static long backupDelay;
+    private static int backupThreadPriority;
     private static int keepCount;
     private static boolean updateCheck;
     private static boolean keepLocal;
@@ -105,6 +106,7 @@ public class Config {
         ftpDir = pluginconfig.getString("ftp.working-dir");
 
         backupDelay = pluginconfig.getLong("delay") * 60 * 20;
+        backupThreadPriority = pluginconfig.getInt("backupThreadPriority");
         keepCount = pluginconfig.getInt("keep-count");
         updateCheck = pluginconfig.getBoolean("update-check");
         keepLocal = pluginconfig.getBoolean("keep-local-backup-after-upload");
@@ -192,6 +194,10 @@ public class Config {
 
     public static long getBackupDelay() {
         return backupDelay;
+    }
+
+    public static int getBackupThreadPriority() {
+        return backupThreadPriority;
     }
 
     public static int getKeepCount() {

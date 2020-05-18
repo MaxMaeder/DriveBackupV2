@@ -10,6 +10,9 @@ metrics: true
 
 # How often to do backups (in minutes). Set to -1 to disable automatic backups.
 delay: 60
+# The priority of the backup thread, relative to the default
+# For example, -1 would make the prioriy one less than the default
+backupThreadPriority: 0
 # How many backups to keep before deleting the oldest one. Set to -1 to disable automatic deletes.
 keep-count: 20
 
