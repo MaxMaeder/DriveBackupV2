@@ -110,17 +110,21 @@ public class UploadThread implements Runnable {
 
             for (Player player : Bukkit.getServer().getOnlinePlayers()) {
             	if (!player.hasPermission("drivebackup.linkAccounts")) continue;
-            	
-	            if (googleDriveUploader.isErrorWhileUploading()) {
-	                MessageUtil.sendMessage(player, "Failed to backup to Google Drive, please run " + ChatColor.GOLD + "/drivebackup linkaccount googledrive");
-	            } else {
-	            	MessageUtil.sendMessage(player, "Backup to " + ChatColor.GOLD + "Google Drive " + ChatColor.DARK_AQUA + "complete");
-	            }
-	            if (oneDriveUploader.isErrorWhileUploading()) {
-	            	MessageUtil.sendMessage(player, "Failed to backup to OneDrive, please run " + ChatColor.GOLD + "/drivebackup linkaccount onedrive");
-	            } else {
-	            	MessageUtil.sendMessage(player, "Backup to " + ChatColor.GOLD + "OneDrive " + ChatColor.DARK_AQUA + "complete");
-	            }
+                
+                if (Config.isGoogleEnabled()) {
+                    if (googleDriveUploader.isErrorWhileUploading()) {
+                        MessageUtil.sendMessage(player, "Failed to backup to Google Drive, please run " + ChatColor.GOLD + "/drivebackup linkaccount googledrive");
+                    } else {
+                        MessageUtil.sendMessage(player, "Backup to " + ChatColor.GOLD + "Google Drive " + ChatColor.DARK_AQUA + "complete");
+                    }
+                }
+                if (Config.isOnedriveEnabled()) {
+                    if (oneDriveUploader.isErrorWhileUploading()) {
+                        MessageUtil.sendMessage(player, "Failed to backup to OneDrive, please run " + ChatColor.GOLD + "/drivebackup linkaccount onedrive");
+                    } else {
+                        MessageUtil.sendMessage(player, "Backup to " + ChatColor.GOLD + "OneDrive " + ChatColor.DARK_AQUA + "complete");
+                    }
+                }
             }
 
             if (forced) {
