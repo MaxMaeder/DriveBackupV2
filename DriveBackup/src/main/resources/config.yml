@@ -58,7 +58,7 @@ keep-local-backup-after-upload: true
 
 # Google Drive configs
 googledrive:
-  enabled: true
+  enabled: false
 onedrive:
   enabled: false
 ftp:
