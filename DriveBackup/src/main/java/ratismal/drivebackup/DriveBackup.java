@@ -38,7 +38,6 @@ public class DriveBackup extends JavaPlugin {
      * What to do when plugin is enabled (init)
      */
     public void onEnable() {
-        getConfig().options().copyDefaults(true);
         saveDefaultConfig();
 
         reloadConfig();

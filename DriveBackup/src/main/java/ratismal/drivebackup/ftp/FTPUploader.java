@@ -9,10 +9,6 @@ import ratismal.drivebackup.util.MessageUtil;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.OutputStream;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
@@ -20,43 +16,30 @@ import java.util.*;
  */
 
 public class FTPUploader {
+    private boolean errorOccurred;
 
+    /**
+     * Creates an instance of the {@code FTPUploader} object
+     */
+    public FTPUploader() {}
 
-    public static void downloadFile(String name, String type) {
-        try {
-            FTPClient f = new FTPClient();
-            if (Config.isFtpFTPS()) {
-                f = new FTPSClient();
-            }
-            f.connect(Config.getFtpHost(), Config.getFtpPort());
-            f.login(Config.getFtpUser(), Config.getFtpPass());
-            //f.log
-
-            File dirFile = new java.io.File("downloads/" + type);
-            if (!dirFile.exists()) {
-                dirFile.mkdirs();
-            }
-            f.changeWorkingDirectory(Config.getDestination());
-            f.changeWorkingDirectory(type);
-            for (FTPFile file : f.listFiles()) {
-                MessageUtil.sendConsoleMessage(file.getName());
-            }
-            OutputStream out = new FileOutputStream("downloads/" + type + "/" + name);
-            f.retrieveFile(name, out);
-            MessageUtil.sendConsoleMessage("Done downloading '" + name + "' from FTP");
-            out.flush();
-            out.close();
-
-        } catch (Exception e) {
-            MessageUtil.sendConsoleException(e);
-        }
-    }
-
-    public static void uploadFile(File file, String type) {
+    /**
+     * Uploads the specified file to the SFTP/FTP server inside a folder for the specified file type
+     * <p>
+     * The SFTP/FTP server credentials are specified by the user in the {@code config.yml}
+     * @param file the file
+     * @param type the type of file (ex. plugins, world)
+     */
+    public void uploadFile(File file, String type) {
         try {
 
+            if (Config.isFtpSftp()) {
+                SFTPUploader.uploadFile(file, type);
+                return;
+            }
+
             FTPClient f = new FTPClient();
-            if (Config.isFtpFTPS()) {
+            if (Config.isFtpFtps()) {
                 f = new FTPSClient();
             }
             f.connect(Config.getFtpHost(), Config.getFtpPort());
@@ -94,12 +77,27 @@ public class FTPUploader {
 
 
         } catch (Exception e) {
-            if (Config.isDebug())
-                MessageUtil.sendConsoleException(e);
+            MessageUtil.sendConsoleException(e);
+            setErrorOccurred(true);
         }
     }
 
-    public static void deleteFiles(FTPClient f, String type) throws Exception {
+    /**
+     * Gets whether an error occurred while accessing the authenticated user's OneDrive
+     * @return whether an error occurred
+     */
+    public boolean isErrorWhileUploading() {
+        return this.errorOccurred;
+    }
+
+    /**
+     * Deletes the oldest files past the number to retain from the SFTP server inside the specified folder for the file type
+     * <p>
+     * The number of files to retain is specified by the user in the {@code config.yml}
+     * @param f the FTPClient
+     * @param type the type of file (ex. plugins, world)
+     */
+    private void deleteFiles(FTPClient f, String type) throws Exception {
         int fileLimit = Config.getKeepCount();
         if (fileLimit == -1) {
             return;
@@ -116,7 +114,12 @@ public class FTPUploader {
         }
     }
 
-    public static TreeMap<Date, FTPFile> processFiles(FTPClient f) throws Exception {
+    /**
+     * Returns a list of files inside the folder for the file type
+     * @param f the FTPClient
+     * @return the list of files
+     */
+    private TreeMap<Date, FTPFile> processFiles(FTPClient f) throws Exception {
         TreeMap<Date, FTPFile> result = new TreeMap<Date, FTPFile>();
         for (FTPFile file : f.mlistDir()) {
             if (file.getName().endsWith(".zip"))
@@ -125,5 +128,11 @@ public class FTPUploader {
         return result;
     }
 
-
+    /**
+     * Sets whether an error occurred while accessing the authenticated user's OneDrive
+     * @param errorOccurredValue whether an error occurred
+     */
+    private void setErrorOccurred(boolean errorOccurredValue) {
+        this.errorOccurred = errorOccurredValue;
+    }
 }
