@@ -51,7 +51,10 @@ public class Config {
     private static boolean ftpEnabled;
     private static String ftpHost;
     private static int ftpPort;
-    private static boolean ftpFTPS;
+    private static boolean ftpSftp;
+    private static boolean ftpFtps;
+    private static String sftpPublicKey;
+    private static String sftpPass;
     private static String ftpUser;
     private static String ftpPass;
     private static String ftpDir;
@@ -99,10 +102,20 @@ public class Config {
         ftpEnabled = pluginconfig.getBoolean("ftp.enabled");
         ftpHost = pluginconfig.getString("ftp.hostname");
         ftpPort = pluginconfig.getInt("ftp.port");
-        ftpFTPS = pluginconfig.getBoolean("ftp.FTPS");
+        ftpSftp = pluginconfig.getBoolean("ftp.sftp");
+        
+        // Checks both FTPS keys for compatiablilty with older plugin versions
+        if (pluginconfig.isSet("ftp.ftps")) {
+            ftpFtps = pluginconfig.getBoolean("ftp.ftps");
+        } else {
+            ftpFtps = pluginconfig.getBoolean("ftp.FTPS");
+        }
+        
 
         ftpUser = pluginconfig.getString("ftp.username");
         ftpPass = pluginconfig.getString("ftp.password");
+        sftpPublicKey = pluginconfig.getString("ftp.sftpPublicKey");
+        sftpPass = pluginconfig.getString("ftp.sftpPassphrase");
         ftpDir = pluginconfig.getString("ftp.working-dir");
 
         backupDelay = pluginconfig.getLong("delay") * 60 * 20;
@@ -172,8 +185,12 @@ public class Config {
         return ftpPort;
     }
 
-    public static boolean isFtpFTPS() {
-        return ftpFTPS;
+    public static boolean isFtpSftp() {
+        return ftpSftp;
+    }
+
+    public static boolean isFtpFtps() {
+        return ftpFtps;
     }
 
     public static String getFtpPass() {
@@ -182,6 +199,14 @@ public class Config {
 
     public static String getFtpUser() {
         return ftpUser;
+    }
+
+    public static String getSftpPublicKey() {
+        return sftpPublicKey;
+    }
+
+    public static String getSftpPass() {
+        return sftpPass;
     }
 
     public static String getFtpDir() {

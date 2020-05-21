@@ -64,15 +64,21 @@ onedrive:
 ftp:
   enabled: false
   # Server to connect to
-  hostname: ftp.example.com
-  # Port to connect to
+  hostname: "ftp.example.com"
+  # Port to connect to (usually 21 for FTP and 22 for SFTP)
   port: 21
+  # Set to true to use SFTP instead of FTP
+  sftp: false
   # Set to true to use FTPS instead of FTP
-  FTPS: false
+  ftps: false
   # Username
-  username: user
-  # Password
-  password: Password1
+  username: "Username"
+  # Password  (leave blank if no password)
+  password: 
+  # Path to the SFTP public key, relative to the "DriveBackupV2 folder" (leave blank if not using public key authentication)
+  sftpPublicKey: 
+  # SFTP passphrase (leave blank if not using public key authentication or no password)
+  sftpPassphrase: 
   # The directory to work in (leave blank for default)
   working-dir:
 
