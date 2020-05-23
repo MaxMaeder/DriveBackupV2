@@ -159,11 +159,11 @@ public class Config {
             if (rawBackupList != null) {
                 for (String rawBackupName : rawBackupList.getKeys(false)) {
                     
-                    ConfigurationSection subSection = rawBackupList.getConfigurationSection(rawBackupName);
+                    ConfigurationSection rawBackup = rawBackupList.getConfigurationSection(rawBackupName);
                     HashMap<String, Object> parsedBackup = new HashMap<>();
-                    for (String rawBackupPropertyName : subSection.getKeys(false)) {
+                    for (String rawBackupPropertyName : rawBackup.getKeys(false)) {
 
-                        parsedBackup.put(rawBackupPropertyName, subSection.get(rawBackupPropertyName));
+                        parsedBackup.put(rawBackupPropertyName, rawBackup.get(rawBackupPropertyName));
                     }
 
                     parsedBackup.put("path", rawBackupName);
