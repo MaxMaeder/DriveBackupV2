@@ -3,7 +3,16 @@ package ratismal.drivebackup.config;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 
+import ratismal.drivebackup.util.MessageUtil;
+
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.Map.Entry;
+
+import com.avaje.ebeaninternal.server.cluster.mcast.Message;
 
 public class Config {
 
@@ -28,7 +37,7 @@ public class Config {
      * Backups
      */
     private static String dir;
-    private static HashMap<String, HashMap<String, Object>> backupList;
+    private static ArrayList<HashMap<String, Object>> backupList;
 
     /**
      * Uploading
@@ -127,23 +136,45 @@ public class Config {
 
         //MessageUtil.sendConsoleMessage("Scheduling backups for every " + backupDelay + " ticks.");
 
-        HashMap<String, HashMap<String, Object>> temp = new HashMap<>();
-        ConfigurationSection groupSection = pluginconfig.getConfigurationSection("backup-list");
-        //groupSection.getKeys(false)
-        if (groupSection != null) {
-            for (String name : groupSection.getKeys(false)) {
-                HashMap<String, Object> temp2 = new HashMap<>();
-                ConfigurationSection subSection = groupSection.getConfigurationSection(name);
-                for (String name2 : subSection.getKeys(false)) {
-                    Object value = subSection.get(name2);
-                    temp2.put(name2, value);
-                }
-                temp.put(name, temp2);
-            }
-        }
-        backupList = (HashMap<String, HashMap<String, Object>>) temp.clone();
-    }
+        if (pluginconfig.isList("backup-list")) {
 
+            List<Map<?, ?>> rawBackupList = pluginconfig.getMapList("backup-list");
+            ArrayList<HashMap<String, Object>> parsedBackupList = new ArrayList<>();
+            for (Map<?, ?> rawBackup: rawBackupList) {
+
+                HashMap<String, Object> parsedBackup = new HashMap<>();
+                for (Entry<?, ?> rawBackupProperty : rawBackup.entrySet()) {
+
+                    parsedBackup.put((String) rawBackupProperty.getKey(), rawBackupProperty.getValue());
+                }
+
+                parsedBackupList.add(parsedBackup);
+            }
+
+            backupList = (ArrayList<HashMap<String, Object>>) parsedBackupList.clone();
+        } else { // For backwards compatibility with <1.0.2
+
+            ConfigurationSection rawBackupList = pluginconfig.getConfigurationSection("backup-list");
+            ArrayList<HashMap<String, Object>> parsedBackupList = new ArrayList<>();
+            if (rawBackupList != null) {
+                for (String rawBackupName : rawBackupList.getKeys(false)) {
+                    
+                    ConfigurationSection subSection = rawBackupList.getConfigurationSection(rawBackupName);
+                    HashMap<String, Object> parsedBackup = new HashMap<>();
+                    for (String rawBackupPropertyName : subSection.getKeys(false)) {
+
+                        parsedBackup.put(rawBackupPropertyName, subSection.get(rawBackupPropertyName));
+                    }
+
+                    parsedBackup.put("path", rawBackupName);
+
+                    parsedBackupList.add(parsedBackup);
+                }
+            }
+
+            backupList = (ArrayList<HashMap<String, Object>>) parsedBackupList.clone();
+        }
+    } 
 
     /**
      * Returns
@@ -213,7 +244,7 @@ public class Config {
         return ftpDir;
     }
 
-    public static HashMap<String, HashMap<String, Object>> getBackupList() {
+    public static ArrayList<HashMap<String, Object>> getBackupList() {
         return backupList;
     }
 

@@ -31,6 +31,8 @@ public class FileUtil {
      * @return The file to upload
      */
     public static File getFileToUpload(String type, String format, boolean output) {
+        type = type.replace("../", "");
+
         backupList.clear();
         String path = new File(Config.getDir()).getAbsolutePath() + "/" + type;
         File[] files = new File(path).listFiles();
@@ -76,7 +78,11 @@ public class FileUtil {
      * @param type         What we're backing up (world, plugin, etc)
      * @param formatString Format of the file name
      */
-    public static void makeBackup(String type, String formatString, List<String> _blackList) {
+    public static void makeBackup(String type, String formatString, List<String> _blackList) throws IOException {
+        if (type.charAt(0) == File.separatorChar) {
+            throw new IOException(); 
+        }
+
         try {
             fileList.clear();
             DateFormat format = new SimpleDateFormat(formatString, Locale.ENGLISH);
@@ -86,13 +92,13 @@ public class FileUtil {
             if (!path.exists()) {
                 path.mkdir();
             }
-            path = new File(Config.getDir() + "/" + type);
+            path = new File(new String(Config.getDir() + "/" + type).replace("../", "")); // Keeps working directory inside backups folder
             if (!path.exists()) {
                 path.mkdir();
             }
 
             generateFileList(new File(type), type);
-            zipIt(Config.getDir() + "/" + type + "/" + fileName, type);
+            zipIt(new String(Config.getDir() + "/" + type + "/" + fileName).replace("../", ""), type);
 
 
         } catch (Exception e) {
@@ -127,7 +133,6 @@ public class FileUtil {
      * @param sourceFolder The name of the folder to put it in
      */
     private static void zipIt(String zipFile, String sourceFolder) {
-        // System.out.println("Making new zip " + zipFile);
         byte[] buffer = new byte[1024];
         String source;
         FileOutputStream fos;
@@ -139,10 +144,9 @@ public class FileUtil {
             } catch (Exception e) {
                 source = sourceFolder;
             }
+
             fos = new FileOutputStream(zipFile);
             zos = new ZipOutputStream(fos);
-
-            //  MessageUtil.sendConsoleMessage("Output to Zip : " + zipFile);
 
             for (String file : fileList) {
                 ZipEntry ze = new ZipEntry(source + File.separator + file);

@@ -214,18 +214,46 @@ public class GoogleDriveUploader {
                 parentFolder = service.files().insert(parentFolder).execute();
             }
 
-            File childFolder = getFolder(type, parentFolder);
+            String[] typeFolders = type.split(java.io.File.separator);
+            
+            File childFolder = null;
             ParentReference childFolderParent = new ParentReference();
-            childFolderParent.setId(parentFolder.getId());
-            if (childFolder == null) {
-                System.out.println("Creating a folder");
-                childFolder = new File();
-                childFolder.setTitle(type);
-                childFolder.setMimeType("application/vnd.google-apps.folder");
-                childFolder.setParents(Collections.singletonList(childFolderParent));
+            
+            for (String folder : typeFolders) {
+                if (folder.equals(".") || folder.equals("..")) {
+                    continue;
+                }
 
-                childFolder = service.files().insert(childFolder).execute();
+                /*if (folder == "..") {
+                    if (childFolder == null) {
+                        childFolder = service.files().get(parentFolder.getParents().get(0).getId()).execute();
+                    } else {
+                        childFolder = service.files().get(childFolder.getParents().get(0).getId()).execute();
+                    }
+                    
+                    continue;
+                }*/
+
+                if (childFolder == null) {
+                    childFolder = getFolder(folder, parentFolder);
+                    childFolderParent.setId(parentFolder.getId());
+                } else {
+                    String ParentFolderId = childFolder.getId();
+                    childFolder = getFolder(folder, childFolder);
+                    childFolderParent.setId(ParentFolderId);
+                }
+
+                if (childFolder == null) {
+                    MessageUtil.sendConsoleMessage("Creating a folder");
+                    childFolder = new File();
+                    childFolder.setTitle(folder);
+                    childFolder.setMimeType("application/vnd.google-apps.folder");
+                    childFolder.setParents(Collections.singletonList(childFolderParent));
+    
+                    childFolder = service.files().insert(childFolder).execute();
+                }
             }
+
 
             ParentReference newParent = new ParentReference();
             newParent.setId(childFolder.getId());
@@ -233,7 +261,7 @@ public class GoogleDriveUploader {
 
             service.files().insert(body, mediaContent).execute();
 
-            deleteFiles(type);
+            deleteFiles(childFolder);
         } catch(Exception error) {
             MessageUtil.sendConsoleException(error);
             setErrorOccurred(true);
@@ -375,22 +403,18 @@ public class GoogleDriveUploader {
     }
 
     /**
-     * Deletes the oldest of the specified type of file past the number to retain from the authenticated user's Google Drive
+     * Deletes the oldest files in the specified folder past the number to retain from the authenticated user's Google Drive
      * <p>
      * The number of files to retain is specified by the user in the {@code config.yml}
-     * @param type the type of file (ex. plugins, world)
+     * @param folder the folder containing the files
      * @throws IOException
      */
-    private void deleteFiles(String type) throws IOException {
+    private void deleteFiles(File folder) throws IOException {
         int fileLimit = Config.getKeepCount();
 
         if (fileLimit == -1) {
             return;
         }
-
-        File parentFolder = getFolder(Config.getDestination());
-
-        File folder = getFolder(type, parentFolder);
 
         List<ChildReference> queriedFilesfromDrive = processFiles(folder);
         if (queriedFilesfromDrive.size() > fileLimit) {
