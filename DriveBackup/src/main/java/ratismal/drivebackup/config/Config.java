@@ -94,8 +94,6 @@ public class Config {
 
     @SuppressWarnings("unchecked")
     public void reload() {
-        metrics = pluginconfig.getBoolean("metrics");
-
         destination = pluginconfig.getString("destination");
 
         dir = pluginconfig.getString("dir");
@@ -130,9 +128,25 @@ public class Config {
         backupDelay = pluginconfig.getLong("delay") * 60 * 20;
         backupThreadPriority = pluginconfig.getInt("backup-thread-priority");
         keepCount = pluginconfig.getInt("keep-count");
-        updateCheck = pluginconfig.getBoolean("update-check");
         keepLocal = pluginconfig.getBoolean("keep-local-backup-after-upload");
-        debug = !pluginconfig.getBoolean("suppress-errors");
+
+        // Checks both metrics, update check, and suppress errors keys for compatiablilty with older plugin versions
+        if (pluginconfig.isSet("advanced.metrics")) {
+            metrics = pluginconfig.getBoolean("advanced.metrics");
+        } else {
+            metrics = pluginconfig.getBoolean("metrics");
+        }
+        if (pluginconfig.isSet("advanced.update-check")) {
+            updateCheck = pluginconfig.getBoolean("advanced.update-check");
+        } else {
+            updateCheck = pluginconfig.getBoolean("update-check");
+        }
+        if (pluginconfig.isSet("advanced.suppress-errors")) {
+            debug = !pluginconfig.getBoolean("advanced.suppress-errors");
+        } else {
+            debug = !pluginconfig.getBoolean("suppress-errors");
+        }
+        
 
         //MessageUtil.sendConsoleMessage("Scheduling backups for every " + backupDelay + " ticks.");
 
