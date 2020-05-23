@@ -109,3 +109,5 @@ advanced:
   update-check: true
   # Suppress most stacktraces?
   suppress-errors: false
+  # FTP file seperator
+  ftp-file-seperator: "/"

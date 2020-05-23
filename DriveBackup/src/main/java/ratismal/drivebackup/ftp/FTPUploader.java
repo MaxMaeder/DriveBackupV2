@@ -45,21 +45,21 @@ public class FTPUploader {
             }
             f.connect(Config.getFtpHost(), Config.getFtpPort());
             f.login(Config.getFtpUser(), Config.getFtpPass());
+
             String baseDirectory = Config.getFtpDir();
             if (baseDirectory == null) {
                 baseDirectory = f.printWorkingDirectory();
             }
-            f.changeWorkingDirectory(baseDirectory);
-            //f.changeWorkingDirectory("/");
-            if (!f.changeWorkingDirectory(Config.getDestination())) {
+            f.changeWorkingDirectory(replaceFileSeperators(baseDirectory));
+            if (!f.changeWorkingDirectory(replaceFileSeperators(Config.getDestination()))) {
                 MessageUtil.sendConsoleMessage("Creating folder");
-                f.makeDirectory(Config.getDestination());
-                f.changeWorkingDirectory(Config.getDestination());
+                f.makeDirectory(replaceFileSeperators(Config.getDestination()));
+                f.changeWorkingDirectory(replaceFileSeperators(Config.getDestination()));
             }
-            if (!f.changeWorkingDirectory(type)) {
+            if (!f.changeWorkingDirectory(replaceFileSeperators(type))) {
                 MessageUtil.sendConsoleMessage("Creating folder");
-                f.makeDirectory(type);
-                f.changeWorkingDirectory(type);
+                f.makeDirectory(replaceFileSeperators(type));
+                f.changeWorkingDirectory(replaceFileSeperators(type));
             }
 
             f.setFileType(FTP.BINARY_FILE_TYPE, FTP.BINARY_FILE_TYPE);
@@ -127,6 +127,15 @@ public class FTPUploader {
                 result.put(file.getTimestamp().getTime(), file);
         }
         return result;
+    }
+
+    /**
+     * Replaces any file seperators in the specified path with the configured file seperator
+     * @param path the file path
+     * @return the file path with replaced seperators
+     */
+    private String replaceFileSeperators(String path) {
+        return path.replace("/", Config.getFtpFileSeperator()).replace("\\", Config.getFtpFileSeperator());
     }
 
     /**

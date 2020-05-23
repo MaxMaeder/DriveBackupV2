@@ -67,6 +67,7 @@ public class Config {
     private static String ftpUser;
     private static String ftpPass;
     private static String ftpDir;
+    private static String ftpFileSeperator;
 
     /**
      * Messages
@@ -146,7 +147,8 @@ public class Config {
         } else {
             debug = !pluginconfig.getBoolean("suppress-errors");
         }
-        
+
+        ftpFileSeperator = pluginconfig.getString("advanced.ftp-file-seperator");
 
         //MessageUtil.sendConsoleMessage("Scheduling backups for every " + backupDelay + " ticks.");
 
@@ -256,6 +258,10 @@ public class Config {
 
     public static String getFtpDir() {
         return ftpDir;
+    }
+
+    public static String getFtpFileSeperator() {
+        return ftpFileSeperator;
     }
 
     public static ArrayList<HashMap<String, Object>> getBackupList() {
