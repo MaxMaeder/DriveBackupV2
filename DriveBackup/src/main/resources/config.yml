@@ -4,21 +4,15 @@
 
 # IMPORTANT: Make sure any file paths you specify don't end with a file seperator (usually "/")
 
-# Should the plugin look for updates?
-update-check: true
-
-# Should metrics be enabled
-metrics: true
-
-# How often to do backups (in minutes). Set to -1 to disable automatic backups.
+# How often to do backups (in minutes), set to -1 to disable automatic backups
 delay: 60
 # The priority of the backup thread, relative to the default
 # For example, -1 would make the prioriy one less than the default
 backup-thread-priority: 0
-# How many backups to keep before deleting the oldest one. Set to -1 to disable automatic deletes.
+# How many backups to keep before deleting the oldest one, set to -1 to disable automatic deletes
 keep-count: 20
 
-# Expandable list of things to back up.
+# Expandable list of things to back up
 backup-list:
 # An entry is comprised of a a list of four things:
 #   - the folder path
@@ -65,10 +59,10 @@ dir: "backups"
 # Path to the folder to save backups in on the remote server
 destination: "backups"
 
-# Keep backups locally in backup directory after remote upload
+# Keep backups locally in backup directory after remote upload?
 keep-local-backup-after-upload: false
 
-# Google Drive configs
+# Backup methods
 googledrive:
   enabled: false
 onedrive:
@@ -96,14 +90,22 @@ ftp:
 
 # Messages
 messages:
+  # What to say to a player who attempts to preform an action they don't have permission to do
   no-perm: "You don't have permission to do this!"
   # What to say to all players when backup starts
   backup-start: "Creating backups, server may lag for a little while..."
   # What to say to all players when backup is complete
-  backup-complete: "Backup complete."
-  # What to say to all players when backup is complete and there is another scheduled backup. This message is sent along with "backup-complete".
-  #    %TIME is the amount of time until the next backup, in minutes
+  backup-complete: "Backup complete"
+  # What to say to all players when backup is complete and there is another scheduled backup
+  # This message is sent along with "backup-complete"
+  #   %TIME is the amount of time until the next backup, in minutes
   next-backup: "The next backup is in %TIME minutes"
 
-# If set to true, most stacktraces will be suppressed
-suppress-errors: false
+# Advanced
+advanced:
+  # Should metrics be enabled?
+  metrics: true
+  # Should the plugin look for updates?
+  update-check: true
+  # Suppress most stacktraces?
+  suppress-errors: false
