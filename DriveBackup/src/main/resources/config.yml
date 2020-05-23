@@ -14,7 +14,7 @@ metrics: true
 delay: 60
 # The priority of the backup thread, relative to the default
 # For example, -1 would make the prioriy one less than the default
-backupThreadPriority: 0
+backup-thread-priority: 0
 # How many backups to keep before deleting the oldest one. Set to -1 to disable automatic deletes.
 keep-count: 20
 
@@ -88,9 +88,9 @@ ftp:
   # Password  (leave blank if no password)
   password: 
   # Path to the SFTP public key, relative to the "DriveBackupV2 folder" (leave blank if not using public key authentication)
-  sftpPublicKey: 
+  sftp-public-key: 
   # SFTP passphrase (leave blank if not using public key authentication or no password)
-  sftpPassphrase: 
+  sftp-passphrase: 
   # The directory to work in (leave blank for default)
   working-dir:
 

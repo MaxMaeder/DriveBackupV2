@@ -123,12 +123,12 @@ public class Config {
 
         ftpUser = pluginconfig.getString("ftp.username");
         ftpPass = pluginconfig.getString("ftp.password");
-        sftpPublicKey = pluginconfig.getString("ftp.sftpPublicKey");
-        sftpPass = pluginconfig.getString("ftp.sftpPassphrase");
+        sftpPublicKey = pluginconfig.getString("ftp.sftp-public-key");
+        sftpPass = pluginconfig.getString("ftp.sftp-passphrase");
         ftpDir = pluginconfig.getString("ftp.working-dir");
 
         backupDelay = pluginconfig.getLong("delay") * 60 * 20;
-        backupThreadPriority = pluginconfig.getInt("backupThreadPriority");
+        backupThreadPriority = pluginconfig.getInt("backup-thread-priority");
         keepCount = pluginconfig.getInt("keep-count");
         updateCheck = pluginconfig.getBoolean("update-check");
         keepLocal = pluginconfig.getBoolean("keep-local-backup-after-upload");
