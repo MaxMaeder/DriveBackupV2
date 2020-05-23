@@ -2,6 +2,8 @@
 # DriveBackup   -   by Max Maeder (MaxTheGinus)
 ###############################################
 
+# IMPORTANT: Make sure any file paths you specify don't end with a file seperator (usually "/")
+
 # Should the plugin look for updates?
 update-check: true
 
@@ -18,43 +20,54 @@ keep-count: 20
 
 # Expandable list of things to back up.
 backup-list:
-# The backup list is comprised of three things:
-#   - folder names
-#   - file name formats
+# An entry is comprised of a a list of four things:
+#   - the folder path
+#   - the file name format
 #   - whether this plugin should create the backup
-# The file name format is what the backup's naming scheme is
+#   - files to not include in the backup (optional)
+#
+# The folder path should be the path to the folder you want to backup, 
+#   relative to the folder your server jar is in
+# For more information about relative paths, see
+#   http://www.linux.com/training-tutorials/absolute-path-vs-relative-path-linuxunix/
+# To avoid overwriting data, ".." only affects the current working directory locally
+#
+# The file name format is the backup's naming scheme, this should contain a timestamp
 # For more information about timedate formatting, see
 #   http://docs.oracle.com/javase/6/docs/api/java/text/SimpleDateFormat.html
 # Correct formatting is important, as this is how the plugin knows
 #   which backup is the most recent!
 #
+# You can also use the blacklist to not include specified files/folders
+# This should be the path to the file/folder relative to the folder you want to backup
+#   blacklist:
+#     - "dontbackup"
+#     - "thesefolders"
+#     - "orthisfile.txt"
+#
 # For example, if you wanted to back up crash reports, you would do:
-#  crash-reports:
+#  -
+#    path: "crash-reports"
 #    format: "'crash-'yyyy-MM-dd_HH.mm.ss'-server.zip'"
 #    create: true
-# The 'crash-reports:' part refers to the folder, and the "'crash-'yyyy-MM-dd_HH.mm.ss'-server.txt'" refers to
+# The crash-reports: part refers to the folder, and the "'crash-'yyyy-MM-dd_HH.mm.ss'-server.txt'" refers to
 #   what format the file name is. Since create is set to true, the plugin will take the crash-reports folder,
 #   zip it into a file according to the format, and upload it.
-# You can also use the blacklist key to not include specified files
-#    blacklist:
-#    - "dontbackup"
-#    - "thesefolders"
-#    - "orthisfile.txt"
-  world:
+  - path: "world"
     format: "'Backup-world-'yyyy-M-d--HH-mm'.zip'"
     create: true
-  plugins:
+  - path: "plugins"
     format: "'Backup-plugins-'yyyy-M-d--HH-mm'.zip'"
     create: true
 
-# Where the backups are stored locally
+# Path to the folder to save backups in locally
 dir: "backups"
 
-# Folder in to save backups on remote server
+# Path to the folder to save backups in on the remote server
 destination: "backups"
 
-# Option to keep local backup directory clean after remote upload
-keep-local-backup-after-upload: true
+# Keep backups locally in backup directory after remote upload
+keep-local-backup-after-upload: false
 
 # Google Drive configs
 googledrive:

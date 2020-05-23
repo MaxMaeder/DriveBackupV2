@@ -53,16 +53,16 @@ public class UploadThread implements Runnable {
             FTPUploader FTPUploader = new FTPUploader();
 
             // Create Backup Here
-            HashMap<String, HashMap<String, Object>> backupList = Config.getBackupList();
-            for (Map.Entry<String, HashMap<String, Object>> set : backupList.entrySet()) {
+            ArrayList<HashMap<String, Object>> backupList = Config.getBackupList();
+            for (HashMap<String, Object> set : backupList) {
 
-                String type = set.getKey();
-                String format = set.getValue().get("format").toString();
-                String create = set.getValue().get("create").toString();
+                String type = set.get("path").toString();
+                String format = set.get("format").toString();
+                String create = set.get("create").toString();
 
                 List<String> blackList = new ArrayList<>();
-                if (set.getValue().containsKey("blacklist")) {
-                    Object tempObject = set.getValue().get("blacklist");
+                if (set.containsKey("blacklist")) {
+                    Object tempObject = set.get("blacklist");
                     if (tempObject instanceof List<?>) {
                         blackList = (List<String>) tempObject;
                     }
@@ -70,7 +70,18 @@ public class UploadThread implements Runnable {
 
                 MessageUtil.sendConsoleMessage("Doing backups for " + type);
                 if (create.equalsIgnoreCase("true")) {
-                    FileUtil.makeBackup(type, format, blackList);
+                    try {
+                        FileUtil.makeBackup(type, format, blackList);
+                    } catch(Exception error) {
+                        for (Player player : Bukkit.getServer().getOnlinePlayers()) {
+                            if (!player.hasPermission("drivebackup.linkAccounts")) continue;
+
+                            MessageUtil.sendMessage(player, "Failed to create backup, path to folder to backup is absolute, expected a relative path");
+                            MessageUtil.sendMessage(player, "An absolute path can overwrite sensitive files, see the " + ChatColor.GOLD + "config.yml " + ChatColor.DARK_AQUA + "for more information");
+                        }
+
+                        return;
+                    }
                 }
 
                 File file = FileUtil.getFileToUpload(type, format, false);

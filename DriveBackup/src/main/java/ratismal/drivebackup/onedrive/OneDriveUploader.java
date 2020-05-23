@@ -172,7 +172,9 @@ public class OneDriveUploader {
      */
     public void uploadFile(File file, String type) throws Exception {
         try {
-        	resetRanges();
+            resetRanges();
+            
+            type = type.replace("../", "");
         	
             if (!checkDestinationExists()) {
                 createDestinationFolder();
