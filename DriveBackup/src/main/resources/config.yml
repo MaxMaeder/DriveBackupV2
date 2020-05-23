@@ -23,7 +23,7 @@ backup-list:
 # An entry is comprised of a a list of four things:
 #   - the folder path
 #   - the file name format
-#   - whether this plugin should create the backup
+#   - whether this plugin should create the backup, or just upload it
 #   - files to not include in the backup (optional)
 #
 # The folder path should be the path to the folder you want to backup, 
@@ -39,20 +39,19 @@ backup-list:
 #   which backup is the most recent!
 #
 # You can also use the blacklist to not include specified files/folders
-# This should be the path to the file/folder relative to the folder you want to backup
+# An entry should be the path to the file/folder relative to the folder you want to backup, for example:
 #   blacklist:
 #     - "dontbackup"
 #     - "thesefolders"
 #     - "orthisfile.txt"
 #
 # For example, if you wanted to back up crash reports, you would do:
-#  -
-#    path: "crash-reports"
+#  - path: "crash-reports"
 #    format: "'crash-'yyyy-MM-dd_HH.mm.ss'-server.zip'"
 #    create: true
 # The crash-reports: part refers to the folder, and the "'crash-'yyyy-MM-dd_HH.mm.ss'-server.txt'" refers to
 #   what format the file name is. Since create is set to true, the plugin will take the crash-reports folder,
-#   zip it into a file according to the format, and upload it.
+#   zip it into a file according to the format, and upload it
   - path: "world"
     format: "'Backup-world-'yyyy-M-d--HH-mm'.zip'"
     create: true
