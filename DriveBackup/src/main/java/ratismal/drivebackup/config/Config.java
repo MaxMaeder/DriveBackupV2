@@ -3,16 +3,12 @@ package ratismal.drivebackup.config;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 
-import ratismal.drivebackup.util.MessageUtil;
-
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Map.Entry;
-
-import com.avaje.ebeaninternal.server.cluster.mcast.Message;
 
 public class Config {
 
@@ -27,6 +23,13 @@ public class Config {
     private static boolean updateCheck;
     private static boolean keepLocal;
     private static boolean debug;
+
+    /**
+     * Schedule
+     */
+    private static boolean scheduleBackups;
+    private static ZoneOffset backupScheduleTimezone;
+    private static ArrayList<HashMap<String, Object>> backupScheduleList;
 
     /**
      * Metrics
@@ -77,7 +80,8 @@ public class Config {
     private static String backupStart;
     private static String backupDone;
     private static String backupNext;
-
+    private static String backupNextScheduled;
+    private static String backupNextScheduledFormat;
 
     /**
      * config constructor
@@ -102,6 +106,25 @@ public class Config {
         backupStart = pluginconfig.getString("messages.backup-start");
         backupDone = pluginconfig.getString("messages.backup-complete");
         backupNext = pluginconfig.getString("messages.next-backup");
+        backupNextScheduled = pluginconfig.getString("messages.next-schedule-backup");
+        backupNextScheduledFormat = pluginconfig.getString("messages.next-schedule-backup-format");
+
+        scheduleBackups = pluginconfig.getBoolean("scheduled-backups");
+        backupScheduleTimezone = ZoneOffset.of(pluginconfig.getString("schedule-timezone"));
+
+        List<Map<?, ?>> rawBackupScheduleList = pluginconfig.getMapList("backup-schedule-list");
+        ArrayList<HashMap<String, Object>> parsedBackupScheduleList = new ArrayList<>();
+        for (Map<?, ?> rawBackupSchedule: rawBackupScheduleList) {
+
+            HashMap<String, Object> parsedBackupSchedule = new HashMap<>();
+            for (Entry<?, ?> rawBackupScheduleProperty : rawBackupSchedule.entrySet()) {
+
+                parsedBackupSchedule.put((String) rawBackupScheduleProperty.getKey(), rawBackupScheduleProperty.getValue());
+            }
+
+            parsedBackupScheduleList.add(parsedBackupSchedule);
+        }
+        backupScheduleList = (ArrayList<HashMap<String, Object>>) parsedBackupScheduleList.clone();
 
         googleEnabled = pluginconfig.getBoolean("googledrive.enabled");
 
@@ -276,6 +299,18 @@ public class Config {
         return backupThreadPriority;
     }
 
+    public static boolean isBackupsScheduled() {
+        return scheduleBackups;
+    }
+
+    public static ZoneOffset getBackupScheduleTimezone() {
+        return backupScheduleTimezone;
+    }
+
+    public static ArrayList<HashMap<String, Object>> getBackupScheduleList() {
+        return backupScheduleList;
+    }
+
     public static int getKeepCount() {
         return keepCount;
     }
@@ -294,6 +329,14 @@ public class Config {
 
     public static String getBackupNext() {
         return backupNext;
+    }
+
+    public static String getBackupNextScheduled() {
+        return backupNextScheduled;
+    }
+
+    public static String getBackupNextScheduledFormat() {
+        return backupNextScheduledFormat;
     }
 
     public static String getBackupStart() {

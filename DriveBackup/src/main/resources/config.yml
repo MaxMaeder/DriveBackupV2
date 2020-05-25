@@ -12,9 +12,40 @@ backup-thread-priority: 0
 # How many backups to keep before deleting the oldest one, set to -1 to disable automatic deletes
 keep-count: 20
 
+# Should backups run at specific days/times every week, instead of every so often?
+scheduled-backups: false
+# The timezone the times in the schedule are in
+# Example timezones:
+#   Chicago, USA: "-05:00"
+#   Paris, France: "+02:00"
+# Find your timezone: http://www.timeanddate.com/time/map/
+schedule-timezone: "-00:00"
+# Expandable list of dates/times to back up
+backup-schedule-list:
+# An entry is comprised of two things:
+#   - The day(s) to run the backup on
+#   - The time to run the backup at
+#
+# The day(s) to run the backup on should be a list comprised of any of the following:
+#   - Days of the week: "sunday", "monday", "tuesday", "wednesday", "thursday", "friday", or "saturday"
+#   - Groups of days: "weekdays" or "weekends"
+#   - All days: "everyday"
+#
+# The time to run the backup at should be in 24-hour format
+# If the time is before 10 o'clock, there must be a zero in front of the hour
+# For example: 03:00 (3 AM) or 13:00 (1 PM)
+- days: 
+  - "sunday"
+  - "wednesday"
+  time: "05:00"
+- days: 
+  - "monday"
+  - "thursday"
+  time: "23:30"
+
 # Expandable list of things to back up
 backup-list:
-# An entry is comprised of a a list of four things:
+# An entry is comprised of four things:
 #   - the folder path
 #   - the file name format
 #   - whether this plugin should create the backup, or just upload it
@@ -38,20 +69,12 @@ backup-list:
 #     - "dontbackup"
 #     - "thesefolders"
 #     - "orthisfile.txt"
-#
-# For example, if you wanted to back up crash reports, you would do:
-#  - path: "crash-reports"
-#    format: "'crash-'yyyy-MM-dd_HH.mm.ss'-server.zip'"
-#    create: true
-# The crash-reports: part refers to the folder, and the "'crash-'yyyy-MM-dd_HH.mm.ss'-server.txt'" refers to
-#   what format the file name is. Since create is set to true, the plugin will take the crash-reports folder,
-#   zip it into a file according to the format, and upload it
-  - path: "world"
-    format: "'Backup-world-'yyyy-M-d--HH-mm'.zip'"
-    create: true
-  - path: "plugins"
-    format: "'Backup-plugins-'yyyy-M-d--HH-mm'.zip'"
-    create: true
+- path: "world"
+  format: "'Backup-world-'yyyy-M-d--HH-mm'.zip'"
+  create: true
+- path: "plugins"
+  format: "'Backup-plugins-'yyyy-M-d--HH-mm'.zip'"
+  create: true
 
 # Path to the folder to save backups in locally
 dir: "backups"
@@ -95,11 +118,19 @@ messages:
   # What to say to all players when backup starts
   backup-start: "Creating backups, server may lag for a little while..."
   # What to say to all players when backup is complete
-  backup-complete: "Backup complete"
-  # What to say to all players when backup is complete and there is another scheduled backup
+  backup-complete: "Backup complete,"
+  # What to say to all players when a interval-based backup is complete
   # This message is sent along with "backup-complete"
   #   %TIME is the amount of time until the next backup, in minutes
-  next-backup: "The next backup is in %TIME minutes"
+  next-backup: "the next backup is in %TIME minutes"
+  # What to say to all players when a schedule-based backup is complete
+  # This message is sent along with "backup-complete"
+  #   %DATE is the date/time of the next backup
+  next-schedule-backup: "the next backup is at %DATE"
+  # The format of the time/date represented by %DATE in the "next-schedule-backup" message
+  # For more information about timedate formatting, see
+  #   http://docs.oracle.com/javase/8/docs/api/java/time/format/DateTimeFormatter.html
+  next-schedule-backup-format: "hh:mm a EEE, MMM dd"
 
 # Advanced
 advanced:
