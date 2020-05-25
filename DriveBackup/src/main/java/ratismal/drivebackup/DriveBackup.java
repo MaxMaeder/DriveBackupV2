@@ -19,6 +19,19 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLConnection;
+import java.time.DayOfWeek;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoField;
+import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalAccessor;
+import java.time.temporal.TemporalAdjusters;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.Callable;
 import java.util.logging.Logger;
 
@@ -32,8 +45,17 @@ public class DriveBackup extends JavaPlugin {
     private static Config pluginconfig;
     private static DriveBackup plugin;
     public Logger log = getLogger();
-    
-    
+
+    /**
+     * List of the IDs of the scheduled backup tasks
+     */
+    private static ArrayList<Integer> backupTasks = new ArrayList<>();
+
+    /**
+     * List of Dates representing each time a scheduled backup will occur
+     */
+    private static ArrayList<LocalDateTime> backupDatesList = new ArrayList<>();
+
     /**
      * What to do when plugin is enabled (init)
      */
@@ -44,14 +66,13 @@ public class DriveBackup extends JavaPlugin {
 
         pluginconfig = new Config(getConfig());
         pluginconfig.reload();
-        //reloadLocalConfig();
+        // reloadLocalConfig();
         getCommand("drivebackup").setTabCompleter(new CommandTabComplete(this));
         getCommand("drivebackup").setExecutor(new CommandHandler(this));
         plugin = this;
 
         PluginManager pm = this.getServer().getPluginManager();
         pm.registerEvents(new PlayerListener(), this);
-
 
         currentVersionTitle = getDescription().getVersion().split("-")[0];
         currentVersion = Double.valueOf(currentVersionTitle.replaceFirst("\\.", ""));
@@ -164,11 +185,116 @@ public class DriveBackup extends JavaPlugin {
      * Starts the backup thread
      */
     public static void startThread() {
-        if (Config.getBackupDelay() / 60 / 20 != -1) {
-            MessageUtil.sendConsoleMessage("Starting the backup thread for every " + Config.getBackupDelay() + " ticks.");
-            BukkitScheduler scheduler = Bukkit.getServer().getScheduler();
-            scheduler.runTaskTimerAsynchronously(getInstance(), new UploadThread(), Config.getBackupDelay(), Config.getBackupDelay());
+        BukkitScheduler taskScheduler = Bukkit.getServer().getScheduler();
+
+        if (Config.isBackupsScheduled()) {
+            cancelAllTasks(backupTasks);
+            backupDatesList.clear();
+
+            ZoneOffset timezone = Config.getBackupScheduleTimezone();
+
+            for (HashMap<String, Object> schedule : Config.getBackupScheduleList()) {
+
+                ArrayList<String> scheduleDays = new ArrayList<>();
+                scheduleDays.addAll((List<String>) schedule.get("days"));
+
+                for (int i = 0; i < scheduleDays.size(); i++) {
+                    switch (scheduleDays.get(i)) {
+                        case "weekdays":
+                            scheduleDays.remove(scheduleDays.get(i));
+                            addIfNotAdded(scheduleDays, "monday");
+                            addIfNotAdded(scheduleDays, "tuesday");
+                            addIfNotAdded(scheduleDays, "wednesday");
+                            addIfNotAdded(scheduleDays, "thursday");
+                            addIfNotAdded(scheduleDays, "friday");
+                            break;
+                        case "weekends":
+                            scheduleDays.remove(scheduleDays.get(i));
+                            addIfNotAdded(scheduleDays, "sunday");
+                            addIfNotAdded(scheduleDays, "saturday");
+                            break;
+                        case "everyday":
+                            scheduleDays.remove(scheduleDays.get(i));
+                            addIfNotAdded(scheduleDays, "sunday");
+                            addIfNotAdded(scheduleDays, "monday");
+                            addIfNotAdded(scheduleDays, "tuesday");
+                            addIfNotAdded(scheduleDays, "wednesday");
+                            addIfNotAdded(scheduleDays, "thursday");
+                            addIfNotAdded(scheduleDays, "friday");
+                            addIfNotAdded(scheduleDays, "saturday");
+                            break;
+                    }
+                }
+
+                TemporalAccessor scheduleTime = DateTimeFormatter.ofPattern ("kk:mm", Locale.ENGLISH).parse((String) schedule.get("time"));
+
+                for (int i = 0; i < scheduleDays.size(); i++) {
+                    LocalDateTime previousOccurrence = LocalDateTime.now(timezone)
+                        .with(TemporalAdjusters.previous(DayOfWeek.valueOf(scheduleDays.get(i).toUpperCase())))
+                        .with(ChronoField.CLOCK_HOUR_OF_DAY, scheduleTime.get(ChronoField.CLOCK_HOUR_OF_DAY))
+                        .with(ChronoField.MINUTE_OF_HOUR, scheduleTime.get(ChronoField.MINUTE_OF_HOUR))
+                        .with(ChronoField.SECOND_OF_MINUTE, 0);
+
+                    LocalDateTime now = LocalDateTime.now(timezone);
+                    
+                    LocalDateTime nextOccurrence = LocalDateTime.now(timezone)
+                        .with(TemporalAdjusters.nextOrSame(DayOfWeek.valueOf(scheduleDays.get(i).toUpperCase())))
+                        .with(ChronoField.CLOCK_HOUR_OF_DAY, scheduleTime.get(ChronoField.CLOCK_HOUR_OF_DAY))
+                        .with(ChronoField.MINUTE_OF_HOUR, scheduleTime.get(ChronoField.MINUTE_OF_HOUR))
+                        .with(ChronoField.SECOND_OF_MINUTE, 0);
+
+                    // Adjusts nextOccurrence date when it was set to earlier on same day, as the DayOfWeek TemporalAdjuster only takes into account the day, not the time
+                    LocalDateTime startingOccurrence = nextOccurrence;
+                    if (now.isAfter(startingOccurrence)) {
+                        startingOccurrence = startingOccurrence.plusWeeks(1);
+                    }
+
+                    backupTasks.add(taskScheduler.runTaskTimerAsynchronously(
+                        getInstance(), 
+                        new UploadThread(), 
+                        ChronoUnit.SECONDS.between(now, startingOccurrence) * 20, // 20 ticks per second 
+                        ChronoUnit.SECONDS.between(previousOccurrence, nextOccurrence) * 20
+                    ).getTaskId());
+
+                    backupDatesList.add(startingOccurrence);
+                }
+
+                LocalDateTime scheduleMessageTime = LocalDateTime.now(timezone)
+                    .with(ChronoField.CLOCK_HOUR_OF_DAY, scheduleTime.get(ChronoField.CLOCK_HOUR_OF_DAY))
+                    .with(ChronoField.MINUTE_OF_HOUR, scheduleTime.get(ChronoField.MINUTE_OF_HOUR));
+                StringBuilder scheduleMessage = new StringBuilder();
+                scheduleMessage.append("Scheduling a backup to run at ");
+                scheduleMessage.append(scheduleMessageTime.format(DateTimeFormatter.ofPattern("hh:mm a")));
+                scheduleMessage.append(" every ");
+                for (int i = 0; i < scheduleDays.size(); i++) {
+                    if (i != 0) {
+                        scheduleMessage.append(", ");
+                    }
+                    scheduleMessage.append(scheduleDays.get(i).substring(0, 1).toUpperCase() + scheduleDays.get(i).substring(1));
+                }
+                scheduleMessage.append(".");
+                MessageUtil.sendConsoleMessage(scheduleMessage.toString());
+            }
+        } else if (Config.getBackupDelay() / 60 / 20 != -1) {
+            cancelAllTasks(backupTasks);
+
+            MessageUtil.sendConsoleMessage("Scheduling a backup to run every " + (Config.getBackupDelay() / 60 / 20) + " minutes.");
+
+            backupTasks.add(taskScheduler.runTaskTimerAsynchronously(
+                getInstance(), 
+                new UploadThread(), 
+                Config.getBackupDelay(), 
+                Config.getBackupDelay()
+            ).getTaskId());
         }
+    }
+
+    /**
+     * Gets a list of Dates representing each time a scheduled backup will occur
+     * @return the ArrayList of LocalDateTime objects
+     */
+    public static ArrayList<LocalDateTime> getBackupDatesList() {
+        return backupDatesList;
     }
 
     /**
@@ -207,5 +333,25 @@ public class DriveBackup extends JavaPlugin {
             MessageUtil.sendConsoleMessage("There was an issue attempting to check for the latest version.");
         }
         return currentVersion;
+    }
+
+    /**
+     * Cancels all of the specified tasks
+     * @param taskList an ArrayList of the IDs of the tasks
+     */
+    private static void cancelAllTasks(ArrayList<Integer> taskList) {
+        for (int i = 0; i < taskList.size(); i++) {
+            Bukkit.getScheduler().cancelTask(taskList.get(i));
+            taskList.remove(i);
+        }
+    }
+
+    /**
+     * Adds a Object to an ArrayList, if it doesn't already contain the Object
+     * @param list the ArrayList
+     * @param item the Object
+     */
+    private static void addIfNotAdded(ArrayList list, Object item) {
+        if (!list.contains(item)) list.add(item);
     }
 }
