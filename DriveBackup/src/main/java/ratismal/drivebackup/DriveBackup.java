@@ -160,7 +160,7 @@ public class DriveBackup extends JavaPlugin {
         metrics.addCustomChart(new Metrics.SimplePie("sftpEnabled", new Callable<String>() {
             @Override
             public String call() throws Exception {
-            	return Config.isFtpSftp() ? "Enabled" : "Disabled";
+            	return Config.isFtpSftp() ? "FTP using SSH" : "FTP";
             }
         }));
     }
