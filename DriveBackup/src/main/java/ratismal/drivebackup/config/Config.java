@@ -21,6 +21,7 @@ public class Config {
     private static int backupThreadPriority;
     private static int keepCount;
     private static int localKeepCount;
+    private static boolean backupsRequirePlayers;
     private static boolean updateCheck;
     private static boolean debug;
 
@@ -153,6 +154,7 @@ public class Config {
         backupThreadPriority = pluginconfig.getInt("backup-thread-priority");
         keepCount = pluginconfig.getInt("keep-count");
         localKeepCount = pluginconfig.getInt("local-keep-count");
+        backupsRequirePlayers = pluginconfig.getBoolean("backups-require-players");
 
         // Checks both metrics, update check, and suppress errors keys for compatiablilty with older plugin versions
         if (pluginconfig.isSet("advanced.metrics")) {
@@ -315,8 +317,12 @@ public class Config {
         return keepCount;
     }
 
-    public static int getLocalKeepCount(){
+    public static int getLocalKeepCount() {
         return localKeepCount;
+    }
+
+    public static boolean isBackupsRequirePlayers() {
+        return backupsRequirePlayers;
     }
 
     public static boolean isUpdateCheck() {

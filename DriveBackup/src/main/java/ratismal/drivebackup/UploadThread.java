@@ -49,7 +49,7 @@ public class UploadThread implements Runnable {
     public void run() {
         Thread.currentThread().setPriority(Thread.NORM_PRIORITY + Config.getBackupThreadPriority());
 
-        if (PlayerListener.doBackups || forced) {
+        if (!Config.isBackupsRequirePlayers() || PlayerListener.isAutoBackupsActive() || forced) {
             MessageUtil.sendMessageToAllPlayers(Config.getBackupStart());
 
             GoogleDriveUploader googleDriveUploader = new GoogleDriveUploader();
@@ -213,9 +213,9 @@ public class UploadThread implements Runnable {
 
                 MessageUtil.sendMessageToAllPlayers(Config.getBackupDone() + " " + nextBackupMessage);
             }
-            if (Bukkit.getOnlinePlayers().size() == 0 && PlayerListener.doBackups) {
+            if (Config.isBackupsRequirePlayers() && Bukkit.getOnlinePlayers().size() == 0 && PlayerListener.isAutoBackupsActive()) {
                 MessageUtil.sendConsoleMessage("Disabling automatic backups due to inactivity.");
-                PlayerListener.doBackups = false;
+                PlayerListener.setAutoBackupsActive(false);
             }
         } else {
             MessageUtil.sendConsoleMessage("Skipping backup.");
