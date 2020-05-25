@@ -9,8 +9,10 @@ delay: 60
 # The priority of the backup thread, relative to the default
 # For example, -1 would make the prioriy one less than the default
 backup-thread-priority: 0
-# How many backups to keep before deleting the oldest one, set to -1 to disable automatic deletes
+# How many backups to keep remotely before deleting the oldest one, set to -1 to disable automatic deletes
 keep-count: 20
+# How many backups to keep locally before deleting the oldest one, set to -1 to disable automatic deletes
+local-keep-count: 0
 
 # Should backups run at specific days/times every week, instead of every so often?
 scheduled-backups: false
@@ -81,9 +83,6 @@ dir: "backups"
 
 # Path to the folder to save backups in on the remote server
 destination: "backups"
-
-# Keep backups locally in backup directory after remote upload?
-keep-local-backup-after-upload: false
 
 # Backup methods
 googledrive:

@@ -105,23 +105,39 @@ public class FileUtil {
             MessageUtil.sendConsoleException(e);
             MessageUtil.sendConsoleMessage("Backup creation failed.");
         }
+    }
 
-        if (Config.getKeepCount() != -1) {
+    /**
+     * Deletes the oldest files in the specified folder past the number to retain locally
+     * <p>
+     * The number of files to retain locally is specified by the user in the {@code config.yml}
+     * @param type the type of file (ex. plugins, world)
+     * @param formatString the format of the files name
+     * @throws IOException
+     */
+    public static void deleteFiles(String type, String formatString) throws IOException {
+        if (Config.getLocalKeepCount() != -1) {
             try {
                 getFileToUpload(type, formatString, false);
-                while (backupList.size() > Config.getKeepCount()) {
+
+                MessageUtil.sendConsoleMessage("There are " + backupList.size() + " file(s) which exceeds the " +
+                "local limit of " + Config.getLocalKeepCount() + ", deleting.");
+
+                while (backupList.size() > Config.getLocalKeepCount()) {
                     File fileToDelete = backupList.descendingMap().lastEntry().getValue();
                     Date dateOfFile = backupList.descendingMap().lastKey();
+
                     if (fileToDelete.delete()) {
-                        MessageUtil.sendConsoleMessage("Old backup deleted.");
+                        MessageUtil.sendConsoleMessage("Old local backup deleted.");
                     } else {
-                        MessageUtil.sendConsoleMessage("Failed to delete backup " + backupList.descendingMap().lastEntry().getValue().getName());
+                        MessageUtil.sendConsoleMessage("Failed to delete local backup " + backupList.descendingMap().lastEntry().getValue().getName());
                     }
+                    
                     backupList.remove(dateOfFile);
                 }
             } catch (Exception e) {
                 MessageUtil.sendConsoleException(e);
-                MessageUtil.sendConsoleMessage("Backup deletion failed.");
+                MessageUtil.sendConsoleMessage("Local backup deletion failed.");
             }
         }
     }

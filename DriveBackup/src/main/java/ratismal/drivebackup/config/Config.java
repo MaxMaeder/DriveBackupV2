@@ -20,8 +20,8 @@ public class Config {
     private static long backupDelay;
     private static int backupThreadPriority;
     private static int keepCount;
+    private static int localKeepCount;
     private static boolean updateCheck;
-    private static boolean keepLocal;
     private static boolean debug;
 
     /**
@@ -152,7 +152,7 @@ public class Config {
         backupDelay = pluginconfig.getLong("delay") * 60 * 20;
         backupThreadPriority = pluginconfig.getInt("backup-thread-priority");
         keepCount = pluginconfig.getInt("keep-count");
-        keepLocal = pluginconfig.getBoolean("keep-local-backup-after-upload");
+        localKeepCount = pluginconfig.getInt("local-keep-count");
 
         // Checks both metrics, update check, and suppress errors keys for compatiablilty with older plugin versions
         if (pluginconfig.isSet("advanced.metrics")) {
@@ -315,12 +315,12 @@ public class Config {
         return keepCount;
     }
 
-    public static boolean isUpdateCheck() {
-        return updateCheck;
+    public static int getLocalKeepCount(){
+        return localKeepCount;
     }
 
-    public static boolean keepLocalBackup(){
-        return keepLocal;
+    public static boolean isUpdateCheck() {
+        return updateCheck;
     }
 
     public static String getBackupDone() {
