@@ -113,14 +113,7 @@ public class UploadThread implements Runnable {
                         MessageUtil.sendConsoleMessage(timer.getUploadTimeMessage(file));
                     }
 
-                    if (!Config.keepLocalBackup()) {
-                        if (file.delete()) {
-                            MessageUtil.sendConsoleMessage("Old backup deleted.");
-                        } else {
-                            MessageUtil.sendConsoleMessage("Failed to delete backup " + file.getAbsolutePath());
-                        }
-                    }
-                    //MessageUtil.sendConsoleMessage("File Uploaded.");
+                    FileUtil.deleteFiles(type, format);
                 } catch (Exception e) {
                     MessageUtil.sendConsoleException(e);
                 }
