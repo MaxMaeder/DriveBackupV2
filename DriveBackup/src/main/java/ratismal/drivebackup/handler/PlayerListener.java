@@ -3,7 +3,6 @@ package ratismal.drivebackup.handler;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
-import ratismal.drivebackup.DriveBackup;
 import ratismal.drivebackup.util.MessageUtil;
 
 /**
@@ -12,17 +11,33 @@ import ratismal.drivebackup.util.MessageUtil;
 
 public class PlayerListener implements Listener {
 
-    public static boolean doBackups = false;
+    private static boolean autoBackupsActive = false;
 
     public PlayerListener() {
     }
 
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
-        if (!doBackups) {
+        if (!autoBackupsActive) {
             MessageUtil.sendConsoleMessage("Enabling automatic backups.");
-            doBackups = true;
+            autoBackupsActive = true;
         }
+    }
+
+    /**
+     * Gets whether automatic updates should be active
+     * @return whether automatic updates are active
+     */
+    public static boolean isAutoBackupsActive() {
+        return autoBackupsActive;
+    }
+
+    /**
+     * Gets whether automatic updates should be active
+     * @param autoBackupsActiveValue whether automatic updates are active
+     */
+    public static void setAutoBackupsActive(boolean autoBackupsActiveValue) {
+        autoBackupsActive = autoBackupsActiveValue;
     }
 
 }

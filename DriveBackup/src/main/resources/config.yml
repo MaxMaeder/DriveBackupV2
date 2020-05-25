@@ -13,6 +13,8 @@ backup-thread-priority: 0
 keep-count: 20
 # How many backups to keep locally before deleting the oldest one, set to -1 to disable automatic deletes
 local-keep-count: 0
+# Should automatic backups be disabled if there hasn't been any new player activity since the last backup
+backups-require-players: true
 
 # Should backups run at specific days/times every week, instead of every so often?
 scheduled-backups: false
