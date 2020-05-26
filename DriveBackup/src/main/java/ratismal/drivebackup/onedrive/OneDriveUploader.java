@@ -440,7 +440,7 @@ public class OneDriveUploader {
             result = sb.toString();
             br.close();
         } catch (Exception e) {
-            MessageUtil.sendConsoleException(e);
+            //MessageUtil.sendConsoleException(e);
         }
         return result;
     }

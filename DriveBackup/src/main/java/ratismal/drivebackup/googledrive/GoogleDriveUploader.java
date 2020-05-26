@@ -186,6 +186,7 @@ public class GoogleDriveUploader {
             new Credential(
                 BearerToken.authorizationHeaderAccessMethod())
                 .setAccessToken(response.getBody().jsonPath().getString("access_token")))
+            .setApplicationName("")
             .build();
     }
 
@@ -452,7 +453,7 @@ public class GoogleDriveUploader {
             result = sb.toString();
             br.close();
         } catch (Exception e) {
-            MessageUtil.sendConsoleException(e);
+            //MessageUtil.sendConsoleException(e);
         }
         return result;
     }
