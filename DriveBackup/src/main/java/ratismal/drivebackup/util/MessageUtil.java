@@ -61,7 +61,7 @@ public class MessageUtil {
      * @return
      */
     private static String getMessage(String message) {
-        return "\2476[\2474DriveBackup\2476]\2473 " + message;
+        return "\2476[\2474DriveBackupV2\2476]\2473 " + message;
     }
 
     /**
