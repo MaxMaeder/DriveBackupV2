@@ -32,7 +32,7 @@ public class FTPUploader {
      */
     public void uploadFile(File file, String type) {
         try {
-            type = type.replace("../", "");
+            type = type.replace(".."  + File.separator, "");
 
             if (Config.isFtpSftp()) {
                 SFTPUploader.uploadFile(file, type);

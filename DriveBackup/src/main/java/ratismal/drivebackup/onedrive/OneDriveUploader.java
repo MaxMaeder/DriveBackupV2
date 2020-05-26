@@ -174,7 +174,7 @@ public class OneDriveUploader {
         try {
             resetRanges();
             
-            type = type.replace("../", "");
+            type = type.replace(".."  + File.separator, "");
         	
             if (!checkDestinationExists()) {
                 createDestinationFolder();
