@@ -31,10 +31,10 @@ public class FileUtil {
      * @return The file to upload
      */
     public static File getFileToUpload(String type, String format, boolean output) {
-        type = type.replace("../", "");
+        type = type.replace(".." + File.separator, "");
 
         backupList.clear();
-        String path = new File(Config.getDir()).getAbsolutePath() + "/" + type;
+        String path = new File(Config.getDir()).getAbsolutePath() + File.separator + type;
         File[] files = new File(path).listFiles();
         subFiles(format, files);
         if (output) {
@@ -92,13 +92,13 @@ public class FileUtil {
             if (!path.exists()) {
                 path.mkdir();
             }
-            path = new File(new String(Config.getDir() + "/" + type).replace("../", "")); // Keeps working directory inside backups folder
+            path = new File(new String(Config.getDir() + File.separator + type).replace(".." + File.separator, "")); // Keeps working directory inside backups folder
             if (!path.exists()) {
                 path.mkdir();
             }
 
             generateFileList(new File(type), type);
-            zipIt(new String(Config.getDir() + "/" + type + "/" + fileName).replace("../", ""), type);
+            zipIt(new String(Config.getDir() + File.separator + type + File.separator + fileName).replace(".." + File.separator, ""), type);
 
 
         } catch (Exception e) {
@@ -156,7 +156,7 @@ public class FileUtil {
 
         try {
             try {
-                source = sourceFolder.substring(sourceFolder.lastIndexOf("/") + 1, sourceFolder.length());
+                source = sourceFolder.substring(sourceFolder.lastIndexOf(File.separator) + 1, sourceFolder.length());
             } catch (Exception e) {
                 source = sourceFolder;
             }

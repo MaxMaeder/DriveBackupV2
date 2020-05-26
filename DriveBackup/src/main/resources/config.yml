@@ -2,7 +2,9 @@
 # DriveBackup   -   by Max Maeder (MaxTheGinus)
 ###############################################
 
-# IMPORTANT: Make sure any file paths you specify don't end with a file seperator (usually "/")
+# IMPORTANT: Make sure you use the server filesystem's default file seperator when specifying any file paths below
+# The default file seperator on Unix (Mac/Linux) is "/" and is "\" on Windows
+# Also, make sure any file paths you specify don't end with a file seperator
 
 # How often to do backups (in minutes), set to -1 to disable automatic backups
 delay: 60
