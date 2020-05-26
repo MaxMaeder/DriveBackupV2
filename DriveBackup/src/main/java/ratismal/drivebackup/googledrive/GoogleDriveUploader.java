@@ -186,7 +186,7 @@ public class GoogleDriveUploader {
             new Credential(
                 BearerToken.authorizationHeaderAccessMethod())
                 .setAccessToken(response.getBody().jsonPath().getString("access_token")))
-            .setApplicationName("")
+            .setApplicationName("DriveBackupV2")
             .build();
     }
 
