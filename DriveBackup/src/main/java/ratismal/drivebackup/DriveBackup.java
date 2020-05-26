@@ -129,6 +129,20 @@ public class DriveBackup extends JavaPlugin {
     public void initMetrics() throws IOException {
         Metrics metrics = new Metrics(this, 7537);
 
+        metrics.addCustomChart(new Metrics.SimplePie("intervalBackupsEnabled", new Callable<String>() {
+            @Override
+            public String call() throws Exception {
+            	return Config.getBackupDelay() / 60 / 20 != -1 ? "Enabled" : "Disabled";
+            }
+        }));
+
+        metrics.addCustomChart(new Metrics.SimplePie("scheduleBackupsEnabled", new Callable<String>() {
+            @Override
+            public String call() throws Exception {
+            	return Config.isBackupsScheduled() ? "Enabled" : "Disabled";
+            }
+        }));
+
         metrics.addCustomChart(new Metrics.SimplePie("backupMethodEnabled", new Callable<String>() {
             @Override
             public String call() throws Exception {
@@ -161,6 +175,13 @@ public class DriveBackup extends JavaPlugin {
             @Override
             public String call() throws Exception {
             	return Config.isFtpSftp() ? "FTP using SSH" : "FTP";
+            }
+        }));
+
+        metrics.addCustomChart(new Metrics.SimplePie("updateCheckEnabled", new Callable<String>() {
+            @Override
+            public String call() throws Exception {
+            	return Config.isUpdateCheck() ? "Enabled" : "Disabled";
             }
         }));
     }
