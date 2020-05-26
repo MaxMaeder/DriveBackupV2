@@ -37,10 +37,10 @@ import java.util.logging.Logger;
 
 public class DriveBackup extends JavaPlugin {
 
-    private String newVersionTitle = "";
-    private double newVersion = 0;
-    private double currentVersion = 0;
-    private String currentVersionTitle = "";
+    private static String newVersionTitle = "";
+    private static double newVersion = 0;
+    private static double currentVersion = 0;
+    private static String currentVersionTitle = "";
 
     private static Config pluginconfig;
     private static DriveBackup plugin;
@@ -334,6 +334,14 @@ public class DriveBackup extends JavaPlugin {
         }
         return currentVersion;
     }
+
+    /**
+     * Gets whether an update is available for the plugin
+     * @return whether an update is available
+     */
+    public static boolean isUpdateAvailable() {
+        return newVersion > currentVersion;
+    } 
 
     /**
      * Cancels all of the specified tasks
