@@ -54,15 +54,11 @@ Allows user to manually initiate a backup.
 Recommended permission holders: server owner, admins.
 
 ## How is this better than the original plugin?
-- Fixed issue preventing users from authenticating with Google Drive, making it impossible to upload to it
-- Now uploads backups *asynchronously*, previously uploading a large backup would cause players to get kicked from the server
-- Made it **much** easier to authenticate with Google Drive/OneDrive
-  - Now, instead of running a companion program and copying the outputted files to the server, users now just have to run a single command
-- Fixed issue causing backups in OneDrive past the configured number to keep to not get deleted
-- Commands now have tab suggestions
-- Now requests very limited access from Google Drive and OneDrive
-  - This means if there ever is a glitch in the plugin, it can't delete your sensitive Google Drive and/or OneDrive data
-  - Previously, the plugin had almost free reign over users' Google Drive and/or OneDrive data
+- Significantly less lag when backing up
+- Much easier to set up
+- More control over what gets backed up
+- Support for SFTP
+- Support for scheduled backups
 
 ## Privacy Policy
 Since we need to access your Google Drive and/or OneDrive data in order to back up your world, we are required to provide a Privacy Policy.
