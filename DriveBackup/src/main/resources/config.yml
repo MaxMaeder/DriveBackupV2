@@ -143,5 +143,9 @@ advanced:
   update-check: true
   # Suppress most stacktraces?
   suppress-errors: false
+  # Language of the date/time components in the "backup-list.format" and the "messages.next-schedule-backup-format" settings in ISO 639-2 alpha-2 or alpha-3 format
+  #   For a full list of ISO 639-2 language codes, see
+  #   http://www.loc.gov/standards/iso639-2/php/code_list.php
+  date-language: "en"
   # FTP file seperator
   ftp-file-seperator: "/"
