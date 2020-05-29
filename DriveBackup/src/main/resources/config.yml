@@ -115,7 +115,12 @@ ftp:
   working-dir:
 
 # Messages
+# You can use Minecraft formatting codes to change the color/formatting of the messages
+# For more information about Minecraft formatting codes, see
+#   http://minecraft.gamepedia.com/Formatting_codes
 messages:
+  # Should the messages below be sent in chat, or just in the console?
+  send-in-chat: true
   # What to say to a player who attempts to preform an action they don't have permission to do
   no-perm: "You don't have permission to do this!"
   # What to say to all players when backup starts
@@ -143,6 +148,9 @@ advanced:
   update-check: true
   # Suppress most stacktraces?
   suppress-errors: false
+  # Prefix messages sent to all players in chat with the plugin name?
+  # Leaving this on helps spread DriveBackupV2, so please think twice before you disable it
+  prefix-chat-messages: true
   # Language of the date/time components in the "backup-list.format" and the "messages.next-schedule-backup-format" settings in ISO 639-2 alpha-2 or alpha-3 format
   #   For a full list of ISO 639-2 language codes, see
   #   http://www.loc.gov/standards/iso639-2/php/code_list.php

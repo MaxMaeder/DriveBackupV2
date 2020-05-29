@@ -84,6 +84,8 @@ public class Config {
     private static String backupNext;
     private static String backupNextScheduled;
     private static String backupNextScheduledFormat;
+    private static boolean sendMessagesInChat;
+    private static boolean prefixChatMessages;
 
     /**
      * config constructor
@@ -104,6 +106,7 @@ public class Config {
         destination = pluginconfig.getString("destination");
 
         dir = pluginconfig.getString("dir");
+        sendMessagesInChat = pluginconfig.getBoolean("messages.send-in-chat");
         noPerms = pluginconfig.getString("messages.no-perm");
         backupStart = pluginconfig.getString("messages.backup-start");
         backupDone = pluginconfig.getString("messages.backup-complete");
@@ -176,6 +179,8 @@ public class Config {
 
         ftpFileSeperator = pluginconfig.getString("advanced.ftp-file-seperator");
         dateLanguage = pluginconfig.getString("advanced.date-language");
+        prefixChatMessages = pluginconfig.getBoolean("advanced.prefix-chat-messages");
+
 
         //MessageUtil.sendConsoleMessage("Scheduling backups for every " + backupDelay + " ticks.");
 
@@ -329,6 +334,14 @@ public class Config {
 
     public static boolean isUpdateCheck() {
         return updateCheck;
+    }
+
+    public static boolean isSendMessagesInChat() {
+        return sendMessagesInChat;
+    }
+
+    public static boolean isPrefixChatMessages() {
+        return prefixChatMessages;
     }
 
     public static String getDateLanguage() {
