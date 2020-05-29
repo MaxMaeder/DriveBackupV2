@@ -24,6 +24,7 @@ public class Config {
     private static boolean backupsRequirePlayers;
     private static boolean updateCheck;
     private static boolean debug;
+    private static String dateLanguage;
 
     /**
      * Schedule
@@ -174,6 +175,7 @@ public class Config {
         }
 
         ftpFileSeperator = pluginconfig.getString("advanced.ftp-file-seperator");
+        dateLanguage = pluginconfig.getString("advanced.date-language");
 
         //MessageUtil.sendConsoleMessage("Scheduling backups for every " + backupDelay + " ticks.");
 
@@ -327,6 +329,10 @@ public class Config {
 
     public static boolean isUpdateCheck() {
         return updateCheck;
+    }
+
+    public static String getDateLanguage() {
+        return dateLanguage;
     }
 
     public static String getBackupDone() {

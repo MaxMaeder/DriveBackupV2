@@ -202,7 +202,7 @@ public class UploadThread implements Runnable {
                             .with(ChronoField.ALIGNED_WEEK_OF_YEAR, now.get(ChronoField.ALIGNED_WEEK_OF_YEAR));
                     }
 
-                    nextBackupMessage = Config.getBackupNextScheduled().replaceAll("%DATE", nextBackupDate.format(DateTimeFormatter.ofPattern(Config.getBackupNextScheduledFormat())));
+                    nextBackupMessage = Config.getBackupNextScheduled().replaceAll("%DATE", nextBackupDate.format(DateTimeFormatter.ofPattern(Config.getBackupNextScheduledFormat(), new Locale(Config.getDateLanguage()))));
                 } else if (Config.getBackupDelay() / 60 / 20 != -1) {
                     nextBackupMessage = Config.getBackupNext().replaceAll("%TIME", String.valueOf(Config.getBackupDelay() / 20 / 60));
                 }

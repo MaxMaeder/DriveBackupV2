@@ -59,7 +59,7 @@ public class FileUtil {
             } else {
                 if (file.getName().endsWith(".zip")) {
                     String dateString = file.getName();
-                    DateFormat format = new SimpleDateFormat(formatString, Locale.ENGLISH);
+                    DateFormat format = new SimpleDateFormat(formatString, new Locale(Config.getDateLanguage()));
                     try {
                         Date date = format.parse(dateString);
                         backupList.put(date, file);
@@ -85,7 +85,7 @@ public class FileUtil {
 
         try {
             fileList.clear();
-            DateFormat format = new SimpleDateFormat(formatString, Locale.ENGLISH);
+            DateFormat format = new SimpleDateFormat(formatString, new Locale(Config.getDateLanguage()));
             String fileName = format.format(new Date());
             File path = new File(Config.getDir());
             blackList = _blackList;
