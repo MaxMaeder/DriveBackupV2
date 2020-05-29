@@ -15,10 +15,19 @@ public class MessageUtil {
      * @param message Message to send
      */
     public static void sendMessageToAllPlayers(String message) {
-        for (Player p : Bukkit.getOnlinePlayers()) {
-            p.sendMessage(getMessage(message));
-        }
         Bukkit.getConsoleSender().sendMessage(getMessage(message));
+
+        if (!Config.isSendMessagesInChat()) return;
+
+        message = processGeneral(message);
+
+        for (Player p : Bukkit.getOnlinePlayers()) {
+            if (Config.isPrefixChatMessages()) {
+                p.sendMessage(getMessage(message));
+            } else {
+                p.sendMessage(ChatColor.DARK_AQUA + message);
+            }
+        }
     }
 
     /**
