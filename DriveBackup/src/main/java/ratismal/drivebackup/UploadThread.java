@@ -122,26 +122,22 @@ public class UploadThread implements Runnable {
             for (Player player : Bukkit.getServer().getOnlinePlayers()) {
             	if (!player.hasPermission("drivebackup.linkAccounts")) continue;
                 
-                if (Config.isGoogleEnabled()) {
-                    if (googleDriveUploader.isErrorWhileUploading()) {
-                        MessageUtil.sendMessage(player, "Failed to backup to Google Drive, please run " + ChatColor.GOLD + "/drivebackup linkaccount googledrive");
-                    } else {
-                        MessageUtil.sendMessage(player, "Backup to " + ChatColor.GOLD + "Google Drive " + ChatColor.DARK_AQUA + "complete");
-                    }
+                if (googleDriveUploader.isErrorWhileUploading()) {
+                    MessageUtil.sendMessage(player, "Failed to backup to Google Drive, please run " + ChatColor.GOLD + "/drivebackup linkaccount googledrive");
+                } else if (Config.isGoogleEnabled()) {
+                    MessageUtil.sendMessage(player, "Backup to " + ChatColor.GOLD + "Google Drive " + ChatColor.DARK_AQUA + "complete");
                 }
-                if (Config.isOnedriveEnabled()) {
-                    if (oneDriveUploader.isErrorWhileUploading()) {
-                        MessageUtil.sendMessage(player, "Failed to backup to OneDrive, please run " + ChatColor.GOLD + "/drivebackup linkaccount onedrive");
-                    } else {
-                        MessageUtil.sendMessage(player, "Backup to " + ChatColor.GOLD + "OneDrive " + ChatColor.DARK_AQUA + "complete");
-                    }
+
+                if (oneDriveUploader.isErrorWhileUploading()) {
+                    MessageUtil.sendMessage(player, "Failed to backup to OneDrive, please run " + ChatColor.GOLD + "/drivebackup linkaccount onedrive");
+                } else if (Config.isOnedriveEnabled()) {
+                    MessageUtil.sendMessage(player, "Backup to " + ChatColor.GOLD + "OneDrive " + ChatColor.DARK_AQUA + "complete");
                 }
-                if (Config.isFtpEnabled()) {
-                    if (FTPUploader.isErrorWhileUploading()) {
-                        MessageUtil.sendMessage(player, "Failed to backup to the SFTP/FTP server, please check the server credentials in the " + ChatColor.GOLD + "config.yml");
-                    } else {
-                        MessageUtil.sendMessage(player, "Backup to the " + ChatColor.GOLD + "SFTP/FTP server " + ChatColor.DARK_AQUA + "complete");
-                    }
+
+                if (FTPUploader.isErrorWhileUploading()) {
+                    MessageUtil.sendMessage(player, "Failed to backup to the SFTP/FTP server, please check the server credentials in the " + ChatColor.GOLD + "config.yml");
+                } else if (Config.isFtpEnabled()) {
+                    MessageUtil.sendMessage(player, "Backup to the " + ChatColor.GOLD + "SFTP/FTP server " + ChatColor.DARK_AQUA + "complete");
                 }
             }
 
