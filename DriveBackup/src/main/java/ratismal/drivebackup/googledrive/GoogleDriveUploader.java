@@ -139,6 +139,10 @@ public class GoogleDriveUploader {
      * Creates an instance of the {@code GoogleDriveUploader} object
      */
     public GoogleDriveUploader() {
+        if (!Config.isGoogleEnabled()) {
+            return;
+        }
+
         try {
             setRefreshTokenFromStoredValue();
             retrieveNewAccessToken();
@@ -439,22 +443,21 @@ public class GoogleDriveUploader {
      * <p>
      * The refresh token is stored in {@code /GoogleDriveCredential.json}
      * @return the credentials as a {@code String}
+     * @throws IOException
      */
-    private static String processCredentialJsonFile() {
-        String result = "";
-        try {
-            BufferedReader br = new BufferedReader(new FileReader(CLIENT_JSON_PATH));
-            StringBuilder sb = new StringBuilder();
-            String line = br.readLine();
-            while (line != null) {
-                sb.append(line);
-                line = br.readLine();
-            }
-            result = sb.toString();
-            br.close();
-        } catch (Exception e) {
-            //MessageUtil.sendConsoleException(e);
+    private static String processCredentialJsonFile() throws IOException {
+        BufferedReader br = new BufferedReader(new FileReader(CLIENT_JSON_PATH));
+        StringBuilder sb = new StringBuilder();
+        String line = br.readLine();
+
+        while (line != null) {
+            sb.append(line);
+            line = br.readLine();
         }
+        
+        String result = sb.toString();
+        br.close(); 
+
         return result;
     }
 

@@ -122,6 +122,10 @@ public class OneDriveUploader {
      * Creates an instance of the {@code OneDriveUploader} object
      */
     public OneDriveUploader() {
+        if (!Config.isOnedriveEnabled()) {
+            return;
+        }
+
         try {
             setRefreshTokenFromStoredValue();
             retrieveNewAccessToken();
@@ -426,22 +430,21 @@ public class OneDriveUploader {
      * <p>
      * The refresh token is stored in {@code /OneDriveCredential.json}
      * @return the credentials as a {@code String}
+     * @throws IOException
      */
-    private static String processCredentialJsonFile() {
-        String result = "";
-        try {
-            BufferedReader br = new BufferedReader(new FileReader(CLIENT_JSON_PATH));
-            StringBuilder sb = new StringBuilder();
-            String line = br.readLine();
-            while (line != null) {
-                sb.append(line);
-                line = br.readLine();
-            }
-            result = sb.toString();
-            br.close();
-        } catch (Exception e) {
-            //MessageUtil.sendConsoleException(e);
+    private static String processCredentialJsonFile() throws IOException {
+        BufferedReader br = new BufferedReader(new FileReader(CLIENT_JSON_PATH));
+        StringBuilder sb = new StringBuilder();
+        String line = br.readLine();
+
+        while (line != null) {
+            sb.append(line);
+            line = br.readLine();
         }
+
+        String result = sb.toString();
+        br.close();
+
         return result;
     }
 
