@@ -219,7 +219,7 @@ public class GoogleDriveUploader {
                 parentFolder = service.files().insert(parentFolder).execute();
             }
 
-            String[] typeFolders = type.split(java.io.File.separator);
+            String[] typeFolders = type.split(java.io.File.separator.replace("\\", "\\\\"));
             
             File childFolder = null;
             ParentReference childFolderParent = new ParentReference();
