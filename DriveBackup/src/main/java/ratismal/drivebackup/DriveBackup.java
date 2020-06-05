@@ -129,17 +129,16 @@ public class DriveBackup extends JavaPlugin {
     public void initMetrics() throws IOException {
         Metrics metrics = new Metrics(this, 7537);
 
-        metrics.addCustomChart(new Metrics.SimplePie("intervalBackupsEnabled", new Callable<String>() {
+        metrics.addCustomChart(new Metrics.SimplePie("automaticBackupType", new Callable<String>() {
             @Override
             public String call() throws Exception {
-            	return Config.getBackupDelay() / 60 / 20 != -1 ? "Enabled" : "Disabled";
-            }
-        }));
-
-        metrics.addCustomChart(new Metrics.SimplePie("scheduleBackupsEnabled", new Callable<String>() {
-            @Override
-            public String call() throws Exception {
-            	return Config.isBackupsScheduled() ? "Enabled" : "Disabled";
+            	if (Config.isBackupsScheduled()) {
+                    return "Schedule Based";
+                } else if (Config.getBackupDelay() / 60 / 20 != -1) {
+                    return "Interval Based";
+                } else {
+                    return "Not Enabled";
+                }
             }
         }));
 
