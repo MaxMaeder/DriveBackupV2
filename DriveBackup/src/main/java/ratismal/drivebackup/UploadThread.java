@@ -8,6 +8,7 @@ import ratismal.drivebackup.config.Config;
 import ratismal.drivebackup.ftp.FTPUploader;
 import ratismal.drivebackup.googledrive.GoogleDriveUploader;
 import ratismal.drivebackup.handler.PlayerListener;
+import ratismal.drivebackup.mysql.MySQLUploader;
 import ratismal.drivebackup.onedrive.OneDriveUploader;
 import ratismal.drivebackup.util.*;
 import ratismal.drivebackup.util.Timer;
@@ -47,28 +48,45 @@ public class UploadThread implements Runnable {
      */
     @Override
     public void run() {
-        Thread.currentThread().setPriority(Thread.NORM_PRIORITY + Config.getBackupThreadPriority());
+        Thread.currentThread().setPriority(Thread.MIN_PRIORITY + Config.getBackupThreadPriority());
 
         if (!Config.isBackupsRequirePlayers() || PlayerListener.isAutoBackupsActive() || forced) {
             MessageUtil.sendMessageToAllPlayers(Config.getBackupStart());
 
             GoogleDriveUploader googleDriveUploader = new GoogleDriveUploader();
             OneDriveUploader oneDriveUploader = new OneDriveUploader();
-            FTPUploader FTPUploader = new FTPUploader();
+            FTPUploader ftpUploader = new FTPUploader();
 
-            // Create Backup Here
             ArrayList<HashMap<String, Object>> backupList = Config.getBackupList();
+
+            ArrayList<HashMap<String, Object>> externalBackupList = Config.getExternalBackupList();
+            if (externalBackupList != null) {
+                
+                for (HashMap<String, Object> externalBackup : externalBackupList) {
+                    switch ((String) externalBackup.get("type")) {
+                        case "ftpServer":
+                        case "ftpsServer":
+                        case "sftpServer":
+                            makeExternalServerBackup(externalBackup, backupList);
+                            break;
+                        case "mysqlDatabase":
+                            makeExternalDatabaseBackup(externalBackup, backupList);
+                            break;
+                    }
+                }
+            }
+            
             for (HashMap<String, Object> set : backupList) {
 
                 String type = set.get("path").toString();
                 String format = set.get("format").toString();
                 String create = set.get("create").toString();
 
-                List<String> blackList = new ArrayList<>();
+                ArrayList<String> blackList = new ArrayList<>();
                 if (set.containsKey("blacklist")) {
                     Object tempObject = set.get("blacklist");
                     if (tempObject instanceof List<?>) {
-                        blackList = (List<String>) tempObject;
+                        blackList = (ArrayList<String>) tempObject;
                     }
                 }
 
@@ -106,9 +124,9 @@ public class UploadThread implements Runnable {
                         MessageUtil.sendConsoleMessage(timer.getUploadTimeMessage(file));
                     }
                     if (Config.isFtpEnabled()) {
-                        MessageUtil.sendConsoleMessage("Uploading file to FTP");
+                        MessageUtil.sendConsoleMessage("Uploading file to the (S)FTP server");
                         timer.start();
-                        FTPUploader.uploadFile(file, type);
+                        ftpUploader.uploadFile(file, type);
                         timer.end();
                         MessageUtil.sendConsoleMessage(timer.getUploadTimeMessage(file));
                     }
@@ -118,6 +136,10 @@ public class UploadThread implements Runnable {
                     MessageUtil.sendConsoleException(e);
                 }
             }
+
+            ftpUploader.close();
+
+            deleteFolder(new File("external-backups"));
 
             for (Player player : Bukkit.getServer().getOnlinePlayers()) {
             	if (!player.hasPermission("drivebackup.linkAccounts")) continue;
@@ -134,10 +156,10 @@ public class UploadThread implements Runnable {
                     MessageUtil.sendMessage(player, "Backup to " + ChatColor.GOLD + "OneDrive " + ChatColor.DARK_AQUA + "complete");
                 }
 
-                if (FTPUploader.isErrorWhileUploading()) {
-                    MessageUtil.sendMessage(player, "Failed to backup to the SFTP/FTP server, please check the server credentials in the " + ChatColor.GOLD + "config.yml");
+                if (ftpUploader.isErrorWhileUploading()) {
+                    MessageUtil.sendMessage(player, "Failed to backup to the (S)FTP server, please check the server credentials in the " + ChatColor.GOLD + "config.yml");
                 } else if (Config.isFtpEnabled()) {
-                    MessageUtil.sendMessage(player, "Backup to the " + ChatColor.GOLD + "SFTP/FTP server " + ChatColor.DARK_AQUA + "complete");
+                    MessageUtil.sendMessage(player, "Backup to the " + ChatColor.GOLD + "(S)FTP server " + ChatColor.DARK_AQUA + "complete");
                 }
             }
 
@@ -218,4 +240,140 @@ public class UploadThread implements Runnable {
         }
     }
 
+    /**
+     * Downloads files from a FTP server and stores them within the external-backups temporary folder, using the specified external backup settings
+     * @param externalBackup the external backup settings
+     * @param backupList the list of folders to upload to the configured remote destinations
+     */
+    private static void makeExternalServerBackup(HashMap<String, Object> externalBackup, ArrayList<HashMap<String, Object>> backupList) {
+        MessageUtil.sendConsoleMessage("Downloading files from a (S)FTP server (" + getSocketAddress(externalBackup) + ") to include in backup");
+
+        FTPUploader ftpUploader = new FTPUploader(
+                (String) externalBackup.get("hostname"), 
+                (int) externalBackup.get("port"), 
+                (String) externalBackup.get("username"), 
+                (String) externalBackup.get("password"),
+                externalBackup.get("type").equals("ftpsServer"),
+                externalBackup.get("type").equals("sftpServer"), 
+                (String) externalBackup.get("sftp-public-key"), 
+                (String) externalBackup.get("sftp-passphrase"),
+                "external-backups",
+                ".");
+
+        for (Map<String, Object> backup : (List<Map<String, Object>>) externalBackup.get("backup-list")) {
+            ArrayList<String> blackList = new ArrayList<>();
+            if (backup.containsKey("blacklist")) {
+                Object tempObject = backup.get("blacklist");
+                if (tempObject instanceof List<?>) {
+                    blackList = (ArrayList<String>) tempObject;
+                }
+            }
+
+            for (String filePath : ftpUploader.getFiles(externalBackup.get("base-dir") + File.separator + backup.get("path"))) {
+                if (blackList.contains(new File(filePath).getName())) {
+                    continue;
+                }
+
+                String parentFolder = new File(filePath).getParent();
+                String parentFolderPath;
+                if (parentFolder != null) {
+                    parentFolderPath = File.separator + parentFolder;
+                } else {
+                    parentFolderPath = "";
+                }
+
+                ftpUploader.downloadFile(externalBackup.get("base-dir") + File.separator + backup.get("path") + File.separator + filePath, getTempFolderName(externalBackup) + File.separator + backup.get("path") + parentFolderPath);
+            }
+        }
+
+        ftpUploader.close();
+
+        HashMap<String, Object> backup = new HashMap<>();
+        backup.put("path", "external-backups" + File.separator + getTempFolderName(externalBackup));
+        backup.put("format", externalBackup.get("format"));
+        backup.put("create", "true");
+        backupList.add(backup);
+
+        for (Player player : Bukkit.getServer().getOnlinePlayers()) {
+            if (!player.hasPermission("drivebackup.linkAccounts")) continue;
+
+            if (ftpUploader.isErrorWhileUploading()) {
+                MessageUtil.sendMessage(player, "Failed to include files from a (S)FTP server (" + getSocketAddress(externalBackup) + ") in the backup, please check the server credentials in the " + ChatColor.GOLD + "config.yml");
+            } else {
+                MessageUtil.sendMessage(player, "Files from a " + ChatColor.GOLD + "(S)FTP server (" + getSocketAddress(externalBackup) + ") " + ChatColor.DARK_AQUA + "were successfully included in the backup");
+            }
+        }
+    }
+
+    /**
+     * Downloads databases from a MySQL server and stores them within the external-backups temporary folder, using the specified external backup settings
+     * @param externalBackup the external backup settings
+     * @param backupList the list of folders to upload to the configured remote destinations
+     */
+    private static void makeExternalDatabaseBackup(HashMap<String, Object> externalBackup, ArrayList<HashMap<String, Object>> backupList) {
+        MessageUtil.sendConsoleMessage("Downloading databases from a MySQL server (" + getSocketAddress(externalBackup) + ") to include in backup");
+
+        MySQLUploader mysqlUploader = new MySQLUploader(
+                (String) externalBackup.get("hostname"), 
+                (int) externalBackup.get("port"), 
+                (String) externalBackup.get("username"), 
+                (String) externalBackup.get("password"));
+
+        for (String databaseName : (List<String>) externalBackup.get("names")) {
+            mysqlUploader.downloadDatabase(databaseName, getTempFolderName(externalBackup));
+        }
+
+        HashMap<String, Object> backup = new HashMap<>();
+        backup.put("path", "external-backups" + File.separator + getTempFolderName(externalBackup));
+        backup.put("format", externalBackup.get("format"));
+        backup.put("create", "true");
+        backupList.add(backup);
+
+        for (Player player : Bukkit.getServer().getOnlinePlayers()) {
+            if (!player.hasPermission("drivebackup.linkAccounts")) continue;
+
+            if (mysqlUploader.isErrorWhileUploading()) {
+                MessageUtil.sendMessage(player, "Failed to include databases from a MySQL server (" + getSocketAddress(externalBackup) + ") in the backup, please check the server credentials in the " + ChatColor.GOLD + "config.yml");
+            } else {
+                MessageUtil.sendMessage(player, "Databases from a " + ChatColor.GOLD + "MySQL server (" + getSocketAddress(externalBackup) + ") " + ChatColor.DARK_AQUA + "were successfully included in the backup");
+            }
+        }
+    }
+
+    /**
+     * Gets the socket address (ipaddress/hostname:port) of an external backup server based on the specified settings
+     * @param externalBackup the external backup settings
+     * @return the socket address
+     */
+    private static String getSocketAddress(HashMap<String, Object> externalBackup) {
+        return externalBackup.get("hostname") + ":" + externalBackup.get("port");
+    }
+
+    /**
+     * Generates the name for a folder based on the specified external backup settings to be stored within the external-backups temporary folder
+     * @param externalBackup the external backup settings
+     * @return the folder name
+     */
+    private static String getTempFolderName(HashMap<String, Object> externalBackup) {
+        if (externalBackup.get("type").equals("mysqlDatabase")) {
+            return "mysql-" + externalBackup.get("hostname") + ":" + externalBackup.get("port");
+        } else {
+            return "ftp-" + externalBackup.get("hostname") + ":" + externalBackup.get("port");
+        }
+    }
+
+    /**
+     * Deletes the specified folder
+     * @param folder the folder to be deleted
+     * @return whether deleting the folder was successful
+     */
+    private static boolean deleteFolder(File folder) {
+        File[] files = folder.listFiles();
+        if (files != null) {
+            for (File file : files) {
+                deleteFolder(file);
+            }
+        }
+        return folder.delete();
+    }
 }

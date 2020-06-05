@@ -43,6 +43,7 @@ public class Config {
      */
     private static String dir;
     private static ArrayList<HashMap<String, Object>> backupList;
+    private static ArrayList<HashMap<String, Object>> externalBackupList;
 
     /**
      * Uploading
@@ -222,6 +223,20 @@ public class Config {
 
             backupList = (ArrayList<HashMap<String, Object>>) parsedBackupList.clone();
         }
+
+        List<Map<?, ?>> rawExternalBackupList = pluginconfig.getMapList("external-backup-list");
+        ArrayList<HashMap<String, Object>> parsedExternalBackupList = new ArrayList<>();
+        for (Map<?, ?> rawExternalBackup: rawExternalBackupList) {
+
+            HashMap<String, Object> parsedExternalBackup = new HashMap<>();
+            for (Entry<?, ?> rawExternalBackupProperty : rawExternalBackup.entrySet()) {
+
+                parsedExternalBackup.put((String) rawExternalBackupProperty.getKey(), rawExternalBackupProperty.getValue());
+            }
+
+            parsedExternalBackupList.add(parsedExternalBackup);
+        }
+        externalBackupList = (ArrayList<HashMap<String, Object>>) parsedExternalBackupList.clone();
     } 
 
     /**
@@ -298,6 +313,10 @@ public class Config {
 
     public static ArrayList<HashMap<String, Object>> getBackupList() {
         return backupList;
+    }
+
+    public static ArrayList<HashMap<String, Object>> getExternalBackupList() {
+        return externalBackupList;
     }
 
     public static long getBackupDelay() {

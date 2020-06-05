@@ -9,6 +9,8 @@ import ratismal.drivebackup.util.MessageUtil;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
 import java.util.*;
 
 /**
@@ -16,67 +18,32 @@ import java.util.*;
  */
 
 public class FTPUploader {
-    private boolean errorOccurred;
+    private FTPClient ftpClient;
+    private SFTPUploader sftpClient;
+
+    private boolean _errorOccurred;
+
+    private String initialRemoteFolder;
+    private String _localBaseFolder;
+    private String _remoteBaseFolder;
 
     /**
-     * Creates an instance of the {@code FTPUploader} object
+     * Creates an instance of the {@code FTPUploader} object using the server credentials specified by the user in the {@code config.yml}
      */
-    public FTPUploader() {}
-
-    /**
-     * Uploads the specified file to the SFTP/FTP server inside a folder for the specified file type
-     * <p>
-     * The SFTP/FTP server credentials are specified by the user in the {@code config.yml}
-     * @param file the file
-     * @param type the type of file (ex. plugins, world)
-     */
-    public void uploadFile(File file, String type) {
+    public FTPUploader() {
         try {
-            type = type.replace(".."  + File.separator, "");
-
             if (Config.isFtpSftp()) {
-                SFTPUploader.uploadFile(file, type);
-                return;
+                sftpClient = new SFTPUploader();
+            } else {
+                connect(Config.getFtpHost(), Config.getFtpPort(), Config.getFtpUser(), Config.getFtpPass(), Config.isFtpFtps());
             }
 
-            FTPClient f = new FTPClient();
-            if (Config.isFtpFtps()) {
-                f = new FTPSClient();
+            _localBaseFolder = ".";
+            if (Config.getFtpDir() == null) {
+                _remoteBaseFolder = Config.getDestination();
+            } else {
+                _remoteBaseFolder = Config.getFtpDir() + File.separator + Config.getDestination();
             }
-            f.connect(Config.getFtpHost(), Config.getFtpPort());
-            f.login(Config.getFtpUser(), Config.getFtpPass());
-
-            String baseDirectory = Config.getFtpDir();
-            if (baseDirectory == null) {
-                baseDirectory = f.printWorkingDirectory();
-            }
-            f.changeWorkingDirectory(replaceFileSeperators(baseDirectory));
-            if (!f.changeWorkingDirectory(replaceFileSeperators(Config.getDestination()))) {
-                MessageUtil.sendConsoleMessage("Creating folder");
-                f.makeDirectory(replaceFileSeperators(Config.getDestination()));
-                f.changeWorkingDirectory(replaceFileSeperators(Config.getDestination()));
-            }
-            if (!f.changeWorkingDirectory(replaceFileSeperators(type))) {
-                MessageUtil.sendConsoleMessage("Creating folder");
-                f.makeDirectory(replaceFileSeperators(type));
-                f.changeWorkingDirectory(replaceFileSeperators(type));
-            }
-
-            f.setFileType(FTP.BINARY_FILE_TYPE, FTP.BINARY_FILE_TYPE);
-            f.setFileTransferMode(FTP.BINARY_FILE_TYPE);
-            f.setListHiddenFiles(false);
-
-            FileInputStream fs = new FileInputStream(file);
-            f.storeFile(file.getName(), fs);
-            fs.close();
-
-            MessageUtil.sendConsoleMessage(f.printWorkingDirectory());
-
-            deleteFiles(f, type);
-
-            f.disconnect();
-
-
         } catch (Exception e) {
             MessageUtil.sendConsoleException(e);
             setErrorOccurred(true);
@@ -84,49 +51,236 @@ public class FTPUploader {
     }
 
     /**
-     * Gets whether an error occurred while accessing the authenticated user's OneDrive
-     * @return whether an error occurred
+     * Creates an instance of the {@code FTPUploader} object using the specified credentials
+     * @param host the hostname of the FTP server
+     * @param port the port
+     * @param username the username
+     * @param password the password (leave blank if none)
+     * @param ftps whether FTP using SSL
+     * @param sftp whether FTP using SSH
+     * @param publicKey the path to the SSH public key, relative to the "DriveBackupV2 folder" (leave blank if none)
+     * @param passphrase the SSH public key passphrase (leave blank if none)
+     * @param localBaseFolder the path to the folder which all local file paths are relative to
+     * @param remoteBaseFolder the path to the folder which all remote file paths are relative to 
      */
-    public boolean isErrorWhileUploading() {
-        return this.errorOccurred;
+    public FTPUploader(String host, int port, String username, String password, boolean ftps, boolean sftp, String publicKey, String passphrase, String localBaseFolder, String remoteBaseFolder) {
+        try {
+            if (sftp) {
+                sftpClient = new SFTPUploader(host, port, username, password, publicKey, passphrase, localBaseFolder, remoteBaseFolder);
+            } else {
+                connect(host, port, username, password, ftps);
+            }
+
+            _localBaseFolder = localBaseFolder;
+            _remoteBaseFolder = remoteBaseFolder;
+        } catch (Exception e) {
+            MessageUtil.sendConsoleException(e);
+            setErrorOccurred(true);
+        }        
     }
 
     /**
-     * Deletes the oldest files past the number to retain from the SFTP server inside the specified folder for the file type
-     * <p>
-     * The number of files to retain is specified by the user in the {@code config.yml}
-     * @param f the FTPClient
+     * Authenticates with a server via FTP
+     * @param host the hostname of the FTP server
+     * @param port the port
+     * @param username the username
+     * @param password the password (leave blank if none)
+     * @param ftps whether FTP using SSL
+     * @throws Exception
+     */
+    private void connect(String host, int port, String username, String password, boolean ftps) throws Exception {
+        ftpClient = new FTPClient();
+        if (ftps) {
+            ftpClient = new FTPSClient();
+        }
+
+        ftpClient.connect(host, port);
+        ftpClient.login(username, password);
+
+        ftpClient.enterLocalPassiveMode();
+        ftpClient.setFileType(FTP.BINARY_FILE_TYPE, FTP.BINARY_FILE_TYPE);
+        ftpClient.setFileTransferMode(FTP.STREAM_TRANSFER_MODE);
+        ftpClient.setListHiddenFiles(false);
+
+        initialRemoteFolder = ftpClient.printWorkingDirectory();
+    }
+
+    /**
+     * Closes the connection to the (S)FTP server
+     */
+    public void close() {
+        try {
+            if (sftpClient != null) {
+                sftpClient.close();
+            }
+        } catch (Exception e) {
+            MessageUtil.sendConsoleException(e);
+            setErrorOccurred(true);
+        }
+    }
+
+    /**
+     * Uploads the specified file to the (S)FTP server inside a folder for the specified file type
+     * @param file the file
      * @param type the type of file (ex. plugins, world)
      */
-    private void deleteFiles(FTPClient f, String type) throws Exception {
+    public void uploadFile(File file, String type) {
+        try {
+            type = type.replace(".."  + File.separator, "");
+
+            if (sftpClient != null) {
+                sftpClient.uploadFile(file, type);
+                return;
+            }
+
+            resetWorkingDirectory();
+            createThenEnter(_remoteBaseFolder);
+            createThenEnter(type);
+
+            FileInputStream fs = new FileInputStream(file);
+            ftpClient.storeFile(file.getName(), fs);
+            fs.close();
+
+            deleteFiles(type);
+
+            ftpClient.disconnect();
+        } catch (Exception e) {
+            MessageUtil.sendConsoleException(e);
+            setErrorOccurred(true);
+        }
+    }
+
+    /**
+     * Downloads the specifed file from the (S)FTP server into a folder for the specified file type
+     * @param filePath the path of the file
+     * @param type the type of file (ex. plugins, world)
+     */
+    public void downloadFile(String filePath, String type) {
+        try {
+            if (sftpClient != null) {
+                sftpClient.downloadFile(filePath, type);
+                return;
+            }
+
+            resetWorkingDirectory();
+            ftpClient.changeWorkingDirectory(_remoteBaseFolder);
+
+            File outputFile = new File(_localBaseFolder + File.separator + type);
+            if (!outputFile.exists()) {
+                outputFile.mkdirs();
+            }
+
+            OutputStream outputStream = new FileOutputStream(_localBaseFolder + File.separator + type + File.separator + new File(filePath).getName());
+            ftpClient.retrieveFile(filePath, outputStream);
+
+            outputStream.flush();
+            outputStream.close();
+        } catch (Exception e) {
+            MessageUtil.sendConsoleException(e);
+            setErrorOccurred(true);
+        }
+    }
+
+    /**
+     * Returns a list of the paths of the files inside the specified folder and subfolders
+     * @param folderPath the path of the folder
+     * @return the list of file paths
+     */
+    public ArrayList<String> getFiles(String folderPath) {
+        ArrayList<String> filePaths = new ArrayList<>();
+
+        try {
+            if (sftpClient != null) {
+                return sftpClient.getFiles(folderPath);
+            }
+
+            resetWorkingDirectory();
+            ftpClient.changeWorkingDirectory(_remoteBaseFolder);
+            ftpClient.changeWorkingDirectory(folderPath);
+
+            for (FTPFile file : ftpClient.mlistDir()) {
+                if (file.isDirectory()) {
+                    // file.getName() = file path
+                    filePaths.addAll(prependToAll(getFiles(file.getName()), new File(file.getName()).getName() + File.separator));
+                } else {
+                    filePaths.add(file.getName());
+                }
+            }
+        } catch (Exception e) {
+            MessageUtil.sendConsoleException(e);
+            setErrorOccurred(true);
+        }
+
+        return filePaths;
+    }
+
+    /**
+     * Gets whether an error occurred while accessing the (S)FTP server
+     * @return whether an error occurred
+     */
+    public boolean isErrorWhileUploading() {
+        return this._errorOccurred;
+    }
+
+    /**
+     * Deletes the oldest files past the number to retain from the FTP server inside the specified folder for the file type
+     * <p>
+     * The number of files to retain is specified by the user in the {@code config.yml}
+     * @param type the type of file (ex. plugins, world)
+     * @throws Exception
+     */
+    private void deleteFiles(String type) throws Exception {
         int fileLimit = Config.getKeepCount();
         if (fileLimit == -1) {
             return;
         }
-        TreeMap<Date, FTPFile> files = processFiles(f);
+        TreeMap<Date, FTPFile> files = getZipFiles();
 
         if (files.size() > fileLimit) {
             MessageUtil.sendConsoleMessage("There are " + files.size() + " file(s) which exceeds the " +
                     "limit of " + fileLimit + ", deleting.");
             while (files.size() > fileLimit) {
-                f.deleteFile(files.firstEntry().getValue().getName());
+                ftpClient.deleteFile(files.firstEntry().getValue().getName());
                 files.remove(files.firstKey());
             }
         }
     }
 
     /**
-     * Returns a list of files inside the folder for the file type
-     * @param f the FTPClient
+     * Returns a list of ZIP files and their modification dates inside the current working directory
      * @return the list of files
+     * @throws Exception
      */
-    private TreeMap<Date, FTPFile> processFiles(FTPClient f) throws Exception {
-        TreeMap<Date, FTPFile> result = new TreeMap<Date, FTPFile>();
-        for (FTPFile file : f.mlistDir()) {
+    private TreeMap<Date, FTPFile> getZipFiles() throws Exception {
+        TreeMap<Date, FTPFile> files = new TreeMap<>();
+
+        for (FTPFile file : ftpClient.mlistDir()) {
             if (file.getName().endsWith(".zip"))
-                result.put(file.getTimestamp().getTime(), file);
+                files.put(file.getTimestamp().getTime(), file);
         }
-        return result;
+
+        return files;
+    }
+
+    /**
+     * Creates a folder with the specified path inside the current working directory, then enters it
+     * @param parentFolder the parent folder
+     * @param path the relative path of the folder to create
+     * @throws Exception
+     */
+    private void createThenEnter(String path) throws Exception {
+        if (!ftpClient.changeWorkingDirectory(path)) {
+            ftpClient.makeDirectory(path);
+            ftpClient.changeWorkingDirectory(path);
+        }
+    }
+
+    /**
+     * Resets the current working directory to what it was when connection to the SFTP server was established
+     * @throws Exception
+     */
+    private void resetWorkingDirectory() throws Exception {
+        ftpClient.changeWorkingDirectory(initialRemoteFolder);
     }
 
     /**
@@ -134,15 +288,29 @@ public class FTPUploader {
      * @param path the file path
      * @return the file path with replaced seperators
      */
-    private String replaceFileSeperators(String path) {
+    private static String replaceFileSeperators(String path) {
         return path.replace("/", Config.getFtpFileSeperator()).replace("\\", Config.getFtpFileSeperator());
     }
 
     /**
-     * Sets whether an error occurred while accessing the authenticated user's OneDrive
-     * @param errorOccurredValue whether an error occurred
+     * Prepends the specified String to each element in the specified ArrayList
+     * @param list the ArrayList
+     * @param string the String
+     * @return the new ArrayList
      */
-    private void setErrorOccurred(boolean errorOccurredValue) {
-        this.errorOccurred = errorOccurredValue;
+    private static ArrayList<String> prependToAll(ArrayList<String> list, String string) {
+        for (int i = 0; i < list.size(); i++) {
+            list.set(i, string + list.get(i));
+        }
+
+        return list;
+    }
+
+    /**
+     * Sets whether an error occurred while accessing the FTP server
+     * @param errorOccurred whether an error occurred
+     */
+    private void setErrorOccurred(boolean errorOccurred) {
+        _errorOccurred = errorOccurred;
     }
 }

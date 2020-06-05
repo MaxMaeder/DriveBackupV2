@@ -8,15 +8,15 @@
 
 # How often to do backups (in minutes), set to -1 to disable automatic backups
 delay: 60
-# The priority of the backup thread, relative to the default
-# For example, -1 would make the prioriy one less than the default
-# Minimum: -4, Maximum: 5
+# The priority of the backup thread, relative to the minimum priority
+# This is set to zero by default so backups cause the least amount of server lag possible
+# Minimum: 0, Maximum: 9
 backup-thread-priority: 0
 # How many backups to keep remotely before deleting the oldest one, set to -1 to disable automatic deletes
 keep-count: 20
 # How many backups to keep locally before deleting the oldest one, set to -1 to disable automatic deletes
 local-keep-count: 0
-# Should automatic backups be disabled if there hasn't been any new player activity since the last backup
+# Should automatic backups be disabled if there hasn't been any new player activity since the last backup?
 backups-require-players: true
 
 # Should backups run at specific days/times every week, instead of every so often?
@@ -53,12 +53,12 @@ backup-schedule-list:
 # Expandable list of things to back up
 backup-list:
 # An entry is comprised of four things:
-#   - the folder path
-#   - the file name format
+#   - the file/folder path
+#   - the file name format of the zip file to create
 #   - whether this plugin should create the backup, or just upload it
 #   - files to not include in the backup (optional)
 #
-# The folder path should be the path to the folder you want to backup, 
+# The file/folder path should be the path to the file/folder you want to backup, 
 #   relative to the folder your server jar is in
 # For more information about relative paths, see
 #   http://www.linux.com/training-tutorials/absolute-path-vs-relative-path-linuxunix/
@@ -82,6 +82,83 @@ backup-list:
 - path: "plugins"
   format: "'Backup-plugins-'yyyy-M-d--HH-mm'.zip'"
   create: true
+
+# Expandable list of things to include in the backup from external sources
+# For example, an external Bungeecord server or a mySQL database
+external-backup-list:
+# An entry is comprised of:
+#   - the hostname of the external source
+#   - the port
+#   - the username
+#   - the password (leave blank if no password)
+#   - the file name format of the zip file to create
+#   - the type of external source
+#   - settings specific to a external source type
+#
+# The types of external sources currently supported are:
+#   - ftpServer
+#   - ftpsServer
+#   - sftpServer
+#   - mysqlDatabase
+#
+# Settings specific to FTP(S) and SFTP servers
+#   - the base file path 
+#   - the list of files/folders to backup
+#
+#   The base file path should be the path to the folder which all the paths to files/folders to backup are relative to
+#
+#   Each entry in the list of files/folders to backup should contain
+#     - the path to the file/folder
+#     - files to not include in the backup (optional)
+#
+#     Each path in the list of paths to files/folders to backup should be relative to the base file path
+#
+#     Details on how exclude files are under "backup-list"
+#
+# Settings specific to SFTP servers
+#   - the path to SFTP public key, relative to the "DriveBackupV2" folder (leave blank if not using public key authentication)
+#   - SFTP passphrase (leave blank if not using public key authentication or no passphrase)
+#
+# Settings specific to MySQL servers
+#   - a list of the names of the databases to backup
+#   IMPORTANT: if you are using Windows, you need to install the MySQL Command Line Client, see
+#     http://dev.mysql.com/downloads/mysql/
+#- hostname: "ftp.example.com"
+#  port: 21
+#  username: "Username"
+#  password: 
+#  format: "'Backup-ftp-server-'yyyy-M-d--HH-mm'.zip'"
+#  type: "ftpServer"
+#  base-dir: "server"
+#  backup-list: 
+#  - path: "folder1"
+#  - path: "folder2/folder3"
+#  - path: "folder2/folder4"
+#    blacklist:
+#    - "folder5"
+#- hostname: "sftp.example.com"
+#  port: 22
+#  username: "Username"
+#  password: 
+#  format: "'Backup-sftp-server-'yyyy-M-d--HH-mm'.zip'"
+#  sftp-public-key: 
+#  sftp-passphrase: 
+#  type: "sftpServer"
+#  base-dir: "server"
+#  backup-list: 
+#  - path: "folder1"
+#  - path: "folder2/folder3"
+#  - path: "folder2/folder4"
+#    blacklist:
+#    - "folder5"
+#- hostname: "databases.example.com"
+#  port: 3306
+#  username: "Username"
+#  password: 
+#  format: "'Backup-mysql-database-'yyyy-M-d--HH-mm'.zip'"
+#  type: "mysqlDatabase"
+#  names: 
+#  - "myDatabase"
 
 # Path to the folder to save backups in locally
 dir: "backups"
@@ -108,9 +185,9 @@ ftp:
   username: "Username"
   # Password  (leave blank if no password)
   password: 
-  # Path to the SFTP public key, relative to the "DriveBackupV2 folder" (leave blank if not using public key authentication)
+  # Path to the SFTP public key, relative to the "DriveBackupV2" folder (leave blank if not using public key authentication)
   sftp-public-key: 
-  # SFTP passphrase (leave blank if not using public key authentication or no password)
+  # SFTP passphrase (leave blank if not using public key authentication or no passphrase)
   sftp-passphrase: 
   # The directory to work in (leave blank for default)
   working-dir:

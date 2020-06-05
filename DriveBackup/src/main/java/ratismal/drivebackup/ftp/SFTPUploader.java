@@ -21,30 +21,69 @@ import net.schmizz.sshj.userauth.method.AuthPublickey;
  */
 
 public class SFTPUploader {
+    private SSHClient sshClient;
+    private StatefulSFTPClient sftpClient;
+
+    private String initialRemoteFolder;
+    private String _localBaseFolder;
+    private String _remoteBaseFolder;
 
     /**
-     * Uploads the specified file to the SFTP server inside a folder for the
-     * specified file type
-     * <p>
-     * The SFTP server credentials are specified by the user in the
-     * {@code config.yml}
-     * 
-     * @param file the file
-     * @param type the type of file (ex. plugins, world)
+     * Creates an instance of the {@code SFTPUploader} object using the server credentials specified by the user in the {@code config.yml}
+     * @throws Exception
      */
-    public static void uploadFile(File file, String type) throws Exception {
+    public SFTPUploader() throws Exception {
+        connect(Config.getFtpHost(), Config.getFtpPort(), Config.getFtpUser(), Config.getFtpPass(), Config.getSftpPublicKey(), Config.getSftpPass());
 
-        SSHClient sshClient = new SSHClient();
+        _localBaseFolder = ".";
+        if (Config.getFtpDir() == null) {
+            _remoteBaseFolder = Config.getDestination();
+        } else {
+            _remoteBaseFolder = Config.getFtpDir() + File.separator + Config.getDestination();
+        }
+    }
+
+    /**
+     * Creates an instance of the {@code SFTPUploader} object using the specified credentials
+     * @param host the hostname of the SFTP server
+     * @param port the port
+     * @param username the username
+     * @param password the password (leave blank if none)
+     * @param publicKey the path to the public key, relative to the "DriveBackupV2 folder" (leave blank if none)
+     * @param passphrase the public key passphrase (leave blank if none)
+     * @param localBaseFolder the path to the folder which all local file paths are relative to
+     * @param remoteBaseFolder the path to the folder which all remote file paths are relative to 
+     * @throws Exception
+     */
+    public SFTPUploader(String host, int port, String username, String password, String publicKey, String passphrase, String localBaseFolder, String remoteBaseFolder) throws Exception {
+        connect(host, port, username, password, publicKey, passphrase);
+
+        _localBaseFolder = localBaseFolder;
+        _remoteBaseFolder = remoteBaseFolder;
+    }
+
+    /**
+     * Authenticates with a SFTP server using the specified credentials
+     * @param host the hostname of the SFTP server
+     * @param port the port
+     * @param username the username
+     * @param password the password (leave blank if none)
+     * @param publicKey the path to the public key, relative to the "DriveBackupV2 folder" (leave blank if none)
+     * @param passphrase the public key passphrase (leave blank if none)
+     * @throws Exception
+     */
+    private void connect(String host, int port, String username, final String password, String publicKey, String passphrase) throws Exception {
+        sshClient = new SSHClient();
         sshClient.addHostKeyVerifier(new PromiscuousVerifier()); // Disable host checking
-        sshClient.connect(Config.getFtpHost(), Config.getFtpPort());
+        sshClient.connect(host, port);
 
-        List<AuthMethod> sshAuthMethods = new ArrayList<AuthMethod>();
+        ArrayList<AuthMethod> sshAuthMethods = new ArrayList<>();
 
-        if (Config.getFtpPass() != null) {
+        if (password != null) {
             sshAuthMethods.add(new AuthPassword(new PasswordFinder() {
                 @Override
                 public char[] reqPassword(Resource<?> resource) {
-                    return Config.getFtpPass().toCharArray();
+                    return password.toCharArray();
                 }
 
                 @Override
@@ -54,83 +93,162 @@ public class SFTPUploader {
             }));
         }
 
-        if (Config.getSftpPublicKey() != null) {
-            if (Config.getSftpPass() != null) {
+        if (publicKey != null) {
+            if (passphrase != null) {
                 sshAuthMethods.add(new AuthPublickey(sshClient.loadKeys(
-                        DriveBackup.getInstance().getDataFolder().getAbsolutePath() + File.separator + Config.getSftpPublicKey(),
-                        Config.getSftpPass().toCharArray())));
+                        DriveBackup.getInstance().getDataFolder().getAbsolutePath() + File.separator + publicKey,
+                        passphrase.toCharArray())));
             } else {
                 sshAuthMethods.add(new AuthPublickey(sshClient.loadKeys(
-                    DriveBackup.getInstance().getDataFolder().getAbsolutePath() + File.separator + Config.getSftpPublicKey())));
+                    DriveBackup.getInstance().getDataFolder().getAbsolutePath() + File.separator + publicKey)));
             }
         }
 
-        sshClient.auth(Config.getFtpUser(), sshAuthMethods);
-        StatefulSFTPClient remoteFolder = new StatefulSFTPClient(sshClient.newSFTPClient().getSFTPEngine());
+        sshClient.auth(username, sshAuthMethods);
+        sftpClient = new StatefulSFTPClient(sshClient.newSFTPClient().getSFTPEngine());
 
-        if (Config.getFtpDir() != null) {
-            createThenEnter(remoteFolder, Config.getFtpDir());
-        }
-        createThenEnter(remoteFolder, Config.getDestination());
-        createThenEnter(remoteFolder, type);
-
-        remoteFolder.put(file.getAbsolutePath(), file.getName());
-        
-        deleteFiles(remoteFolder);
-
-        sshClient.close();
-  }
+        initialRemoteFolder = sftpClient.pwd();
+    }
 
     /**
-     * Deletes the oldest files past the number to retain from the SFTP server inside the folder for the file type
+     * Closes the connection to the SFTP server
+     * @throws Exception
+     */
+    public void close() throws Exception {
+        sshClient.close();
+    }
+
+    /**
+     * Uploads the specified file to the SFTP server inside a folder for the specified file type
+     * @param file the file
+     * @param type the type of file (ex. plugins, world)
+     * @throws Exception
+     */
+    public void uploadFile(File file, String type) throws Exception {
+        resetWorkingDirectory();
+        createThenEnter(_remoteBaseFolder);
+        createThenEnter(type);
+
+        sftpClient.put(file.getAbsolutePath(), file.getName());
+        
+        deleteFiles();
+    }
+
+    /**
+     * Downloads the specified file from the SFTP server into a folder for the specified file type
+     * @param filePath the path of the file
+     * @param type the type of file (ex. plugins, world)
+     * @throws Exception
+     */
+    public void downloadFile(String filePath, String type) throws Exception {
+        resetWorkingDirectory();
+        sftpClient.cd(_remoteBaseFolder);
+
+        File outputFile = new File(_localBaseFolder + File.separator + type);
+        if (!outputFile.exists()) {
+            outputFile.mkdirs();
+        }
+
+        sftpClient.get(filePath, _localBaseFolder + File.separator + type + File.separator + new File(filePath).getName());
+    }
+
+    /**
+     * Returns a list of the paths of the files inside the specified folder and subfolders
+     * @param type the type of folder (ex. plugins, world)
+     * @return the list of file paths
+     * @throws Exception
+     */
+    public ArrayList<String> getFiles(String type) throws Exception {
+        ArrayList<String> result = new ArrayList<>();
+
+        resetWorkingDirectory();
+        sftpClient.cd(_remoteBaseFolder);
+        sftpClient.cd(type);
+
+        for (RemoteResourceInfo file : sftpClient.ls()) {
+            if (file.isDirectory()) {
+                result.addAll(prependToAll(getFiles(file.getPath()), file.getName() + File.separator));
+            } else {
+                result.add(file.getName());
+            }
+        }
+
+        return result;
+    }
+
+    /**
+     * Deletes the oldest files past the number to retain from the SFTP server inside the current working directory
      * <p>
      * The number of files to retain is specified by the user in the {@code config.yml}
-     * @param remoteFolder the folder
+     * @throws Exception
      */
-    public static void deleteFiles(StatefulSFTPClient remoteFolder) throws Exception {
+    private void deleteFiles() throws Exception {
         int fileLimit = Config.getKeepCount();
         if (fileLimit == -1) {
             return;
         }
-        TreeMap<Date, RemoteResourceInfo> files = processFiles(remoteFolder);
+        TreeMap<Date, RemoteResourceInfo> files = getZipFiles();
 
         if (files.size() > fileLimit) {
             MessageUtil.sendConsoleMessage("There are " + files.size() + " file(s) which exceeds the limit of " + fileLimit + ", deleting.");
 
             while (files.size() > fileLimit) {
-                remoteFolder.rm(files.firstEntry().getValue().getName());
+                sftpClient.rm(files.firstEntry().getValue().getName());
                 files.remove(files.firstEntry().getKey());
             }
         }
     }
 
     /**
-     * Returns a list of files inside the folder for the file type
-     * @param remoteFolder the folder
+     * Returns a list of ZIP files and their modification dates inside the current working directory
      * @return the list of files
+     * @throws Exception
      */
-    public static TreeMap<Date, RemoteResourceInfo> processFiles(StatefulSFTPClient remoteFolder) throws Exception {
-        TreeMap<Date, RemoteResourceInfo> result = new TreeMap<Date, RemoteResourceInfo>();
+    private TreeMap<Date, RemoteResourceInfo> getZipFiles() throws Exception {
+        TreeMap<Date, RemoteResourceInfo> files = new TreeMap<>();
 
-        for (RemoteResourceInfo file : remoteFolder.ls()) {
+        for (RemoteResourceInfo file : sftpClient.ls()) {
             if (file.getName().split(".").length == 2 && file.getName().split(".") [1] == "zip") {
-                result.put(new Date(file.getAttributes().getMtime()), file);
+                files.put(new Date(file.getAttributes().getMtime()), file);
             }
         }
-        return result;
+
+        return files;
     }
 
     /**
-     * Creates a folder with the specified name inside the specifed parent folder, then enters it
-     * @param parentFolder the parent folder
-     * @param name the name of the folder to create
+     * Creates a folder with the specified path inside the current working directory, then enters it
+     * @param path the relative path of the folder to create
+     * @throws Exception
      */
-    public static void createThenEnter(StatefulSFTPClient parentFolder, String name) throws Exception {
+    private void createThenEnter(String path) throws Exception {
         try {
-            parentFolder.cd(name);
+            sftpClient.cd(path);
         } catch (Exception error) {
-            parentFolder.mkdir(name);
-            parentFolder.cd(name);
+            sftpClient.mkdirs(path);
+            sftpClient.cd(path);
         }
+    }
+
+    /**
+     * Resets the current working directory to what it was when connection to the SFTP server was established
+     * @throws Exception
+     */
+    private void resetWorkingDirectory() throws Exception {
+        sftpClient.cd(initialRemoteFolder);
+    }
+
+    /**
+     * Prepends the specified String to each element in the specified ArrayList
+     * @param list the ArrayList
+     * @param string the String
+     * @return the new ArrayList
+     */
+    private static ArrayList<String> prependToAll(ArrayList<String> list, String string) {
+        for (int i = 0; i < list.size(); i++) {
+            list.set(i, string + list.get(i));
+        }
+
+        return list;
     }
 }
