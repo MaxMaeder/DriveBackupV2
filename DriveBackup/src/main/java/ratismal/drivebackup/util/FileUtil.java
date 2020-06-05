@@ -87,14 +87,11 @@ public class FileUtil {
             fileList.clear();
             DateFormat format = new SimpleDateFormat(formatString, new Locale(Config.getDateLanguage()));
             String fileName = format.format(new Date());
-            File path = new File(Config.getDir());
             blackList = _blackList;
+
+            File path = new File(new String(Config.getDir() + File.separator + type).replace(".." + File.separator, "")); // Keeps working directory inside backups folder
             if (!path.exists()) {
-                path.mkdir();
-            }
-            path = new File(new String(Config.getDir() + File.separator + type).replace(".." + File.separator, "")); // Keeps working directory inside backups folder
-            if (!path.exists()) {
-                path.mkdir();
+                path.mkdirs();
             }
 
             generateFileList(new File(type), type);

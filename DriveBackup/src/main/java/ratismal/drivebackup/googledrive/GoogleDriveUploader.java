@@ -212,7 +212,6 @@ public class GoogleDriveUploader {
 
             File parentFolder = getFolder(destination);
             if (parentFolder == null) {
-                System.out.println("Creating a folder");
                 parentFolder = new File();
                 parentFolder.setTitle(destination);
                 parentFolder.setMimeType("application/vnd.google-apps.folder");
@@ -249,7 +248,6 @@ public class GoogleDriveUploader {
                 }
 
                 if (childFolder == null) {
-                    MessageUtil.sendConsoleMessage("Creating a folder");
                     childFolder = new File();
                     childFolder.setTitle(folder);
                     childFolder.setMimeType("application/vnd.google-apps.folder");
