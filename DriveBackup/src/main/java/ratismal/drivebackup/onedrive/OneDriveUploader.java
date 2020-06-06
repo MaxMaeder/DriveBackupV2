@@ -135,7 +135,11 @@ public class OneDriveUploader {
                     
                     Bukkit.getScheduler().cancelTask(task[0]);
                 } else if (!response.getBody().jsonPath().getString("error").equals("authorization_pending")) {
-                    MessageUtil.sendMessage(initiator, "Failed to link your OneDrive account");
+                    if (response.getBody().jsonPath().getString("error").equals("expired_token")) {
+                        MessageUtil.sendMessage(initiator, "The OneDrive account linking process timed out, please try again");
+                    } else {
+                        MessageUtil.sendMessage(initiator, "Failed to link your OneDrive account, please try again");
+                    }
                     
                     Bukkit.getScheduler().cancelTask(task[0]);
                 }
