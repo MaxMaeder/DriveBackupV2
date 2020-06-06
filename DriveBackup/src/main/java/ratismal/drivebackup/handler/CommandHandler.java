@@ -147,7 +147,7 @@ public class CommandHandler implements CommandExecutor {
      */
     public void noPerms(CommandSender sender) {
         String noPerms = Config.getNoPerms();
-        noPerms = MessageUtil.processGeneral(noPerms);
+        noPerms = MessageUtil.translateMessageColors(noPerms);
         MessageUtil.sendMessage(sender, noPerms);
     }
 
