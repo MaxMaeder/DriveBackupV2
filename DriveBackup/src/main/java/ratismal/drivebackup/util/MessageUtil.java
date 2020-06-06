@@ -92,7 +92,7 @@ public class MessageUtil {
         return TextComponent.builder()
                 .append(
                     TextComponent.of("[")
-                    .color(TextColor.DARK_AQUA)
+                    .color(TextColor.GOLD)
                 )
                 .append(
                     TextComponent.of("DriveBackupV2")
@@ -100,7 +100,7 @@ public class MessageUtil {
                 )
                 .append(
                     TextComponent.of("] "))
-                    .color(TextColor.DARK_AQUA)
+                    .color(TextColor.GOLD)
                 .append(message)
                 .build();
     }
