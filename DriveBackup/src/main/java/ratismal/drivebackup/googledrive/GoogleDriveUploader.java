@@ -10,7 +10,10 @@ import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.model.*;
 import io.restassured.response.Response;
-
+import net.kyori.text.TextComponent;
+import net.kyori.text.event.ClickEvent;
+import net.kyori.text.event.HoverEvent;
+import net.kyori.text.format.TextColor;
 import ratismal.drivebackup.DriveBackup;
 import ratismal.drivebackup.config.Config;
 import ratismal.drivebackup.util.MessageUtil;
@@ -27,7 +30,6 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.scheduler.BukkitScheduler;
 import org.json.simple.JSONObject;
@@ -81,11 +83,33 @@ public class GoogleDriveUploader {
       		.param("scope", "https://www.googleapis.com/auth/drive.file")
       		.post("https://oauth2.googleapis.com/device/code");
 
+        String verificationUrl = response.getBody().jsonPath().getString("verification_url");
+        String userCode = response.getBody().jsonPath().getString("user_code");
         final String deviceCode = response.getBody().jsonPath().getString("device_code");
         long responseCheckDelay = response.getBody().jsonPath().getLong("interval");
 
-
-        MessageUtil.sendMessage(initiator, "To link your Google Drive account, go to " + ChatColor.GOLD + response.getBody().jsonPath().getString("verification_url") + ChatColor.DARK_AQUA + " and enter code " + ChatColor.GOLD + response.getBody().jsonPath().getString("user_code"));
+        MessageUtil.sendMessage(initiator, TextComponent.builder()
+                .append(
+                    TextComponent.of("To link your Google Drive account, go to ")
+                    .color(TextColor.DARK_AQUA)
+                )
+                .append(
+                    TextComponent.of(verificationUrl)
+                    .color(TextColor.GOLD)
+                    .hoverEvent(HoverEvent.showText(TextComponent.of("Go to URL")))
+                    .clickEvent(ClickEvent.openUrl(verificationUrl))
+                )
+                .append(
+                    TextComponent.of(" and enter code ")
+                    .color(TextColor.DARK_AQUA)
+                )
+                .append(
+                    TextComponent.of(userCode)
+                    .color(TextColor.GOLD)
+                    .hoverEvent(HoverEvent.showText(TextComponent.of("Copy code")))
+                    .clickEvent(ClickEvent.copyToClipboard(userCode))
+                )
+                .build());
 
         final int[] task = new int[]{-1};
         task[0] = plugin.getServer().getScheduler().scheduleSyncRepeatingTask(plugin, new Runnable() {

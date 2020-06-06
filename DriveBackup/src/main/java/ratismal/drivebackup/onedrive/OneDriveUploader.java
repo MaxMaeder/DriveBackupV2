@@ -1,11 +1,14 @@
 package ratismal.drivebackup.onedrive;
 
 import io.restassured.response.Response;
+import net.kyori.text.TextComponent;
+import net.kyori.text.event.ClickEvent;
+import net.kyori.text.event.HoverEvent;
+import net.kyori.text.format.TextColor;
 
 import org.bukkit.Bukkit;
 import org.bukkit.scheduler.BukkitScheduler;
 
-import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -64,12 +67,34 @@ public class OneDriveUploader {
       		.param("client_id", CLIENT_ID)
       		.param("scope", "offline_access Files.ReadWrite")
       		.post("https://login.microsoftonline.com/common/oauth2/v2.0/devicecode");
-      
+
+        String verificationUrl = response.getBody().jsonPath().getString("verification_uri");
+        String userCode = response.getBody().jsonPath().getString("user_code");
         final String deviceCode = response.getBody().jsonPath().getString("device_code");
         long responseCheckDelay = response.getBody().jsonPath().getLong("interval");
 
-
-        MessageUtil.sendMessage(initiator, "To link your OneDrive account, go to " + ChatColor.GOLD + response.getBody().jsonPath().getString("verification_uri") + ChatColor.DARK_AQUA + " and enter code " + ChatColor.GOLD + response.getBody().jsonPath().getString("user_code"));
+        MessageUtil.sendMessage(initiator, TextComponent.builder()
+                .append(
+                    TextComponent.of("To link your OneDrive account, go to ")
+                    .color(TextColor.DARK_AQUA)
+                )
+                .append(
+                    TextComponent.of(verificationUrl)
+                    .color(TextColor.GOLD)
+                    .hoverEvent(HoverEvent.showText(TextComponent.of("Go to URL")))
+                    .clickEvent(ClickEvent.openUrl(verificationUrl))
+                )
+                .append(
+                    TextComponent.of(" and enter code ")
+                    .color(TextColor.DARK_AQUA)
+                )
+                .append(
+                    TextComponent.of(userCode)
+                    .color(TextColor.GOLD)
+                    .hoverEvent(HoverEvent.showText(TextComponent.of("Copy code")))
+                    .clickEvent(ClickEvent.copyToClipboard(userCode))
+                )
+                .build());
 
         final int[] task = new int[]{-1};
         task[0] = plugin.getServer().getScheduler().scheduleSyncRepeatingTask(plugin, new Runnable() {

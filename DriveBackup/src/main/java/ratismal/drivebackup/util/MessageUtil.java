@@ -5,25 +5,27 @@ import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import net.kyori.text.TextComponent;
+import net.kyori.text.adapter.bukkit.TextAdapter;
+import net.kyori.text.format.TextColor;
 import ratismal.drivebackup.config.Config;
 
 public class MessageUtil {
 
     /**
-     * Sends message to all players and console
-     *
-     * @param message Message to send
+     * Sends the specified message to all logged in players and the console
+     * @param message the message to send
      */
     public static void sendMessageToAllPlayers(String message) {
-        Bukkit.getConsoleSender().sendMessage(getMessage(message));
+        Bukkit.getConsoleSender().sendMessage(prefixMessage(message));
 
         if (!Config.isSendMessagesInChat()) return;
 
-        message = processGeneral(message);
+        message = translateMessageColors(message);
 
         for (Player p : Bukkit.getOnlinePlayers()) {
             if (Config.isPrefixChatMessages()) {
-                p.sendMessage(getMessage(message));
+                p.sendMessage(prefixMessage(message));
             } else {
                 p.sendMessage(ChatColor.DARK_AQUA + message);
             }
@@ -31,24 +33,33 @@ public class MessageUtil {
     }
 
     /**
-     * Sends a message to a player
-     *
-     * @param sender  Player to send message to
-     * @param message Message to send
+     * Sends the specified message to the specified player
+     * @param player the player to send the message to
+     * @param message the message to send
      */
-    public static void sendMessage(CommandSender sender, String message) {
-        if (null != sender) {
-            sender.sendMessage(getMessage(message));
+    public static void sendMessage(CommandSender player, String message) {
+        if (null != player && player instanceof Player) {
+            player.sendMessage(prefixMessage(message));
         }
     }
 
     /**
-     * Sends a message to console
-     *
-     * @param message Message to send
+     * Sends the specified message to the specified player
+     * @param player the player to send the message to
+     * @param message the message to send
+     */
+    public static void sendMessage(CommandSender player, TextComponent message) {
+        if (null != player && player instanceof Player) {
+            TextAdapter.sendComponent(player, prefixMessage(message));
+        }
+    }
+
+    /**
+     * Sends the specified message to the server console
+     * @param message the message to send
      */
     public static void sendConsoleMessage(String message) {
-        Bukkit.getConsoleSender().sendMessage(getMessage(message));
+        Bukkit.getConsoleSender().sendMessage(prefixMessage(message));
     }
 
     /**
@@ -64,26 +75,43 @@ public class MessageUtil {
     }
     
     /**
-     * Processes a message
-     *
-     * @param message
-     * @return
+     * Prefixes the specified message with the plugin name
+     * @param message the message to prefix
+     * @return the prefixed message
      */
-    private static String getMessage(String message) {
+    private static String prefixMessage(String message) {
         return "\2476[\2474DriveBackupV2\2476]\2473 " + message;
     }
 
     /**
-     * Processes a general message
-     *
-     * @param process Message to process
-     * @return Processed message
+     * Prefixes the specified message with the plugin name
+     * @param message the message to prefix
+     * @return the prefixed message
      */
-    public static String processGeneral(String process) {
+    private static TextComponent prefixMessage(TextComponent message) {
+        return TextComponent.builder()
+                .append(
+                    TextComponent.of("[")
+                    .color(TextColor.DARK_AQUA)
+                )
+                .append(
+                    TextComponent.of("DriveBackupV2")
+                    .color(TextColor.DARK_RED)
+                )
+                .append(
+                    TextComponent.of("] "))
+                    .color(TextColor.DARK_AQUA)
+                .append(message)
+                .build();
+    }
 
-        process = ChatColor.translateAlternateColorCodes('&', process);
-
-        return process;
+    /**
+     * Translates the color codes in the specified message to the type used internally
+     * @param process the message to translate
+     * @return the translated message
+     */
+    public static String translateMessageColors(String process) {
+        return ChatColor.translateAlternateColorCodes('&', process);
     }
 
 }

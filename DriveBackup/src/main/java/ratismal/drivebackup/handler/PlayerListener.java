@@ -4,6 +4,10 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 
+import net.kyori.text.TextComponent;
+import net.kyori.text.event.ClickEvent;
+import net.kyori.text.event.HoverEvent;
+import net.kyori.text.format.TextColor;
 import ratismal.drivebackup.DriveBackup;
 import ratismal.drivebackup.util.MessageUtil;
 
@@ -26,7 +30,18 @@ public class PlayerListener implements Listener {
         }
 
         if (DriveBackup.isUpdateAvailable() && event.getPlayer().hasPermission("drivebackup.linkAccounts")) {
-            MessageUtil.sendMessage(event.getPlayer(), "An update is available, get it here: http://bit.ly/2M14uVD");
+
+            MessageUtil.sendMessage(event.getPlayer(), TextComponent.builder()
+                .append(
+                    TextComponent.of("An update is available, get it here: ")
+                    .color(TextColor.DARK_AQUA)
+                )
+                .append(
+                    TextComponent.of("http://bit.ly/2M14uVD")
+                    .color(TextColor.GOLD)
+                    .hoverEvent(HoverEvent.showText(TextComponent.of("Go to URL")))
+                    .clickEvent(ClickEvent.openUrl("http://bit.ly/2M14uVD"))
+                ).build());
         }
     }
 
