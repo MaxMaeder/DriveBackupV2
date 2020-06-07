@@ -1,26 +1,24 @@
 # DriveBackupV2
 
-*This is an updated version of the unmaintained Bukkit plugin that's available [here](https://dev.bukkit.org/projects/drivebackup). Due to changes in the Google Drive/OneDrive APIs, that plugin no longer fully works. More details [here](https://github.com/MaxMaeder/DriveBackup#how-is-this-better-than-the-original-plugin).*
+*This is an updated version of the unmaintained Bukkit plugin that's available [here](https://dev.bukkit.org/projects/drivebackup). Due to changes in the Google Drive/OneDrive APIs, that plugin no longer fully works. Also, many features have been added.*
 
 ## What is this?
-Have you ever lost your world before?
+Have you ever lost your Minecraft world before?
 
-Maybe your hard drive died. Maybe you used a web hosting service that terminated without warning. Maybe you just accidentally deleted it.
+Maybe your hard drive died. Maybe you used a server hosting service that terminated without warning. Maybe you just accidentally deleted it.
 
-DriveBackupV2 is a plugin that aims to provide an extra layer of security to your data.
+DriveBackupV2 is a plugin that aims to provide an extra layer of security to your data by backing it up remotely.
 
-## What does it do?
-- Creates and uploads backups to Google Drive, OneDrive, or a remote FTP server
-  - When choosing between Google Drive and OneDrive, keep in mind that OneDrive has a 10GB upload limit per file and uploads substantially slower than Google Drive.
+## Features
+- Creates and/or uploads backups to Google Drive, OneDrive, or a remote (S)FTP server
+- Can create a backup out of any files or folders on your Minecraft server
+- Can include files and MySQL databases from external servers (such as a BungeeCord one!)
 - Deletes backups locally and remotely if they exceed a specified amount
-- Can create a backup out of any folder in the root directory
-  - If you already have a utility creating certain backups (eg. world) you can choose not to create that kind of backup and instead upload the existing ones
+- Can automatically run backups at an interval or on a schedule
+- And **much** more!
 
-## Setup:
+## Basic Setup
 First, download the plugin [here](https://dev.bukkit.org/projects/drivebackupv2) and copy it to the `plugins` folder on your server. Then, restart your server. Finally, follow the instructions below for the backup method of your choice.
-
-### FTP
-Fill in the `config.yml` with the FTP server login information.
 
 ### Google Drive
 Simply run `/drivebackup linkaccount googledrive` and follow the on-screen instructions.
@@ -28,39 +26,10 @@ Simply run `/drivebackup linkaccount googledrive` and follow the on-screen instr
 ### OneDrive
 Simply run `/drivebackup linkaccount onedrive` and follow the on-screen instructions.
 
-## Usage:
-By default, the plugin initiates a backup every hour. You can configure how often and what folders to backup in the `config.yml`.
-
-You can also manually initiate a backup by running `/drivebackup backup`.
-
-View other commands by running `/drivebackup`.
-
-## Permissions
-OPs have all permissions by default.
-
-### `drivebackup.reloadConfig`
-Allows user to reload the plugin's `config.yml`.
-
-Recommended permission holders: server owner, admins.
-
-### `drivebackup.linkAccounts`
-Allows user to link their Google Drive and/or OneDrive account to the plugin for use as the backup destination
-
-Recommended permission holders: server owner
-
-### `drivebackup.backup`
-Allows user to manually initiate a backup.
-
-Recommended permission holders: server owner, admins.
-
-## How is this better than the original plugin?
-- Significantly less lag when backing up
-- Much easier to set up
-- More control over what gets backed up
-- Support for SFTP
-- Support for scheduled backups
+## Advanced Setup
+Learn how to set up and use more advanced settings in the [wiki](https://github.com/MaxMaeder/DriveBackupV2/wiki).
 
 ## Privacy Policy
-Since we need to access your Google Drive and/or OneDrive data in order to back up your world, we are required to provide a Privacy Policy.
+Since we need to access your Google Drive and/or OneDrive data to back up your world, we are required to provide a Privacy Policy.
  
 All of the data this plugin uploads and downloads from your Google Drive and/or OneDrive stays on your Minecraft server, so we never have access to it. This plugin physically cannot access any data in your Google Drive and/or OneDrive that is not related to backing up your Minecraft world backups. But don't take our word for it, all of this plugin's source code is available here!
