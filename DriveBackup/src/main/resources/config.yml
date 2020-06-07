@@ -2,80 +2,20 @@
 # DriveBackup   -   by Max Maeder (MaxTheGinus)
 ###############################################
 
-# IMPORTANT: Make sure you use the server filesystem's default file seperator when specifying any file paths below
-# The default file seperator on Unix (Mac/Linux) is "/" and is "\" on Windows
-# Also, make sure any file paths you specify don't end with a file seperator
+# DOCUMENTATION HAS MOVED
+# Now available online at: https://github.com/MaxMaeder/DriveBackupV2/wiki
 
-# How often to do backups (in minutes), set to -1 to disable automatic backups
 delay: 60
-# The priority of the backup thread, relative to the minimum priority
-# This is set to zero by default so backups cause the least amount of server lag possible
-# Minimum: 0, Maximum: 9
 backup-thread-priority: 0
-# How many backups to keep remotely before deleting the oldest one, set to -1 to disable automatic deletes
 keep-count: 20
-# How many backups to keep locally before deleting the oldest one, set to -1 to disable automatic deletes
 local-keep-count: 0
-# Should automatic backups be disabled if there hasn't been any new player activity since the last backup?
 backups-require-players: true
 
-# Should backups run at specific days/times every week, instead of every so often?
 scheduled-backups: false
-# The timezone the times in the schedule are in
-# Example timezones:
-#   Chicago, USA: "-05:00"
-#   Paris, France: "+02:00"
-# Find your timezone: http://www.timeanddate.com/time/map/
 schedule-timezone: "-00:00"
-# Expandable list of dates/times to back up
 backup-schedule-list:
-# An entry is comprised of two things:
-#   - The day(s) to run the backup on
-#   - The time to run the backup at
-#
-# The day(s) to run the backup on should be a list comprised of any of the following:
-#   - Days of the week: "sunday", "monday", "tuesday", "wednesday", "thursday", "friday", or "saturday"
-#   - Groups of days: "weekdays" or "weekends"
-#   - All days: "everyday"
-#
-# The time to run the backup at should be in 24-hour format
-# If the time is before 10 o'clock, there must be a zero in front of the hour
-# For example: 03:00 (3 AM) or 13:00 (1 PM)
-- days: 
-  - "sunday"
-  - "wednesday"
-  time: "05:00"
-- days: 
-  - "monday"
-  - "thursday"
-  time: "23:30"
 
-# Expandable list of things to back up
 backup-list:
-# An entry is comprised of four things:
-#   - the file/folder path
-#   - the file name format of the zip file to create
-#   - whether this plugin should create the backup, or just upload it
-#   - files to not include in the backup (optional)
-#
-# The file/folder path should be the path to the file/folder you want to backup, 
-#   relative to the folder your server jar is in
-# For more information about relative paths, see
-#   http://www.linux.com/training-tutorials/absolute-path-vs-relative-path-linuxunix/
-# To avoid overwriting data, ".." only affects the current working directory locally
-#
-# The file name format is the backup's naming scheme, this should contain a timestamp
-# For more information about timedate formatting, see
-#   http://docs.oracle.com/javase/6/docs/api/java/text/SimpleDateFormat.html
-# Correct formatting is important, as this is how the plugin knows
-#   which backup is the most recent!
-#
-# You can also use the blacklist to not include specified files/folders
-# An entry should be the path to the file/folder relative to the folder you want to backup, for example:
-#   blacklist:
-#     - "dontbackup"
-#     - "thesefolders"
-#     - "orthisfile.txt"
 - path: "world"
   format: "'Backup-world-'yyyy-M-d--HH-mm'.zip'"
   create: true
@@ -83,155 +23,41 @@ backup-list:
   format: "'Backup-plugins-'yyyy-M-d--HH-mm'.zip'"
   create: true
 
-# Expandable list of things to include in the backup from external sources
-# For example, an external Bungeecord server or a mySQL database
 external-backup-list:
-# An entry is comprised of:
-#   - the hostname of the external source
-#   - the port
-#   - the username
-#   - the password (leave blank if no password)
-#   - the file name format of the zip file to create
-#   - the type of external source
-#   - settings specific to a external source type
-#
-# The types of external sources currently supported are:
-#   - ftpServer
-#   - ftpsServer
-#   - sftpServer
-#   - mysqlDatabase
-#
-# Settings specific to FTP(S) and SFTP servers
-#   - the base file path 
-#   - the list of files/folders to backup
-#
-#   The base file path should be the path to the folder which all the paths to files/folders to backup are relative to
-#
-#   Each entry in the list of files/folders to backup should contain
-#     - the path to the file/folder
-#     - files to not include in the backup (optional)
-#
-#     Each path in the list of paths to files/folders to backup should be relative to the base file path
-#
-#     Details on how exclude files are under "backup-list"
-#
-# Settings specific to SFTP servers
-#   - the path to SFTP public key, relative to the "DriveBackupV2" folder (leave blank if not using public key authentication)
-#   - SFTP passphrase (leave blank if not using public key authentication or no passphrase)
-#
-# Settings specific to MySQL servers
-#   - a list of the names of the databases to backup
-#   IMPORTANT: if you are using Windows, you need to install the MySQL Command Line Client, see
-#     http://dev.mysql.com/downloads/mysql/
-#- hostname: "ftp.example.com"
-#  port: 21
-#  username: "Username"
-#  password: 
-#  format: "'Backup-ftp-server-'yyyy-M-d--HH-mm'.zip'"
-#  type: "ftpServer"
-#  base-dir: "server"
-#  backup-list: 
-#  - path: "folder1"
-#  - path: "folder2/folder3"
-#  - path: "folder2/folder4"
-#    blacklist:
-#    - "folder5"
-#- hostname: "sftp.example.com"
-#  port: 22
-#  username: "Username"
-#  password: 
-#  format: "'Backup-sftp-server-'yyyy-M-d--HH-mm'.zip'"
-#  sftp-public-key: 
-#  sftp-passphrase: 
-#  type: "sftpServer"
-#  base-dir: "server"
-#  backup-list: 
-#  - path: "folder1"
-#  - path: "folder2/folder3"
-#  - path: "folder2/folder4"
-#    blacklist:
-#    - "folder5"
-#- hostname: "databases.example.com"
-#  port: 3306
-#  username: "Username"
-#  password: 
-#  format: "'Backup-mysql-database-'yyyy-M-d--HH-mm'.zip'"
-#  type: "mysqlDatabase"
-#  names: 
-#  - "myDatabase"
 
-# Path to the folder to save backups in locally
 dir: "backups"
 
-# Path to the folder to save backups in on the remote server
 destination: "backups"
 
-# Backup methods
 googledrive:
   enabled: false
 onedrive:
   enabled: false
 ftp:
   enabled: false
-  # Server to connect to
   hostname: "ftp.example.com"
-  # Port to connect to (usually 21 for FTP and 22 for SFTP)
   port: 21
-  # Set to true to use SFTP instead of FTP
   sftp: false
-  # Set to true to use FTPS instead of FTP
   ftps: false
-  # Username
   username: "Username"
-  # Password  (leave blank if no password)
   password: 
-  # Path to the SFTP public key, relative to the "DriveBackupV2" folder (leave blank if not using public key authentication)
   sftp-public-key: 
-  # SFTP passphrase (leave blank if not using public key authentication or no passphrase)
   sftp-passphrase: 
-  # The directory to work in (leave blank for default)
   working-dir:
 
-# Messages
-# You can use Minecraft formatting codes to change the color/formatting of the messages
-# For more information about Minecraft formatting codes, see
-#   http://minecraft.gamepedia.com/Formatting_codes
 messages:
-  # Should the messages below be sent in chat, or just in the console?
   send-in-chat: true
-  # What to say to a player who attempts to preform an action they don't have permission to do
   no-perm: "You don't have permission to do this!"
-  # What to say to all players when backup starts
-  backup-start: "Creating backups, server may lag for a little while..."
-  # What to say to all players when backup is complete
+  backup-start: "Creating backups, the server may lag for a little while..."
   backup-complete: "Backup complete,"
-  # What to say to all players when a interval-based backup is complete
-  # This message is sent along with "backup-complete"
-  #   %TIME is the amount of time until the next backup, in minutes
   next-backup: "the next backup is in %TIME minutes"
-  # What to say to all players when a schedule-based backup is complete
-  # This message is sent along with "backup-complete"
-  #   %DATE is the date/time of the next backup
   next-schedule-backup: "the next backup is at %DATE"
-  # The format of the time/date represented by %DATE in the "next-schedule-backup" message
-  # For more information about timedate formatting, see
-  #   http://docs.oracle.com/javase/8/docs/api/java/time/format/DateTimeFormatter.html
   next-schedule-backup-format: "hh:mm a EEE, MMM dd"
 
-# Advanced
 advanced:
-  # Should metrics be enabled?
   metrics: true
-  # Should the plugin look for updates?
   update-check: true
-  # Suppress most stacktraces?
   suppress-errors: false
-  # Prefix messages sent to all players in chat with the plugin name?
-  # Leaving this on helps spread DriveBackupV2, so please think twice before you disable it
   prefix-chat-messages: true
-  # Language of the date/time components in the "backup-list.format" and the "messages.next-schedule-backup-format" settings in ISO 639-2 alpha-2 or alpha-3 format
-  #   For a full list of ISO 639-2 language codes, see
-  #   http://www.loc.gov/standards/iso639-2/php/code_list.php
   date-language: "en"
-  # FTP file seperator
-  ftp-file-seperator: "/"
+  ftp-file-seperator: "/""
