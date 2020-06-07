@@ -107,11 +107,11 @@ public class MessageUtil {
 
     /**
      * Translates the color codes in the specified message to the type used internally
-     * @param process the message to translate
+     * @param message the message to translate
      * @return the translated message
      */
-    public static String translateMessageColors(String process) {
-        return ChatColor.translateAlternateColorCodes('&', process);
+    public static String translateMessageColors(String message) {
+        return ChatColor.translateAlternateColorCodes('&', message);
     }
 
 }
