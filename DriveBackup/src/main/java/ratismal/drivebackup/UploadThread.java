@@ -4,6 +4,10 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
+import net.kyori.text.TextComponent;
+import net.kyori.text.event.ClickEvent;
+import net.kyori.text.event.HoverEvent;
+import net.kyori.text.format.TextColor;
 import ratismal.drivebackup.config.Config;
 import ratismal.drivebackup.ftp.FTPUploader;
 import ratismal.drivebackup.googledrive.GoogleDriveUploader;
@@ -145,13 +149,35 @@ public class UploadThread implements Runnable {
             	if (!player.hasPermission("drivebackup.linkAccounts")) continue;
                 
                 if (googleDriveUploader.isErrorWhileUploading()) {
-                    MessageUtil.sendMessage(player, "Failed to backup to Google Drive, please run " + ChatColor.GOLD + "/drivebackup linkaccount googledrive");
+                    MessageUtil.sendMessage(player, TextComponent.builder()
+                    .append(
+                        TextComponent.of("Failed to backup to Google Drive, please run ")
+                        .color(TextColor.DARK_AQUA)
+                    )
+                    .append(
+                        TextComponent.of("/drivebackup linkaccount googledrive")
+                        .color(TextColor.GOLD)
+                        .hoverEvent(HoverEvent.showText(TextComponent.of("Run command")))
+                        .clickEvent(ClickEvent.runCommand("/drivebackup linkaccount googledrive"))
+                    )
+                    .build());
                 } else if (Config.isGoogleEnabled()) {
                     MessageUtil.sendMessage(player, "Backup to " + ChatColor.GOLD + "Google Drive " + ChatColor.DARK_AQUA + "complete");
                 }
 
                 if (oneDriveUploader.isErrorWhileUploading()) {
-                    MessageUtil.sendMessage(player, "Failed to backup to OneDrive, please run " + ChatColor.GOLD + "/drivebackup linkaccount onedrive");
+                    MessageUtil.sendMessage(player, TextComponent.builder()
+                    .append(
+                        TextComponent.of("Failed to backup to OneDrive, please run ")
+                        .color(TextColor.DARK_AQUA)
+                    )
+                    .append(
+                        TextComponent.of("/drivebackup linkaccount onedrive")
+                        .color(TextColor.GOLD)
+                        .hoverEvent(HoverEvent.showText(TextComponent.of("Run command")))
+                        .clickEvent(ClickEvent.runCommand("/drivebackup linkaccount onedrive"))
+                    )
+                    .build());
                 } else if (Config.isOnedriveEnabled()) {
                     MessageUtil.sendMessage(player, "Backup to " + ChatColor.GOLD + "OneDrive " + ChatColor.DARK_AQUA + "complete");
                 }
