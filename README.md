@@ -29,7 +29,7 @@ Simply run `/drivebackup linkaccount googledrive` and follow the on-screen instr
 Simply run `/drivebackup linkaccount onedrive` and follow the on-screen instructions.
 
 ## Advanced Setup
-Learn how to set up and use more advanced settings in the [wiki](https://github.com/MaxMaeder/DriveBackupV2/wiki).
+Learn how to set up and use more advanced features in the [wiki](https://github.com/MaxMaeder/DriveBackupV2/wiki).
 
 ## Privacy Policy
 Since we need to access your Google Drive and/or OneDrive data to back up your world, we are required to provide a Privacy Policy.
