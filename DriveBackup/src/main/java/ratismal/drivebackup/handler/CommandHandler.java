@@ -52,6 +52,11 @@ public class CommandHandler implements CommandExecutor {
                         }
                         break;
                     case "linkaccount":
+                        if (args.length < 2) {
+                            help(sender);
+                            break;
+                        } 
+
                     	if (hasPerm(sender, "drivebackup.linkAccounts")) {
                     		switch (args[1].toLowerCase()) {
                                 case "googledrive":
