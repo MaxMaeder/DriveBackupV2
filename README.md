@@ -28,7 +28,7 @@ Simply run `/drivebackup linkaccount googledrive` and follow the on-screen instr
 ### OneDrive
 Simply run `/drivebackup linkaccount onedrive` and follow the on-screen instructions.
 
-Once you've completed the above instuctions, backups will run automatically every hour.
+Once you've completed the above instructions, backups will run automatically every hour.
 
 ## Advanced Setup
 Learn how to set up and use more advanced features in the [wiki](https://github.com/MaxMaeder/DriveBackupV2/wiki).
