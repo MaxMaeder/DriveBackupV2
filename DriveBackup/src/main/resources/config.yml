@@ -52,7 +52,7 @@ messages:
   backup-complete: "Backup complete,"
   next-backup: "the next backup is in %TIME minutes"
   next-schedule-backup: "the next backup is at %DATE"
-  next-schedule-backup-format: "hh:mm a EEE, MMM dd"
+  next-schedule-backup-format: "h:mm a EEE, MMM d"
 
 advanced:
   metrics: true
