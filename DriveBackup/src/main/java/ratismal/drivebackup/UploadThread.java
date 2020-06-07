@@ -356,9 +356,9 @@ public class UploadThread implements Runnable {
      */
     private static String getTempFolderName(HashMap<String, Object> externalBackup) {
         if (externalBackup.get("type").equals("mysqlDatabase")) {
-            return "mysql-" + externalBackup.get("hostname") + ":" + externalBackup.get("port");
+            return "mysql-" + getSocketAddress(externalBackup);
         } else {
-            return "ftp-" + externalBackup.get("hostname") + ":" + externalBackup.get("port");
+            return "ftp-" + getSocketAddress(externalBackup);
         }
     }
 
