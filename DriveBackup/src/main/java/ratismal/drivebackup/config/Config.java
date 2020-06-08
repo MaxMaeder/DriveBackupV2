@@ -11,114 +11,85 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 public class Config {
+    private FileConfiguration config;
 
-    private FileConfiguration pluginconfig;
-
-    /**
-     * General
-     */
     private static long backupDelay;
     private static int backupThreadPriority;
     private static int keepCount;
     private static int localKeepCount;
     private static boolean backupsRequirePlayers;
-    private static boolean updateCheck;
-    private static boolean debug;
-    private static String dateLanguage;
 
-    /**
-     * Schedule
-     */
     private static boolean scheduleBackups;
     private static ZoneOffset backupScheduleTimezone;
     private static ArrayList<HashMap<String, Object>> backupScheduleList;
 
-    /**
-     * Metrics
-     */
-    private static boolean metrics;
-
-    /**
-     * Backups
-     */
-    private static String dir;
     private static ArrayList<HashMap<String, Object>> backupList;
+
     private static ArrayList<HashMap<String, Object>> externalBackupList;
 
-    /**
-     * Uploading
-     */
+    private static String dir;
+
     private static String destination;
 
-    /**
-     * Google Drive
-     */
     private static boolean googleEnabled;
-
-    /**
-     * OneDrive
-     */
     private static boolean onedriveEnabled;
-
-    /**
-     * FTP
-     */
     private static boolean ftpEnabled;
     private static String ftpHost;
     private static int ftpPort;
     private static boolean ftpSftp;
     private static boolean ftpFtps;
-    private static String sftpPublicKey;
-    private static String sftpPass;
     private static String ftpUser;
     private static String ftpPass;
     private static String ftpDir;
-    private static String ftpFileSeperator;
-
-    /**
-     * Messages
-     */
-
+    private static String sftpPublicKey;
+    private static String sftpPass;
+    
+    private static boolean sendMessagesInChat;
     private static String noPerms;
     private static String backupStart;
     private static String backupDone;
     private static String backupNext;
     private static String backupNextScheduled;
     private static String backupNextScheduledFormat;
-    private static boolean sendMessagesInChat;
+    
+    private static boolean metrics;
+    private static boolean updateCheck;
+    private static boolean debug;
     private static boolean prefixChatMessages;
+    private static String ftpFileSeperator;
+    private static String dateLanguage;
 
     /**
-     * config constructor
-     *
-     * @param pluginconfig - Plugin config
+     * Creates an instance of the {@code Config} object
+     * @param config A reference to the plugin's {@code config.yml}
      */
-    public Config(FileConfiguration pluginconfig) {
-        this.pluginconfig = pluginconfig;
+    public Config(FileConfiguration config) {
+        this.config = config;
     }
 
-    public void reload(FileConfiguration pluginconfig) {
-        this.pluginconfig = pluginconfig;
+    /**
+     * Reloads the plugin's {@code config.yml}
+     * @param config A reference to the plugin's {@code config.yml}
+     */
+    public void reload(FileConfiguration config) {
+        this.config = config;
         reload();
     }
 
+    /**
+     * Reloads the plugin's {@code config.yml}
+     */
     @SuppressWarnings("unchecked")
     public void reload() {
-        destination = pluginconfig.getString("destination");
+        backupDelay = config.getLong("delay") * 60 * 20;
+        backupThreadPriority = config.getInt("backup-thread-priority");
+        keepCount = config.getInt("keep-count");
+        localKeepCount = config.getInt("local-keep-count");
+        backupsRequirePlayers = config.getBoolean("backups-require-players");
 
-        dir = pluginconfig.getString("dir");
-        sendMessagesInChat = pluginconfig.getBoolean("messages.send-in-chat");
-        noPerms = pluginconfig.getString("messages.no-perm");
-        backupStart = pluginconfig.getString("messages.backup-start");
-        backupDone = pluginconfig.getString("messages.backup-complete");
-        backupNext = pluginconfig.getString("messages.next-backup");
-        backupNextScheduled = pluginconfig.getString("messages.next-schedule-backup");
-        backupNextScheduledFormat = pluginconfig.getString("messages.next-schedule-backup-format");
-
-        scheduleBackups = pluginconfig.getBoolean("scheduled-backups");
-        backupScheduleTimezone = ZoneOffset.of(pluginconfig.getString("schedule-timezone"));
-
-        List<Map<?, ?>> rawBackupScheduleList = pluginconfig.getMapList("backup-schedule-list");
+        scheduleBackups = config.getBoolean("scheduled-backups");
+        backupScheduleTimezone = ZoneOffset.of(config.getString("schedule-timezone"));
+        List<Map<?, ?>> rawBackupScheduleList = config.getMapList("backup-schedule-list");
         ArrayList<HashMap<String, Object>> parsedBackupScheduleList = new ArrayList<>();
         for (Map<?, ?> rawBackupSchedule: rawBackupScheduleList) {
 
@@ -132,59 +103,9 @@ public class Config {
         }
         backupScheduleList = (ArrayList<HashMap<String, Object>>) parsedBackupScheduleList.clone();
 
-        googleEnabled = pluginconfig.getBoolean("googledrive.enabled");
+        if (config.isList("backup-list")) {
 
-        onedriveEnabled = pluginconfig.getBoolean("onedrive.enabled");
-
-        ftpEnabled = pluginconfig.getBoolean("ftp.enabled");
-        ftpHost = pluginconfig.getString("ftp.hostname");
-        ftpPort = pluginconfig.getInt("ftp.port");
-        ftpSftp = pluginconfig.getBoolean("ftp.sftp");
-        
-        // Checks both FTPS keys for compatiablilty with older plugin versions
-        if (pluginconfig.isSet("ftp.ftps")) {
-            ftpFtps = pluginconfig.getBoolean("ftp.ftps");
-        } else {
-            ftpFtps = pluginconfig.getBoolean("ftp.FTPS");
-        }
-        
-
-        ftpUser = pluginconfig.getString("ftp.username");
-        ftpPass = pluginconfig.getString("ftp.password");
-        sftpPublicKey = pluginconfig.getString("ftp.sftp-public-key");
-        sftpPass = pluginconfig.getString("ftp.sftp-passphrase");
-        ftpDir = pluginconfig.getString("ftp.working-dir");
-
-        backupDelay = pluginconfig.getLong("delay") * 60 * 20;
-        backupThreadPriority = pluginconfig.getInt("backup-thread-priority");
-        keepCount = pluginconfig.getInt("keep-count");
-        localKeepCount = pluginconfig.getInt("local-keep-count");
-        backupsRequirePlayers = pluginconfig.getBoolean("backups-require-players");
-
-        // Checks both metrics, update check, and suppress errors keys for compatiablilty with older plugin versions
-        if (pluginconfig.isSet("advanced.metrics")) {
-            metrics = pluginconfig.getBoolean("advanced.metrics");
-        } else {
-            metrics = pluginconfig.getBoolean("metrics");
-        }
-        if (pluginconfig.isSet("advanced.update-check")) {
-            updateCheck = pluginconfig.getBoolean("advanced.update-check");
-        } else {
-            updateCheck = pluginconfig.getBoolean("update-check");
-        }
-        if (pluginconfig.isSet("advanced.suppress-errors")) {
-            debug = !pluginconfig.getBoolean("advanced.suppress-errors");
-        } else {
-            debug = !pluginconfig.getBoolean("suppress-errors");
-        }
-
-        ftpFileSeperator = pluginconfig.getString("advanced.ftp-file-seperator");
-        dateLanguage = pluginconfig.getString("advanced.date-language");
-        prefixChatMessages = pluginconfig.getBoolean("advanced.prefix-chat-messages");
-
-        if (pluginconfig.isList("backup-list")) {
-
-            List<Map<?, ?>> rawBackupList = pluginconfig.getMapList("backup-list");
+            List<Map<?, ?>> rawBackupList = config.getMapList("backup-list");
             ArrayList<HashMap<String, Object>> parsedBackupList = new ArrayList<>();
             for (Map<?, ?> rawBackup: rawBackupList) {
 
@@ -200,7 +121,7 @@ public class Config {
             backupList = (ArrayList<HashMap<String, Object>>) parsedBackupList.clone();
         } else { // For backwards compatibility with <1.0.2
 
-            ConfigurationSection rawBackupList = pluginconfig.getConfigurationSection("backup-list");
+            ConfigurationSection rawBackupList = config.getConfigurationSection("backup-list");
             ArrayList<HashMap<String, Object>> parsedBackupList = new ArrayList<>();
             if (rawBackupList != null) {
                 for (String rawBackupName : rawBackupList.getKeys(false)) {
@@ -221,7 +142,7 @@ public class Config {
             backupList = (ArrayList<HashMap<String, Object>>) parsedBackupList.clone();
         }
 
-        List<Map<?, ?>> rawExternalBackupList = pluginconfig.getMapList("external-backup-list");
+        List<Map<?, ?>> rawExternalBackupList = config.getMapList("external-backup-list");
         ArrayList<HashMap<String, Object>> parsedExternalBackupList = new ArrayList<>();
         for (Map<?, ?> rawExternalBackup: rawExternalBackupList) {
 
@@ -234,80 +155,122 @@ public class Config {
             parsedExternalBackupList.add(parsedExternalBackup);
         }
         externalBackupList = (ArrayList<HashMap<String, Object>>) parsedExternalBackupList.clone();
+
+        dir = config.getString("dir");
+
+        destination = config.getString("destination");
+
+        googleEnabled = config.getBoolean("googledrive.enabled");
+        onedriveEnabled = config.getBoolean("onedrive.enabled");
+        ftpEnabled = config.getBoolean("ftp.enabled");
+        ftpHost = config.getString("ftp.hostname");
+        ftpPort = config.getInt("ftp.port");
+        ftpSftp = config.getBoolean("ftp.sftp");
+        ftpFtps = getBooleanWithFallback("ftp.ftps", "ftp.FTPS");
+        ftpUser = config.getString("ftp.username");
+        ftpPass = config.getString("ftp.password");
+        sftpPublicKey = config.getString("ftp.sftp-public-key");
+        sftpPass = config.getString("ftp.sftp-passphrase");
+        ftpDir = config.getString("ftp.working-dir");
+
+        sendMessagesInChat = config.getBoolean("messages.send-in-chat");
+        noPerms = config.getString("messages.no-perm");
+        backupStart = config.getString("messages.backup-start");
+        backupDone = config.getString("messages.backup-complete");
+        backupNext = config.getString("messages.next-backup");
+        backupNextScheduled = config.getString("messages.next-schedule-backup");
+        backupNextScheduledFormat = config.getString("messages.next-schedule-backup-format");
+
+        metrics = getBooleanWithFallback("advanced.metrics", "metrics");
+        updateCheck = getBooleanWithFallback("advanced.update-check", "update-check");
+        debug = getBooleanWithFallback("advanced.suppress-errors", "suppress-errors");
+        prefixChatMessages = config.getBoolean("advanced.prefix-chat-messages");
+        ftpFileSeperator = config.getString("advanced.ftp-file-seperator");
+        dateLanguage = config.getString("advanced.date-language");
     } 
 
     /**
-     * Returns
+     * Gets the value at the specifed path, or gets the value at the specifed fallback path if there isn't a value at the specifed path
+     * @param path the path
+     * @param fallbackPath the fallback path
+     * @return the value
      */
-
-    public static boolean isMetrics() {
-        return metrics;
+    private boolean getBooleanWithFallback(String path, String fallbackPath) {
+        if (config.isSet(path)) {
+           return config.getBoolean(path);
+        } else {
+            return config.getBoolean(fallbackPath);
+        }
     }
 
-    public static String getDir() {
-        return dir;
+    /**
+     * Gets the interval at which to run interval based backups
+     * @return the interval
+     */
+    public static long getBackupDelay() {
+        return backupDelay;
     }
 
-    public static String getNoPerms() {
-        return noPerms;
+    /**
+     * Gets the priority of the backup thread, relative to the minimum
+     * @return the priority of the thread
+     */
+    public static int getBackupThreadPriority() {
+        return backupThreadPriority;
     }
 
-    public static String getDestination() {
-        return destination;
+    /**
+     * Gets the number of backups to keep remotely
+     * @return the number of backups
+     */
+    public static int getKeepCount() {
+        return keepCount;
     }
 
-    public static boolean isGoogleEnabled() {
-        return googleEnabled;
+    /**
+     * Gets the number of backups to keep locally
+     * @return the number of backups
+     */
+    public static int getLocalKeepCount() {
+        return localKeepCount;
     }
 
-    public static boolean isOnedriveEnabled() {
-        return onedriveEnabled;
+    /**
+     * Gets whether backups shouldn't run if no new player activity has occurred
+     * @return whether to run if no new activity has occurred
+     */
+    public static boolean isBackupsRequirePlayers() {
+        return backupsRequirePlayers;
     }
 
-    public static boolean isFtpEnabled() {
-        return ftpEnabled;
+    /**
+     * Gets whether schedule-based backups are enabled
+     * @return whether they are enabled
+     */
+    public static boolean isBackupsScheduled() {
+        return scheduleBackups;
     }
 
-    public static String getFtpHost() {
-        return ftpHost;
+    /**
+     * Gets the timezone of the schedule-based backup list
+     * @return the timezone
+     */
+    public static ZoneOffset getBackupScheduleTimezone() {
+        return backupScheduleTimezone;
     }
 
-    public static int getFtpPort() {
-        return ftpPort;
+    /**
+     * Gets the schedule-based backup list
+     * @return the list
+     */
+    public static ArrayList<HashMap<String, Object>> getBackupScheduleList() {
+        return backupScheduleList;
     }
 
-    public static boolean isFtpSftp() {
-        return ftpSftp;
-    }
-
-    public static boolean isFtpFtps() {
-        return ftpFtps;
-    }
-
-    public static String getFtpPass() {
-        return ftpPass;
-    }
-
-    public static String getFtpUser() {
-        return ftpUser;
-    }
-
-    public static String getSftpPublicKey() {
-        return sftpPublicKey;
-    }
-
-    public static String getSftpPass() {
-        return sftpPass;
-    }
-
-    public static String getFtpDir() {
-        return ftpDir;
-    }
-
-    public static String getFtpFileSeperator() {
-        return ftpFileSeperator;
-    }
-
+    /**
+     * Gets the list of items to backup
+     * @return the list
+     */
     public static ArrayList<HashMap<String, Object>> getBackupList() {
         return backupList;
     }
@@ -316,76 +279,220 @@ public class Config {
         return externalBackupList;
     }
 
-    public static long getBackupDelay() {
-        return backupDelay;
+    /**
+     * Gets the path to the folder to store backups in locally
+     * @return the path
+     */
+    public static String getDir() {
+        return dir;
     }
 
-    public static int getBackupThreadPriority() {
-        return backupThreadPriority;
+    /**
+     * Gets the path to the folder to store backups in remotly
+     * @return the path
+     */
+    public static String getDestination() {
+        return destination;
     }
 
-    public static boolean isBackupsScheduled() {
-        return scheduleBackups;
+    /**
+     * Gets whether a Google Drive is enabled as a backup method
+     * @return whether Google Drive is enabled
+     */
+    public static boolean isGoogleEnabled() {
+        return googleEnabled;
     }
 
-    public static ZoneOffset getBackupScheduleTimezone() {
-        return backupScheduleTimezone;
+    /**
+     * Gets whether a OneDrive is enabled as a backup method
+     * @return whether OneDrive is enabled
+     */
+    public static boolean isOnedriveEnabled() {
+        return onedriveEnabled;
     }
 
-    public static ArrayList<HashMap<String, Object>> getBackupScheduleList() {
-        return backupScheduleList;
+    /**
+     * Gets whether a FTP is enabled as a backup method
+     * @return whether FTP is enabled
+     */
+    public static boolean isFtpEnabled() {
+        return ftpEnabled;
     }
 
-    public static int getKeepCount() {
-        return keepCount;
+    /**
+     * Gets the hostname of the (S)FTP server
+     * @return the hostname
+     */
+    public static String getFtpHost() {
+        return ftpHost;
     }
 
-    public static int getLocalKeepCount() {
-        return localKeepCount;
+    /**
+     * Gets the port of the (S)FTP server
+     * @return the port
+     */
+    public static int getFtpPort() {
+        return ftpPort;
     }
 
-    public static boolean isBackupsRequirePlayers() {
-        return backupsRequirePlayers;
+    /**
+     * Gets whether to use SFTP when connecting to the FTP server
+     * @return whether to use SFTP
+     */
+    public static boolean isFtpSftp() {
+        return ftpSftp;
     }
 
-    public static boolean isUpdateCheck() {
-        return updateCheck;
+    /**
+     * Gets whether to use FTPS when connecting to the FTP server
+     * @return whether to use FTPS
+     */
+    public static boolean isFtpFtps() {
+        return ftpFtps;
     }
 
+    /**
+     * Gets the username to use when connecting to the (S)FTP server
+     * @return the username
+     */
+    public static String getFtpUser() {
+        return ftpUser;
+    }
+
+    /**
+     * Gets the password to use when connecting to the (S)FTP server
+     * @return the password
+     */
+    public static String getFtpPass() {
+        return ftpPass;
+    }
+
+    /**
+     * Gets the path to the public key to use when connecting to the SFTP server, relative to the {@code DriveBackupV2} folder
+     * @return the passphrase
+     */
+    public static String getSftpPublicKey() {
+        return sftpPublicKey;
+    }
+
+    /**
+     * Gets the passphrase to use when connecting to the SFTP server
+     * @return the passphrase
+     */
+    public static String getSftpPass() {
+        return sftpPass;
+    }
+
+    /**
+     * Gets the working directory to use when uploading to a (S)FTP server
+     * @return the working directory
+     */
+    public static String getFtpDir() {
+        return ftpDir;
+    }
+
+    /**
+     * Gets whether to send public facing messages in chat, or just the server console
+     * @return whether to send messages in chat
+     */
     public static boolean isSendMessagesInChat() {
         return sendMessagesInChat;
+    } 
+
+    /**
+     * Gets the message to send a player to notify them that they don't have permissions to run a command
+     * @return the message
+     */
+    public static String getNoPerms() {
+        return noPerms;
     }
 
-    public static boolean isPrefixChatMessages() {
-        return prefixChatMessages;
-    }
-
-    public static String getDateLanguage() {
-        return dateLanguage;
-    }
-
-    public static String getBackupDone() {
-        return backupDone;
-    }
-
-    public static String getBackupNext() {
-        return backupNext;
-    }
-
-    public static String getBackupNextScheduled() {
-        return backupNextScheduled;
-    }
-
-    public static String getBackupNextScheduledFormat() {
-        return backupNextScheduledFormat;
-    }
-
+    /**
+     * Gets the message to send to players to notify them of a backup starting
+     * @return the message
+     */
     public static String getBackupStart() {
         return backupStart;
     }
 
+    /**
+     * Gets the message to send to players to notify them of a backup finishing
+     * @return the message
+     */
+    public static String getBackupDone() {
+        return backupDone;
+    }
+
+    /**
+     * Gets the message to send to players to notify them of the next interval-based update
+     * @return the message
+     */
+    public static String getBackupNext() {
+        return backupNext;
+    }
+
+    /**
+     * Gets the message to send to players to notify them of the next schedule-based update
+     * @return the message
+     */
+    public static String getBackupNextScheduled() {
+        return backupNextScheduled;
+    }
+
+    /**
+     * Gets the format of the date/time of the next backup to display
+     * @return the format, represented by date and time pattern letters
+     */
+    public static String getBackupNextScheduledFormat() {
+        return backupNextScheduledFormat;
+    }
+
+    /**
+     * Gets whether to use log anonymous metrics
+     * @return whether to log them
+     */
+    public static boolean isMetrics() {
+        return metrics;
+    }
+
+    /**
+     * Gets whether the plugin should look for updates
+     * @return whether to look for updates
+     */
+    public static boolean isUpdateCheck() {
+        return updateCheck;
+    }
+
+    /**
+     * Gets whether stack traces should be logged in the server console
+     * @return whether they should be logged
+     */
     public static boolean isDebug() {
         return debug;
+    }
+
+    /**
+     * Gets whether the public facing messages should be prefixed with the plugin name
+     * @return whether to prefix them
+     */
+    public static boolean isPrefixChatMessages() {
+        return prefixChatMessages;
+    }
+
+    /**
+     * Gets the file seperator to use with FTP servers
+     * @return the file seperator
+     */
+    public static String getFtpFileSeperator() {
+        return ftpFileSeperator;
+    }
+
+    /**
+     * Gets the language to use with date and time pattern letters
+     * @return the language in ISO 639-2 format
+     */
+    public static String getDateLanguage() {
+        return dateLanguage;
     }
 }
 
