@@ -90,7 +90,7 @@ public class UploadThread implements Runnable {
                         case "ftpServer":
                         case "ftpsServer":
                         case "sftpServer":
-                            makeExternalServerBackup(externalBackup, backupList);
+                            makeExternalFileBackup(externalBackup, backupList);
                             break;
                         case "mysqlDatabase":
                             makeExternalDatabaseBackup(externalBackup, backupList);
@@ -290,7 +290,7 @@ public class UploadThread implements Runnable {
      * @param externalBackup the external backup settings
      * @param backupList the list of folders to upload to the configured remote destinations
      */
-    private static void makeExternalServerBackup(HashMap<String, Object> externalBackup, ArrayList<HashMap<String, Object>> backupList) {
+    private static void makeExternalFileBackup(HashMap<String, Object> externalBackup, ArrayList<HashMap<String, Object>> backupList) {
         MessageUtil.sendConsoleMessage("Downloading files from a (S)FTP server (" + getSocketAddress(externalBackup) + ") to include in backup");
 
         FTPUploader ftpUploader = new FTPUploader(
