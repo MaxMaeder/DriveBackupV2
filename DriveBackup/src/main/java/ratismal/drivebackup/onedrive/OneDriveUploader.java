@@ -220,7 +220,8 @@ public class OneDriveUploader {
             Response openConnection = given()
                 .auth().oauth2(returnAccessToken())
                 .contentType("application/json")
-                .post("https://graph.microsoft.com/v1.0/me/drive/root:/" + Config.getDestination() + "/" + type + "/" + file.getName() + ":/createUploadSession");
+                // Encodes colons in file names because they confuse the OneDrive API
+                .post("https://graph.microsoft.com/v1.0/me/drive/root:/" + (Config.getDestination() + "/" + type + "/" + file.getName()).replace(":", "%3A") + ":/createUploadSession");
 
             //Assign our backup to Random Access File
             this.raf = new RandomAccessFile(file, "r");
