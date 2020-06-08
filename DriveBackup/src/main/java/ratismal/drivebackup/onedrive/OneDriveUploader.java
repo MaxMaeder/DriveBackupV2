@@ -252,11 +252,6 @@ public class OneDriveUploader {
                 }
 
                 long elapsedTimeInner = System.currentTimeMillis() - startTimeInner;
-                MessageUtil.sendConsoleMessage(String.format("Uploaded chunk (progress %.1f%%) of %s (%s/s) for file %s",
-                    ((double) getTotalUploaded() / file.length()) * 100,
-                    readableFileSize(getLastUploaded()),
-                    (long) ((double) elapsedTimeInner / 1000d) > 0 ? readableFileSize(getLastUploaded() / (long) ((double) elapsedTimeInner / 1000d)) : readableFileSize(getLastUploaded()),
-                    file.getAbsoluteFile()));
             }
 
             if (checkDestinationExists(type)) {
