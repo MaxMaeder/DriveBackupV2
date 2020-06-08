@@ -101,17 +101,17 @@ public class DriveBackup extends JavaPlugin {
                     public void run() {
                         if (Config.isUpdateCheck()) {
                             try {
-                                MessageUtil.sendConsoleMessage("Running update checker...");
+                                MessageUtil.sendConsoleMessage("Checking for updates...");
                                 newVersion = updateCheck(currentVersion);
                                 if (newVersion > currentVersion) {
                                     MessageUtil.sendConsoleMessage("Version " + newVersionTitle + " has been released." + " You are currently running version " + currentVersionTitle);
                                     MessageUtil.sendConsoleMessage("Update at: http://dev.bukkit.org/bukkit-plugins/drivebackupv2/");
                                 } else if (currentVersion > newVersion) {
                                     MessageUtil.sendConsoleMessage("You are running an unsupported build!");
-                                    MessageUtil.sendConsoleMessage("The recommended version is " + newVersionTitle + ", and you are running " + currentVersionTitle);
+                                    MessageUtil.sendConsoleMessage("The recommended release is " + newVersionTitle + ", and you are running " + currentVersionTitle);
                                     MessageUtil.sendConsoleMessage("If the plugin has just recently updated, please ignore this message");
                                 } else {
-                                    MessageUtil.sendConsoleMessage("Hooray! You are running the latest build!");
+                                    MessageUtil.sendConsoleMessage("Hooray! You are running the latest release!");
                                 }
                             } catch (Exception e) {
                                 // ignore exceptions
