@@ -117,8 +117,10 @@ public class FileUtil {
             try {
                 getFileToUpload(type, formatString, false);
 
-                MessageUtil.sendConsoleMessage("There are " + backupList.size() + " file(s) which exceeds the " +
-                "local limit of " + Config.getLocalKeepCount() + ", deleting");
+                if (backupList.size() > Config.getLocalKeepCount()) {
+                    MessageUtil.sendConsoleMessage("There are " + backupList.size() + " file(s) which exceeds the local limit of " + Config.getLocalKeepCount() + ", deleting");
+                }
+                
 
                 while (backupList.size() > Config.getLocalKeepCount()) {
                     File fileToDelete = backupList.descendingMap().lastEntry().getValue();
