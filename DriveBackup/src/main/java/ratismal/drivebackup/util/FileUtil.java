@@ -118,14 +118,14 @@ public class FileUtil {
                 getFileToUpload(type, formatString, false);
 
                 MessageUtil.sendConsoleMessage("There are " + backupList.size() + " file(s) which exceeds the " +
-                "local limit of " + Config.getLocalKeepCount() + ", deleting.");
+                "local limit of " + Config.getLocalKeepCount() + ", deleting");
 
                 while (backupList.size() > Config.getLocalKeepCount()) {
                     File fileToDelete = backupList.descendingMap().lastEntry().getValue();
                     Date dateOfFile = backupList.descendingMap().lastKey();
 
                     if (fileToDelete.delete()) {
-                        MessageUtil.sendConsoleMessage("Old local backup deleted.");
+                        MessageUtil.sendConsoleMessage("Old local backup deleted");
                     } else {
                         MessageUtil.sendConsoleMessage("Failed to delete local backup " + backupList.descendingMap().lastEntry().getValue().getName());
                     }
@@ -134,7 +134,7 @@ public class FileUtil {
                 }
             } catch (Exception e) {
                 MessageUtil.sendConsoleException(e);
-                MessageUtil.sendConsoleMessage("Local backup deletion failed.");
+                MessageUtil.sendConsoleMessage("Local backup deletion failed");
             }
         }
     }
@@ -172,7 +172,6 @@ public class FileUtil {
                 }
             }
             zos.closeEntry();
-            // MessageUtil.sendConsoleMessage("Folder successfully compressed");
         } catch (IOException ex) {
             MessageUtil.sendConsoleException(ex);
         } finally {

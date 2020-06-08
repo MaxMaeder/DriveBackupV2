@@ -182,9 +182,6 @@ public class Config {
         dateLanguage = pluginconfig.getString("advanced.date-language");
         prefixChatMessages = pluginconfig.getBoolean("advanced.prefix-chat-messages");
 
-
-        //MessageUtil.sendConsoleMessage("Scheduling backups for every " + backupDelay + " ticks.");
-
         if (pluginconfig.isList("backup-list")) {
 
             List<Map<?, ?>> rawBackupList = pluginconfig.getMapList("backup-list");

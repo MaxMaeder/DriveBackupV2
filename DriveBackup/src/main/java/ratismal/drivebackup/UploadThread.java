@@ -258,11 +258,11 @@ public class UploadThread implements Runnable {
                 MessageUtil.sendMessageToAllPlayers(Config.getBackupDone() + " " + nextBackupMessage);
             }
             if (Config.isBackupsRequirePlayers() && Bukkit.getOnlinePlayers().size() == 0 && PlayerListener.isAutoBackupsActive()) {
-                MessageUtil.sendConsoleMessage("Disabling automatic backups due to inactivity.");
+                MessageUtil.sendConsoleMessage("Disabling automatic backups due to inactivity");
                 PlayerListener.setAutoBackupsActive(false);
             }
         } else {
-            MessageUtil.sendConsoleMessage("Skipping backup.");
+            MessageUtil.sendConsoleMessage("Skipping backup due to inactivity");
         }
     }
 

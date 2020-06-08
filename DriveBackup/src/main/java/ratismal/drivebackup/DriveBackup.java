@@ -109,7 +109,7 @@ public class DriveBackup extends JavaPlugin {
                                 } else if (currentVersion > newVersion) {
                                     MessageUtil.sendConsoleMessage("You are running an unsupported build!");
                                     MessageUtil.sendConsoleMessage("The recommended version is " + newVersionTitle + ", and you are running " + currentVersionTitle);
-                                    MessageUtil.sendConsoleMessage("If the plugin has just recently updated, please ignore this message.");
+                                    MessageUtil.sendConsoleMessage("If the plugin has just recently updated, please ignore this message");
                                 } else {
                                     MessageUtil.sendConsoleMessage("Hooray! You are running the latest build!");
                                 }
@@ -292,13 +292,12 @@ public class DriveBackup extends JavaPlugin {
                     }
                     scheduleMessage.append(scheduleDays.get(i).substring(0, 1).toUpperCase() + scheduleDays.get(i).substring(1));
                 }
-                scheduleMessage.append(".");
                 MessageUtil.sendConsoleMessage(scheduleMessage.toString());
             }
         } else if (Config.getBackupDelay() / 60 / 20 != -1) {
             cancelAllTasks(backupTasks);
 
-            MessageUtil.sendConsoleMessage("Scheduling a backup to run every " + (Config.getBackupDelay() / 60 / 20) + " minutes.");
+            MessageUtil.sendConsoleMessage("Scheduling a backup to run every " + (Config.getBackupDelay() / 60 / 20) + " minutes");
 
             backupTasks.add(taskScheduler.runTaskTimerAsynchronously(
                 getInstance(), 
@@ -343,14 +342,14 @@ public class DriveBackup extends JavaPlugin {
             final JSONArray array = (JSONArray) JSONValue.parse(response);
 
             if (array.size() == 0) {
-                this.getLogger().warning("No files found, or Feed URL is bad.");
+                this.getLogger().warning("No files found, or Feed URL is bad");
                 return currentVersion;
             }
             // Pull the last version from the JSON
             newVersionTitle = ((String) ((JSONObject) array.get(array.size() - 1)).get("name")).replace("DriveBackupV2-", "").trim();
             return Double.valueOf(newVersionTitle.replaceFirst("\\.", "").trim());
         } catch (Exception e) {
-            MessageUtil.sendConsoleMessage("There was an issue attempting to check for the latest version.");
+            MessageUtil.sendConsoleMessage("There was an issue attempting to check for the latest version");
         }
         return currentVersion;
     }
