@@ -25,7 +25,7 @@ public class PlayerListener implements Listener {
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
         if (!autoBackupsActive) {
-            MessageUtil.sendConsoleMessage("Enabling automatic backups.");
+            MessageUtil.sendConsoleMessage("Enabling automatic backups");
             autoBackupsActive = true;
         }
 

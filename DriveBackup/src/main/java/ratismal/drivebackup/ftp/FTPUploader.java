@@ -238,7 +238,7 @@ public class FTPUploader {
 
         if (files.size() > fileLimit) {
             MessageUtil.sendConsoleMessage("There are " + files.size() + " file(s) which exceeds the " +
-                    "limit of " + fileLimit + ", deleting.");
+                    "limit of " + fileLimit + ", deleting");
             while (files.size() > fileLimit) {
                 ftpClient.deleteFile(files.firstEntry().getValue().getName());
                 files.remove(files.firstKey());

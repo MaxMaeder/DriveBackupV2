@@ -365,7 +365,7 @@ public class OneDriveUploader {
 
         if(fileLimit < availableFileIDs.size()){
             MessageUtil.sendConsoleMessage("There are " + availableFileIDs.size() + " file(s) which exceeds the " +
-                    "limit of " + fileLimit + ", deleting.");
+                    "limit of " + fileLimit + ", deleting");
         }
 
         for (Iterator<String> iterator = availableFileIDs.listIterator(); iterator.hasNext(); ) {
