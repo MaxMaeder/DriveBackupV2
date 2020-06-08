@@ -170,12 +170,14 @@ public class DriveBackup extends JavaPlugin {
             }
         }));
 
-        metrics.addCustomChart(new Metrics.SimplePie("sftpEnabled", new Callable<String>() {
-            @Override
-            public String call() throws Exception {
-            	return Config.isFtpSftp() ? "FTP using SSH" : "FTP";
-            }
-        }));
+        if (Config.isFtpEnabled()) {
+            metrics.addCustomChart(new Metrics.SimplePie("sftpEnabledNew", new Callable<String>() {
+                @Override
+                public String call() throws Exception {
+                    return Config.isFtpSftp() ? "FTP using SSH" : "FTP";
+                }
+            }));
+        }
 
         metrics.addCustomChart(new Metrics.SimplePie("updateCheckEnabled", new Callable<String>() {
             @Override
