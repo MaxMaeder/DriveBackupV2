@@ -233,7 +233,6 @@ public class OneDriveUploader {
             boolean isComplete = false;
 
             while (!isComplete) {
-                long startTimeInner = System.currentTimeMillis();
                 byte[] bytesToUpload = getChunk();
 
                 uploadFile = given().contentType("application/zip")
@@ -250,8 +249,6 @@ public class OneDriveUploader {
                 } else {
                     isComplete = true;
                 }
-
-                long elapsedTimeInner = System.currentTimeMillis() - startTimeInner;
             }
 
             if (checkDestinationExists(type)) {
