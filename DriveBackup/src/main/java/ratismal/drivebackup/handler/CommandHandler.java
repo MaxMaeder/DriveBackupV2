@@ -99,7 +99,7 @@ public class CommandHandler implements CommandExecutor {
                         if (hasPerm(sender, "drivebackup.backup")) {
                             MessageUtil.sendMessage(sender, "Forcing a backup");
 
-                            Runnable t = new UploadThread(true);
+                            Runnable t = new UploadThread(sender);
                             new Thread(t).start();
                         }
                         break;

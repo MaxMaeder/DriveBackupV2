@@ -2,6 +2,7 @@ package ratismal.drivebackup;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import net.kyori.text.TextComponent;
@@ -29,32 +30,50 @@ import java.util.*;
  */
 
 public class UploadThread implements Runnable {
-
-    private boolean forced = false;
-
-    /**
-     * Forced upload constructor
-     *
-     * @param forced Is the backup forced?
-     */
-    public UploadThread(boolean forced) {
-        this.forced = forced;
-    }
+    private CommandSender initiator;
 
     /**
-     * Base constructor
+     * Creates an instance of the {@code UploadThread} object
      */
     public UploadThread() {
     }
 
     /**
-     * Run function in the upload thread
+     * Creates an instance of the {@code UploadThread} object
+     * @param initiator the player who initiated the backup
+     */
+    public UploadThread(CommandSender initiator) {
+        this.initiator = initiator;
+    }
+
+    /**
+     * Starts a backup
      */
     @Override
     public void run() {
         Thread.currentThread().setPriority(Thread.MIN_PRIORITY + Config.getBackupThreadPriority());
 
-        if (!Config.isBackupsRequirePlayers() || PlayerListener.isAutoBackupsActive() || forced) {
+        if (!Config.isBackupsRequirePlayers() || PlayerListener.isAutoBackupsActive() || initiator != null) {
+            if (!Config.isGoogleEnabled() && !Config.isOnedriveEnabled() && !Config.isFtpEnabled()) {
+                ArrayList<Player> playersToNotify = new ArrayList<>();
+
+                if (initiator != null) {
+                    playersToNotify.add((Player) initiator);
+                }
+
+                for (Player player : Bukkit.getServer().getOnlinePlayers()) {
+                    if (player.hasPermission("drivebackup.linkAccounts") && !playersToNotify.contains(player)) {
+                        playersToNotify.add(player);
+                    }
+                }
+
+                for (Player player : playersToNotify) {
+                    MessageUtil.sendMessage(player, "No backup method is enabled");
+                }
+
+                return;
+            }
+
             MessageUtil.sendMessageToAllPlayers(Config.getBackupStart());
 
             GoogleDriveUploader googleDriveUploader = new GoogleDriveUploader();
@@ -189,7 +208,7 @@ public class UploadThread implements Runnable {
                 }
             }
 
-            if (forced) {
+            if (initiator != null) {
                 MessageUtil.sendMessageToAllPlayers(Config.getBackupDone());
             } else {
                 String nextBackupMessage = "";
