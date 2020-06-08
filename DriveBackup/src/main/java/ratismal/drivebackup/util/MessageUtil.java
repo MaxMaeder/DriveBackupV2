@@ -38,9 +38,7 @@ public class MessageUtil {
      * @param message the message to send
      */
     public static void sendMessage(CommandSender player, String message) {
-        if (null != player && player instanceof Player) {
-            player.sendMessage(prefixMessage(message));
-        }
+        player.sendMessage(prefixMessage(message));
     }
 
     /**
@@ -49,9 +47,7 @@ public class MessageUtil {
      * @param message the message to send
      */
     public static void sendMessage(CommandSender player, TextComponent message) {
-        if (null != player && player instanceof Player) {
-            TextAdapter.sendComponent(player, prefixMessage(message));
-        }
+        TextAdapter.sendComponent(player, prefixMessage(message));
     }
 
     /**
