@@ -237,8 +237,7 @@ public class FTPUploader {
         TreeMap<Date, FTPFile> files = getZipFiles();
 
         if (files.size() > fileLimit) {
-            MessageUtil.sendConsoleMessage("There are " + files.size() + " file(s) which exceeds the " +
-                    "limit of " + fileLimit + ", deleting");
+            MessageUtil.sendConsoleMessage("There are " + files.size() + " file(s) which exceeds the limit of " + fileLimit + ", deleting");
             while (files.size() > fileLimit) {
                 ftpClient.deleteFile(files.firstEntry().getValue().getName());
                 files.remove(files.firstKey());
