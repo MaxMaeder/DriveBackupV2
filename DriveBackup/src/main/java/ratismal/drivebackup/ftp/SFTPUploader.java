@@ -208,7 +208,7 @@ public class SFTPUploader {
         TreeMap<Date, RemoteResourceInfo> files = new TreeMap<>();
 
         for (RemoteResourceInfo file : sftpClient.ls()) {
-            if (file.getName().split(".").length == 2 && file.getName().split(".") [1] == "zip") {
+            if (file.getName().endsWith(".zip")) {
                 files.put(new Date(file.getAttributes().getMtime()), file);
             }
         }
