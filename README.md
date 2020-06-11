@@ -33,9 +33,6 @@ Once you've completed the above instructions, backups will run automatically eve
 ## Advanced Setup
 Learn how to set up and use more advanced features in the [wiki](https://github.com/MaxMaeder/DriveBackupV2/wiki).
 
-## Metrics
-![bStats Metrics](https://bstats.org/signatures/bukkit/DriveBackupV2.svg)
-
 ## Privacy Policy
 Since we need to access your Google Drive and/or OneDrive data to back up your world, we are required to provide a Privacy Policy.
  
