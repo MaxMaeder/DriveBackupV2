@@ -151,10 +151,6 @@ public class OneDriveUploader {
      * Creates an instance of the {@code OneDriveUploader} object
      */
     public OneDriveUploader() {
-        if (!Config.isOnedriveEnabled()) {
-            return;
-        }
-
         try {
             setRefreshTokenFromStoredValue();
             retrieveNewAccessToken();

@@ -76,9 +76,19 @@ public class UploadThread implements Runnable {
 
             MessageUtil.sendMessageToAllPlayers(Config.getBackupStart());
 
-            GoogleDriveUploader googleDriveUploader = new GoogleDriveUploader();
-            OneDriveUploader oneDriveUploader = new OneDriveUploader();
-            FTPUploader ftpUploader = new FTPUploader();
+            GoogleDriveUploader googleDriveUploader = null;
+            OneDriveUploader oneDriveUploader = null;
+            FTPUploader ftpUploader = null;
+
+            if (Config.isGoogleEnabled()) {
+                googleDriveUploader = new GoogleDriveUploader();
+            }
+            if (Config.isOnedriveEnabled()) {
+                oneDriveUploader = new OneDriveUploader();
+            }
+            if (Config.isFtpEnabled()) {
+                ftpUploader = new FTPUploader();
+            }
 
             ArrayList<HashMap<String, Object>> backupList = Config.getBackupList();
 
@@ -132,21 +142,21 @@ public class UploadThread implements Runnable {
                 File file = FileUtil.getFileToUpload(type, format, false);
                 ratismal.drivebackup.util.Timer timer = new Timer();
                 try {
-                    if (Config.isGoogleEnabled()) {
+                    if (googleDriveUploader != null) {
                         MessageUtil.sendConsoleMessage("Uploading file to Google Drive");
                         timer.start();
                         googleDriveUploader.uploadFile(file, type);
                         timer.end();
                         MessageUtil.sendConsoleMessage(timer.getUploadTimeMessage(file));
                     }
-                    if (Config.isOnedriveEnabled()) {
+                    if (oneDriveUploader != null) {
                         MessageUtil.sendConsoleMessage("Uploading file to OneDrive");
                         timer.start();
                         oneDriveUploader.uploadFile(file, type);
                         timer.end();
                         MessageUtil.sendConsoleMessage(timer.getUploadTimeMessage(file));
                     }
-                    if (Config.isFtpEnabled()) {
+                    if (ftpUploader != null) {
                         MessageUtil.sendConsoleMessage("Uploading file to the (S)FTP server");
                         timer.start();
                         ftpUploader.uploadFile(file, type);
@@ -167,44 +177,50 @@ public class UploadThread implements Runnable {
             for (Player player : Bukkit.getServer().getOnlinePlayers()) {
             	if (!player.hasPermission("drivebackup.linkAccounts")) continue;
                 
-                if (googleDriveUploader.isErrorWhileUploading()) {
-                    MessageUtil.sendMessage(player, TextComponent.builder()
-                    .append(
-                        TextComponent.of("Failed to backup to Google Drive, please run ")
-                        .color(TextColor.DARK_AQUA)
-                    )
-                    .append(
-                        TextComponent.of("/drivebackup linkaccount googledrive")
-                        .color(TextColor.GOLD)
-                        .hoverEvent(HoverEvent.showText(TextComponent.of("Run command")))
-                        .clickEvent(ClickEvent.runCommand("/drivebackup linkaccount googledrive"))
-                    )
-                    .build());
-                } else if (Config.isGoogleEnabled()) {
-                    MessageUtil.sendMessage(player, "Backup to " + ChatColor.GOLD + "Google Drive " + ChatColor.DARK_AQUA + "complete");
+                if (googleDriveUploader != null) {
+                    if (googleDriveUploader.isErrorWhileUploading()) {
+                        MessageUtil.sendMessage(player, TextComponent.builder()
+                        .append(
+                            TextComponent.of("Failed to backup to Google Drive, please run ")
+                            .color(TextColor.DARK_AQUA)
+                        )
+                        .append(
+                            TextComponent.of("/drivebackup linkaccount googledrive")
+                            .color(TextColor.GOLD)
+                            .hoverEvent(HoverEvent.showText(TextComponent.of("Run command")))
+                            .clickEvent(ClickEvent.runCommand("/drivebackup linkaccount googledrive"))
+                        )
+                        .build());
+                    } else {
+                        MessageUtil.sendMessage(player, "Backup to " + ChatColor.GOLD + "Google Drive " + ChatColor.DARK_AQUA + "complete");
+                    }
                 }
 
-                if (oneDriveUploader.isErrorWhileUploading()) {
-                    MessageUtil.sendMessage(player, TextComponent.builder()
-                    .append(
-                        TextComponent.of("Failed to backup to OneDrive, please run ")
-                        .color(TextColor.DARK_AQUA)
-                    )
-                    .append(
-                        TextComponent.of("/drivebackup linkaccount onedrive")
-                        .color(TextColor.GOLD)
-                        .hoverEvent(HoverEvent.showText(TextComponent.of("Run command")))
-                        .clickEvent(ClickEvent.runCommand("/drivebackup linkaccount onedrive"))
-                    )
-                    .build());
-                } else if (Config.isOnedriveEnabled()) {
-                    MessageUtil.sendMessage(player, "Backup to " + ChatColor.GOLD + "OneDrive " + ChatColor.DARK_AQUA + "complete");
+                if (oneDriveUploader != null) {
+                    if (oneDriveUploader.isErrorWhileUploading()) {
+                        MessageUtil.sendMessage(player, TextComponent.builder()
+                        .append(
+                            TextComponent.of("Failed to backup to OneDrive, please run ")
+                            .color(TextColor.DARK_AQUA)
+                        )
+                        .append(
+                            TextComponent.of("/drivebackup linkaccount onedrive")
+                            .color(TextColor.GOLD)
+                            .hoverEvent(HoverEvent.showText(TextComponent.of("Run command")))
+                            .clickEvent(ClickEvent.runCommand("/drivebackup linkaccount onedrive"))
+                        )
+                        .build());
+                    } else {
+                        MessageUtil.sendMessage(player, "Backup to " + ChatColor.GOLD + "OneDrive " + ChatColor.DARK_AQUA + "complete");
+                    }
                 }
 
-                if (ftpUploader.isErrorWhileUploading()) {
-                    MessageUtil.sendMessage(player, "Failed to backup to the (S)FTP server, please check the server credentials in the " + ChatColor.GOLD + "config.yml");
-                } else if (Config.isFtpEnabled()) {
-                    MessageUtil.sendMessage(player, "Backup to the " + ChatColor.GOLD + "(S)FTP server " + ChatColor.DARK_AQUA + "complete");
+                if (ftpUploader != null) {
+                    if (ftpUploader.isErrorWhileUploading()) {
+                        MessageUtil.sendMessage(player, "Failed to backup to the (S)FTP server, please check the server credentials in the " + ChatColor.GOLD + "config.yml");
+                    } else {
+                        MessageUtil.sendMessage(player, "Backup to the " + ChatColor.GOLD + "(S)FTP server " + ChatColor.DARK_AQUA + "complete");
+                    }
                 }
             }
 

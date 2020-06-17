@@ -167,10 +167,6 @@ public class GoogleDriveUploader {
      * Creates an instance of the {@code GoogleDriveUploader} object
      */
     public GoogleDriveUploader() {
-        if (!Config.isGoogleEnabled()) {
-            return;
-        }
-
         try {
             setRefreshTokenFromStoredValue();
             retrieveNewAccessToken();
