@@ -170,8 +170,6 @@ public class UploadThread implements Runnable {
                 }
             }
 
-            ftpUploader.close();
-
             deleteFolder(new File("external-backups"));
 
             for (Player player : Bukkit.getServer().getOnlinePlayers()) {
@@ -216,6 +214,8 @@ public class UploadThread implements Runnable {
                 }
 
                 if (ftpUploader != null) {
+                    ftpUploader.close();
+
                     if (ftpUploader.isErrorWhileUploading()) {
                         MessageUtil.sendMessage(player, "Failed to backup to the (S)FTP server, please check the server credentials in the " + ChatColor.GOLD + "config.yml");
                     } else {
