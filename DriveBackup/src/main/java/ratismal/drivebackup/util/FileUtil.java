@@ -171,17 +171,19 @@ public class FileUtil {
                     while ((len = in.read(buffer)) > 0) {
                         zos.write(buffer, 0, len);
                     }
+                } catch (Exception e) {
+                    MessageUtil.sendConsoleException(e);
                 }
             }
             zos.closeEntry();
-        } catch (IOException ex) {
+        } catch (Exception ex) {
             MessageUtil.sendConsoleException(ex);
         } finally {
             try {
                 if (zos != null) {
                     zos.close();
                 }
-            } catch (IOException e) {
+            } catch (Exception e) {
                 MessageUtil.sendConsoleException(e);
             }
         }
@@ -197,15 +199,17 @@ public class FileUtil {
 
         // add file only
         if (node.isFile()) {
-            if (!blackList.contains(node.getName()))
+            if (!blackList.contains(node.getName())) {
                 fileList.add(generateZipEntry(node.toString(), sourceFolder));
+            }
         }
 
         if (node.isDirectory()) {
             String[] subNote = node.list();
             for (String filename : subNote) {
-                if (!blackList.contains(node.getName()))
+                if (!blackList.contains(node.getName())) {
                     generateFileList(new File(node, filename), sourceFolder);
+                }
             }
         }
     }
