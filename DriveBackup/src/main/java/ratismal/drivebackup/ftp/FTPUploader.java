@@ -24,8 +24,8 @@ public class FTPUploader {
     private boolean _errorOccurred;
 
     private String initialRemoteFolder;
-    private String _localBaseFolder;
-    private String _remoteBaseFolder;
+    private String localBaseFolder;
+    private String remoteBaseFolder;
 
     /**
      * Creates an instance of the {@code FTPUploader} object using the server credentials specified by the user in the {@code config.yml}
@@ -38,11 +38,11 @@ public class FTPUploader {
                 connect(Config.getFtpHost(), Config.getFtpPort(), Config.getFtpUser(), Config.getFtpPass(), Config.isFtpFtps());
             }
 
-            _localBaseFolder = ".";
+            localBaseFolder = ".";
             if (Config.getFtpDir() == null) {
-                _remoteBaseFolder = Config.getDestination();
+                remoteBaseFolder = Config.getDestination();
             } else {
-                _remoteBaseFolder = Config.getFtpDir() + File.separator + Config.getDestination();
+                remoteBaseFolder = Config.getFtpDir() + File.separator + Config.getDestination();
             }
         } catch (Exception e) {
             MessageUtil.sendConsoleException(e);
@@ -71,8 +71,8 @@ public class FTPUploader {
                 connect(host, port, username, password, ftps);
             }
 
-            _localBaseFolder = localBaseFolder;
-            _remoteBaseFolder = remoteBaseFolder;
+            this.localBaseFolder = localBaseFolder;
+            this.remoteBaseFolder = remoteBaseFolder;
         } catch (Exception e) {
             MessageUtil.sendConsoleException(e);
             setErrorOccurred(true);
@@ -134,7 +134,7 @@ public class FTPUploader {
             }
 
             resetWorkingDirectory();
-            createThenEnter(_remoteBaseFolder);
+            createThenEnter(remoteBaseFolder);
             createThenEnter(type);
 
             FileInputStream fs = new FileInputStream(file);
@@ -163,14 +163,14 @@ public class FTPUploader {
             }
 
             resetWorkingDirectory();
-            ftpClient.changeWorkingDirectory(_remoteBaseFolder);
+            ftpClient.changeWorkingDirectory(remoteBaseFolder);
 
-            File outputFile = new File(_localBaseFolder + File.separator + type);
+            File outputFile = new File(localBaseFolder + File.separator + type);
             if (!outputFile.exists()) {
                 outputFile.mkdirs();
             }
 
-            OutputStream outputStream = new FileOutputStream(_localBaseFolder + File.separator + type + File.separator + new File(filePath).getName());
+            OutputStream outputStream = new FileOutputStream(localBaseFolder + File.separator + type + File.separator + new File(filePath).getName());
             ftpClient.retrieveFile(filePath, outputStream);
 
             outputStream.flush();
@@ -182,7 +182,7 @@ public class FTPUploader {
     }
 
     /**
-     * Returns a list of the paths of the files inside the specified folder and subfolders
+     * Returns a list of the paths of the files inside the specified folder and subfolders on the (S)FTP server
      * @param folderPath the path of the folder
      * @return the list of file paths
      */
@@ -195,7 +195,7 @@ public class FTPUploader {
             }
 
             resetWorkingDirectory();
-            ftpClient.changeWorkingDirectory(_remoteBaseFolder);
+            ftpClient.changeWorkingDirectory(remoteBaseFolder);
             ftpClient.changeWorkingDirectory(folderPath);
 
             for (FTPFile file : ftpClient.mlistDir()) {
@@ -204,6 +204,36 @@ public class FTPUploader {
                     filePaths.addAll(prependToAll(getFiles(file.getName()), new File(file.getName()).getName() + File.separator));
                 } else {
                     filePaths.add(file.getName());
+                }
+            }
+        } catch (Exception e) {
+            MessageUtil.sendConsoleException(e);
+            setErrorOccurred(true);
+        }
+
+        return filePaths;
+    }
+
+    /**
+     * Returns a list of the paths of the ZIP files and their modification dates inside the specified folder on the (S)FTP server
+     * @param folderPath the path of the folder
+     * @return the list of files
+     */
+    public HashMap<String, Date> getZipFiles(String folderPath) {
+        HashMap<String, Date> filePaths = new HashMap<>();
+
+        try {
+            if (sftpClient != null) {
+                return sftpClient.getZipFiles(folderPath);
+            }
+
+            resetWorkingDirectory();
+            ftpClient.changeWorkingDirectory(remoteBaseFolder);
+            ftpClient.changeWorkingDirectory(folderPath);
+
+            for (FTPFile file : ftpClient.mlistDir()) {
+                if (file.getName().endsWith(".zip")) {
+                    filePaths.put(file.getName(), file.getTimestamp().getTime());
                 }
             }
         } catch (Exception e) {

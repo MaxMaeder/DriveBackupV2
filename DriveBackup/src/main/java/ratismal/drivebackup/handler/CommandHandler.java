@@ -13,6 +13,7 @@ import net.kyori.text.adapter.bukkit.TextAdapter;
 import net.kyori.text.event.ClickEvent;
 import net.kyori.text.event.HoverEvent;
 import net.kyori.text.format.TextColor;
+import ratismal.drivebackup.DownloadThread;
 import ratismal.drivebackup.DriveBackup;
 import ratismal.drivebackup.UploadThread;
 import ratismal.drivebackup.config.Config;
@@ -44,11 +45,6 @@ public class CommandHandler implements CommandExecutor {
      * @return whether the command was handled
      */
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (!(sender instanceof Player)) {
-            MessageUtil.sendMessage(sender, "DriveBackupV2 only supports commands sent in-game");
-            return true;
-        }
-        
         if (command.getName().equalsIgnoreCase("drivebackup")) {
             if (args.length > 0) {
                 switch (args[0].toLowerCase()) {
@@ -101,6 +97,11 @@ public class CommandHandler implements CommandExecutor {
 
                             Runnable t = new UploadThread(sender);
                             new Thread(t).start();
+                        }
+                        break;
+                    case "restore":
+                        if (hasPerm(sender, "drivebackup.restore")) {
+                            new DownloadThread(plugin, sender, args).run();
                         }
                         break;
                     default:

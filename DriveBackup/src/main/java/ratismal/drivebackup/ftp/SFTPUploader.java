@@ -25,8 +25,8 @@ public class SFTPUploader {
     private StatefulSFTPClient sftpClient;
 
     private String initialRemoteFolder;
-    private String _localBaseFolder;
-    private String _remoteBaseFolder;
+    private String localBaseFolder;
+    private String remoteBaseFolder;
 
     /**
      * Creates an instance of the {@code SFTPUploader} object using the server credentials specified by the user in the {@code config.yml}
@@ -35,11 +35,11 @@ public class SFTPUploader {
     public SFTPUploader() throws Exception {
         connect(Config.getFtpHost(), Config.getFtpPort(), Config.getFtpUser(), Config.getFtpPass(), Config.getSftpPublicKey(), Config.getSftpPass());
 
-        _localBaseFolder = ".";
+        localBaseFolder = ".";
         if (Config.getFtpDir() == null) {
-            _remoteBaseFolder = Config.getDestination();
+            remoteBaseFolder = Config.getDestination();
         } else {
-            _remoteBaseFolder = Config.getFtpDir() + File.separator + Config.getDestination();
+            remoteBaseFolder = Config.getFtpDir() + File.separator + Config.getDestination();
         }
     }
 
@@ -58,8 +58,8 @@ public class SFTPUploader {
     public SFTPUploader(String host, int port, String username, String password, String publicKey, String passphrase, String localBaseFolder, String remoteBaseFolder) throws Exception {
         connect(host, port, username, password, publicKey, passphrase);
 
-        _localBaseFolder = localBaseFolder;
-        _remoteBaseFolder = remoteBaseFolder;
+        this.localBaseFolder = localBaseFolder;
+        this.remoteBaseFolder = remoteBaseFolder;
     }
 
     /**
@@ -126,7 +126,7 @@ public class SFTPUploader {
      */
     public void uploadFile(File file, String type) throws Exception {
         resetWorkingDirectory();
-        createThenEnter(_remoteBaseFolder);
+        createThenEnter(remoteBaseFolder);
         createThenEnter(type);
 
         sftpClient.put(file.getAbsolutePath(), file.getName());
@@ -142,18 +142,18 @@ public class SFTPUploader {
      */
     public void downloadFile(String filePath, String type) throws Exception {
         resetWorkingDirectory();
-        sftpClient.cd(_remoteBaseFolder);
+        sftpClient.cd(remoteBaseFolder);
 
-        File outputFile = new File(_localBaseFolder + File.separator + type);
+        File outputFile = new File(localBaseFolder + File.separator + type);
         if (!outputFile.exists()) {
             outputFile.mkdirs();
         }
 
-        sftpClient.get(filePath, _localBaseFolder + File.separator + type + File.separator + new File(filePath).getName());
+        sftpClient.get(filePath, localBaseFolder + File.separator + type + File.separator + new File(filePath).getName());
     }
 
     /**
-     * Returns a list of the paths of the files inside the specified folder and subfolders
+     * Returns a list of the paths of the files inside the specified folder and subfolders on the SFTP server
      * @param type the type of folder (ex. plugins, world)
      * @return the list of file paths
      * @throws Exception
@@ -162,7 +162,7 @@ public class SFTPUploader {
         ArrayList<String> result = new ArrayList<>();
 
         resetWorkingDirectory();
-        sftpClient.cd(_remoteBaseFolder);
+        sftpClient.cd(remoteBaseFolder);
         sftpClient.cd(type);
 
         for (RemoteResourceInfo file : sftpClient.ls()) {
@@ -174,6 +174,28 @@ public class SFTPUploader {
         }
 
         return result;
+    }
+
+    /**
+     * Returns a list of the paths of the ZIP files and their modification dates inside the specified folder on the SFTP server
+     * @param folderPath the path of the folder
+     * @return the list of files
+     * @throws Exception
+     */
+    public HashMap<String, Date> getZipFiles(String folderPath) throws Exception {
+        HashMap<String, Date> filePaths = new HashMap<>();
+
+        resetWorkingDirectory();
+        sftpClient.cd(remoteBaseFolder);
+        sftpClient.cd(folderPath);
+
+        for (RemoteResourceInfo file : sftpClient.ls()) {
+            if (file.getName().endsWith(".zip")) {
+                filePaths.put(file.getName(), new Date(file.getAttributes().getMtime()));
+            }
+        }
+
+        return filePaths;
     }
 
     /**

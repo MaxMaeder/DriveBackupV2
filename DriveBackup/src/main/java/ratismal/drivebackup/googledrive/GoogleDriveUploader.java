@@ -23,9 +23,13 @@ import static io.restassured.RestAssured.given;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.FileWriter;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
@@ -42,6 +46,9 @@ import org.json.simple.parser.JSONParser;
 public class GoogleDriveUploader {
     private boolean errorOccurred;
     private String refreshToken;
+
+    private String localBaseFolder;
+    private String remoteBaseFolder;
 
     /**
      * Global instance of the HTTP transport
@@ -164,7 +171,7 @@ public class GoogleDriveUploader {
     }
 
     /**
-     * Creates an instance of the {@code GoogleDriveUploader} object
+     * Creates an instance of the {@code GoogleDriveUploader} object using the default base folder paths
      */
     public GoogleDriveUploader() {
         try {
@@ -174,6 +181,31 @@ public class GoogleDriveUploader {
             MessageUtil.sendConsoleException(e);
             setErrorOccurred(true);
         }
+
+        localBaseFolder = ".";
+        remoteBaseFolder = Config.getDestination();
+    }
+
+    /**
+     * Creates an instance of the {@code GoogleDriveUploader} object using the specifed base folder paths
+     * @param localBaseFolder the path to the folder which all local file paths are relative to
+     * @param remoteBaseFolder the path to the folder which all remote file paths are relative to 
+     */
+    public GoogleDriveUploader(String localBaseFolder, String remoteBaseFolder) {
+        if (!Config.isGoogleEnabled()) {
+            return;
+        }
+
+        try {
+            setRefreshTokenFromStoredValue();
+            retrieveNewAccessToken();
+        } catch (Exception e) {
+            MessageUtil.sendConsoleException(e);
+            setErrorOccurred(true);
+        }
+
+        this.localBaseFolder = localBaseFolder;
+        this.remoteBaseFolder = remoteBaseFolder;
     }
 
     /**
@@ -227,72 +259,130 @@ public class GoogleDriveUploader {
         try {
             File body = new File();
             body.setTitle(file.getName());
-            body.setDescription("DriveBackup plugin");
+            body.setDescription("Created by DriveBackupV2");
             body.setMimeType("application/zip");
+            ParentReference folderParent = new ParentReference();
 
             String destination = Config.getDestination();
 
             FileContent mediaContent = new FileContent("application/zip", file);
 
-            File parentFolder = getFolder(destination);
-            if (parentFolder == null) {
-                parentFolder = new File();
-                parentFolder.setTitle(destination);
-                parentFolder.setMimeType("application/vnd.google-apps.folder");
-                parentFolder = service.files().insert(parentFolder).execute();
+            File folder = getFolder(destination);
+            if (folder == null) {
+                folder = new File();
+                folder.setTitle(destination);
+                folder.setMimeType("application/vnd.google-apps.folder");
+                folder = service.files().insert(folder).execute();
             }
 
             String[] typeFolders = type.split(java.io.File.separator.replace("\\", "\\\\"));
             
-            File childFolder = null;
-            ParentReference childFolderParent = new ParentReference();
             
-            for (String folder : typeFolders) {
-                if (folder.equals(".") || folder.equals("..")) {
+            for (String typeFolder : typeFolders) {
+                if (typeFolder.equals(".") || typeFolder.equals("..")) {
                     continue;
-                }
+                }   
 
-                /*if (folder == "..") {
-                    if (childFolder == null) {
-                        childFolder = service.files().get(parentFolder.getParents().get(0).getId()).execute();
-                    } else {
-                        childFolder = service.files().get(childFolder.getParents().get(0).getId()).execute();
-                    }
-                    
-                    continue;
-                }*/
+                folderParent.setId(folder.getId());
+                folder = getFolder(typeFolder, folder);
 
-                if (childFolder == null) {
-                    childFolder = getFolder(folder, parentFolder);
-                    childFolderParent.setId(parentFolder.getId());
-                } else {
-                    String ParentFolderId = childFolder.getId();
-                    childFolder = getFolder(folder, childFolder);
-                    childFolderParent.setId(ParentFolderId);
-                }
-
-                if (childFolder == null) {
-                    childFolder = new File();
-                    childFolder.setTitle(folder);
-                    childFolder.setMimeType("application/vnd.google-apps.folder");
-                    childFolder.setParents(Collections.singletonList(childFolderParent));
+                if (folder == null) {
+                    folder = new File();
+                    folder.setTitle(typeFolder);
+                    folder.setMimeType("application/vnd.google-apps.folder");
+                    folder.setParents(Collections.singletonList(folderParent));
     
-                    childFolder = service.files().insert(childFolder).execute();
+                    folder = service.files().insert(folder).execute();
                 }
             }
 
 
             ParentReference newParent = new ParentReference();
-            newParent.setId(childFolder.getId());
+            newParent.setId(folder.getId());
             body.setParents(Collections.singletonList(newParent));
 
             service.files().insert(body, mediaContent).execute();
 
-            deleteFiles(childFolder);
+            deleteFiles(folder);
         } catch(Exception error) {
             MessageUtil.sendConsoleException(error);
             setErrorOccurred(true);
         }
+    }
+
+    /**
+     * Downloads the specifed file from the authenticated user's Google Drive into a folder for the specified file type
+     * @param filePath the path of the file
+     * @param type the type of file (ex. plugins, world)
+     */
+    public void downloadFile(String filePath, String type) {
+        try {
+            File folder = getFolder(remoteBaseFolder);
+
+            String[] filePathFolders = filePath.split(java.io.File.separator.replace("\\", "\\\\"));
+            
+
+            for (String filePathFolder : filePathFolders) {
+                if (filePathFolder.equals(".") || filePathFolder.equals("..")) {
+                    continue;
+                }   
+
+                folder = getFolder(filePathFolder, folder);
+            }
+
+            java.io.File outputFile = new java.io.File(localBaseFolder + java.io.File.separator + type);
+            if (!outputFile.exists()) {
+                outputFile.mkdirs();
+            }
+
+            OutputStream outputStream = new FileOutputStream(localBaseFolder + java.io.File.separator + type + java.io.File.separator + new java.io.File(filePath).getName());
+
+            File fileToDownload = getFile(new java.io.File(filePath).getName(), folder);
+            Drive.Files.Get request = service.files().get(fileToDownload.getId());
+            request.executeMediaAndDownloadTo(outputStream);
+
+            outputStream.flush();
+            outputStream.close();
+        } catch(Exception error) {
+            MessageUtil.sendConsoleException(error);
+            setErrorOccurred(true);
+        }
+    }
+
+    /**
+     * Returns a list of the paths of the ZIP files and their modification dates inside the specified folder in the authenticated user's Google Drive
+     * @param folderPath the path of the folder
+     * @return the list of files
+     */
+    public HashMap<String, Date> getZipFiles(String folderPath) {
+        HashMap<String, Date> filePaths = new HashMap<>();
+
+        try {
+            File folder = getFolder(remoteBaseFolder);
+
+            String[] filePathFolders = folderPath.split(java.io.File.separator.replace("\\", "\\\\"));
+
+            for (String filePathFolder : filePathFolders) {
+                if (filePathFolder.equals(".") || filePathFolder.equals("..")) {
+                    continue;
+                }   
+
+                folder = getFolder(filePathFolder, folder);
+            }
+
+            Drive.Files.List request = service.files().list().setQ(
+                    "mimeType='application/zip' and trashed=false and '" + folder.getId() + "' in parents");
+            FileList files = request.execute();
+
+            for (File file : files.getItems()) {
+                filePaths.put(folderPath + file.getTitle(), new Date(file.getModifiedDate().getValue()));
+            }
+        } catch (Exception e) {
+            MessageUtil.sendConsoleException(e);
+            setErrorOccurred(true);
+        }
+
+        return filePaths;
     }
 
     /**

@@ -17,8 +17,16 @@ import ratismal.drivebackup.config.Config;
 import ratismal.drivebackup.util.MessageUtil;
 
 import java.io.*;
+import java.text.DateFormat;
 import java.text.DecimalFormat;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
@@ -33,6 +41,9 @@ public class OneDriveUploader {
     private long lastUploaded;
     private String accessToken;
     private String refreshToken;
+
+    private String localBaseFolder;
+    private String remoteBaseFolder;
 
     /**
      * Size of the file chunks to upload to OneDrive
@@ -148,7 +159,7 @@ public class OneDriveUploader {
     }
     
     /**
-     * Creates an instance of the {@code OneDriveUploader} object
+     * Creates an instance of the {@code OneDriveUploader} object using the default base folder paths
      */
     public OneDriveUploader() {
         try {
@@ -159,6 +170,32 @@ public class OneDriveUploader {
             MessageUtil.sendConsoleException(e);
             setErrorOccurred(true);
         }
+
+        localBaseFolder = ".";
+        remoteBaseFolder = Config.getDestination();
+    }
+
+    /**
+     * Creates an instance of the {@code OneDriveUploader} object using the specifed base folder paths
+     * @param localBaseFolder the path to the folder which all local file paths are relative to
+     * @param remoteBaseFolder the path to the folder which all remote file paths are relative to 
+     */
+    public OneDriveUploader(String localBaseFolder, String remoteBaseFolder) {
+        if (!Config.isOnedriveEnabled()) {
+            return;
+        }
+
+        try {
+            setRefreshTokenFromStoredValue();
+            retrieveNewAccessToken();
+            setRanges(new String[0]);
+        } catch (Exception e) {
+            MessageUtil.sendConsoleException(e);
+            setErrorOccurred(true);
+        }
+
+        this.localBaseFolder = localBaseFolder;
+        this.remoteBaseFolder = remoteBaseFolder;
     }
 
     /**
@@ -199,7 +236,7 @@ public class OneDriveUploader {
      * @param file the file
      * @param type the type of file (ex. plugins, world)
      */
-    public void uploadFile(File file, String type) throws Exception {
+    public void uploadFile(File file, String type) {
         try {
             resetRanges();
             
@@ -219,8 +256,7 @@ public class OneDriveUploader {
                 // Encodes colons in file names because they confuse the OneDrive API
                 .post("https://graph.microsoft.com/v1.0/me/drive/root:/" + (Config.getDestination() + "/" + type + "/" + file.getName()).replace(":", "%3A") + ":/createUploadSession");
 
-            //Assign our backup to Random Access File
-            this.raf = new RandomAccessFile(file, "r");
+            raf = new RandomAccessFile(file, "r");
 
             String uploadURL = openConnection.getBody().jsonPath().get("uploadUrl");
 
@@ -250,10 +286,88 @@ public class OneDriveUploader {
             if (checkDestinationExists(type)) {
                 deleteFiles(type);
             }
+
+            raf.close();
         } catch(Exception error) {
             MessageUtil.sendConsoleException(error);
             setErrorOccurred(true);
         }
+    }
+
+    /**
+     * Downloads the specifed file from the authenticated user's OneDrive into a folder for the specified file type
+     * @param filePath the path of the file
+     * @param type the type of file (ex. plugins, world)
+     */
+    public void downloadFile(String filePath, String type) {
+        try {
+            type = type.replace(".."  + File.separator, "");
+
+            Response openConnection = given()
+                .auth().oauth2(returnAccessToken())
+                .contentType("application/json")
+                // Encodes colons in file names because they confuse the OneDrive API
+                .post("https://graph.microsoft.com/v1.0/me/drive/root:/" + (remoteBaseFolder + "/" + filePath).replace(":", "%3A") + ":/createUploadSession");
+
+            String downloadURL = openConnection.getHeader("Location");
+            Response downloadFile;
+
+            OutputStream outputStream = new FileOutputStream(localBaseFolder + java.io.File.separator + type + java.io.File.separator + new java.io.File(filePath).getName());
+
+            boolean isComplete = false;
+            int bytesDownloaded = 0;
+
+            while (!isComplete) {
+                downloadFile = given()
+                    .header("Range", String.format("bytes=%d-%d", bytesDownloaded, bytesDownloaded + CHUNK_SIZE))
+                    .get(downloadURL);
+
+                outputStream.write(downloadFile.getBody().asByteArray());
+
+                if (downloadFile.getStatusCode() == 206) {
+                    bytesDownloaded += CHUNK_SIZE;
+                } else {
+                    isComplete = true;
+                }
+            }
+
+            outputStream.flush();
+            outputStream.close();
+        } catch(Exception error) {
+            MessageUtil.sendConsoleException(error);
+            setErrorOccurred(true);
+        }
+    }
+
+    /**
+     * Returns a list of the paths of the ZIP files and their modification dates inside the specified folder in the authenticated user's OneDrive
+     * @param folderPath the path of the folder
+     * @return the list of files
+     */
+    public HashMap<String, Date> getZipFiles(String folderPath) {
+        HashMap<String, Date> filePaths = new HashMap<>();
+
+        try {
+            Response rootQuery = given()
+        	    .auth().oauth2(returnAccessToken())
+        	    .get("https://graph.microsoft.com/v1.0/me/drive/root:/" + (remoteBaseFolder + "/" + folderPath).replace(":", "%3A") + ":/children");
+
+            List<String> fileNames = rootQuery.getBody().jsonPath().getList("value.name");
+            List<String> fileModificationDates = rootQuery.getBody().jsonPath().getList("value.lastModifiedDateTime");
+
+            for (int i = 0; i < fileNames.size(); i++) {
+                if (fileNames.get(i).endsWith(".zip")) {
+                    filePaths.put(
+                            folderPath + fileNames.get(i), 
+                            Date.from(Instant.parse(fileModificationDates.get(i))));
+                }
+            }
+        } catch (Exception e) {
+            MessageUtil.sendConsoleException(e);
+            setErrorOccurred(true);
+        }
+
+        return filePaths;
     }
 
     /**
@@ -303,8 +417,6 @@ public class OneDriveUploader {
      * The upload destination folder is specified by the user in the {@code config.yml}
      */
     private void createDestinationFolder() {
-        MessageUtil.sendConsoleMessage("Folder " + Config.getDestination() + " doesn't exist, creating");
-
         given()
         	.auth().oauth2(returnAccessToken())
         	.contentType("application/json")

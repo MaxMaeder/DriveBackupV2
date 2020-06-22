@@ -6,7 +6,10 @@ src/com/*
 .idea/*
 .settings/
 .classpath
+.factorypath
 .project
 *.iml
 lib/*
 dependency-reduced-pom.xml
+build.sh
+settings.json

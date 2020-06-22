@@ -141,36 +141,37 @@ public class UploadThread implements Runnable {
 
                 File file = FileUtil.getFileToUpload(type, format, false);
                 ratismal.drivebackup.util.Timer timer = new Timer();
-                try {
-                    if (googleDriveUploader != null) {
-                        MessageUtil.sendConsoleMessage("Uploading file to Google Drive");
-                        timer.start();
-                        googleDriveUploader.uploadFile(file, type);
-                        timer.end();
-                        MessageUtil.sendConsoleMessage(timer.getUploadTimeMessage(file));
-                    }
-                    if (oneDriveUploader != null) {
-                        MessageUtil.sendConsoleMessage("Uploading file to OneDrive");
-                        timer.start();
-                        oneDriveUploader.uploadFile(file, type);
-                        timer.end();
-                        MessageUtil.sendConsoleMessage(timer.getUploadTimeMessage(file));
-                    }
-                    if (ftpUploader != null) {
-                        MessageUtil.sendConsoleMessage("Uploading file to the (S)FTP server");
-                        timer.start();
-                        ftpUploader.uploadFile(file, type);
-                        timer.end();
-                        MessageUtil.sendConsoleMessage(timer.getUploadTimeMessage(file));
-                    }
 
-                    FileUtil.deleteFiles(type, format);
-                } catch (Exception e) {
-                    MessageUtil.sendConsoleException(e);
+                if (googleDriveUploader != null) {
+                    MessageUtil.sendConsoleMessage("Uploading file to Google Drive");
+                    timer.start();
+                    googleDriveUploader.uploadFile(file, type);
+                    timer.end();
+                    MessageUtil.sendConsoleMessage(timer.getUploadTimeMessage(file));
                 }
+                if (oneDriveUploader != null) {
+                    MessageUtil.sendConsoleMessage("Uploading file to OneDrive");
+                    timer.start();
+                    oneDriveUploader.uploadFile(file, type);
+                    timer.end();
+                    MessageUtil.sendConsoleMessage(timer.getUploadTimeMessage(file));
+                }
+                if (ftpUploader != null) {
+                    MessageUtil.sendConsoleMessage("Uploading file to the (S)FTP server");
+                    timer.start();
+                    ftpUploader.uploadFile(file, type);
+                    timer.end();
+                    MessageUtil.sendConsoleMessage(timer.getUploadTimeMessage(file));
+                }
+
+                try {
+                    FileUtil.deleteFiles(type, format);
+                } catch (Exception exception) {
+                    MessageUtil.sendConsoleException(exception);
+                } 
             }
 
-            deleteFolder(new File("external-backups"));
+            FileUtil.deleteFolder(new File("external-backups"));
 
             for (Player player : Bukkit.getServer().getOnlinePlayers()) {
             	if (!player.hasPermission("drivebackup.linkAccounts")) continue;
@@ -179,7 +180,7 @@ public class UploadThread implements Runnable {
                     if (googleDriveUploader.isErrorWhileUploading()) {
                         MessageUtil.sendMessage(player, TextComponent.builder()
                         .append(
-                            TextComponent.of("Failed to backup to Google Drive, please run ")
+                            TextComponent.of("Failed to back up to Google Drive, please run ")
                             .color(TextColor.DARK_AQUA)
                         )
                         .append(
@@ -198,7 +199,7 @@ public class UploadThread implements Runnable {
                     if (oneDriveUploader.isErrorWhileUploading()) {
                         MessageUtil.sendMessage(player, TextComponent.builder()
                         .append(
-                            TextComponent.of("Failed to backup to OneDrive, please run ")
+                            TextComponent.of("Failed to back up to OneDrive, please run ")
                             .color(TextColor.DARK_AQUA)
                         )
                         .append(
@@ -217,7 +218,7 @@ public class UploadThread implements Runnable {
                     ftpUploader.close();
 
                     if (ftpUploader.isErrorWhileUploading()) {
-                        MessageUtil.sendMessage(player, "Failed to backup to the (S)FTP server, please check the server credentials in the " + ChatColor.GOLD + "config.yml");
+                        MessageUtil.sendMessage(player, "Failed to back up to the (S)FTP server, please check the server credentials in the " + ChatColor.GOLD + "config.yml");
                     } else {
                         MessageUtil.sendMessage(player, "Backup to the " + ChatColor.GOLD + "(S)FTP server " + ChatColor.DARK_AQUA + "complete");
                     }
@@ -421,20 +422,5 @@ public class UploadThread implements Runnable {
         } else {
             return "ftp-" + getSocketAddress(externalBackup);
         }
-    }
-
-    /**
-     * Deletes the specified folder
-     * @param folder the folder to be deleted
-     * @return whether deleting the folder was successful
-     */
-    private static boolean deleteFolder(File folder) {
-        File[] files = folder.listFiles();
-        if (files != null) {
-            for (File file : files) {
-                deleteFolder(file);
-            }
-        }
-        return folder.delete();
     }
 }

@@ -33,21 +33,21 @@ public class MessageUtil {
     }
 
     /**
-     * Sends the specified message to the specified player
-     * @param player the player to send the message to
+     * Sends the specified message to the specified CommandSender
+     * @param commandSender the CommandSender to send the message to
      * @param message the message to send
      */
-    public static void sendMessage(CommandSender player, String message) {
-        player.sendMessage(prefixMessage(message));
+    public static void sendMessage(CommandSender commandSender, String message) {
+        commandSender.sendMessage(prefixMessage(message));
     }
 
     /**
-     * Sends the specified message to the specified player
-     * @param player the player to send the message to
+     * Sends the specified message to the specified CommandSender
+     * @param commandSender the CommandSender to send the message to
      * @param message the message to send
      */
-    public static void sendMessage(CommandSender player, TextComponent message) {
-        TextAdapter.sendComponent(player, prefixMessage(message));
+    public static void sendMessage(CommandSender commandSender, TextComponent message) {
+        TextAdapter.sendComponent(commandSender, prefixMessage(message));
     }
 
     /**

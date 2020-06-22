@@ -2,14 +2,19 @@ package ratismal.drivebackup.util;
 
 import ratismal.drivebackup.config.Config;
 
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.file.Files;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
 /**
@@ -223,6 +228,125 @@ public class FileUtil {
      */
     private static String generateZipEntry(String file, String sourceFolder) {
         return file.substring(sourceFolder.length() + 1, file.length());
+    }
+
+    /**
+     * Returns a list of the paths of the ZIP files and their modification dates inside the local specified folder
+     * @param folderPath the path of the folder
+     * @return the list of files
+     */
+    public static HashMap<String, Date> getZipFiles(String folderPath) {
+        HashMap<String, Date> filePaths = new HashMap<>();
+
+        for (File file : new File(folderPath).listFiles()) {
+            if (file.getName().endsWith(".zip")) {
+                filePaths.put(
+                        folderPath + file.getName(), 
+                        new Date(file.lastModified()));
+            }
+        }
+
+        return filePaths;
+    }
+
+    /**
+     * Copies files from one folder to another
+     * @param sourceFolderPath the folder to the copy files from
+     * @param destinationFolderPath the folder to copy the files to
+     * @throws Exception
+     */
+    public static void copyFolder(String sourceFolderPath, String destinationFolderPath) throws IOException {
+        File sourceFolder = new File(sourceFolderPath);
+        File destinationFolder = new File(destinationFolderPath);
+
+        if (sourceFolder.isDirectory()) {
+            if (!destinationFolder.exists()) {
+                destinationFolder.mkdirs();
+            }
+            
+            String[] childFiles = sourceFolder.list();
+            for (String childFile : childFiles) {
+                copyFolder(sourceFolderPath + File.separator + childFile, destinationFolderPath + File.separator + childFile);
+            }
+        } else {
+            InputStream inputStream = new FileInputStream(sourceFolder);
+            OutputStream outputStream = new FileOutputStream(destinationFolder);
+            
+            byte[] buffer = new byte[1024];
+            int length;
+
+            while ((length = inputStream.read(buffer)) > 0) {
+                outputStream.write(buffer, 0, length);
+            }
+
+            inputStream.close();
+            outputStream.close();
+        }
+    }
+
+    /**
+     * Deletes the specified folder
+     * @param folder the folder to be deleted
+     * @return whether deleting the folder was successful
+     */
+    public static boolean deleteFolder(File folder) {
+        File[] files = folder.listFiles();
+        if (files != null) {
+            for (File file : files) {
+                deleteFolder(file);
+            }
+        }
+        return folder.delete();
+    }
+
+    /**
+     * Extracts the specified zip file into the specified folder
+     * @param zipFilePath the path to the zip file
+     * @param destinationFolderPath the path to the folder to extract the zip file into
+     * @throws IOException
+     */
+    public static void extractFolder(String zipFilePath, String destinationFolderPath) throws IOException {
+        File destinationFolder = new File(destinationFolderPath);
+        if (!destinationFolder.exists()) {
+            destinationFolder.mkdir();
+        }
+
+        ZipInputStream zipInputStream = new ZipInputStream(new FileInputStream(zipFilePath));
+        ZipEntry zipEntry = zipInputStream.getNextEntry();
+
+        while (zipEntry != null) {
+            String filePath = destinationFolderPath + File.separator + zipEntry.getName();
+
+            if (!zipEntry.isDirectory()) {
+                extractFile(zipInputStream, filePath);
+            } else {
+                File clildFolder = new File(filePath);
+                clildFolder.mkdir();
+            }
+
+            zipInputStream.closeEntry();
+            zipEntry = zipInputStream.getNextEntry();
+        }
+
+        zipInputStream.close();
+    }
+
+    /**
+     * Extracts the specified zip input stream into the specified folder
+     * @param zipInputStream the zip input stream
+     * @param filePath the path to the folder to extract the zip file into
+     * @throws IOException
+     */
+    private static void extractFile(ZipInputStream zipInputStream, String filePath) throws IOException {
+        BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(new FileOutputStream(filePath));
+        byte[] buffer = new byte[4096];
+
+        int read = 0;
+        while ((read = zipInputStream.read(buffer)) != -1) {
+            bufferedOutputStream.write(buffer, 0, read);
+        }
+
+        bufferedOutputStream.close();
     }
 }
 
