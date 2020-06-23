@@ -32,6 +32,7 @@ public class Config {
     private static String destination;
 
     private static boolean googleEnabled;
+    private static String googleTeamDriveName;
     private static boolean onedriveEnabled;
     private static boolean ftpEnabled;
     private static String ftpHost;
@@ -161,6 +162,7 @@ public class Config {
         destination = config.getString("destination");
 
         googleEnabled = config.getBoolean("googledrive.enabled");
+        googleTeamDriveName = config.getString("googledrive.team-drive-name");
         onedriveEnabled = config.getBoolean("onedrive.enabled");
         ftpEnabled = config.getBoolean("ftp.enabled");
         ftpHost = config.getString("ftp.hostname");
@@ -301,6 +303,14 @@ public class Config {
      */
     public static boolean isGoogleEnabled() {
         return googleEnabled;
+    }
+
+    /**
+     * Gets the name of the Google Drive team drive to store files in
+     * @return the name of the team drive
+     */
+    public static String getGoogleDriveTeamDriveName() {
+        return googleTeamDriveName;
     }
 
     /**
