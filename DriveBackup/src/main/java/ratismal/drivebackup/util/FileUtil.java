@@ -77,31 +77,25 @@ public class FileUtil {
      *
      * @param type         What we're backing up (world, plugin, etc)
      * @param formatString Format of the file name
+     * @throws Exception
      */
-    public static void makeBackup(String type, String formatString, List<String> _blackList) throws IOException {
+    public static void makeBackup(String type, String formatString, List<String> _blackList) throws Exception {
         if (type.charAt(0) == File.separatorChar) {
-            throw new IOException(); 
+            throw new IllegalArgumentException(); 
         }
 
-        try {
-            fileList.clear();
-            DateFormat format = new SimpleDateFormat(formatString, new Locale(Config.getDateLanguage()));
-            String fileName = format.format(new Date());
-            blackList = _blackList;
+        fileList.clear();
+        DateFormat format = new SimpleDateFormat(formatString, new Locale(Config.getDateLanguage()));
+        String fileName = format.format(new Date());
+        blackList = _blackList;
 
-            File path = new File(new String(Config.getDir() + File.separator + type).replace(".." + File.separator, "")); // Keeps working directory inside backups folder
-            if (!path.exists()) {
-                path.mkdirs();
-            }
-
-            generateFileList(new File(type), type);
-            zipIt(new String(Config.getDir() + File.separator + type + File.separator + fileName).replace(".." + File.separator, ""), type);
-
-
-        } catch (Exception e) {
-            MessageUtil.sendConsoleException(e);
-            MessageUtil.sendConsoleMessage("Backup creation failed.");
+        File path = new File(new String(Config.getDir() + File.separator + type).replace(".." + File.separator, "")); // Keeps working directory inside backups folder
+        if (!path.exists()) {
+            path.mkdirs();
         }
+
+        generateFileList(new File(type), type);
+        zipIt(new String(Config.getDir() + File.separator + type + File.separator + fileName).replace(".." + File.separator, ""), type);
     }
 
     /**
@@ -147,7 +141,7 @@ public class FileUtil {
      * @param zipFile      The name of the zip file
      * @param sourceFolder The name of the folder to put it in
      */
-    private static void zipIt(String zipFile, String sourceFolder) {
+    private static void zipIt(String zipFile, String sourceFolder) throws Exception {
         byte[] buffer = new byte[1024];
         String source;
         FileOutputStream fos;
@@ -156,7 +150,7 @@ public class FileUtil {
         try {
             try {
                 source = sourceFolder.substring(sourceFolder.lastIndexOf(File.separator) + 1, sourceFolder.length());
-            } catch (Exception e) {
+            } catch (Exception exception) {
                 source = sourceFolder;
             }
 
@@ -171,21 +165,17 @@ public class FileUtil {
                     while ((len = in.read(buffer)) > 0) {
                         zos.write(buffer, 0, len);
                     }
-                } catch (Exception e) {
-                    MessageUtil.sendConsoleException(e);
                 }
             }
             zos.closeEntry();
-        } catch (Exception ex) {
-            MessageUtil.sendConsoleException(ex);
-        } finally {
-            try {
-                if (zos != null) {
-                    zos.close();
-                }
-            } catch (Exception e) {
-                MessageUtil.sendConsoleException(e);
+
+            zos.close();
+        } catch (Exception exception) {
+            if (zos != null) {
+                zos.close();
             }
+
+            throw exception; 
         }
     }
 
