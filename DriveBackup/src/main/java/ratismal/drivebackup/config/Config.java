@@ -183,7 +183,7 @@ public class Config {
 
         metrics = getBooleanWithFallback("advanced.metrics", "metrics");
         updateCheck = getBooleanWithFallback("advanced.update-check", "update-check");
-        debug = getBooleanWithFallback("advanced.suppress-errors", "suppress-errors");
+        debug = !getBooleanWithFallback("advanced.suppress-errors", "suppress-errors");
         prefixChatMessages = config.getBoolean("advanced.prefix-chat-messages");
         ftpFileSeperator = config.getString("advanced.ftp-file-seperator");
         dateLanguage = config.getString("advanced.date-language");
