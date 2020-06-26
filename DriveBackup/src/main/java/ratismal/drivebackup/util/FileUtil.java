@@ -107,6 +107,8 @@ public class FileUtil {
      * @throws IOException
      */
     public static void deleteFiles(String type, String formatString) throws IOException {
+        type = type.replace(".." + File.separator, "");
+
         if (Config.getLocalKeepCount() != -1) {
             try {
                 getFileToUpload(type, formatString, false);
@@ -165,6 +167,8 @@ public class FileUtil {
                     while ((len = in.read(buffer)) > 0) {
                         zos.write(buffer, 0, len);
                     }
+                } catch (Exception e) {
+                    MessageUtil.sendConsoleMessage("Falied to include " + source + File.separator + file + " in the backup. Is it locked?");
                 }
             }
             zos.closeEntry();
