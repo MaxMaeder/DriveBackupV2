@@ -127,13 +127,20 @@ public class UploadThread implements Runnable {
                 if (create.equalsIgnoreCase("true")) {
                     try {
                         FileUtil.makeBackup(type, format, blackList);
-                    } catch(Exception error) {
+                    } catch (IllegalArgumentException exception) {
+                        MessageUtil.sendConsoleException(exception);
+                        MessageUtil.sendConsoleMessage("Failed to create a backup");
                         for (Player player : Bukkit.getServer().getOnlinePlayers()) {
                             if (!player.hasPermission("drivebackup.linkAccounts")) continue;
 
                             MessageUtil.sendMessage(player, "Failed to create backup, path to folder to backup is absolute, expected a relative path");
                             MessageUtil.sendMessage(player, "An absolute path can overwrite sensitive files, see the " + ChatColor.GOLD + "config.yml " + ChatColor.DARK_AQUA + "for more information");
                         }
+
+                        return;
+                    } catch (Exception exception) {
+                        MessageUtil.sendConsoleException(exception);
+                        MessageUtil.sendConsoleMessage("Failed to create a backup");
 
                         return;
                     }
