@@ -220,7 +220,7 @@ public class OneDriveUploader {
                 .post("https://graph.microsoft.com/v1.0/me/drive/root:/" + (Config.getDestination() + "/" + type + "/" + file.getName()).replace(":", "%3A") + ":/createUploadSession");
 
             //Assign our backup to Random Access File
-            this.raf = new RandomAccessFile(file, "r");
+            raf = new RandomAccessFile(file, "r");
 
             String uploadURL = openConnection.getBody().jsonPath().get("uploadUrl");
 
@@ -254,6 +254,8 @@ public class OneDriveUploader {
             MessageUtil.sendConsoleException(error);
             setErrorOccurred(true);
         }
+
+        raf.close();
     }
 
     /**
