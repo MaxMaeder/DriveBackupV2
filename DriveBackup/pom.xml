@@ -52,6 +52,10 @@
         </plugins>
     </build>
     <repositories>
+		<repository>
+  			<id>jcenter</id>
+  			<url>https://jcenter.bintray.com/org/codehaus/groovy/</url>
+		</repository>
         <repository>
             <id>bukkit-repo</id>
             <url>https://hub.spigotmc.org/nexus/content/groups/public/</url>
@@ -88,7 +92,21 @@
         <dependency>
             <groupId>io.rest-assured</groupId>
             <artifactId>rest-assured</artifactId>
-            <version>4.3.0</version>
+            <version>4.2.0</version>
+            <exclusions>
+                <!-- Exclude Groovy because of classpath issue -->
+                <exclusion>
+                    <groupId>org.codehaus.groovy</groupId>
+                    <artifactId>groovy</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.codehaus.groovy</groupId>
+            <artifactId>groovy-all</artifactId>
+            <!-- Needs to be the same version that REST Assured depends on -->
+            <version>2.5.8</version>
+            <type>pom</type>
         </dependency>
         <dependency>
             <groupId>commons-net</groupId>
@@ -112,23 +130,8 @@
         </dependency>
         <dependency>
             <groupId>net.kyori</groupId>
-            <artifactId>text-serializer-gson</artifactId>
-            <version>3.0.4</version>
-        </dependency>
-        <dependency>
-            <groupId>net.kyori</groupId>
             <artifactId>text-adapter-bukkit</artifactId>
-            <version>3.0.3</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>net.kyori</groupId>
-                    <artifactId>text-api</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>net.kyori</groupId>
-                    <artifactId>text-serializer-gson</artifactId>
-                </exclusion>
-            </exclusions>
+            <version>3.0.5</version>
         </dependency>
     </dependencies>
     <properties>
