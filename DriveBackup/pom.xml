@@ -52,10 +52,6 @@
         </plugins>
     </build>
     <repositories>
-		<repository>
-  			<id>jcenter</id>
-  			<url>https://jcenter.bintray.com/org/codehaus/groovy/</url>
-		</repository>
         <repository>
             <id>bukkit-repo</id>
             <url>https://hub.spigotmc.org/nexus/content/groups/public/</url>
@@ -90,23 +86,14 @@
 			<scope>compile</scope>
 		</dependency>
         <dependency>
-            <groupId>io.rest-assured</groupId>
-            <artifactId>rest-assured</artifactId>
-            <version>4.2.0</version>
-            <exclusions>
-                <!-- Exclude Groovy because of classpath issue -->
-                <exclusion>
-                    <groupId>org.codehaus.groovy</groupId>
-                    <artifactId>groovy</artifactId>
-                </exclusion>
-            </exclusions>
+            <groupId>com.squareup.okhttp3</groupId>
+            <artifactId>okhttp</artifactId>
+            <version>4.7.2</version>
         </dependency>
         <dependency>
-            <groupId>org.codehaus.groovy</groupId>
-            <artifactId>groovy-all</artifactId>
-            <!-- Needs to be the same version that REST Assured depends on -->
-            <version>2.5.8</version>
-            <type>pom</type>
+            <groupId>org.json</groupId>
+            <artifactId>json</artifactId>
+            <version>20200518</version>
         </dependency>
         <dependency>
             <groupId>commons-net</groupId>

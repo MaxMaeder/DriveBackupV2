@@ -9,16 +9,18 @@ import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.model.*;
-import io.restassured.response.Response;
 import net.kyori.text.TextComponent;
 import net.kyori.text.event.ClickEvent;
 import net.kyori.text.event.HoverEvent;
 import net.kyori.text.format.TextColor;
+import okhttp3.FormBody;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 import ratismal.drivebackup.DriveBackup;
 import ratismal.drivebackup.config.Config;
 import ratismal.drivebackup.util.MessageUtil;
-
-import static io.restassured.RestAssured.given;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -32,8 +34,7 @@ import java.util.List;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.scheduler.BukkitScheduler;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
+import org.json.JSONObject;
 
 /**
  * Created by Ratismal on 2016-01-20.
@@ -42,6 +43,12 @@ import org.json.simple.parser.JSONParser;
 public class GoogleDriveUploader {
     private boolean errorOccurred;
     private String refreshToken;
+
+
+    /**
+     * Global instance of the HTTP client
+     */
+    private static final OkHttpClient httpClient = new OkHttpClient();
 
     /**
      * Global instance of the HTTP transport
@@ -57,8 +64,8 @@ public class GoogleDriveUploader {
      * Location of the authenticated user's stored Google Drive refresh token
      */
     private static final String CLIENT_JSON_PATH = DriveBackup.getInstance().getDataFolder().getAbsolutePath()
-        + "/GoogleDriveCredential.json";
-    
+            + "/GoogleDriveCredential.json";
+
     /**
      * Google Drive API credentials
      */
@@ -71,22 +78,31 @@ public class GoogleDriveUploader {
     private Drive service;
 
     /**
-     * Attempt to authenticate a user with Google Drive using the OAuth 2.0 device authorization grant flow
-     * @param plugin a reference to the {@code DriveBackup} plugin
+     * Attempt to authenticate a user with Google Drive using the OAuth 2.0 device
+     * authorization grant flow
+     * 
+     * @param plugin    a reference to the {@code DriveBackup} plugin
      * @param initiator user who initiated the authentication
      * @throws Exception
      */
     public static void authenticateUser(final DriveBackup plugin, final CommandSender initiator) throws Exception {
-        Response response = given()
-      		.contentType("application/x-www-form-urlencoded")
-      		.param("client_id", CLIENT_ID)
-      		.param("scope", "https://www.googleapis.com/auth/drive.file")
-      		.post("https://oauth2.googleapis.com/device/code");
+        RequestBody requestBody = new FormBody.Builder()
+            .add("client_id", CLIENT_ID)
+            .add("scope", "https://www.googleapis.com/auth/drive.file")
+            .build();
 
-        String verificationUrl = response.getBody().jsonPath().getString("verification_url");
-        String userCode = response.getBody().jsonPath().getString("user_code");
-        final String deviceCode = response.getBody().jsonPath().getString("device_code");
-        long responseCheckDelay = response.getBody().jsonPath().getLong("interval");
+        Request request = new Request.Builder()
+            .url("https://oauth2.googleapis.com/device/code")
+            .post(requestBody)
+            .build();
+
+        Response response = httpClient.newCall(request).execute();
+        JSONObject parsedResponse = new JSONObject(response.body().string());
+
+        String verificationUrl = parsedResponse.getString("verification_url");
+        String userCode = parsedResponse.getString("user_code");
+        final String deviceCode = parsedResponse.getString("device_code");
+        long responseCheckDelay = parsedResponse.getLong("interval");
 
         MessageUtil.sendMessage(initiator, TextComponent.builder()
                 .append(
@@ -116,24 +132,39 @@ public class GoogleDriveUploader {
             @Override
             public void run() {
                 
-                Response response = given()
-                    .contentType("application/x-www-form-urlencoded")
-                    .param("client_id", CLIENT_ID)
-                    .param("client_secret", CLIENT_SECRET)
-                    .param("grant_type", "urn:ietf:params:oauth:grant-type:device_code")
-                    .param("device_code", deviceCode)
-                    .post("https://oauth2.googleapis.com/token");
+                RequestBody requestBody = new FormBody.Builder()
+                    .add("client_id", CLIENT_ID)
+                    .add("client_secret", CLIENT_SECRET)
+                    .add("grant_type", "urn:ietf:params:oauth:grant-type:device_code")
+                    .add("device_code", deviceCode)
+                    .build();
+        
+                Request request = new Request.Builder()
+                    .url("https://oauth2.googleapis.com/token")
+                    .post(requestBody)
+                    .build();
+        
+                JSONObject parsedResponse = null;
+                try {
+                    Response response = httpClient.newCall(request).execute();
+                    parsedResponse = new JSONObject(response.body().string());
+                } catch (Exception exception) {
+                    MessageUtil.sendMessage(initiator, "Failed to link your Google Drive account, please try again");
+
+                    Bukkit.getScheduler().cancelTask(task[0]);
+                    return;
+                }
                 
-                if (response.getStatusCode() == 200) {
+                if (parsedResponse.has("refresh_token")) {
                     JSONObject jsonObject = new JSONObject();
-                    jsonObject.put("refresh_token", response.getBody().jsonPath().getString("refresh_token"));
+                    jsonObject.put("refresh_token", parsedResponse.getString("refresh_token"));
 
                     try {
                         FileWriter file = new FileWriter(CLIENT_JSON_PATH);
                         file.write(jsonObject.toString());
                         file.close();
                     } catch (IOException e) {
-                        MessageUtil.sendMessage(initiator, "Failed to link your Google Drive account");
+                        MessageUtil.sendMessage(initiator, "Failed to link your Google Drive account, please try again");
                         
                         Bukkit.getScheduler().cancelTask(task[0]);
                     }
@@ -150,8 +181,8 @@ public class GoogleDriveUploader {
                     DriveBackup.startThread();
                     
                     Bukkit.getScheduler().cancelTask(task[0]);
-                } else if (!response.getBody().jsonPath().getString("error").equals("authorization_pending")) {
-                    if (response.getBody().jsonPath().getString("error").equals("expired_token")) {
+                } else if (!parsedResponse.getString("error").equals("authorization_pending")) {
+                    if (parsedResponse.getString("error").equals("expired_token")) {
                         MessageUtil.sendMessage(initiator, "The Google Drive account linking process timed out, please try again");
                     } else {
                         MessageUtil.sendMessage(initiator, "Failed to link your Google Drive account, please try again");
@@ -182,8 +213,7 @@ public class GoogleDriveUploader {
      */
     private void setRefreshTokenFromStoredValue() throws Exception {
         String clientJSON = processCredentialJsonFile();
-        JSONParser jsonParser = new JSONParser();
-        JSONObject clientJsonObject = (JSONObject) jsonParser.parse(clientJSON);
+        JSONObject clientJsonObject = new JSONObject(clientJSON);
 
         String readRefreshToken = (String) clientJsonObject.get("refresh_token");
 
@@ -197,23 +227,30 @@ public class GoogleDriveUploader {
     /**
      * Gets a new Google Drive access token for the authenticated user
      */
-    private void retrieveNewAccessToken() {
-        Response response = given()
-      		.contentType("application/x-www-form-urlencoded")
-      		.param("client_id", CLIENT_ID)
-      		.param("client_secret", CLIENT_SECRET)
-      		.param("refresh_token", returnRefreshToken())
-      		.param("grant_type", "refresh_token")
-            .post("https://oauth2.googleapis.com/token");
+    private void retrieveNewAccessToken() throws Exception {
+        RequestBody requestBody = new FormBody.Builder()
+            .add("client_id", CLIENT_ID)
+            .add("client_secret", CLIENT_SECRET)
+            .add("refresh_token", returnRefreshToken())
+            .add("grant_type", "refresh_token")
+            .build();
+
+        Request request = new Request.Builder()
+            .url("https://oauth2.googleapis.com/token")
+            .post(requestBody)
+            .build();
+
+        Response response = httpClient.newCall(request).execute();
+        JSONObject parsedResponse = new JSONObject(response.body().string());
         
-        if (response.statusCode() != 200) return;
+        if (!response.isSuccessful()) return;
 
         service = new Drive.Builder(
             httpTransport, 
             JSON_FACTORY, 
             new Credential(
                 BearerToken.authorizationHeaderAccessMethod())
-                .setAccessToken(response.getBody().jsonPath().getString("access_token")))
+                .setAccessToken(parsedResponse.getString("access_token")))
             .setApplicationName("DriveBackupV2")
             .build();
     }
