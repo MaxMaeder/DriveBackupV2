@@ -25,6 +25,7 @@ import java.io.*;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -245,23 +246,33 @@ public class OneDriveUploader {
      * @param file the file
      * @param type the type of file (ex. plugins, world)
      */
-    public void uploadFile(File file, String type) throws Exception {
+    public void uploadFile(java.io.File file, String type) throws Exception {
         try {
             resetRanges();
-            
-            type = type.replace(".."  + File.separator, "");
-        	
-            if (!checkDestinationExists()) {
-                createDestinationFolder();
-            }
 
-            if (!checkDestinationExists(type)) {
-                createDestinationFolder(type);
+            String destination = Config.getDestination();
+            
+            ArrayList<String> typeFolders = new ArrayList<>();
+            Collections.addAll(typeFolders, destination.split(java.io.File.separator.replace("\\", "\\\\")));
+            Collections.addAll(typeFolders, type.split(java.io.File.separator.replace("\\", "\\\\")));
+
+            File folder = null;
+
+            for (String typeFolder : typeFolders) {
+                if (typeFolder.equals(".") || typeFolder.equals("..")) {
+                    continue;
+                }
+
+                if (folder == null) {
+                    folder = createFolder(typeFolder);
+                } else {
+                    folder = createFolder(typeFolder, folder);
+                }
             }
 
             Request request = new Request.Builder()
                 .addHeader("Authorization", "Bearer " + returnAccessToken())
-                .url("https://graph.microsoft.com/v1.0/me/drive/root:/" + (Config.getDestination() + "/" + type + "/" + file.getName()).replace(":", "%3A") + ":/createUploadSession")
+                .url("https://graph.microsoft.com/v1.0/me/drive/root:/" + (folder.getPath() + "/" + file.getName()).replace(":", "%3A") + ":/createUploadSession")
                 .post(RequestBody.create("{}", jsonMediaType))
                 .build();
 
@@ -304,9 +315,7 @@ public class OneDriveUploader {
                 response.close();
             }
 
-            if (checkDestinationExists(type)) {
-                deleteFiles(type);
-            }
+            deleteFiles(folder);
         } catch(Exception error) {
             MessageUtil.sendConsoleException(error);
             setErrorOccurred(true);
@@ -324,120 +333,160 @@ public class OneDriveUploader {
     }
 
     /**
-     * Check if the upload destination folder exists in the authenticated user's OneDrive
-     * <p>
-     * The upload destination folder is specified by the user in the {@code config.yml}
-     * @return whether the folder exists
+     * Creates a folder with the specified name in the specified parent folder in the authenticated user's OneDrive
+     * @param name the name of the folder
+     * @param parent the parent folder
+     * @return the created folder
+     * @throws Exception
      */
-    private boolean checkDestinationExists() throws Exception {
-        Request request = new Request.Builder()
-            .addHeader("Authorization", "Bearer " + returnAccessToken())
-            .url("https://graph.microsoft.com/v1.0/me/drive/root/children")
-            .build();
-
-        Response response = httpClient.newCall(request).execute();
-        JSONObject parsedResponse = new JSONObject(response.body().string());
-        response.close();
-
-        ArrayList<String> availableFolders = new ArrayList<>();
-
-        JSONArray jsonArray = parsedResponse.getJSONArray("value");
-        for (int i = 0; i < jsonArray.length(); i++) {
-            availableFolders.add(jsonArray.getJSONObject(i).getString("name"));
+    private File createFolder(String name, File parent) throws Exception {
+        File file = getFolder(name, parent);
+        if (file != null) {
+            return file;
         }
 
-        return availableFolders.contains(Config.getDestination());
-    }
-
-    /**
-     * Check if a folder for the specified file type exists within the upload destination folder in the authenticated user's OneDrive
-     * <p>
-     * The upload destination folder is specified by the user in the {@code config.yml}
-     * @return whether the folder exists
-     */
-    private boolean checkDestinationExists(String type) throws Exception {
         Request request = new Request.Builder()
             .addHeader("Authorization", "Bearer " + returnAccessToken())
-            .url("https://graph.microsoft.com/v1.0/me/drive/root:/" + Config.getDestination() + ":/children")
+            .url("https://graph.microsoft.com/v1.0/me/drive/root:/" + parent.getPath())
             .build();
 
         Response response = httpClient.newCall(request).execute();
         JSONObject parsedResponse = new JSONObject(response.body().string());
         response.close();
 
-        try {
-            ArrayList<String> availableFolders = new ArrayList<>();
-
-            JSONArray jsonArray = parsedResponse.getJSONArray("value");
-            for (int i = 0; i < jsonArray.length(); i++) {
-                availableFolders.add(jsonArray.getJSONObject(i).getString("name"));
-            }
-
-            return availableFolders.contains(type);
-        } catch (Exception e) {
-            return false;
-        }
-    }
-
-    /**
-     * Creates the upload destination folder in the authenticated user's OneDrive
-     * <p>
-     * The upload destination folder is specified by the user in the {@code config.yml}
-     */
-    private void createDestinationFolder() throws Exception {
-        MessageUtil.sendConsoleMessage("Folder " + Config.getDestination() + " doesn't exist, creating");
-
-        RequestBody requestBody = RequestBody.create("{\"name\": \"" + Config.getDestination() + "\", \"folder\": { }}", jsonMediaType);
-
-        Request request = new Request.Builder()
-            .addHeader("Authorization", "Bearer " + returnAccessToken())
-            .url("https://graph.microsoft.com/v1.0/me/drive/root/children")
-            .post(requestBody)
-            .build();
-
-        httpClient.newCall(request).execute();
-    }
-
-    /**
-     * Creates a folder for the specified file type exists within the upload destination folder in the authenticated user's OneDrive
-     * <p>
-     * The upload destination folder is specified by the user in the {@code config.yml}
-     */
-    private void createDestinationFolder(String type) throws Exception {
-        Request request = new Request.Builder()
-            .addHeader("Authorization", "Bearer " + returnAccessToken())
-            .url("https://graph.microsoft.com/v1.0/me/drive/root:/" + Config.getDestination())
-            .build();
-
-        Response response = httpClient.newCall(request).execute();
-        JSONObject parsedResponse = new JSONObject(response.body().string());
-        response.close();
-
-        String id = parsedResponse.getString("id");
+        String parentId = parsedResponse.getString("id");
 
         RequestBody requestBody = RequestBody.create(
             "{" +
-            " \"name\": \"" + type + "\"," +
+            " \"name\": \"" + name + "\"," +
             " \"folder\": {}," +
             " \"@name.conflictBehavior\": \"fail\"" +
             "}", jsonMediaType);
 
         request = new Request.Builder()
             .addHeader("Authorization", "Bearer " + returnAccessToken())
-            .url("https://graph.microsoft.com/v1.0/me/drive/items/" + id + "/children")
+            .url("https://graph.microsoft.com/v1.0/me/drive/items/" + parentId + "/children")
             .post(requestBody)
             .build();
 
-        httpClient.newCall(request).execute();
+        response = httpClient.newCall(request).execute();
+        boolean folderCreated = response.isSuccessful();
+        response.close();
+
+        if (!folderCreated) {
+            throw new Exception("Couldn't create folder " + name);
+        }
+            
+        return parent.add(name);
     }
 
     /**
-     * Deletes the oldest of the specified type of file past the number to retain from the authenticated user's OneDrive
+     * Creates a folder with the specified name in the root of the authenticated user's OneDrive
+     * @param name the name of the folder
+     * @return the created folder
+     * @throws Exception
+     */
+    private File createFolder(String name) throws Exception {
+        File file = getFolder(name);
+        if (file != null) {
+            return file;
+        }
+
+        RequestBody requestBody = RequestBody.create(
+            "{" +
+            " \"name\": \"" + name + "\"," +
+            " \"folder\": {}," +
+            " \"@name.conflictBehavior\": \"fail\"" +
+            "}", jsonMediaType);
+
+        Request request = new Request.Builder()
+            .addHeader("Authorization", "Bearer " + returnAccessToken())
+            .url("https://graph.microsoft.com/v1.0/me/drive/root/children")
+            .post(requestBody)
+            .build();
+
+        Response response = httpClient.newCall(request).execute();
+        boolean folderCreated = response.isSuccessful();
+        response.close();
+
+        if (!folderCreated) {
+            throw new Exception("Couldn't create folder " + name);
+        }
+
+        return new File().add(name);
+    }
+
+    /**
+     * Returns the folder in the specified parent folder of the authenticated user's OneDrive with the specified name
+     * @param name the name of the folder
+     * @param parent the parent folder
+     * @return the folder or {@code null}
+     */
+    private File getFolder(String name, File parent) {
+        try {
+            Request request = new Request.Builder()
+                .addHeader("Authorization", "Bearer " + returnAccessToken())
+                .url("https://graph.microsoft.com/v1.0/me/drive/root:/" + parent.getPath() + ":/children")
+                .build();
+
+            Response response = httpClient.newCall(request).execute();
+            JSONObject parsedResponse = new JSONObject(response.body().string());
+            response.close();
+
+            JSONArray jsonArray = parsedResponse.getJSONArray("value");
+
+            for (int i = 0; i < jsonArray.length(); i++) {
+                String folderName = jsonArray.getJSONObject(i).getString("name");
+
+                if (name.equals(folderName)) {
+                    return parent.add(name);
+                }
+            }
+            
+        } catch (Exception exception) {}
+
+        return null;
+    }
+
+    /**
+     * Returns the folder in the root of the authenticated user's OneDrive with the specified name
+     * @param name the name of the folder
+     * @return the folder or {@code null}
+     */
+    private File getFolder(String name) {
+        try {
+            Request request = new Request.Builder()
+                .addHeader("Authorization", "Bearer " + returnAccessToken())
+                .url("https://graph.microsoft.com/v1.0/me/drive/root/children")
+                .build();
+
+            Response response = httpClient.newCall(request).execute();
+            JSONObject parsedResponse = new JSONObject(response.body().string());
+            response.close();
+
+            JSONArray jsonArray = parsedResponse.getJSONArray("value");
+
+            for (int i = 0; i < jsonArray.length(); i++) {
+                String folderName = jsonArray.getJSONObject(i).getString("name");
+
+                if (name.equals(folderName)) {
+                    return new File().add(name);
+                }
+            }
+            
+        } catch (Exception exception) {}
+
+        return null;
+    }
+
+    /**
+     * Deletes the oldest files in the specified folder past the number to retain from the authenticated user's OneDrive
      * <p>
      * The number of files to retain is specified by the user in the {@code config.yml}
-     * @param type the type of file (ex. plugins, world)
+     * @param folder the folder containing the files
+     * @throws Exception
      */
-    private void deleteFiles(String type) throws Exception {
+    private void deleteFiles(File parent) throws Exception {
         int fileLimit = Config.getKeepCount();
 
         if (fileLimit == -1) {
@@ -446,7 +495,7 @@ public class OneDriveUploader {
 
         Request request = new Request.Builder()
             .addHeader("Authorization", "Bearer " + returnAccessToken())
-            .url("https://graph.microsoft.com/v1.0/me/drive/root:/" + Config.getDestination() + "/" + type + ":/children?sort_by=createdDateTime")
+            .url("https://graph.microsoft.com/v1.0/me/drive/root:/" + parent.getPath() + ":/children?sort_by=createdDateTime")
             .build();
 
         Response response = httpClient.newCall(request).execute();
@@ -484,6 +533,71 @@ public class OneDriveUploader {
             if (availableFileIDs.size() <= fileLimit){
                 break;
             }
+        }
+    }
+
+    /**
+     * A file/folder in the authenticated user's OneDrive 
+     */
+    private static final class File {
+        private ArrayList<String> filePath = new ArrayList<>();
+
+        /**
+         * Creates a reference of the {@code File} object
+         */
+        File() {
+
+        }
+
+        /**
+         * Returns a {@code File} with the specified folder added to the file path
+         * @param folder the {@code File}
+         */
+        private File add(String folder) {
+            File childFile = new File();
+            if (getPath().isEmpty()) {
+                childFile.setPath(folder);
+            } else {
+                childFile.setPath(getPath() + "/" + folder);
+            }
+
+            return childFile;
+        }
+
+        /**
+         * Sets the path of the file/folder
+         * @param path the path, as an {@code String}
+         */
+        private void setPath(String path) {
+            filePath.clear();
+            Collections.addAll(filePath, path.split("/"));
+        }
+
+        /**
+         * Gets the path of the file/folder
+         * @return the path, as a {@code String}
+         */
+        private String getPath() {
+            return String.join("/", filePath);
+        }
+
+        /**
+         * Gets the name of the file/folder
+         * @return the name, including any file extensions
+         */
+        private String getName() {
+            return filePath.get(filePath.size() - 1);
+        }
+
+        /**
+         * Gets the path of the parent folder of the file/folder
+         * @return the path, as a String
+         */
+        private String getParent() {
+            ArrayList<String> parentPath = new ArrayList<>(filePath);
+            parentPath.remove(parentPath.size() - 1);
+
+            return String.join("/", parentPath);
         }
     }
 
