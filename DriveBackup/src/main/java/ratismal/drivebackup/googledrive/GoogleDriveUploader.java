@@ -44,7 +44,6 @@ public class GoogleDriveUploader {
     private boolean errorOccurred;
     private String refreshToken;
 
-
     /**
      * Global instance of the HTTP client
      */
@@ -64,8 +63,8 @@ public class GoogleDriveUploader {
      * Location of the authenticated user's stored Google Drive refresh token
      */
     private static final String CLIENT_JSON_PATH = DriveBackup.getInstance().getDataFolder().getAbsolutePath()
-            + "/GoogleDriveCredential.json";
-
+        + "/GoogleDriveCredential.json";
+    
     /**
      * Google Drive API credentials
      */
@@ -98,6 +97,7 @@ public class GoogleDriveUploader {
 
         Response response = httpClient.newCall(request).execute();
         JSONObject parsedResponse = new JSONObject(response.body().string());
+        response.close();
 
         String verificationUrl = parsedResponse.getString("verification_url");
         String userCode = parsedResponse.getString("user_code");
@@ -148,6 +148,7 @@ public class GoogleDriveUploader {
                 try {
                     Response response = httpClient.newCall(request).execute();
                     parsedResponse = new JSONObject(response.body().string());
+                    response.close();
                 } catch (Exception exception) {
                     MessageUtil.sendMessage(initiator, "Failed to link your Google Drive account, please try again");
 
@@ -224,6 +225,7 @@ public class GoogleDriveUploader {
         }   
     }
 
+
     /**
      * Gets a new Google Drive access token for the authenticated user
      */
@@ -242,6 +244,7 @@ public class GoogleDriveUploader {
 
         Response response = httpClient.newCall(request).execute();
         JSONObject parsedResponse = new JSONObject(response.body().string());
+        response.close();
         
         if (!response.isSuccessful()) return;
 
@@ -262,71 +265,42 @@ public class GoogleDriveUploader {
      */
     public void uploadFile(java.io.File file, String type) {
         try {
-            File body = new File();
-            body.setTitle(file.getName());
-            body.setDescription("DriveBackup plugin");
-            body.setMimeType("application/zip");
-
             String destination = Config.getDestination();
 
-            FileContent mediaContent = new FileContent("application/zip", file);
-
-            File parentFolder = getFolder(destination);
-            if (parentFolder == null) {
-                parentFolder = new File();
-                parentFolder.setTitle(destination);
-                parentFolder.setMimeType("application/vnd.google-apps.folder");
-                parentFolder = service.files().insert(parentFolder).execute();
-            }
-
-            String[] typeFolders = type.split(java.io.File.separator.replace("\\", "\\\\"));
+            ArrayList<String> typeFolders = new ArrayList<>();
+            Collections.addAll(typeFolders, destination.split(java.io.File.separator.replace("\\", "\\\\")));
+            Collections.addAll(typeFolders, type.split(java.io.File.separator.replace("\\", "\\\\")));
             
-            File childFolder = null;
-            ParentReference childFolderParent = new ParentReference();
-            
-            for (String folder : typeFolders) {
-                if (folder.equals(".") || folder.equals("..")) {
+            File folder = null;
+
+            for (String typeFolder : typeFolders) {
+                if (typeFolder.equals(".") || typeFolder.equals("..")) {
                     continue;
                 }
 
-                /*if (folder == "..") {
-                    if (childFolder == null) {
-                        childFolder = service.files().get(parentFolder.getParents().get(0).getId()).execute();
-                    } else {
-                        childFolder = service.files().get(childFolder.getParents().get(0).getId()).execute();
-                    }
-                    
-                    continue;
-                }*/
-
-                if (childFolder == null) {
-                    childFolder = getFolder(folder, parentFolder);
-                    childFolderParent.setId(parentFolder.getId());
+                if (folder == null) {
+                    folder = createFolder(typeFolder);
                 } else {
-                    String ParentFolderId = childFolder.getId();
-                    childFolder = getFolder(folder, childFolder);
-                    childFolderParent.setId(ParentFolderId);
-                }
-
-                if (childFolder == null) {
-                    childFolder = new File();
-                    childFolder.setTitle(folder);
-                    childFolder.setMimeType("application/vnd.google-apps.folder");
-                    childFolder.setParents(Collections.singletonList(childFolderParent));
-    
-                    childFolder = service.files().insert(childFolder).execute();
+                    folder = createFolder(typeFolder, folder);
                 }
             }
 
+            File fileMetadata = new File();
+            fileMetadata.setTitle(file.getName());
+            fileMetadata.setDescription("Uploaded by the DriveBackupV2 Minecraft plugin");
+            fileMetadata.setMimeType("application/zip");
 
-            ParentReference newParent = new ParentReference();
-            newParent.setId(childFolder.getId());
-            body.setParents(Collections.singletonList(newParent));
+            ParentReference fileParent = new ParentReference();
+            fileParent.setId(folder.getId());
+            fileMetadata.setParents(Collections.singletonList(fileParent));
 
-            service.files().insert(body, mediaContent).execute();
+            FileContent fileContent = new FileContent("application/zip", file);
 
-            deleteFiles(childFolder);
-        } catch(Exception error) {
+            service.files().insert(fileMetadata, fileContent).execute();
+
+            deleteFiles(folder);
+        } catch(Exception error) {;
+            error.printStackTrace();
             MessageUtil.sendConsoleException(error);
             setErrorOccurred(true);
         }
@@ -341,57 +315,61 @@ public class GoogleDriveUploader {
     }
 
     /**
-     * Returns a reference to the file in the specified parent folder of the authenticated user's Google Drive with the specified name
-     * @param name the name of the file
-     * @param parent a reference to the parent folder
-     * @return the reference to the file or {@code null}
-     */
-    private File getFile(String name, File parent) {
-        try {
-            Drive.Files.List request = service.files().list().setQ(
-                    "mimeType='application/zip' and trashed=false and '" + parent.getId() + "' in parents");
-            FileList files = request.execute();
-            for (File folderfiles : files.getItems()) {
-                if (folderfiles.getTitle().equals(name)) {
-
-                    return folderfiles;
-                }
-            }
-            return null;
-        } catch (Exception e) {
-            MessageUtil.sendConsoleException(e);
-        }
-        return null;
-    }
-
-    /**
-     * Returns a reference to the file in the root of the authenticated user's Google Drive with the specified name
-     * @param name the name of the file
-     * @return the reference to the file or {@code null}
-     */
-    private File getFile(String name) {
-        try {
-            Drive.Files.List request = service.files().list().setQ(
-                    "mimeType='application/vnd.google-apps.folder' and trashed=false");
-            FileList files = request.execute();
-            for (File folderfiles : files.getItems()) {
-                if (folderfiles.getTitle().equals(name)) {
-
-                    return folderfiles;
-                }
-            }
-            return null;
-        } catch (Exception e) {
-            MessageUtil.sendConsoleException(e);
-        }
-        return null;
-    }
-
-    /**
-     * Returns a reference to the folder in the specified parent folder of the authenticated user's Google Drive with the specified name
+     * Creates a folder with the specified name in the specified parent folder in the authenticated user's Google Drive
      * @param name the name of the folder
-     * @param parent a reference to the parent folder
-     * @return the reference to the folder or {@code null}
+     * @param parent the parent folder
+     * @return the created folder
+     * @throws Exception
+     */
+    private File createFolder(String name, File parent) throws Exception {
+        File folder = null;
+
+        folder = getFolder(name, parent);
+        if (folder != null) {
+            return folder;
+        }
+
+        ParentReference parentReference = new ParentReference();
+        parentReference.setId(parent.getId());
+
+        folder = new File();
+        folder.setTitle(name);
+        folder.setMimeType("application/vnd.google-apps.folder");
+        folder.setParents(Collections.singletonList(parentReference));
+
+        folder = service.files().insert(folder).execute();
+
+        return folder;
+    }
+
+    /**
+     * Creates a folder with the specified name in the root of the authenticated user's Google Drive
+     * @param name the name of the folder
+     * @return the created folder
+     * @throws Exception
+     */
+    private File createFolder(String name) throws Exception {
+        File folder = null;
+
+        folder = getFolder(name);
+        if (folder != null) {
+            return folder;
+        }
+
+        folder = new File();
+        folder.setTitle(name);
+        folder.setMimeType("application/vnd.google-apps.folder");
+
+        folder = service.files().insert(folder).execute();
+
+        return folder;
+    }
+
+    /**
+     * Returns the folder in the specified parent folder of the authenticated user's Google Drive with the specified name
+     * @param name the name of the folder
+     * @param parent the parent folder
+     * @return the folder or {@code null}
      */
     private File getFolder(String name, File parent) {
         try {
@@ -412,9 +390,9 @@ public class GoogleDriveUploader {
     }
 
     /**
-     * Returns a reference to the folder in the root of the authenticated user's Google Drive with the specified name
+     * Returns the folder in the root of the authenticated user's Google Drive with the specified name
      * @param name the name of the folder
-     * @return the reference to the folder or {@code null}
+     * @return the folder or {@code null}
      */
     private File getFolder(String name) {
         try {
@@ -435,12 +413,12 @@ public class GoogleDriveUploader {
     }
 
     /**
-     * Returns a list of references to the files inside the specified folder in the authenticated user's Google Drive
-     * @param folder a reference to the folder
-     * @return a list of references to the files
-     * @throws IOException
+     * Returns a list of files in the specified folder in the authenticated user's Google Drive, ordered by creation date
+     * @param folder the folder containing the files
+     * @return a list of files
+     * @throws Exception
      */
-    private List<ChildReference> processFiles(File folder) throws IOException {
+    private List<ChildReference> getFiles(File folder) throws Exception {
 
         //Create a List to store results
         List<ChildReference> result = new ArrayList<>();
@@ -471,16 +449,16 @@ public class GoogleDriveUploader {
      * <p>
      * The number of files to retain is specified by the user in the {@code config.yml}
      * @param folder the folder containing the files
-     * @throws IOException
+     * @throws Exception
      */
-    private void deleteFiles(File folder) throws IOException {
+    private void deleteFiles(File folder) throws Exception {
         int fileLimit = Config.getKeepCount();
 
         if (fileLimit == -1) {
             return;
         }
 
-        List<ChildReference> queriedFilesfromDrive = processFiles(folder);
+        List<ChildReference> queriedFilesfromDrive = getFiles(folder);
         if (queriedFilesfromDrive.size() > fileLimit) {
             MessageUtil.sendConsoleMessage("There are " + queriedFilesfromDrive.size() + " file(s) which exceeds the " +
                     "limit of " + fileLimit + ", deleting");
