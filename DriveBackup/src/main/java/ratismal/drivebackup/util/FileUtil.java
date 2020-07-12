@@ -6,6 +6,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.FileSystems;
+import java.nio.file.PathMatcher;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -20,7 +22,7 @@ public class FileUtil {
 
     private static final TreeMap<Date, File> backupList = new TreeMap<>();
     private static final List<String> fileList = new ArrayList<>();
-    private static List<String> blackList;
+    private static ArrayList<String> _blacklistGlobs = new ArrayList<>();
 
     /**
      * Gets the file to upload
@@ -77,9 +79,10 @@ public class FileUtil {
      *
      * @param type         What we're backing up (world, plugin, etc)
      * @param formatString Format of the file name
+     * @param blacklistGlobs List of glob patterns of files to not include in the backup
      * @throws Exception
      */
-    public static void makeBackup(String type, String formatString, List<String> _blackList) throws Exception {
+    public static void makeBackup(String type, String formatString, List<String> blacklistGlobs) throws Exception {
         if (type.charAt(0) == File.separatorChar) {
             throw new IllegalArgumentException(); 
         }
@@ -87,7 +90,9 @@ public class FileUtil {
         fileList.clear();
         DateFormat format = new SimpleDateFormat(formatString, new Locale(Config.getDateLanguage()));
         String fileName = format.format(new Date());
-        blackList = _blackList;
+
+        _blacklistGlobs.clear();
+        _blacklistGlobs.addAll(blacklistGlobs);
 
         File path = new File(new String(Config.getDir() + File.separator + type).replace(".." + File.separator, "")); // Keeps working directory inside backups folder
         if (!path.exists()) {
@@ -168,7 +173,7 @@ public class FileUtil {
                         zos.write(buffer, 0, len);
                     }
                 } catch (Exception e) {
-                    MessageUtil.sendConsoleMessage("Falied to include " + source + File.separator + file + " in the backup. Is it locked?");
+                    MessageUtil.sendConsoleMessage("Failed to include " + source + File.separator + file + " in the backup. Is it locked?");
                 }
             }
             zos.closeEntry();
@@ -191,19 +196,23 @@ public class FileUtil {
      */
     private static void generateFileList(File node, String sourceFolder) {
 
-        // add file only
         if (node.isFile()) {
-            if (!blackList.contains(node.getName())) {
-                fileList.add(generateZipEntry(node.toString(), sourceFolder));
+            for (String blacklistGlob : _blacklistGlobs) {
+                if (FileSystems.getDefault().getPathMatcher("glob:" + blacklistGlob).matches(node.toPath())) {
+                    
+                    MessageUtil.sendConsoleMessage("Didn't include " + node.getPath() + " in the backup, as it is blacklisted by \"" + blacklistGlob + "\".");
+
+                    return;
+                }
             }
+
+            fileList.add(generateZipEntry(node.toString(), sourceFolder));
         }
 
         if (node.isDirectory()) {
             String[] subNote = node.list();
             for (String filename : subNote) {
-                if (!blackList.contains(node.getName())) {
-                    generateFileList(new File(node, filename), sourceFolder);
-                }
+                generateFileList(new File(node, filename), sourceFolder);
             }
         }
     }
@@ -219,4 +228,3 @@ public class FileUtil {
         return file.substring(sourceFolder.length() + 1, file.length());
     }
 }
-
