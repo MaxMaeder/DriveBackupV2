@@ -145,21 +145,21 @@ public class DriveBackup extends JavaPlugin {
         metrics.addCustomChart(new Metrics.SimplePie("backupMethodEnabled", new Callable<String>() {
             @Override
             public String call() throws Exception {
-                return (Config.isGoogleEnabled() || Config.isOnedriveEnabled() || Config.isFtpEnabled()) ? "Enabled" : "Disabled";
+                return (Config.isGoogleDriveEnabled() || Config.isoneDriveEnabled() || Config.isFtpEnabled()) ? "Enabled" : "Disabled";
             }
         }));
 
         metrics.addCustomChart(new Metrics.SimplePie("googleDriveEnabled", new Callable<String>() {
             @Override
             public String call() throws Exception {
-                return Config.isGoogleEnabled() ? "Enabled" : "Disabled";
+                return Config.isGoogleDriveEnabled() ? "Enabled" : "Disabled";
             }
         }));
         
         metrics.addCustomChart(new Metrics.SimplePie("oneDriveEnabled", new Callable<String>() {
             @Override
             public String call() throws Exception {
-            	return Config.isOnedriveEnabled() ? "Enabled" : "Disabled";
+            	return Config.isoneDriveEnabled() ? "Enabled" : "Disabled";
             }
         }));
 
