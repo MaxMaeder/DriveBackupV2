@@ -31,8 +31,8 @@ public class Config {
 
     private static String destination;
 
-    private static boolean googleEnabled;
-    private static boolean onedriveEnabled;
+    private static boolean googleDriveEnabled;
+    private static boolean oneDriveEnabled;
     private static boolean ftpEnabled;
     private static String ftpHost;
     private static int ftpPort;
@@ -160,8 +160,8 @@ public class Config {
 
         destination = config.getString("destination");
 
-        googleEnabled = config.getBoolean("googledrive.enabled");
-        onedriveEnabled = config.getBoolean("onedrive.enabled");
+        googleDriveEnabled = config.getBoolean("googledrive.enabled");
+        oneDriveEnabled = config.getBoolean("onedrive.enabled");
         ftpEnabled = config.getBoolean("ftp.enabled");
         ftpHost = config.getString("ftp.hostname");
         ftpPort = config.getInt("ftp.port");
@@ -299,16 +299,16 @@ public class Config {
      * Gets whether a Google Drive is enabled as a backup method
      * @return whether Google Drive is enabled
      */
-    public static boolean isGoogleEnabled() {
-        return googleEnabled;
+    public static boolean isGoogleDriveEnabled() {
+        return googleDriveEnabled;
     }
 
     /**
      * Gets whether a OneDrive is enabled as a backup method
      * @return whether OneDrive is enabled
      */
-    public static boolean isOnedriveEnabled() {
-        return onedriveEnabled;
+    public static boolean isoneDriveEnabled() {
+        return oneDriveEnabled;
     }
 
     /**
