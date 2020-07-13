@@ -54,7 +54,7 @@ public class UploadThread implements Runnable {
         Thread.currentThread().setPriority(Thread.MIN_PRIORITY + Config.getBackupThreadPriority());
 
         if (!Config.isBackupsRequirePlayers() || PlayerListener.isAutoBackupsActive() || initiator != null) {
-            if (!Config.isGoogleDriveEnabled() && !Config.isoneDriveEnabled() && !Config.isFtpEnabled()) {
+            if (!Config.isGoogleDriveEnabled() && !Config.isOneDriveEnabled() && !Config.isFtpEnabled()) {
                 ArrayList<Player> playersToNotify = new ArrayList<>();
 
                 if (initiator != null) {
@@ -83,7 +83,7 @@ public class UploadThread implements Runnable {
             if (Config.isGoogleDriveEnabled()) {
                 googleDriveUploader = new GoogleDriveUploader();
             }
-            if (Config.isoneDriveEnabled()) {
+            if (Config.isOneDriveEnabled()) {
                 oneDriveUploader = new OneDriveUploader();
             }
             if (Config.isFtpEnabled()) {
