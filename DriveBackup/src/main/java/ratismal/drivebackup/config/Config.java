@@ -307,7 +307,7 @@ public class Config {
      * Gets whether a OneDrive is enabled as a backup method
      * @return whether OneDrive is enabled
      */
-    public static boolean isoneDriveEnabled() {
+    public static boolean isOneDriveEnabled() {
         return oneDriveEnabled;
     }
 
