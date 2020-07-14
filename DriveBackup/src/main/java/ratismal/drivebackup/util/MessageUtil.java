@@ -47,7 +47,7 @@ public class MessageUtil {
      * @param message the message to send
      */
     public static void sendMessage(CommandSender player, TextComponent message) {
-        TextAdapter.sendComponent(player, prefixMessage(message));
+        TextAdapter.sendMessage(player, prefixMessage(message));
     }
 
     /**
