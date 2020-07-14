@@ -7,10 +7,11 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.FileSystems;
-import java.nio.file.PathMatcher;
+import java.nio.file.Paths;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -19,67 +20,46 @@ import java.util.zip.ZipOutputStream;
  */
 
 public class FileUtil {
-
     private static final TreeMap<Date, File> backupList = new TreeMap<>();
     private static final List<String> fileList = new ArrayList<>();
     private static ArrayList<String> _blacklistGlobs = new ArrayList<>();
 
     /**
-     * Gets the file to upload
-     *
-     * @param type   What we're backing up (world, plugin, etc)
-     * @param format Format of the file name
-     * @param output Should we upload the available files to console?
+     * Gets the most recent backup of the specified backup type
+     * @param type the type of back up (world, plugin, etc)
+     * @param format the format of the file name
      * @return The file to upload
      */
-    public static File getFileToUpload(String type, String format, boolean output) {
+    public static File getNewestBackup(String type, String format) {
         type = type.replace(".." + File.separator, "");
 
         backupList.clear();
         String path = new File(Config.getDir()).getAbsolutePath() + File.separator + type;
         File[] files = new File(path).listFiles();
-        subFiles(format, files);
-        if (output) {
-            for (Map.Entry<Date, File> entry : backupList.descendingMap().entrySet()) {
-                MessageUtil.sendConsoleMessage(entry.getValue().getName() + " - " + entry.getKey());
+
+        for (File file : files) {
+            if (file.getName().endsWith(".zip")) {
+
+                String dateString = file.getName();
+                DateFormat dateFormat = new SimpleDateFormat(format, new Locale(Config.getDateLanguage()));
+
+                try {
+                    Date date = dateFormat.parse(dateString);
+                    backupList.put(date, file);
+                } catch (Exception e) {
+                    MessageUtil.sendConsoleException(e);
+                }
             }
-            MessageUtil.sendConsoleMessage("The most recent is " + backupList.descendingMap().firstEntry().getValue());
         }
+
         return backupList.descendingMap().firstEntry().getValue();
     }
 
     /**
-     * Gets a list of backups
-     *
-     * @param formatString Format of the file name
-     * @param files        A list of files
-     */
-    private static void subFiles(String formatString, File[] files) {
-        for (File file : files) {
-            if (file.isDirectory()) {
-                subFiles(formatString, file.listFiles()); // Calls same method again.
-            } else {
-                if (file.getName().endsWith(".zip")) {
-                    String dateString = file.getName();
-                    DateFormat format = new SimpleDateFormat(formatString, new Locale(Config.getDateLanguage()));
-                    try {
-                        Date date = format.parse(dateString);
-                        backupList.put(date, file);
-                    } catch (Exception e) {
-                        MessageUtil.sendConsoleException(e);
-                    }
-                }
-            }
-        }
-    }
-
-
-    /**
-     * Creates a backup
-     *
-     * @param type         What we're backing up (world, plugin, etc)
-     * @param formatString Format of the file name
-     * @param blacklistGlobs List of glob patterns of files to not include in the backup
+     * Creates a local backup zip file for the specified backup type
+     * @param type what to back up (world, plugin, etc)
+     * @param formatString the format of the file name
+     * @param blacklistGlobs a list of glob patterns of files/folders to not include in the backup
      * @throws Exception
      */
     public static void makeBackup(String type, String formatString, List<String> blacklistGlobs) throws Exception {
@@ -94,13 +74,18 @@ public class FileUtil {
         _blacklistGlobs.clear();
         _blacklistGlobs.addAll(blacklistGlobs);
 
-        File path = new File(new String(Config.getDir() + File.separator + type).replace(".." + File.separator, "")); // Keeps working directory inside backups folder
+        String subfolderName = type;
+        if (isBaseFolder(subfolderName)) {
+            subfolderName = "root";
+        }
+
+        File path = new File(new String(Config.getDir() + File.separator + subfolderName).replace(".." + File.separator, "")); // Keeps working directory inside backups folder
         if (!path.exists()) {
             path.mkdirs();
         }
 
-        generateFileList(new File(type), type);
-        zipIt(new String(Config.getDir() + File.separator + type + File.separator + fileName).replace(".." + File.separator, ""), type);
+        generateFileList(type);
+        zipIt(type, new String(Config.getDir() + File.separator + subfolderName + File.separator + fileName).replace(".." + File.separator, ""));
     }
 
     /**
@@ -116,7 +101,7 @@ public class FileUtil {
 
         if (Config.getLocalKeepCount() != -1) {
             try {
-                getFileToUpload(type, formatString, false);
+                getNewestBackup(type, formatString);
 
                 if (backupList.size() > Config.getLocalKeepCount()) {
                     MessageUtil.sendConsoleMessage("There are " + backupList.size() + " file(s) which exceeds the local limit of " + Config.getLocalKeepCount() + ", deleting");
@@ -130,7 +115,7 @@ public class FileUtil {
                     if (fileToDelete.delete()) {
                         MessageUtil.sendConsoleMessage("Old local backup deleted");
                     } else {
-                        MessageUtil.sendConsoleMessage("Failed to delete local backup " + backupList.descendingMap().lastEntry().getValue().getName());
+                        MessageUtil.sendConsoleMessage("Failed to delete local backup \"" + backupList.descendingMap().lastEntry().getValue().getName() + "\"");
                     }
                     
                     backupList.remove(dateOfFile);
@@ -143,45 +128,39 @@ public class FileUtil {
     }
 
     /**
-     * Zips files into a zip file
-     *
-     * @param zipFile      The name of the zip file
-     * @param sourceFolder The name of the folder to put it in
+     * Zips files in the specified folder into the specified file location
+     * @param inputFolderPath the path of the folder to put it in
+     * @param outputFilePath the path of the zip file to create
      */
-    private static void zipIt(String zipFile, String sourceFolder) throws Exception {
+    private static void zipIt(String inputFolderPath, String outputFilePath) throws Exception {
         byte[] buffer = new byte[1024];
-        String source;
-        FileOutputStream fos;
-        ZipOutputStream zos = null;
+        FileOutputStream fileOutputStream;
+        ZipOutputStream zipOutputStream = null;
 
         try {
-            try {
-                source = sourceFolder.substring(sourceFolder.lastIndexOf(File.separator) + 1, sourceFolder.length());
-            } catch (Exception exception) {
-                source = sourceFolder;
-            }
-
-            fos = new FileOutputStream(zipFile);
-            zos = new ZipOutputStream(fos);
+            fileOutputStream = new FileOutputStream(outputFilePath);
+            zipOutputStream = new ZipOutputStream(fileOutputStream);
 
             for (String file : fileList) {
-                ZipEntry ze = new ZipEntry(source + File.separator + file);
-                zos.putNextEntry(ze);
-                try (FileInputStream in = new FileInputStream(sourceFolder + File.separator + file)) {
+                zipOutputStream.putNextEntry(new ZipEntry(new File(inputFolderPath).getName() + File.separator + file));
+
+                try (FileInputStream fileInputStream = new FileInputStream(inputFolderPath + File.separator + file)) {
+                    
                     int len;
-                    while ((len = in.read(buffer)) > 0) {
-                        zos.write(buffer, 0, len);
+                    while ((len = fileInputStream.read(buffer)) > 0) {
+                        zipOutputStream.write(buffer, 0, len);
                     }
                 } catch (Exception e) {
-                    MessageUtil.sendConsoleMessage("Failed to include " + source + File.separator + file + " in the backup. Is it locked?");
+                    MessageUtil.sendConsoleMessage("Failed to include \"" + new File(inputFolderPath + File.separator + file).getPath() + "\" in the backup. Is it locked?");
                 }
-            }
-            zos.closeEntry();
 
-            zos.close();
+                zipOutputStream.closeEntry();
+            }
+            
+            zipOutputStream.close();
         } catch (Exception exception) {
-            if (zos != null) {
-                zos.close();
+            if (zipOutputStream != null) {
+                zipOutputStream.close();
             }
 
             throw exception; 
@@ -189,42 +168,78 @@ public class FileUtil {
     }
 
     /**
-     * Gets a list of files to put in the zip
-     *
-     * @param node         File or folder to add
-     * @param sourceFolder Folder that we are looking in
+     * Generates a list of files to put in the zip created from the specified folder
+     * @param inputFolderPath The path of the folder to create the zip from
+     * @throws Exception
      */
-    private static void generateFileList(File node, String sourceFolder) {
+    private static void generateFileList(String inputFolderPath) throws Exception {
+        generateFileList(new File(inputFolderPath), inputFolderPath);
+    }
 
-        if (node.isFile()) {
+    /**
+     * Adds the specified file or folder to the generated list of files to put in the zip created from the specified folder
+     * @param file the file or folder to add
+     * @param inputFolderPath the path of the folder to create the zip from
+     * @throws Exception
+     */
+    private static void generateFileList(File file, String inputFolderPath) throws Exception {
+
+        if (file.isFile()) {
+            if (file.getCanonicalPath().startsWith(new File(Config.getDir()).getCanonicalPath())) {
+
+                MessageUtil.sendConsoleMessage("Didn't include \"" + file.getPath() + "\" in the backup, as it is in the folder used for backups.");
+
+                return;
+            }
+
             for (String blacklistGlob : _blacklistGlobs) {
-                if (FileSystems.getDefault().getPathMatcher("glob:" + blacklistGlob).matches(node.toPath())) {
+                if (FileSystems.getDefault().getPathMatcher("glob:" + blacklistGlob).matches(Paths.get(getFileRelativePath(file, new File(".").getAbsolutePath())))) {
                     
-                    MessageUtil.sendConsoleMessage("Didn't include " + node.getPath() + " in the backup, as it is blacklisted by \"" + blacklistGlob + "\".");
+                    MessageUtil.sendConsoleMessage("Didn't include \"" + file.getPath() + "\" in the backup, as it is blacklisted by \"" + blacklistGlob + "\".");
 
                     return;
                 }
             }
 
-            fileList.add(generateZipEntry(node.toString(), sourceFolder));
+            fileList.add(getFileRelativePath(file.toString(), inputFolderPath));
         }
 
-        if (node.isDirectory()) {
-            String[] subNote = node.list();
-            for (String filename : subNote) {
-                generateFileList(new File(node, filename), sourceFolder);
+        if (file.isDirectory()) {
+            for (String filename : file.list()) {
+                generateFileList(new File(file, filename), inputFolderPath);
             }
         }
     }
 
     /**
-     * Gets the name of the file to put into the zip
-     *
-     * @param file         File name
-     * @param sourceFolder Folder name
-     * @return New name of the file
+     * Gets the path of the specifed file relative to the specifed folder
+     * @param file the file
+     * @param baseFolderPath the absolute path of the folder
      */
-    private static String generateZipEntry(String file, String sourceFolder) {
-        return file.substring(sourceFolder.length() + 1, file.length());
+    private static String getFileRelativePath(File file, String baseFolderPath) {
+        return file.getAbsolutePath().replaceFirst(Pattern.quote(baseFolderPath + File.separator), "");
+    }
+
+    /**
+     * Gets the path of the specifed file relative to the specifed folder
+     * <p>
+     * Both paths mush be relative or both must be absolute
+     * @param file the file's path
+     * @param baseFolderPath the path of the folder
+     */
+    private static String getFileRelativePath(String filePath, String baseFolderPath) {
+        return filePath.replaceFirst(Pattern.quote(baseFolderPath + File.separator), "");
+    }
+
+    /**
+     * Whether the specified folder is the base folder of the Minecraft server
+     * <p>
+     * In other words, whether the folder is the folder containing the server jar
+     * @param folderPath the path of the folder
+     * @return whether the folder is the base folder
+     * @throws Exception
+     */
+    public static boolean isBaseFolder(String folderPath) throws Exception {
+        return new File(folderPath).getPath().equals(".");
     }
 }

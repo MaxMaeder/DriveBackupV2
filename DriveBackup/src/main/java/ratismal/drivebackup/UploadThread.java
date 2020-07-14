@@ -123,7 +123,7 @@ public class UploadThread implements Runnable {
                     }
                 }
 
-                MessageUtil.sendConsoleMessage("Doing backups for " + type);
+                MessageUtil.sendConsoleMessage("Doing backups for \"" + type + "\"");
                 if (create.equalsIgnoreCase("true")) {
                     try {
                         FileUtil.makeBackup(type, format, blackList);
@@ -146,9 +146,14 @@ public class UploadThread implements Runnable {
                     }
                 }
 
-                File file = FileUtil.getFileToUpload(type, format, false);
-                ratismal.drivebackup.util.Timer timer = new Timer();
                 try {
+                    if (FileUtil.isBaseFolder(type)) {
+                        type = "root";
+                    }
+    
+                    File file = FileUtil.getNewestBackup(type, format);
+                    ratismal.drivebackup.util.Timer timer = new Timer();
+
                     if (googleDriveUploader != null) {
                         MessageUtil.sendConsoleMessage("Uploading file to Google Drive");
                         timer.start();

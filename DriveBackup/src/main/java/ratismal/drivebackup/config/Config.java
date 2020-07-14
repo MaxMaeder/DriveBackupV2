@@ -3,6 +3,7 @@ package ratismal.drivebackup.config;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 
+import java.io.File;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -292,7 +293,11 @@ public class Config {
      * @return the path
      */
     public static String getDestination() {
-        return destination;
+        if (destination.charAt(0) == File.separatorChar) {
+            return destination.substring(1);
+        } else {
+            return destination;
+        }
     }
 
     /**
