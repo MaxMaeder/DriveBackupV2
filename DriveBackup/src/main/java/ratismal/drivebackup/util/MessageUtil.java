@@ -1,5 +1,11 @@
 package ratismal.drivebackup.util;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+import com.mysql.cj.x.protobuf.MysqlxCrud.Collection;
+
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
@@ -29,6 +35,70 @@ public class MessageUtil {
             } else {
                 p.sendMessage(ChatColor.DARK_AQUA + message);
             }
+        }
+    }
+
+    /**
+     * Sends the specified message to all logged in players with the spacified permission
+     * @param message the message to send
+     * @param permission the permission
+     * @param sendToConsole whether to send the message to the server console as well
+     */
+    public static void sendMessageToPlayersWithPermission(String message, String permission, boolean sendToConsole) {
+        sendMessageToPlayersWithPermission(message, permission, Collections.emptyList(), sendToConsole);
+    }
+
+    /**
+     * Sends the specified message to all logged in players with the spacified permission and to players in the specified list
+     * @param message the message to send
+     * @param permission the permission
+     * @param additionalPlayers additional players to send the message to
+     * @param sendToConsole whether to send the message to the server console as well
+     */
+    public static void sendMessageToPlayersWithPermission(String message, String permission, List<CommandSender> additionalPlayers, boolean sendToConsole) {
+        ArrayList<CommandSender> players = new ArrayList<>();
+        players.addAll(additionalPlayers);
+
+        for (Player player : Bukkit.getServer().getOnlinePlayers()) {
+            if (player.hasPermission("drivebackup.linkAccounts") && !players.contains(player)) {
+                players.add(player);
+            }
+        }
+
+        for (CommandSender player : players) {
+            sendMessage(player, message);
+        }
+
+        if (sendToConsole) sendConsoleMessage(message);
+    }
+
+    /**
+     * Sends the specified message to all logged in players with the spacified permission
+     * @param message the message to send
+     * @param permission the permission
+     */
+    public static void sendMessageToPlayersWithPermission(TextComponent message, String permission) {
+        sendMessageToPlayersWithPermission(message, permission, Collections.emptyList());
+    }
+
+    /**
+     * Sends the specified message to all logged in players with the spacified permission and to players in the specified list
+     * @param message the message to send
+     * @param permission the permission
+     * @param additionalPlayers additional players to send the message to
+     */
+    public static void sendMessageToPlayersWithPermission(TextComponent message, String permission, List<CommandSender> additionalPlayers) {
+        ArrayList<CommandSender> players = new ArrayList<>();
+        players.addAll(additionalPlayers);
+
+        for (Player player : Bukkit.getServer().getOnlinePlayers()) {
+            if (player.hasPermission("drivebackup.linkAccounts") && !players.contains(player)) {
+                players.add(player);
+            }
+        }
+
+        for (CommandSender player : players) {
+            sendMessage(player, message);
         }
     }
 
