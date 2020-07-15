@@ -46,7 +46,7 @@ public class CommandHandler implements CommandExecutor {
      */
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (!(sender instanceof Player || sender instanceof ConsoleCommandSender)) {
-            MessageUtil.sendMessage(sender, "Please run DriveBackupV2 through console or in game.");
+            MessageUtil.sendMessage(sender, "DriveBackupV2 only supports commands sent in-game and via the console");
             return true;
         }
         
