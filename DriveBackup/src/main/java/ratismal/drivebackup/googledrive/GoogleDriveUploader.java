@@ -460,8 +460,7 @@ public class GoogleDriveUploader {
 
         List<ChildReference> queriedFilesfromDrive = getFiles(folder);
         if (queriedFilesfromDrive.size() > fileLimit) {
-            MessageUtil.sendConsoleMessage("There are " + queriedFilesfromDrive.size() + " file(s) which exceeds the " +
-                    "limit of " + fileLimit + ", deleting");
+            MessageUtil.sendConsoleMessage("There are " + queriedFilesfromDrive.size() + " file(s) which exceeds the limit of " + fileLimit + ", deleting");
 
             for (Iterator<ChildReference> iterator = queriedFilesfromDrive.iterator(); iterator.hasNext(); ) {
                 if (queriedFilesfromDrive.size() == fileLimit) {
