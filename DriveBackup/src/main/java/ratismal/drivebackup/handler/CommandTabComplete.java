@@ -44,6 +44,7 @@ public class CommandTabComplete implements TabCompleter {
 					commandList.add("help");
 					commandList.add("reloadconfig");
 					commandList.add("linkaccount");
+					commandList.add("nextbackup");
 					commandList.add("backup");
 						
 					return commandList;
