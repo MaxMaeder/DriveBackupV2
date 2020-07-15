@@ -157,7 +157,7 @@ public class CommandHandler implements CommandExecutor {
     private void sendHelpResources(CommandSender player) {
         player.sendMessage(ChatColor.GOLD + "|=======" + ChatColor.DARK_RED + "DriveBackup" + ChatColor.GOLD + "=======|");
         player.sendMessage(ChatColor.DARK_AQUA + "Need help? Check out these helpful resources!");
-        TextAdapter.sendComponent(player, TextComponent.builder()
+        TextAdapter.sendMessage(player, TextComponent.builder()
         .append(
             TextComponent.of("Wiki: ")
             .color(TextColor.DARK_AQUA)
