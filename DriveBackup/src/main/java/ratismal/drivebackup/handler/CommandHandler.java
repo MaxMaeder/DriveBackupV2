@@ -140,7 +140,7 @@ public class CommandHandler implements CommandExecutor {
      * @param player the player to send the message to
      */
     private void sendHelp(CommandSender player) {
-        player.sendMessage(ChatColor.GOLD + "|=======" + ChatColor.DARK_RED + "DriveBackup" + ChatColor.GOLD + "=======|");
+        player.sendMessage(ChatColor.GOLD + "|======" + ChatColor.DARK_RED + "DriveBackupV2" + ChatColor.GOLD + "======|");
         player.sendMessage(ChatColor.GOLD + "/drivebackup" + ChatColor.DARK_AQUA + " - Displays this menu");
         player.sendMessage(ChatColor.GOLD + "/drivebackup help" + ChatColor.DARK_AQUA + " - Displays help resources");
         player.sendMessage(ChatColor.GOLD + "/drivebackup v" + ChatColor.DARK_AQUA + " - Displays the plugin version");
