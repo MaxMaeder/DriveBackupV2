@@ -167,7 +167,7 @@ public class SFTPUploader {
 
         for (RemoteResourceInfo file : sftpClient.ls()) {
             if (file.isDirectory()) {
-                result.addAll(prependToAll(getFiles(file.getPath()), file.getName() + File.separator));
+                result.addAll(prependToAll(getFiles(file.getPath()), file.getName() + "/"));
             } else {
                 result.add(file.getName());
             }
