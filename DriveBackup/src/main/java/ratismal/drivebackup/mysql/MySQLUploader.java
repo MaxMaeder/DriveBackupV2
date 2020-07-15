@@ -16,6 +16,7 @@ import java.sql.Statement;
 import java.sql.Types;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -67,6 +68,16 @@ public class MySQLUploader {
      * @param type the type of database (ex. users, purchases)
      */
     public void downloadDatabase(String name, String type) {
+        downloadDatabase(name, type, Collections.emptyList());
+    }
+
+    /**
+     * Downloads the specified MySQL database with the specified name into a folder for the specified database type, excluding the specified tables
+     * @param name the name of the MySQL database
+     * @param type the type of database (ex. users, purchases)
+     * @param blacklist a list of tables to not include
+     */
+    public void downloadDatabase(String name, String type, List<String> blacklist) {
         try {
             String connectionUrl = "jdbc:mysql://" + host + ":" + port + "/" + name + "?useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC&useSSL=false";
             Class.forName("com.mysql.cj.jdbc.Driver");
@@ -74,7 +85,7 @@ public class MySQLUploader {
 
             stmt = connection.createStatement();
 
-            String sql = getInsertStatements(name);
+            String sql = getInsertStatements(name, blacklist);
     
             File outputFile = new java.io.File("external-backups" + File.separator + type);
             if (!outputFile.exists()) {
@@ -238,12 +249,13 @@ public class MySQLUploader {
     }
 
     /**
-     * Generates the SQL insert statements needed to recreate the specified remote database locally
+     * Generates the SQL insert statements needed to recreate the specified remote database locally, excluding the specified tables
      * @param name the database's name
+     * @param blacklist a list of tables to not include
      * @return the SQL insert statement
      * @throws SQLException exception
      */
-    private String getInsertStatements(String name) throws SQLException {
+    private String getInsertStatements(String name, List<String> blacklist) throws SQLException {
 
         StringBuilder sql = new StringBuilder();
         sql.append("--");
@@ -265,6 +277,10 @@ public class MySQLUploader {
         //for every table, get the table creation and data
         // insert statement
         for (String table: tables) {
+            if (blacklist.contains(table)) {
+                continue;
+            }
+
             try {
                 sql.append(getTableInsertStatement(table.trim()));
                 sql.append(getDataInsertStatement(table.trim()));

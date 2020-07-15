@@ -151,7 +151,7 @@ public class FileUtil {
                         zipOutputStream.write(buffer, 0, len);
                     }
                 } catch (Exception e) {
-                    MessageUtil.sendConsoleMessage("Failed to include \"" + new File(inputFolderPath + File.separator + file).getPath() + "\" in the backup. Is it locked?");
+                    MessageUtil.sendConsoleMessage("Failed to include \"" + new File(inputFolderPath + File.separator + file).getPath() + "\" in the backup, is it locked?");
                 }
 
                 zipOutputStream.closeEntry();
@@ -187,7 +187,7 @@ public class FileUtil {
         if (file.isFile()) {
             if (file.getCanonicalPath().startsWith(new File(Config.getDir()).getCanonicalPath())) {
 
-                MessageUtil.sendConsoleMessage("Didn't include \"" + file.getPath() + "\" in the backup, as it is in the folder used for backups.");
+                MessageUtil.sendConsoleMessage("Didn't include \"" + file.getPath() + "\" in the backup, as it is in the folder used for backups");
 
                 return;
             }
@@ -195,7 +195,7 @@ public class FileUtil {
             for (String blacklistGlob : _blacklistGlobs) {
                 if (FileSystems.getDefault().getPathMatcher("glob:" + blacklistGlob).matches(Paths.get(getFileRelativePath(file.toString(), inputFolderPath)))) {
                     
-                    MessageUtil.sendConsoleMessage("Didn't include \"" + file.getPath() + "\" in the backup, as it is blacklisted by \"" + blacklistGlob + "\".");
+                    MessageUtil.sendConsoleMessage("Didn't include \"" + file.getPath() + "\" in the backup, as it is blacklisted by \"" + blacklistGlob + "\"");
 
                     return;
                 }
