@@ -169,7 +169,7 @@ public class CommandHandler implements CommandExecutor {
             .clickEvent(ClickEvent.openUrl("http://bit.ly/3dDdmwK"))
         )
         .build());
-        TextAdapter.sendComponent(player, TextComponent.builder()
+        TextAdapter.sendMessage(player, TextComponent.builder()
         .append(
             TextComponent.of("Discord: ")
             .color(TextColor.DARK_AQUA)
