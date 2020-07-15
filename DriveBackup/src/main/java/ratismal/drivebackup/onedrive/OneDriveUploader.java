@@ -272,7 +272,7 @@ public class OneDriveUploader {
 
             Request request = new Request.Builder()
                 .addHeader("Authorization", "Bearer " + returnAccessToken())
-                .url("https://graph.microsoft.com/v1.0/me/drive/root:/" + (folder.getPath() + "/" + file.getName()).replace(":", "%3A") + ":/createUploadSession")
+                .url("https://graph.microsoft.com/v1.0/me/drive/root:/" + folder.getPath() + "/" + file.getName() + ":/createUploadSession")
                 .post(RequestBody.create("{}", jsonMediaType))
                 .build();
 

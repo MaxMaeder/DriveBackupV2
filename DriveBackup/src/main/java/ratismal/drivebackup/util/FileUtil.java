@@ -79,13 +79,13 @@ public class FileUtil {
             subfolderName = "root";
         }
 
-        File path = new File(new String(Config.getDir() + File.separator + subfolderName).replace(".." + File.separator, "")); // Keeps working directory inside backups folder
+        File path = new File((Config.getDir() + File.separator + subfolderName).replace(".." + File.separator, "")); // Keeps working directory inside backups folder
         if (!path.exists()) {
             path.mkdirs();
         }
 
         generateFileList(type);
-        zipIt(type, new String(Config.getDir() + File.separator + subfolderName + File.separator + fileName).replace(".." + File.separator, ""));
+        zipIt(type, path.getPath() + File.separator + fileName);
     }
 
     /**
@@ -129,8 +129,8 @@ public class FileUtil {
 
     /**
      * Zips files in the specified folder into the specified file location
-     * @param inputFolderPath the path of the folder to put it in
-     * @param outputFilePath the path of the zip file to create
+     * @param inputFolderPath the path of the zip file to create
+     * @param outputFilePath the path of the folder to put it in
      */
     private static void zipIt(String inputFolderPath, String outputFilePath) throws Exception {
         byte[] buffer = new byte[1024];
@@ -193,7 +193,7 @@ public class FileUtil {
             }
 
             for (String blacklistGlob : _blacklistGlobs) {
-                if (FileSystems.getDefault().getPathMatcher("glob:" + blacklistGlob).matches(Paths.get(getFileRelativePath(file, new File(".").getAbsolutePath())))) {
+                if (FileSystems.getDefault().getPathMatcher("glob:" + blacklistGlob).matches(Paths.get(getFileRelativePath(file.toString(), inputFolderPath)))) {
                     
                     MessageUtil.sendConsoleMessage("Didn't include \"" + file.getPath() + "\" in the backup, as it is blacklisted by \"" + blacklistGlob + "\".");
 
@@ -216,7 +216,7 @@ public class FileUtil {
      * @param file the file
      * @param baseFolderPath the absolute path of the folder
      */
-    private static String getFileRelativePath(File file, String baseFolderPath) {
+    public static String getFileRelativePath(File file, String baseFolderPath) {
         return file.getAbsolutePath().replaceFirst(Pattern.quote(baseFolderPath + File.separator), "");
     }
 
@@ -227,7 +227,7 @@ public class FileUtil {
      * @param file the file's path
      * @param baseFolderPath the path of the folder
      */
-    private static String getFileRelativePath(String filePath, String baseFolderPath) {
+    public static String getFileRelativePath(String filePath, String baseFolderPath) {
         return filePath.replaceFirst(Pattern.quote(baseFolderPath + File.separator), "");
     }
 

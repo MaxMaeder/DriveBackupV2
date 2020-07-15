@@ -3,7 +3,6 @@ package ratismal.drivebackup;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
 
 import net.kyori.text.TextComponent;
 import net.kyori.text.event.ClickEvent;
@@ -19,6 +18,8 @@ import ratismal.drivebackup.util.*;
 import ratismal.drivebackup.util.Timer;
 
 import java.io.File;
+import java.nio.file.FileSystems;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
@@ -124,10 +125,6 @@ public class UploadThread implements Runnable {
 
                         return;
                     }
-
-                    if (Config.getLocalKeepCount() != 0) {
-                        MessageUtil.sendMessageToPlayersWithPermission(ChatColor.GOLD + "Local " + ChatColor.DARK_AQUA + "backup complete", "drivebackup.linkAccounts", Collections.singletonList(initiator), true);
-                    }
                 }
 
                 try {
@@ -168,6 +165,10 @@ public class UploadThread implements Runnable {
 
             deleteFolder(new File("external-backups"));
                 
+            if (Config.getLocalKeepCount() != 0) {
+                MessageUtil.sendMessageToPlayersWithPermission(ChatColor.GOLD + "Local " + ChatColor.DARK_AQUA + "backup complete", "drivebackup.linkAccounts", Collections.singletonList(initiator), false);
+            }
+
             if (googleDriveUploader != null) {
                 if (googleDriveUploader.isErrorWhileUploading()) {
                     MessageUtil.sendMessageToPlayersWithPermission(TextComponent.builder()
@@ -314,20 +315,27 @@ public class UploadThread implements Runnable {
                 ".");
 
         for (Map<String, Object> backup : (List<Map<String, Object>>) externalBackup.get("backup-list")) {
-            ArrayList<String> blackList = new ArrayList<>();
+            ArrayList<String> blacklistGlobs = new ArrayList<>();
             if (backup.containsKey("blacklist")) {
                 Object tempObject = backup.get("blacklist");
                 if (tempObject instanceof List<?>) {
-                    blackList = (ArrayList<String>) tempObject;
+                    blacklistGlobs = (ArrayList<String>) tempObject;
                 }
             }
 
-            for (String filePath : ftpUploader.getFiles(externalBackup.get("base-dir") + File.separator + backup.get("path"))) {
-                if (blackList.contains(new File(filePath).getName())) {
-                    continue;
+            for (String relativeFilePath : ftpUploader.getFiles(externalBackup.get("base-dir") + "/" + backup.get("path"))) {
+                String filePath = externalBackup.get("base-dir") + "/" + backup.get("path") + "/" + relativeFilePath;
+
+                for (String blacklistGlob : blacklistGlobs) {
+                    if (FileSystems.getDefault().getPathMatcher("glob:" + blacklistGlob).matches(Paths.get(relativeFilePath))) {
+                        
+                        MessageUtil.sendConsoleMessage("Didn't include \"" + filePath + "\" in the backup, as it is blacklisted by \"" + blacklistGlob + "\".");
+
+                        continue;
+                    }
                 }
 
-                String parentFolder = new File(filePath).getParent();
+                String parentFolder = new File(relativeFilePath).getParent();
                 String parentFolderPath;
                 if (parentFolder != null) {
                     parentFolderPath = File.separator + parentFolder;
@@ -335,7 +343,7 @@ public class UploadThread implements Runnable {
                     parentFolderPath = "";
                 }
 
-                ftpUploader.downloadFile(externalBackup.get("base-dir") + File.separator + backup.get("path") + File.separator + filePath, getTempFolderName(externalBackup) + File.separator + backup.get("path") + parentFolderPath);
+                ftpUploader.downloadFile(filePath, getTempFolderName(externalBackup) + File.separator + backup.get("path") + parentFolderPath);
             }
         }
 
@@ -391,7 +399,7 @@ public class UploadThread implements Runnable {
      * @return the socket address
      */
     private static String getSocketAddress(HashMap<String, Object> externalBackup) {
-        return externalBackup.get("hostname") + ":" + externalBackup.get("port");
+        return externalBackup.get("hostname") + "-" + externalBackup.get("port");
     }
 
     /**
