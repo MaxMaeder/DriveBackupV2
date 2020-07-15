@@ -27,6 +27,7 @@ public class MySQLUploader {
     private int port;
     private String username;
     private String password;
+    private boolean useSsl;
 
     private boolean errorOccurred;
     
@@ -37,21 +38,18 @@ public class MySQLUploader {
 
     /**
      * Creates an instance of the {@code mysqlUploader} object using the specified credentials
-     * @param hostValue the hostname of the MySQL database
-     * @param portValue the port
-     * @param usernameValue the username
-     * @param passwordValue the password (leave blank if none)
+     * @param host the hostname of the MySQL database
+     * @param port the port
+     * @param username the username
+     * @param password the password (leave blank if none)
+     * @param useSsl whether to connect to the server using SSL/TLS
      */
-    public MySQLUploader(String hostValue, int portValue, String usernameValue, String passwordValue) {
-        try {
-            host = hostValue;
-            port = portValue;
-            username = usernameValue;
-            password = passwordValue;
-        } catch (Exception e) {
-            MessageUtil.sendConsoleException(e);
-            setErrorOccurred(true);
-        }
+    public MySQLUploader(String host, int port, String username, String password, boolean useSsl) {
+        this.host = host;
+        this.port = port;
+        this.username = username;
+        this.password = password;
+        this.useSsl = useSsl;
     }
 
     /**
@@ -79,7 +77,7 @@ public class MySQLUploader {
      */
     public void downloadDatabase(String name, String type, List<String> blacklist) {
         try {
-            String connectionUrl = "jdbc:mysql://" + host + ":" + port + "/" + name + "?useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC&useSSL=false";
+            String connectionUrl = "jdbc:mysql://" + host + ":" + port + "/" + name + "?useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC&useSSL=" + useSsl;
             Class.forName("com.mysql.cj.jdbc.Driver");
             Connection connection = DriverManager.getConnection(connectionUrl, username, password);
 

@@ -308,11 +308,18 @@ public class UploadThread implements Runnable {
     private void makeExternalDatabaseBackup(HashMap<String, Object> externalBackup, ArrayList<HashMap<String, Object>> backupList) {
         MessageUtil.sendConsoleMessage("Downloading databases from a MySQL server (" + getSocketAddress(externalBackup) + ") to include in backup");
 
+        // For backwards compatibility with <1.3.0
+        boolean useSsl = false;
+        if (externalBackup.containsKey("ssl")) {
+            useSsl = (boolean) externalBackup.get("ssl");
+        }
+
         MySQLUploader mysqlUploader = new MySQLUploader(
                 (String) externalBackup.get("hostname"), 
                 (int) externalBackup.get("port"), 
                 (String) externalBackup.get("username"), 
-                (String) externalBackup.get("password"));
+                (String) externalBackup.get("password"),
+                useSsl);
 
         if (externalBackup.containsKey("databases")) {
 
