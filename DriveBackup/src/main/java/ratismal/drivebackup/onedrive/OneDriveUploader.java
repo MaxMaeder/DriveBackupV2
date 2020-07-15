@@ -510,15 +510,12 @@ public class OneDriveUploader {
         }
 
         if(fileLimit < availableFileIDs.size()){
-            MessageUtil.sendConsoleMessage("There are " + availableFileIDs.size() + " file(s) which exceeds the " +
-                    "limit of " + fileLimit + ", deleting");
+            MessageUtil.sendConsoleMessage("There are " + availableFileIDs.size() + " file(s) which exceeds the limit of " + fileLimit + ", deleting");
         }
 
         for (Iterator<String> iterator = availableFileIDs.listIterator(); iterator.hasNext(); ) {
             String fileIDValue = iterator.next();
             if (fileLimit < availableFileIDs.size()) {
-                MessageUtil.sendConsoleMessage("Removing file with ID: " + fileIDValue);
-
                 request = new Request.Builder()
                     .addHeader("Authorization", "Bearer " + returnAccessToken())
                     .url("https://graph.microsoft.com/v1.0/me/drive/items/" + fileIDValue)
