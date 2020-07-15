@@ -222,7 +222,7 @@ public class UploadThread implements Runnable {
             } else {
                 MessageUtil.sendMessageToAllPlayers(Config.getBackupDone() + " " + getNextAutoBackup());
             }
-            
+
             if (Config.isBackupsRequirePlayers() && Bukkit.getOnlinePlayers().size() == 0 && PlayerListener.isAutoBackupsActive()) {
                 MessageUtil.sendConsoleMessage("Disabling automatic backups due to inactivity");
                 PlayerListener.setAutoBackupsActive(false);
@@ -314,8 +314,24 @@ public class UploadThread implements Runnable {
                 (String) externalBackup.get("username"), 
                 (String) externalBackup.get("password"));
 
-        for (String databaseName : (List<String>) externalBackup.get("names")) {
-            mysqlUploader.downloadDatabase(databaseName, getTempFolderName(externalBackup));
+        if (externalBackup.containsKey("databases")) {
+
+            for (Map<String, Object> database : (List<Map<String, Object>>) externalBackup.get("databases")) {
+                if (database.containsKey("blacklist")) {
+                    for (String blacklistEntry : (List<String>) database.get("blacklist")) {
+                        MessageUtil.sendConsoleMessage("Didn't include database \"" + blacklistEntry + "\" in the backup, as it is blacklisted");
+                    }
+
+                    mysqlUploader.downloadDatabase((String) database.get("name"), getTempFolderName(externalBackup), (List<String>) database.get("blacklist"));
+                } else {
+                    mysqlUploader.downloadDatabase((String) database.get("name"), getTempFolderName(externalBackup));
+                }
+            }
+        } else { // For backwards compatibility with <1.3.0
+
+            for (String databaseName : (List<String>) externalBackup.get("names")) {
+                mysqlUploader.downloadDatabase(databaseName, getTempFolderName(externalBackup));
+            }
         }
 
         HashMap<String, Object> backup = new HashMap<>();
