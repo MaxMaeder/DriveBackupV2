@@ -52,6 +52,7 @@ public class Config {
     private static String backupNext;
     private static String backupNextScheduled;
     private static String backupNextScheduledFormat;
+    private static String autoBackupsDisabled;
     
     private static boolean metrics;
     private static boolean updateCheck;
@@ -181,6 +182,7 @@ public class Config {
         backupNext = config.getString("messages.next-backup");
         backupNextScheduled = config.getString("messages.next-schedule-backup");
         backupNextScheduledFormat = config.getString("messages.next-schedule-backup-format");
+        autoBackupsDisabled = config.getString("messages.auto-backups-disabled");
 
         metrics = getBooleanWithFallback("advanced.metrics", "metrics");
         updateCheck = getBooleanWithFallback("advanced.update-check", "update-check");
@@ -450,6 +452,14 @@ public class Config {
      */
     public static String getBackupNextScheduledFormat() {
         return backupNextScheduledFormat;
+    }
+
+    /**
+     * Gets the message to send to players when they request the date/time of the next backup and no automatic backups are enabled
+     * @return the message
+     */
+    public static String getAutoBackupsDisabled() {
+        return autoBackupsDisabled;
     }
 
     /**
