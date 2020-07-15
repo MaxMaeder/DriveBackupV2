@@ -159,14 +159,14 @@ public class OneDriveUploader {
                     
                     MessageUtil.sendMessage(initiator, "Your OneDrive account is linked!");
                     
-                    MessageUtil.sendMessage(initiator, "Automatically enabled OneDrive backups");
-                    plugin.getConfig().set("onedrive.enabled", true);
-                    plugin.saveConfig();
-                    
-                    DriveBackup.reloadLocalConfig();
-                    BukkitScheduler scheduler = Bukkit.getServer().getScheduler();
-                    scheduler.cancelTasks(DriveBackup.getInstance());
-                    DriveBackup.startThread();
+                    if (!plugin.getConfig().getBoolean("onedrive.enabled")) {
+                        MessageUtil.sendMessage(initiator, "Automatically enabled OneDrive backups");
+                        plugin.getConfig().set("onedrive.enabled", true);
+                        plugin.saveConfig();
+                        
+                        DriveBackup.reloadLocalConfig();
+                        DriveBackup.startThread();
+                    }
                     
                     Bukkit.getScheduler().cancelTask(task[0]);
                 } else if (!parsedResponse.getString("error").equals("authorization_pending")) {

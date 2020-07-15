@@ -172,14 +172,14 @@ public class GoogleDriveUploader {
                     
                     MessageUtil.sendMessage(initiator, "Your Google Drive account is linked!");
                     
-                    MessageUtil.sendMessage(initiator, "Automatically enabled Google Drive backups");
-                    plugin.getConfig().set("googledrive.enabled", true);
-                    plugin.saveConfig();
-                    
-                    DriveBackup.reloadLocalConfig();
-                    BukkitScheduler scheduler = Bukkit.getServer().getScheduler();
-                    scheduler.cancelTasks(DriveBackup.getInstance());
-                    DriveBackup.startThread();
+                    if (!plugin.getConfig().getBoolean("googledrive.enabled")) {
+                        MessageUtil.sendMessage(initiator, "Automatically enabled Google Drive backups");
+                        plugin.getConfig().set("googledrive.enabled", true);
+                        plugin.saveConfig();
+                        
+                        DriveBackup.reloadLocalConfig();
+                        DriveBackup.startThread();
+                    }
                     
                     Bukkit.getScheduler().cancelTask(task[0]);
                 } else if (!parsedResponse.getString("error").equals("authorization_pending")) {
