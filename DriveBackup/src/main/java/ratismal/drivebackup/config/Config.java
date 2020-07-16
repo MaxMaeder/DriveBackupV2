@@ -24,6 +24,7 @@ public class Config {
     private static ZoneOffset backupScheduleTimezone;
     private static ArrayList<HashMap<String, Object>> backupScheduleList;
 
+    private static ZoneOffset backupFormatTimezone;
     private static ArrayList<HashMap<String, Object>> backupList;
 
     private static ArrayList<HashMap<String, Object>> externalBackupList;
@@ -105,6 +106,7 @@ public class Config {
         }
         backupScheduleList = (ArrayList<HashMap<String, Object>>) parsedBackupScheduleList.clone();
 
+        backupFormatTimezone = ZoneOffset.of(config.getString("backup-format-timezone"));
         if (config.isList("backup-list")) {
 
             List<Map<?, ?>> rawBackupList = config.getMapList("backup-list");
@@ -269,6 +271,15 @@ public class Config {
     public static ArrayList<HashMap<String, Object>> getBackupScheduleList() {
         return backupScheduleList;
     }
+
+    /**
+     * Gets the timezone of the backup naming formats
+     * @return the timezone
+     */
+    public static ZoneOffset getBackupFormatTimezone() {
+        return backupFormatTimezone;
+    }
+
 
     /**
      * Gets the list of items to backup
