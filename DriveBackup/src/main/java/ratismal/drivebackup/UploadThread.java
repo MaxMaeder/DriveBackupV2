@@ -20,8 +20,8 @@ import ratismal.drivebackup.util.Timer;
 import java.io.File;
 import java.nio.file.FileSystems;
 import java.nio.file.Paths;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoField;
 import java.util.*;
@@ -363,13 +363,13 @@ public class UploadThread implements Runnable {
 
         if (Config.isBackupsScheduled()) {
 
-            LocalDateTime nextBackupDate = null;
+            ZonedDateTime nextBackupDate = null;
 
-            LocalDateTime now = LocalDateTime.now(Config.getBackupScheduleTimezone());
+            ZonedDateTime now = ZonedDateTime.now(Config.getBackupScheduleTimezone());
 
             int weeksCheckedForDate;
             for (weeksCheckedForDate = 0; weeksCheckedForDate < 2; weeksCheckedForDate++) {
-                for (LocalDateTime date : DriveBackup.getBackupDatesList()) {
+                for (ZonedDateTime date : DriveBackup.getBackupDatesList()) {
 
                     if (nextBackupDate == null &&
 
@@ -407,7 +407,7 @@ public class UploadThread implements Runnable {
                     .with(ChronoField.SECOND_OF_DAY, 0);
             }
 
-            if (weeksCheckedForDate == 1) {
+            if (weeksCheckedForDate == 2) {
                 nextBackupDate = nextBackupDate
                     .with(ChronoField.YEAR, now.get(ChronoField.YEAR))
                     .with(ChronoField.ALIGNED_WEEK_OF_YEAR, now.get(ChronoField.ALIGNED_WEEK_OF_YEAR) + 1);

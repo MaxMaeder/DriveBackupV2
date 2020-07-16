@@ -20,15 +20,14 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLConnection;
 import java.time.DayOfWeek;
-import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoField;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalAccessor;
 import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -54,7 +53,7 @@ public class DriveBackup extends JavaPlugin {
     /**
      * List of Dates representing each time a scheduled backup will occur
      */
-    private static ArrayList<LocalDateTime> backupDatesList = new ArrayList<>();
+    private static ArrayList<ZonedDateTime> backupDatesList = new ArrayList<>();
 
     /**
      * What to do when plugin is enabled (init)
@@ -251,22 +250,22 @@ public class DriveBackup extends JavaPlugin {
                 TemporalAccessor scheduleTime = DateTimeFormatter.ofPattern ("kk:mm", Locale.ENGLISH).parse((String) schedule.get("time"));
 
                 for (int i = 0; i < scheduleDays.size(); i++) {
-                    LocalDateTime previousOccurrence = LocalDateTime.now(timezone)
+                    ZonedDateTime previousOccurrence = ZonedDateTime.now(timezone)
                         .with(TemporalAdjusters.previous(DayOfWeek.valueOf(scheduleDays.get(i).toUpperCase())))
                         .with(ChronoField.CLOCK_HOUR_OF_DAY, scheduleTime.get(ChronoField.CLOCK_HOUR_OF_DAY))
                         .with(ChronoField.MINUTE_OF_HOUR, scheduleTime.get(ChronoField.MINUTE_OF_HOUR))
                         .with(ChronoField.SECOND_OF_MINUTE, 0);
 
-                    LocalDateTime now = LocalDateTime.now(timezone);
+                    ZonedDateTime now = ZonedDateTime.now(timezone);
                     
-                    LocalDateTime nextOccurrence = LocalDateTime.now(timezone)
+                    ZonedDateTime nextOccurrence = ZonedDateTime.now(timezone)
                         .with(TemporalAdjusters.nextOrSame(DayOfWeek.valueOf(scheduleDays.get(i).toUpperCase())))
                         .with(ChronoField.CLOCK_HOUR_OF_DAY, scheduleTime.get(ChronoField.CLOCK_HOUR_OF_DAY))
                         .with(ChronoField.MINUTE_OF_HOUR, scheduleTime.get(ChronoField.MINUTE_OF_HOUR))
                         .with(ChronoField.SECOND_OF_MINUTE, 0);
 
                     // Adjusts nextOccurrence date when it was set to earlier on same day, as the DayOfWeek TemporalAdjuster only takes into account the day, not the time
-                    LocalDateTime startingOccurrence = nextOccurrence;
+                    ZonedDateTime startingOccurrence = nextOccurrence;
                     if (now.isAfter(startingOccurrence)) {
                         startingOccurrence = startingOccurrence.plusWeeks(1);
                     }
@@ -281,7 +280,7 @@ public class DriveBackup extends JavaPlugin {
                     backupDatesList.add(startingOccurrence);
                 }
 
-                LocalDateTime scheduleMessageTime = LocalDateTime.now(timezone)
+                ZonedDateTime scheduleMessageTime = ZonedDateTime.now(timezone)
                     .with(ChronoField.CLOCK_HOUR_OF_DAY, scheduleTime.get(ChronoField.CLOCK_HOUR_OF_DAY))
                     .with(ChronoField.MINUTE_OF_HOUR, scheduleTime.get(ChronoField.MINUTE_OF_HOUR));
                 StringBuilder scheduleMessage = new StringBuilder();
@@ -312,9 +311,9 @@ public class DriveBackup extends JavaPlugin {
 
     /**
      * Gets a list of Dates representing each time a scheduled backup will occur
-     * @return the ArrayList of LocalDateTime objects
+     * @return the ArrayList of {@code ZonedDateTime} objects
      */
-    public static ArrayList<LocalDateTime> getBackupDatesList() {
+    public static ArrayList<ZonedDateTime> getBackupDatesList() {
         return backupDatesList;
     }
 
