@@ -216,7 +216,7 @@ public class FileUtil {
      * @param file the file
      * @param baseFolderPath the absolute path of the folder
      */
-    public static String getFileRelativePath(File file, String baseFolderPath) {
+    private static String getFileRelativePath(File file, String baseFolderPath) {
         return file.getAbsolutePath().replaceFirst(Pattern.quote(baseFolderPath + File.separator), "");
     }
 
@@ -227,7 +227,7 @@ public class FileUtil {
      * @param file the file's path
      * @param baseFolderPath the path of the folder
      */
-    public static String getFileRelativePath(String filePath, String baseFolderPath) {
+    private static String getFileRelativePath(String filePath, String baseFolderPath) {
         return filePath.replaceFirst(Pattern.quote(baseFolderPath + File.separator), "");
     }
 
