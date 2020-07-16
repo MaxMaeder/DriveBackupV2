@@ -28,6 +28,9 @@ Simply run `/drivebackup linkaccount googledrive` and follow the on-screen instr
 ### OneDrive
 Simply run `/drivebackup linkaccount onedrive` and follow the on-screen instructions.
 
+### Local
+Change `local-keep-count` in the `config.yml` to the number of backups to keep locally. Set to `-1` to keep an unlimited amount of backups locally.
+
 Once you've completed the above instructions, backups will run automatically every hour.
 
 ## Advanced Setup
