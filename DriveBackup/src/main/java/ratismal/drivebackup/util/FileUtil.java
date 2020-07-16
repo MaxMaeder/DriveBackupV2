@@ -10,6 +10,8 @@ import java.nio.file.FileSystems;
 import java.nio.file.Paths;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
@@ -68,8 +70,9 @@ public class FileUtil {
         }
 
         fileList.clear();
-        DateFormat format = new SimpleDateFormat(formatString, new Locale(Config.getDateLanguage()));
-        String fileName = format.format(new Date());
+
+        ZonedDateTime now = ZonedDateTime.now(Config.getBackupScheduleTimezone());
+        String fileName = now.format(DateTimeFormatter.ofPattern(formatString, new Locale(Config.getDateLanguage())));
 
         _blacklistGlobs.clear();
         _blacklistGlobs.addAll(blacklistGlobs);

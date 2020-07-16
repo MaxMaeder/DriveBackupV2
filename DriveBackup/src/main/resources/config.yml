@@ -15,6 +15,7 @@ scheduled-backups: false
 schedule-timezone: "-00:00"
 backup-schedule-list:
 
+backup-format-timezone: "-00:00"
 backup-list:
 - path: "world"
   format: "'Backup-world-'yyyy-M-d--HH-mm'.zip'"
