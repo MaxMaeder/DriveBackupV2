@@ -97,7 +97,9 @@ public class CommandHandler implements CommandExecutor {
                     	}
                         break;
                     case "nextbackup":
-                        MessageUtil.sendMessage(sender, UploadThread.getNextAutoBackup());
+                        if (hasPerm(sender, "drivebackup.nextbackup")) {
+                            MessageUtil.sendMessage(sender, UploadThread.getNextAutoBackup());
+                        }
                         break;
                     case "backup":
                         if (hasPerm(sender, "drivebackup.backup")) {
@@ -147,6 +149,7 @@ public class CommandHandler implements CommandExecutor {
         player.sendMessage(ChatColor.GOLD + "/drivebackup linkaccount googledrive" + ChatColor.DARK_AQUA + " - Links your Google Drive account for backups");
         player.sendMessage(ChatColor.GOLD + "/drivebackup linkaccount onedrive" + ChatColor.DARK_AQUA + " - Links your OneDrive account for backups");
         player.sendMessage(ChatColor.GOLD + "/drivebackup reloadconfig" + ChatColor.DARK_AQUA + " - Reloads the config.yml");
+        player.sendMessage(ChatColor.GOLD + "/drivebackup nextbackup" + ChatColor.DARK_AQUA + " - Gets the time/date of the next auto backup");
         player.sendMessage(ChatColor.GOLD + "/drivebackup backup" + ChatColor.DARK_AQUA + " - Manually initiates a backup");
     }
 
@@ -155,7 +158,7 @@ public class CommandHandler implements CommandExecutor {
      * @param player the player to send the message to
      */
     private void sendHelpResources(CommandSender player) {
-        player.sendMessage(ChatColor.GOLD + "|=======" + ChatColor.DARK_RED + "DriveBackup" + ChatColor.GOLD + "=======|");
+        player.sendMessage(ChatColor.GOLD + "|======" + ChatColor.DARK_RED + "DriveBackupV2" + ChatColor.GOLD + "======|");
         player.sendMessage(ChatColor.DARK_AQUA + "Need help? Check out these helpful resources!");
         TextAdapter.sendMessage(player, TextComponent.builder()
         .append(
