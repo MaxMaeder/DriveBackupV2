@@ -21,10 +21,48 @@
                 <artifactId>maven-shade-plugin</artifactId>
                 <version>3.2.3</version>
                 <configuration>
+                    <minimizeJar>true</minimizeJar>
+                    <createDependencyReducedPom>false</createDependencyReducedPom>
                     <relocations>
                         <relocation>
                             <pattern>org.bstats</pattern>
-                            <shadedPattern>ratismal.drivebackup.DriveBackup</shadedPattern>
+                            <shadedPattern>ratismal.drivebackup.DriveBackup.lib</shadedPattern>
+                        </relocation>
+                        <relocation>
+                            <pattern>com.google.apis</pattern>
+                            <shadedPattern>ratismal.drivebackup.DriveBackup.lib</shadedPattern>
+                        </relocation>
+                        <relocation>
+                            <pattern>com.google.oauth-client</pattern>
+                            <shadedPattern>ratismal.drivebackup.DriveBackup.lib</shadedPattern>
+                        </relocation>
+                        <relocation>
+                            <pattern>org.bstats</pattern>
+                            <shadedPattern>ratismal.drivebackup.DriveBackup.lib</shadedPattern>
+                        </relocation>
+                        <relocation>
+                            <pattern>com.squareup.okhttp3</pattern>
+                            <shadedPattern>ratismal.drivebackup.DriveBackup.lib</shadedPattern>
+                        </relocation>
+                        <relocation>
+                            <pattern>org.json</pattern>
+                            <shadedPattern>ratismal.drivebackup.DriveBackup.lib</shadedPattern>
+                        </relocation>
+                        <relocation>
+                            <pattern>commons-net</pattern>
+                            <shadedPattern>ratismal.drivebackup.DriveBackup.lib</shadedPattern>
+                        </relocation>
+                        <relocation>
+                            <pattern>com.hierynomus</pattern>
+                            <shadedPattern>ratismal.drivebackup.DriveBackup.lib</shadedPattern>
+                        </relocation>
+                        <relocation>
+                            <pattern>mysql</pattern>
+                            <shadedPattern>ratismal.drivebackup.DriveBackup.lib</shadedPattern>
+                        </relocation>
+                        <relocation>
+                            <pattern>net.kyori</pattern>
+                            <shadedPattern>ratismal.drivebackup.DriveBackup.lib</shadedPattern>
                         </relocation>
                     </relocations>
                     <filters>
