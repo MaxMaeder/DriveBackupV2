@@ -42,8 +42,8 @@ public class CommandTabComplete implements TabCompleter {
                 List<String> commandList = new ArrayList<>();
                 commandList.add("v");
                 commandList.add("help");
-                if (player.hasPermission("drivebackup.reloadConfig")) commandList.add("reloadconfig");
                 if (player.hasPermission("drivebackup.linkAccounts")) commandList.add("linkaccount");
+                if (player.hasPermission("drivebackup.reloadConfig")) commandList.add("reloadconfig");
                 if (player.hasPermission("drivebackup.getNextBackup")) commandList.add("nextbackup");
                 if (player.hasPermission("drivebackup.backup")) commandList.add("backup");
                     
