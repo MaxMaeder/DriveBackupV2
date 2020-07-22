@@ -28,37 +28,41 @@ public class CommandTabComplete implements TabCompleter {
     /**
      * Command tab completer
      *
-     * @param sender Player who sent command
+     * @param player Player who sent command
      * @param cmd    Command that was sent
      * @param label  Command alias that was used
      * @param args   Arguments that followed command
      * @return List<String> of valid command tab options
      */
-		@Override
-		public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
-			if (cmd.getName().equalsIgnoreCase("drivebackup")) {
-				if (args.length == 1) {
+    @Override
+    public List<String> onTabComplete(CommandSender player, Command cmd, String label, String[] args) {
+        if (cmd.getName().equalsIgnoreCase("drivebackup")) {
+            if (args.length == 1) {
 
-					List<String> commandList = new ArrayList<>();
-					commandList.add("v");
-					commandList.add("help");
-					commandList.add("reloadconfig");
-					commandList.add("linkaccount");
-					commandList.add("nextbackup");
-					commandList.add("backup");
-						
-					return commandList;
-				} else if (args[0].equalsIgnoreCase("linkaccount") && args.length == 2) {
-					
-					List<String> commandList = new ArrayList<>();
-					commandList.add("googledrive");
-					commandList.add("onedrive");
-					
-					return commandList;
-				}
-			}
-			
-			return null;
-		}
+                List<String> commandList = new ArrayList<>();
+                commandList.add("v");
+                commandList.add("help");
+                if (player.hasPermission("drivebackup.reloadConfig")) commandList.add("reloadconfig");
+                if (player.hasPermission("drivebackup.linkAccounts")) commandList.add("linkaccount");
+                if (player.hasPermission("drivebackup.getNextBackup")) commandList.add("nextbackup");
+                if (player.hasPermission("drivebackup.backup")) commandList.add("backup");
+                    
+                return commandList;
+            } else if (args[0].equalsIgnoreCase("linkaccount") && args.length == 2) {
+
+                if (!player.hasPermission("drivebackup.linkAccounts")) {
+                    return null;
+                }
+                
+                List<String> commandList = new ArrayList<>();
+                commandList.add("googledrive");
+                commandList.add("onedrive");
+                
+                return commandList;
+            }
+        }
+        
+        return null;
+    }
 
 }
