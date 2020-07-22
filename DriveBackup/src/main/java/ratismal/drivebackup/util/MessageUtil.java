@@ -57,7 +57,9 @@ public class MessageUtil {
      */
     public static void sendMessageToPlayersWithPermission(String message, String permission, List<CommandSender> additionalPlayers, boolean sendToConsole) {
         ArrayList<CommandSender> players = new ArrayList<>();
-        players.addAll(additionalPlayers);
+        if (additionalPlayers != null) {
+            players.addAll(additionalPlayers);
+        }
 
         for (Player player : Bukkit.getServer().getOnlinePlayers()) {
             if (player.hasPermission("drivebackup.linkAccounts") && !players.contains(player)) {
@@ -89,7 +91,9 @@ public class MessageUtil {
      */
     public static void sendMessageToPlayersWithPermission(TextComponent message, String permission, List<CommandSender> additionalPlayers) {
         ArrayList<CommandSender> players = new ArrayList<>();
-        players.addAll(additionalPlayers);
+        if (additionalPlayers != null) {
+            players.addAll(additionalPlayers);
+        }
 
         for (Player player : Bukkit.getServer().getOnlinePlayers()) {
             if (player.hasPermission("drivebackup.linkAccounts") && !players.contains(player)) {
