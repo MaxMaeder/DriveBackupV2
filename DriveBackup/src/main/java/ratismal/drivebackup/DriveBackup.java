@@ -5,20 +5,19 @@ import org.bukkit.Bukkit;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitScheduler;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.JSONValue;
+import org.json.JSONArray;
+
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 import ratismal.drivebackup.config.Config;
 import ratismal.drivebackup.handler.CommandHandler;
 import ratismal.drivebackup.handler.CommandTabComplete;
 import ratismal.drivebackup.handler.PlayerListener;
 import ratismal.drivebackup.util.MessageUtil;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.URL;
-import java.net.URLConnection;
 import java.time.DayOfWeek;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
@@ -44,6 +43,11 @@ public class DriveBackup extends JavaPlugin {
     private static Config pluginconfig;
     private static DriveBackup plugin;
     public Logger log = getLogger();
+
+    /**
+     * Global instance of the HTTP client
+     */
+    private static final OkHttpClient httpClient = new OkHttpClient();
 
     /**
      * List of the IDs of the scheduled backup tasks
@@ -106,7 +110,7 @@ public class DriveBackup extends JavaPlugin {
                                     MessageUtil.sendConsoleMessage("Version " + newVersionTitle + " has been released." + " You are currently running version " + currentVersionTitle);
                                     MessageUtil.sendConsoleMessage("Update at: http://dev.bukkit.org/bukkit-plugins/drivebackupv2/");
                                 } else if (currentVersion > newVersion) {
-                                    MessageUtil.sendConsoleMessage("You are running an unsupported build!");
+                                    MessageUtil.sendConsoleMessage("You are running an unsupported release!");
                                     MessageUtil.sendConsoleMessage("The recommended release is " + newVersionTitle + ", and you are running " + currentVersionTitle);
                                     MessageUtil.sendConsoleMessage("If the plugin has just recently updated, please ignore this message");
                                 } else {
@@ -333,25 +337,27 @@ public class DriveBackup extends JavaPlugin {
      */
     public double updateCheck(double currentVersion) {
         try {
-            URL url = new URL("https://api.curseforge.com/servermods/files?projectids=383461");
-            URLConnection conn = url.openConnection();
-            conn.setReadTimeout(5000);
-            conn.addRequestProperty("User-Agent", "DriveBackup Update Checker");
-            conn.setDoOutput(true);
-            final BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-            final String response = reader.readLine();
-            final JSONArray array = (JSONArray) JSONValue.parse(response);
+            Request request = new Request.Builder()
+                .url("https://api.curseforge.com/servermods/files?projectids=383461")
+                .post(RequestBody.create("", null)) // Send empty request body
+                .build();
 
-            if (array.size() == 0) {
-                this.getLogger().warning("No files found, or Feed URL is bad");
+            Response response = httpClient.newCall(request).execute();
+            JSONArray pluginVersions = new JSONArray(response.body().string());
+            response.close();
+
+            if (pluginVersions.length() == 0) {
+                this.getLogger().warning("No DriveBackupV2 releases found");
                 return currentVersion;
             }
-            // Pull the last version from the JSON
-            newVersionTitle = ((String) ((JSONObject) array.get(array.size() - 1)).get("name")).replace("DriveBackupV2-", "").trim();
+
+            newVersionTitle = pluginVersions.getJSONObject(pluginVersions.length() - 1).getString("name").replace("DriveBackupV2-", "").trim();
             return Double.valueOf(newVersionTitle.replaceFirst("\\.", "").trim());
-        } catch (Exception e) {
-            MessageUtil.sendConsoleMessage("There was an issue attempting to check for the latest version");
+        } catch (Exception exception) {
+            MessageUtil.sendConsoleMessage("There was an issue attempting to check for the latest DriveBackupV2 release");
+            MessageUtil.sendConsoleException(exception);
         }
+
         return currentVersion;
     }
 
