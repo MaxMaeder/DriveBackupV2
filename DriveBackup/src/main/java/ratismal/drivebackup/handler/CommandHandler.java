@@ -143,14 +143,36 @@ public class CommandHandler implements CommandExecutor {
      */
     private void sendHelp(CommandSender player) {
         player.sendMessage(ChatColor.GOLD + "|======" + ChatColor.DARK_RED + "DriveBackupV2" + ChatColor.GOLD + "======|");
-        player.sendMessage(ChatColor.GOLD + "/drivebackup" + ChatColor.DARK_AQUA + " - Displays this menu");
-        player.sendMessage(ChatColor.GOLD + "/drivebackup help" + ChatColor.DARK_AQUA + " - Displays help resources");
-        player.sendMessage(ChatColor.GOLD + "/drivebackup v" + ChatColor.DARK_AQUA + " - Displays the plugin version");
-        player.sendMessage(ChatColor.GOLD + "/drivebackup linkaccount googledrive" + ChatColor.DARK_AQUA + " - Links your Google Drive account for backups");
-        player.sendMessage(ChatColor.GOLD + "/drivebackup linkaccount onedrive" + ChatColor.DARK_AQUA + " - Links your OneDrive account for backups");
-        player.sendMessage(ChatColor.GOLD + "/drivebackup reloadconfig" + ChatColor.DARK_AQUA + " - Reloads the config.yml");
-        player.sendMessage(ChatColor.GOLD + "/drivebackup nextbackup" + ChatColor.DARK_AQUA + " - Gets the time/date of the next auto backup");
-        player.sendMessage(ChatColor.GOLD + "/drivebackup backup" + ChatColor.DARK_AQUA + " - Manually initiates a backup");
+        TextAdapter.sendMessage(player, genCommandHelpMessage("/drivebackup", "Displays this menu"));
+        TextAdapter.sendMessage(player, genCommandHelpMessage("/drivebackup help", "Displays help resources"));
+        TextAdapter.sendMessage(player, genCommandHelpMessage("/drivebackup v", "Displays the plugin version"));
+        TextAdapter.sendMessage(player, genCommandHelpMessage("/drivebackup linkaccount googledrive", "Links your Google Drive account for backups"));
+        TextAdapter.sendMessage(player, genCommandHelpMessage("/drivebackup linkaccount onedrive", "Links your OneDrive account for backups"));
+        TextAdapter.sendMessage(player, genCommandHelpMessage("/drivebackup reloadconfig", "Reloads the config.yml"));
+        TextAdapter.sendMessage(player, genCommandHelpMessage("/drivebackup nextbackup", "Gets the time/date of the next auto backup"));
+        TextAdapter.sendMessage(player, genCommandHelpMessage("/drivebackup backup", "Manually initiates a backup"));
+    }
+
+    /**
+     * Generates a message describing what the specified command does using the specified description
+     * <p>
+     * The command in the generated message can be clicked on to be run
+     * @param command the command
+     * @param description what the command does
+     * @return the message
+     */
+    private TextComponent genCommandHelpMessage(String command, String description) {
+        return TextComponent.builder()
+        .append(
+            TextComponent.of(command)
+            .color(TextColor.GOLD)
+            .hoverEvent(HoverEvent.showText(TextComponent.of("Run command")))
+            .clickEvent(ClickEvent.runCommand(command))
+        )
+        .append(
+            TextComponent.of(" - " + description)
+            .color(TextColor.DARK_AQUA)
+        ).build();
     }
 
     /**
