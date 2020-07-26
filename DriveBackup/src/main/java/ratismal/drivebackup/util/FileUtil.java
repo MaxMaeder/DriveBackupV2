@@ -7,6 +7,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.FileSystems;
+import java.nio.file.PathMatcher;
 import java.nio.file.Paths;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -24,7 +25,8 @@ import java.util.zip.ZipOutputStream;
 public class FileUtil {
     private static final TreeMap<Date, File> backupList = new TreeMap<>();
     private static final List<String> fileList = new ArrayList<>();
-    private static ArrayList<String> _blacklistGlobs = new ArrayList<>();
+    private static ArrayList<HashMap<String, Object>> blacklist = new ArrayList<>();
+    private static int backupFiles = 0;
 
     /**
      * Gets the most recent backup of the specified backup type
@@ -74,8 +76,16 @@ public class FileUtil {
         ZonedDateTime now = ZonedDateTime.now(Config.getBackupScheduleTimezone());
         String fileName = now.format(DateTimeFormatter.ofPattern(formatString, new Locale(Config.getDateLanguage())));
 
-        _blacklistGlobs.clear();
-        _blacklistGlobs.addAll(blacklistGlobs);
+        blacklist.clear();
+        for (String blacklistGlob : blacklistGlobs) {
+            HashMap<String, Object> blacklistEntry = new HashMap<>();
+
+            blacklistEntry.put("globPattern", blacklistGlob);
+            blacklistEntry.put("pathMatcher", FileSystems.getDefault().getPathMatcher("glob:" + blacklistGlob));
+            blacklistEntry.put("blacklistedFiles", 0);
+
+            blacklist.add(blacklistEntry);
+        }
 
         String subfolderName = type;
         if (isBaseFolder(subfolderName)) {
@@ -88,6 +98,20 @@ public class FileUtil {
         }
 
         generateFileList(type);
+
+        for (HashMap<String, Object> blacklistEntry : blacklist) {
+            String globPattern = (String) blacklistEntry.get("globPattern");
+            int blacklistedFiles = (int) blacklistEntry.get("blacklistedFiles");
+
+            if (blacklistedFiles > 0) {
+                MessageUtil.sendConsoleMessage("Didn't include " + blacklistedFiles + " file(s) in the backup, as they are blacklisted by \"" + globPattern + "\"");
+            }
+        }
+
+        if (backupFiles > 0) {
+            MessageUtil.sendConsoleMessage("Didn't include " + backupFiles + " file(s) in the backup, as they are in the folder used for backups");
+        }
+
         zipIt(type, path.getPath() + File.separator + fileName);
     }
 
@@ -140,12 +164,17 @@ public class FileUtil {
         FileOutputStream fileOutputStream;
         ZipOutputStream zipOutputStream = null;
 
+        String formattedInputFolderPath = new File(inputFolderPath).getName();
+        if (isBaseFolder(inputFolderPath)) {
+            formattedInputFolderPath = "root";
+        }
+
         try {
             fileOutputStream = new FileOutputStream(outputFilePath);
             zipOutputStream = new ZipOutputStream(fileOutputStream);
 
             for (String file : fileList) {
-                zipOutputStream.putNextEntry(new ZipEntry(new File(inputFolderPath).getName() + File.separator + file));
+                zipOutputStream.putNextEntry(new ZipEntry(formattedInputFolderPath + File.separator + file));
 
                 try (FileInputStream fileInputStream = new FileInputStream(inputFolderPath + File.separator + file)) {
                     
@@ -189,16 +218,17 @@ public class FileUtil {
 
         if (file.isFile()) {
             if (file.getCanonicalPath().startsWith(new File(Config.getDir()).getCanonicalPath())) {
-
-                MessageUtil.sendConsoleMessage("Didn't include \"" + file.getPath() + "\" in the backup, as it is in the folder used for backups");
+                backupFiles++;
 
                 return;
             }
 
-            for (String blacklistGlob : _blacklistGlobs) {
-                if (FileSystems.getDefault().getPathMatcher("glob:" + blacklistGlob).matches(Paths.get(getFileRelativePath(file.toString(), inputFolderPath)))) {
-                    
-                    MessageUtil.sendConsoleMessage("Didn't include \"" + file.getPath() + "\" in the backup, as it is blacklisted by \"" + blacklistGlob + "\"");
+            for (HashMap<String, Object> blacklistEntry : blacklist) {
+                PathMatcher pathMatcher = (PathMatcher) blacklistEntry.get("pathMatcher");
+                int blacklistedFiles = (int) blacklistEntry.get("blacklistedFiles");
+
+                if (pathMatcher.matches(Paths.get(getFileRelativePath(file.toString(), inputFolderPath)))) {
+                    blacklistEntry.put("blacklistedFiles", ++blacklistedFiles);
 
                     return;
                 }
