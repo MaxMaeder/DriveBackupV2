@@ -19,6 +19,7 @@ import ratismal.drivebackup.util.Timer;
 
 import java.io.File;
 import java.nio.file.FileSystems;
+import java.nio.file.PathMatcher;
 import java.nio.file.Paths;
 import java.time.LocalTime;
 import java.time.ZonedDateTime;
@@ -253,6 +254,8 @@ public class UploadThread implements Runnable {
                 ".");
 
         for (Map<String, Object> backup : (List<Map<String, Object>>) externalBackup.get("backup-list")) {
+            ArrayList<HashMap<String, Object>> blacklist = new ArrayList<>();
+
             ArrayList<String> blacklistGlobs = new ArrayList<>();
             if (backup.containsKey("blacklist")) {
                 Object tempObject = backup.get("blacklist");
@@ -261,16 +264,29 @@ public class UploadThread implements Runnable {
                 }
             }
 
+            for (String blacklistGlob : blacklistGlobs) {
+                HashMap<String, Object> blacklistEntry = new HashMap<>();
+    
+                blacklistEntry.put("globPattern", blacklistGlob);
+                blacklistEntry.put("pathMatcher", FileSystems.getDefault().getPathMatcher("glob:" + blacklistGlob));
+                blacklistEntry.put("blacklistedFiles", 0);
+    
+                blacklist.add(blacklistEntry);
+            }
+
             for (String relativeFilePath : ftpUploader.getFiles(externalBackup.get("base-dir") + "/" + backup.get("path"))) {
                 String filePath = externalBackup.get("base-dir") + "/" + backup.get("path") + "/" + relativeFilePath;
 
-                for (String blacklistGlob : blacklistGlobs) {
-                    if (FileSystems.getDefault().getPathMatcher("glob:" + blacklistGlob).matches(Paths.get(relativeFilePath))) {
-                        
-                        MessageUtil.sendConsoleMessage("Didn't include \"" + filePath + "\" in the backup, as it is blacklisted by \"" + blacklistGlob + "\".");
+                for (HashMap<String, Object> blacklistEntry : blacklist) {
+                    PathMatcher pathMatcher = (PathMatcher) blacklistEntry.get("pathMatcher");
+                    int blacklistedFiles = (int) blacklistEntry.get("blacklistedFiles");
+                    
 
+                    if (pathMatcher.matches(Paths.get(relativeFilePath))) {
+                        blacklistEntry.put("blacklistedFiles", ++blacklistedFiles);
+    
                         continue;
-                    }
+                    } 
                 }
 
                 String parentFolder = new File(relativeFilePath).getParent();
@@ -282,6 +298,15 @@ public class UploadThread implements Runnable {
                 }
 
                 ftpUploader.downloadFile(filePath, getTempFolderName(externalBackup) + File.separator + backup.get("path") + parentFolderPath);
+            }
+
+            for (HashMap<String, Object> blacklistEntry : blacklist) {
+                String globPattern = (String) blacklistEntry.get("globPattern");
+                int blacklistedFiles = (int) blacklistEntry.get("blacklistedFiles");
+    
+                if (blacklistedFiles > 0) {
+                    MessageUtil.sendConsoleMessage("Didn't include " + blacklistedFiles + " file(s) in the backup from the external (S)FTP server, as they are blacklisted by \"" + globPattern + "\"");
+                }
             }
         }
 
