@@ -77,6 +77,7 @@ public class FileUtil {
         String fileName = now.format(DateTimeFormatter.ofPattern(formatString, new Locale(Config.getDateLanguage())));
 
         blacklist.clear();
+        backupFiles = 0;
         for (String blacklistGlob : blacklistGlobs) {
             HashMap<String, Object> blacklistEntry = new HashMap<>();
 
