@@ -132,7 +132,7 @@ public class FileUtil {
                 getNewestBackup(type, formatString);
 
                 if (backupList.size() > Config.getLocalKeepCount()) {
-                    MessageUtil.sendConsoleMessage("There are " + backupList.size() + " file(s) which exceeds the local limit of " + Config.getLocalKeepCount() + ", deleting");
+                    MessageUtil.sendConsoleMessage("There are " + backupList.size() + " file(s) which exceeds the local limit of " + Config.getLocalKeepCount() + ", deleting oldest");
                 }
                 
 
@@ -140,9 +140,7 @@ public class FileUtil {
                     File fileToDelete = backupList.descendingMap().lastEntry().getValue();
                     Date dateOfFile = backupList.descendingMap().lastKey();
 
-                    if (fileToDelete.delete()) {
-                        MessageUtil.sendConsoleMessage("Old local backup deleted");
-                    } else {
+                    if (!fileToDelete.delete()) {
                         MessageUtil.sendConsoleMessage("Failed to delete local backup \"" + backupList.descendingMap().lastEntry().getValue().getName() + "\"");
                     }
                     
