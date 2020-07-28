@@ -2,8 +2,6 @@
 
 **Need help? Talk to me on [Discord](https://discord.gg/VdCAUtm)!**
 
-*This is an updated version of the unmaintained Bukkit plugin that's available [here](https://dev.bukkit.org/projects/drivebackup). Due to changes in the Google Drive/OneDrive APIs, that plugin no longer fully works. Also, many features have been added.*
-
 ## What is this?
 Have you ever lost your Minecraft world before?
 
