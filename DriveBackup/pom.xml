@@ -57,7 +57,7 @@
                             <shadedPattern>ratismal.drivebackup.DriveBackup.lib</shadedPattern>
                         </relocation>
                         <relocation>
-                            <pattern>mysql</pattern>
+                            <pattern>mysql-connector-java</pattern>
                             <shadedPattern>ratismal.drivebackup.DriveBackup.lib</shadedPattern>
                         </relocation>
                         <relocation>
