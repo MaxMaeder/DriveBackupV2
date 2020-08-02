@@ -1,9 +1,0 @@
-name: DriveBackupV2
-version: 1.3.1
-description: Uploads backups to Google Drive/OneDrive or by (S)FTP
-main: ratismal.drivebackup.DriveBackup
-author: MaxTheGinus
-commands:
-  drivebackup:
-    description: View all DriveBackupV2 commands
-    usage: /drivebackup
