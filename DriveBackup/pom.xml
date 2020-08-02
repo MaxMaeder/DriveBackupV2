@@ -45,6 +45,10 @@
                             <shadedPattern>ratismal.drivebackup.DriveBackup.lib</shadedPattern>
                         </relocation>
                         <relocation>
+                            <pattern>kotlin</pattern>
+                            <shadedPattern>ratismal.drivebackup.DriveBackup.lib</shadedPattern>
+                        </relocation>
+                        <relocation>
                             <pattern>org.json</pattern>
                             <shadedPattern>ratismal.drivebackup.DriveBackup.lib</shadedPattern>
                         </relocation>
