@@ -112,7 +112,7 @@
                 <configuration>
                     <message>Maven artifacts for the DriveBackupV2 API</message>  <!-- git commit message -->
                     <noJekyll>true</noJekyll>                                     <!-- disable webpage processing -->
-                    <merge>true</merge>
+                    <!--<merge>true</merge>-->
                     <outputDirectory>${project.build.directory}/mvn-repo</outputDirectory> <!-- matches distribution management repository url above -->
                     <branch>refs/heads/mvn-repo</branch>                          <!-- remote branch name -->
                     <includes><include>**/*</include></includes>
