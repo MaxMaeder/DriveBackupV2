@@ -210,7 +210,7 @@ public class Config {
 
     /**
      * Gets the interval at which to run interval based backups
-     * @return the interval
+     * @return the interval, in minutes
      */
     public static long getBackupDelay() {
         return backupDelay;
