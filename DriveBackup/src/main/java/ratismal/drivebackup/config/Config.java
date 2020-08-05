@@ -203,8 +203,10 @@ public class Config {
     private String getStringWithFallback(String path, String fallbackPath) {
         if (config.isSet(path)) {
            return config.getString(path);
-        } else {
+        } else if (config.isSet(fallbackPath)) {
             return config.getString(fallbackPath);
+        } else { // Use default value
+            return config.getString(path);
         }
     }
 
@@ -217,8 +219,10 @@ public class Config {
     private boolean getBooleanWithFallback(String path, String fallbackPath) {
         if (config.isSet(path)) {
            return config.getBoolean(path);
-        } else {
+        } else if (config.isSet(fallbackPath)) {
             return config.getBoolean(fallbackPath);
+        } else { // Use default value
+            return config.getBoolean(path);
         }
     }
 
