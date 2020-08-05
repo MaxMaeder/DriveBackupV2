@@ -64,4 +64,4 @@ advanced:
   suppress-errors: false
   prefix-chat-messages: true
   date-language: "en"
-  ftp-file-seperator: "/"
+  ftp-file-separator: "/"
