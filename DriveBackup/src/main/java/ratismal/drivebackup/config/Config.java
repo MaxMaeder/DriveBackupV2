@@ -84,7 +84,7 @@ public class Config {
      */
     @SuppressWarnings("unchecked")
     public void reload() {
-        backupDelay = config.getLong("delay") * 60 * 20;
+        backupDelay = config.getLong("delay");
         backupThreadPriority = config.getInt("backup-thread-priority");
         keepCount = config.getInt("keep-count");
         localKeepCount = config.getInt("local-keep-count");
