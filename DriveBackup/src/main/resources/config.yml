@@ -9,7 +9,9 @@ delay: 60
 backup-thread-priority: 0
 keep-count: 20
 local-keep-count: 0
+
 backups-require-players: true
+restart-after-backup: false
 
 scheduled-backups: false
 schedule-timezone: "-00:00"

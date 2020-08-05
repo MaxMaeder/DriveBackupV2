@@ -33,6 +33,8 @@ import java.util.Locale;
 import java.util.concurrent.Callable;
 import java.util.logging.Logger;
 
+import com.mysql.cj.jdbc.result.UpdatableResultSet;
+
 public class DriveBackup extends JavaPlugin {
 
     private static String newVersionTitle = "";
@@ -137,7 +139,7 @@ public class DriveBackup extends JavaPlugin {
             public String call() throws Exception {
             	if (Config.isBackupsScheduled()) {
                     return "Schedule Based";
-                } else if (Config.getBackupDelay() / 60 / 20 != -1) {
+                } else if (Config.getBackupDelay() != -1) {
                     return "Interval Based";
                 } else {
                     return "Not Enabled";
@@ -299,17 +301,19 @@ public class DriveBackup extends JavaPlugin {
                 }
                 MessageUtil.sendConsoleMessage(scheduleMessage.toString());
             }
-        } else if (Config.getBackupDelay() / 60 / 20 != -1) {
+        } else if (Config.getBackupDelay() != -1) {
             cancelAllTasks(backupTasks);
 
-            MessageUtil.sendConsoleMessage("Scheduling a backup to run every " + (Config.getBackupDelay() / 60 / 20) + " minutes");
+            MessageUtil.sendConsoleMessage("Scheduling a backup to run every " + Config.getBackupDelay() + " minutes");
 
             backupTasks.add(taskScheduler.runTaskTimerAsynchronously(
                 getInstance(), 
                 new UploadThread(), 
-                Config.getBackupDelay(), 
-                Config.getBackupDelay()
+                Config.getBackupDelay() * 60 * 20, 
+                Config.getBackupDelay() * 60 * 20
             ).getTaskId());
+
+            UploadThread.updateNextIntervalBackupTime();
         }
     }
 

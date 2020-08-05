@@ -21,10 +21,12 @@ import java.io.File;
 import java.nio.file.FileSystems;
 import java.nio.file.PathMatcher;
 import java.nio.file.Paths;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoField;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 /**
@@ -33,6 +35,8 @@ import java.util.*;
 
 public class UploadThread implements Runnable {
     private CommandSender initiator;
+
+    private static LocalDateTime nextIntervalBackupTime = null;
 
     /**
      * Creates an instance of the {@code UploadThread} object
@@ -53,9 +57,17 @@ public class UploadThread implements Runnable {
      */
     @Override
     public void run() {
+        UploadThread.updateNextIntervalBackupTime();
+
         Thread.currentThread().setPriority(Thread.MIN_PRIORITY + Config.getBackupThreadPriority());
 
+        if (!DriveBackupApi.shouldStartBackup()) {
+            return;
+        }
+
         if (!Config.isBackupsRequirePlayers() || PlayerListener.isAutoBackupsActive() || initiator != null) {
+            boolean errorOccurred = false;
+
             if (!Config.isGoogleDriveEnabled() && !Config.isOneDriveEnabled() && !Config.isFtpEnabled() && Config.getLocalKeepCount() == 0) {
                 MessageUtil.sendMessageToPlayersWithPermission("No backup method is enabled", "drivebackup.linkAccounts", Collections.singletonList(initiator), true);
 
@@ -119,10 +131,14 @@ public class UploadThread implements Runnable {
                         MessageUtil.sendMessageToPlayersWithPermission("Failed to create a backup, path to folder to backup is absolute, expected a relative path", "drivebackup.linkAccounts", Collections.singletonList(initiator), true);
                         MessageUtil.sendMessageToPlayersWithPermission("An absolute path can overwrite sensitive files, see the " + ChatColor.GOLD + "config.yml " + ChatColor.DARK_AQUA + "for more information", "drivebackup.linkAccounts", Collections.singletonList(initiator), true);
 
+                        errorOccurred = true;
+
                         return;
                     } catch (Exception exception) {
                         MessageUtil.sendConsoleException(exception);
                         MessageUtil.sendMessageToPlayersWithPermission("Failed to create a backup", "drivebackup.linkAccounts", Collections.singletonList(initiator), true);
+
+                        errorOccurred = true;
 
                         return;
                     }
@@ -183,7 +199,9 @@ public class UploadThread implements Runnable {
                         .hoverEvent(HoverEvent.showText(TextComponent.of("Run command")))
                         .clickEvent(ClickEvent.runCommand("/drivebackup linkaccount googledrive"))
                     )
-                    .build (), "drivebackup.linkAccounts", Collections.singletonList(initiator));
+                    .build(), "drivebackup.linkAccounts", Collections.singletonList(initiator));
+
+                    errorOccurred = true;
                 } else {
                     MessageUtil.sendMessageToPlayersWithPermission("Backup to " + ChatColor.GOLD + "Google Drive " + ChatColor.DARK_AQUA + "complete", "drivebackup.linkAccounts", Collections.singletonList(initiator), false);
                 }
@@ -202,7 +220,9 @@ public class UploadThread implements Runnable {
                         .hoverEvent(HoverEvent.showText(TextComponent.of("Run command")))
                         .clickEvent(ClickEvent.runCommand("/drivebackup linkaccount onedrive"))
                     )
-                    .build (), "drivebackup.linkAccounts", Collections.singletonList(initiator));
+                    .build(), "drivebackup.linkAccounts", Collections.singletonList(initiator));
+
+                    errorOccurred = true;
                 } else {
                     MessageUtil.sendMessageToPlayersWithPermission("Backup to " + ChatColor.GOLD + "OneDrive " + ChatColor.DARK_AQUA + "complete", "drivebackup.linkAccounts", Collections.singletonList(initiator), false);
                 }
@@ -213,6 +233,8 @@ public class UploadThread implements Runnable {
 
                 if (ftpUploader.isErrorWhileUploading()) {
                     MessageUtil.sendMessageToPlayersWithPermission("Failed to backup to the (S)FTP server, please check the server credentials in the " + ChatColor.GOLD + "config.yml", "drivebackup.linkAccounts", Collections.singletonList(initiator), false);
+                
+                    errorOccurred = true;
                 } else {
                     MessageUtil.sendMessageToPlayersWithPermission("Backup to the " + ChatColor.GOLD + "(S)FTP server " + ChatColor.DARK_AQUA + "complete", "drivebackup.linkAccounts", Collections.singletonList(initiator), false);
                 }
@@ -227,6 +249,12 @@ public class UploadThread implements Runnable {
             if (Config.isBackupsRequirePlayers() && Bukkit.getOnlinePlayers().size() == 0 && PlayerListener.isAutoBackupsActive()) {
                 MessageUtil.sendConsoleMessage("Disabling automatic backups due to inactivity");
                 PlayerListener.setAutoBackupsActive(false);
+            }
+
+            if (errorOccurred) {
+                DriveBackupApi.backupError();
+            } else {
+                DriveBackupApi.backupDone();
             }
         } else {
             MessageUtil.sendConsoleMessage("Skipping backup due to inactivity");
@@ -443,13 +471,20 @@ public class UploadThread implements Runnable {
             }
 
             nextBackupMessage = Config.getBackupNextScheduled().replaceAll("%DATE", nextBackupDate.format(DateTimeFormatter.ofPattern(Config.getBackupNextScheduledFormat(), new Locale(Config.getDateLanguage()))));
-        } else if (Config.getBackupDelay() / 60 / 20 != -1) {
-            nextBackupMessage = Config.getBackupNext().replaceAll("%TIME", String.valueOf(Config.getBackupDelay() / 20 / 60));
+        } else if (Config.getBackupDelay() != -1) {
+            nextBackupMessage = Config.getBackupNext().replaceAll("%TIME", String.valueOf(LocalDateTime.now().until(nextIntervalBackupTime, ChronoUnit.MINUTES)));
         } else {
             nextBackupMessage = Config.getAutoBackupsDisabled();
         }
 
         return nextBackupMessage;
+    }
+
+    /**
+     * Sets the time of the next interval-based backup to the current time + the configured interval
+     */
+    public static void updateNextIntervalBackupTime() {
+        nextIntervalBackupTime = LocalDateTime.now().plus(Config.getBackupDelay(), ChronoUnit.MINUTES);
     }
 
     /**
