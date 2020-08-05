@@ -190,12 +190,26 @@ public class Config {
         updateCheck = getBooleanWithFallback("advanced.update-check", "update-check");
         debug = !getBooleanWithFallback("advanced.suppress-errors", "suppress-errors");
         prefixChatMessages = config.getBoolean("advanced.prefix-chat-messages");
-        ftpFileSeperator = config.getString("advanced.ftp-file-seperator");
+        ftpFileSeperator = getStringWithFallback("advanced.ftp-file-separator", "advanced.ftp-file-seperator");
         dateLanguage = config.getString("advanced.date-language");
     } 
 
     /**
-     * Gets the value at the specifed path, or gets the value at the specifed fallback path if there isn't a value at the specifed path
+     * Gets the value at the specified path, or gets the value at the specified fallback path if there isn't a value at the specified path
+     * @param path the path
+     * @param fallbackPath the fallback path
+     * @return the value
+     */
+    private String getStringWithFallback(String path, String fallbackPath) {
+        if (config.isSet(path)) {
+           return config.getString(path);
+        } else {
+            return config.getString(fallbackPath);
+        }
+    }
+
+    /**
+     * Gets the value at the specified path, or gets the value at the specified fallback path if there isn't a value at the specified path
      * @param path the path
      * @param fallbackPath the fallback path
      * @return the value
