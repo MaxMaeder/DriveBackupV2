@@ -57,7 +57,9 @@ public class UploadThread implements Runnable {
      */
     @Override
     public void run() {
-        UploadThread.updateNextIntervalBackupTime();
+        if (initiator == null) {
+            updateNextIntervalBackupTime();
+        }
 
         Thread.currentThread().setPriority(Thread.MIN_PRIORITY + Config.getBackupThreadPriority());
 
