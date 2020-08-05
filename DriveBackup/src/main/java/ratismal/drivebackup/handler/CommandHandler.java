@@ -209,11 +209,19 @@ public class CommandHandler implements CommandExecutor {
     }
 
     /**
-     * Sends a message with the current plugin version to the specified player
+     * Sends a message with the current plugin, java, and server software version to the specified player
      * @param player the player to send the message to
      */
     private void sendVersion(CommandSender player) {
-    	MessageUtil.sendMessage(player, "Currently running on version " + plugin.getDescription().getVersion());
+        player.sendMessage(ChatColor.GOLD + "|======" + ChatColor.DARK_RED + "DriveBackupV2" + ChatColor.GOLD + "======|");
+        player.sendMessage(ChatColor.DARK_AQUA + "Plugin version: " + ChatColor.GOLD + plugin.getDescription().getVersion());
+        player.sendMessage(ChatColor.DARK_AQUA + "Java version: " + ChatColor.GOLD + System.getProperty("java.version"));
+        player.sendMessage(ChatColor.DARK_AQUA + "Server software: " + ChatColor.GOLD + Bukkit.getName());
+        player.sendMessage(ChatColor.DARK_AQUA + "Server software version: " + ChatColor.GOLD + Bukkit.getVersion());
+
+        if (DriveBackup.isUpdateAvailable()) {
+            player.sendMessage(ChatColor.GOLD + "Plugin update available!");
+        }
     }
 
     /**
