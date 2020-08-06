@@ -47,7 +47,11 @@
                             <shadedPattern>ratismal.drivebackup.DriveBackup.lib</shadedPattern>
                         </relocation>
                         <relocation>
-                            <pattern>com.squareup.okhttp3</pattern>
+                            <pattern>okhttp3</pattern>
+                            <shadedPattern>ratismal.drivebackup.DriveBackup.lib</shadedPattern>
+                        </relocation>
+                        <relocation>
+                            <pattern>okio</pattern>
                             <shadedPattern>ratismal.drivebackup.DriveBackup.lib</shadedPattern>
                         </relocation>
                         <relocation>
