@@ -3,6 +3,8 @@ package ratismal.drivebackup.googledrive;
 import com.google.api.client.auth.oauth2.BearerToken;
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.http.FileContent;
+import com.google.api.client.http.HttpRequest;
+import com.google.api.client.http.HttpRequestInitializer;
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.JsonFactory;
@@ -33,7 +35,6 @@ import java.util.List;
 
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
-import org.bukkit.scheduler.BukkitScheduler;
 import org.json.JSONObject;
 
 /**
@@ -251,11 +252,27 @@ public class GoogleDriveUploader {
         service = new Drive.Builder(
             httpTransport, 
             JSON_FACTORY, 
-            new Credential(
+            setTimeout(new Credential(
                 BearerToken.authorizationHeaderAccessMethod())
-                .setAccessToken(parsedResponse.getString("access_token")))
+                .setAccessToken(parsedResponse.getString("access_token"))))
             .setApplicationName("DriveBackupV2")
             .build();
+    }
+
+    /**
+     * Sets the connect/read timeouts of the Google Drive Client by implementing {@code HttpRequestInitializer}
+     * @param requestInitializer the default {@code HttpRequestInitializer} provided by the Google Drive Client
+     * @return the modified {@code HttpRequestInitializer} with the connect/read timeouts set 
+     */
+    private HttpRequestInitializer setTimeout(final HttpRequestInitializer requestInitializer) {
+        return new HttpRequestInitializer() {
+            @Override
+            public void initialize(HttpRequest httpRequest) throws IOException {
+                requestInitializer.initialize(httpRequest);
+                httpRequest.setConnectTimeout(1 * 60000); // 1 minute connect timeout
+                httpRequest.setReadTimeout(4 * 60 * 60000); // 4 hours read timeout
+            }
+        };
     }
 
     /**

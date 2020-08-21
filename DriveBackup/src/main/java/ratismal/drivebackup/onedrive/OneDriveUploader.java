@@ -12,7 +12,6 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 
 import org.bukkit.Bukkit;
-import org.bukkit.scheduler.BukkitScheduler;
 
 import org.bukkit.command.CommandSender;
 import org.json.JSONArray;
@@ -28,6 +27,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by Redemption on 2/24/2016.
@@ -42,7 +42,11 @@ public class OneDriveUploader {
     /**
      * Global instance of the HTTP client
      */
-    private static final OkHttpClient httpClient = new OkHttpClient();
+    private static final OkHttpClient httpClient = new OkHttpClient.Builder()
+        .connectTimeout(1, TimeUnit.MINUTES)
+        .writeTimeout(3, TimeUnit.MINUTES)
+        .readTimeout(3, TimeUnit.MINUTES)
+        .build();
     private static final MediaType zipMediaType = MediaType.parse("application/zip; charset=utf-8");
     private static final MediaType jsonMediaType = MediaType.parse("application/json; charset=utf-8");
 
