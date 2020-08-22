@@ -43,10 +43,6 @@
                             <shadedPattern>ratismal.drivebackup.DriveBackup.lib</shadedPattern>
                         </relocation>
                         <relocation>
-                            <pattern>org.bstats</pattern>
-                            <shadedPattern>ratismal.drivebackup.DriveBackup.lib</shadedPattern>
-                        </relocation>
-                        <relocation>
                             <pattern>okhttp3</pattern>
                             <shadedPattern>ratismal.drivebackup.DriveBackup.lib</shadedPattern>
                         </relocation>
@@ -60,6 +56,10 @@
                         </relocation>
                         <relocation>
                             <pattern>org.json</pattern>
+                            <shadedPattern>ratismal.drivebackup.DriveBackup.lib</shadedPattern>
+                        </relocation>
+                        <relocation>
+                            <pattern>commons-io</pattern>
                             <shadedPattern>ratismal.drivebackup.DriveBackup.lib</shadedPattern>
                         </relocation>
                         <relocation>
