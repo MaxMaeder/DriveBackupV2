@@ -59,7 +59,7 @@
                             <shadedPattern>ratismal.drivebackup.DriveBackup.lib</shadedPattern>
                         </relocation>
                         <relocation>
-                            <pattern>commons-io</pattern>
+                            <pattern>org.apache.commons</pattern>
                             <shadedPattern>ratismal.drivebackup.DriveBackup.lib</shadedPattern>
                         </relocation>
                         <relocation>
