@@ -18,6 +18,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import ratismal.drivebackup.DriveBackup;
 import ratismal.drivebackup.config.Config;
+import ratismal.drivebackup.util.HttpLogger;
 import ratismal.drivebackup.util.MessageUtil;
 
 import java.io.*;
@@ -46,6 +47,7 @@ public class OneDriveUploader {
         .connectTimeout(1, TimeUnit.MINUTES)
         .writeTimeout(3, TimeUnit.MINUTES)
         .readTimeout(3, TimeUnit.MINUTES)
+        //.addInterceptor(new HttpLogger())
         .build();
     private static final MediaType zipMediaType = MediaType.parse("application/zip; charset=utf-8");
     private static final MediaType jsonMediaType = MediaType.parse("application/json; charset=utf-8");
