@@ -44,6 +44,7 @@ public class CommandTabComplete implements TabCompleter {
                 commandList.add("help");
                 if (player.hasPermission("drivebackup.linkAccounts")) commandList.add("linkaccount");
                 if (player.hasPermission("drivebackup.reloadConfig")) commandList.add("reloadconfig");
+                if (player.hasPermission("drivebackup.getBackupStatus")) commandList.add("status");
                 if (player.hasPermission("drivebackup.getNextBackup")) commandList.add("nextbackup");
                 if (player.hasPermission("drivebackup.backup")) commandList.add("backup");
                     

@@ -96,6 +96,11 @@ public class CommandHandler implements CommandExecutor {
                     		}
                     	}
                         break;
+                    case "status":
+                        if (hasPerm(sender, "drivebackup.getBackupStatus")) {
+                            MessageUtil.sendMessage(sender, UploadThread.getBackupStatus());
+                        }
+                        break;
                     case "nextbackup":
                         if (hasPerm(sender, "drivebackup.getNextBackup")) {
                             MessageUtil.sendMessage(sender, UploadThread.getNextAutoBackup());
