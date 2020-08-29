@@ -39,6 +39,41 @@ public class UploadThread implements Runnable {
     private static LocalDateTime nextIntervalBackupTime = null;
 
     /**
+     * The current status of the backup thread
+     */
+    enum BackupStatus {
+        /**
+         * The backup thread isn't running
+         */
+        NOT_RUNNING,
+
+        /**
+         * The backup thread is compressing the files to be backed up
+         */
+        COMPRESSING,
+
+        /**
+         * The backup thread is uploading the files
+         */
+        UPLOADING
+    }
+
+    /**
+     * The list of items to be backed up by the backup thread
+     */
+    private static ArrayList<HashMap<String, Object>> backupList;
+
+    /**
+     * The {@code BackupStatus} of the backup thread
+     */
+    private static BackupStatus backupStatus = BackupStatus.NOT_RUNNING;
+
+    /**
+     * The backup currently being backed up by the 
+     */
+    private static int backupBackingUp = 0;
+
+    /**
      * Creates an instance of the {@code UploadThread} object
      */
     public UploadThread() {
@@ -57,6 +92,13 @@ public class UploadThread implements Runnable {
      */
     @Override
     public void run() {
+        if (initiator != null && backupStatus != BackupStatus.NOT_RUNNING) {
+            MessageUtil.sendMessage(initiator, "A backup is already running");
+            MessageUtil.sendMessage(initiator, getBackupStatus());
+
+            return;
+        }
+
         if (initiator == null) {
             updateNextIntervalBackupTime();
         }
@@ -67,208 +109,219 @@ public class UploadThread implements Runnable {
             return;
         }
 
-        if (!Config.isBackupsRequirePlayers() || PlayerListener.isAutoBackupsActive() || initiator != null) {
-            boolean errorOccurred = false;
+        if (Config.isBackupsRequirePlayers() && !PlayerListener.isAutoBackupsActive() && initiator == null) {
+            MessageUtil.sendConsoleMessage("Skipping backup due to inactivity");
 
-            if (!Config.isGoogleDriveEnabled() && !Config.isOneDriveEnabled() && !Config.isFtpEnabled() && Config.getLocalKeepCount() == 0) {
-                MessageUtil.sendMessageToPlayersWithPermission("No backup method is enabled", "drivebackup.linkAccounts", Collections.singletonList(initiator), true);
+            return;
+        }
 
-                return;
-            }
+        boolean errorOccurred = false;
 
-            MessageUtil.sendMessageToAllPlayers(Config.getBackupStart());
+        if (!Config.isGoogleDriveEnabled() && !Config.isOneDriveEnabled() && !Config.isFtpEnabled() && Config.getLocalKeepCount() == 0) {
+            MessageUtil.sendMessageToPlayersWithPermission("No backup method is enabled", "drivebackup.linkAccounts", Collections.singletonList(initiator), true);
 
-            GoogleDriveUploader googleDriveUploader = null;
-            OneDriveUploader oneDriveUploader = null;
-            FTPUploader ftpUploader = null;
+            return;
+        }
 
-            if (Config.isGoogleDriveEnabled()) {
-                googleDriveUploader = new GoogleDriveUploader();
-            }
-            if (Config.isOneDriveEnabled()) {
-                oneDriveUploader = new OneDriveUploader();
-            }
-            if (Config.isFtpEnabled()) {
-                ftpUploader = new FTPUploader();
-            }
+        MessageUtil.sendMessageToAllPlayers(Config.getBackupStart());
 
-            ArrayList<HashMap<String, Object>> backupList = Config.getBackupList();
+        GoogleDriveUploader googleDriveUploader = null;
+        OneDriveUploader oneDriveUploader = null;
+        FTPUploader ftpUploader = null;
 
-            ArrayList<HashMap<String, Object>> externalBackupList = Config.getExternalBackupList();
-            if (externalBackupList != null) {
-                
-                for (HashMap<String, Object> externalBackup : externalBackupList) {
-                    switch ((String) externalBackup.get("type")) {
-                        case "ftpServer":
-                        case "ftpsServer":
-                        case "sftpServer":
-                            makeExternalFileBackup(externalBackup, backupList);
-                            break;
-                        case "mysqlDatabase":
-                            makeExternalDatabaseBackup(externalBackup, backupList);
-                            break;
-                    }
-                }
-            }
+        if (Config.isGoogleDriveEnabled()) {
+            googleDriveUploader = new GoogleDriveUploader();
+        }
+        if (Config.isOneDriveEnabled()) {
+            oneDriveUploader = new OneDriveUploader();
+        }
+        if (Config.isFtpEnabled()) {
+            ftpUploader = new FTPUploader();
+        }
+
+        backupList = Config.getBackupList();
+
+        ArrayList<HashMap<String, Object>> externalBackupList = Config.getExternalBackupList();
+        if (externalBackupList != null) {
             
-            for (HashMap<String, Object> set : backupList) {
-
-                String type = set.get("path").toString();
-                String format = set.get("format").toString();
-                String create = set.get("create").toString();
-
-                ArrayList<String> blackList = new ArrayList<>();
-                if (set.containsKey("blacklist")) {
-                    Object tempObject = set.get("blacklist");
-                    if (tempObject instanceof List<?>) {
-                        blackList = (ArrayList<String>) tempObject;
-                    }
+            for (HashMap<String, Object> externalBackup : externalBackupList) {
+                switch ((String) externalBackup.get("type")) {
+                    case "ftpServer":
+                    case "ftpsServer":
+                    case "sftpServer":
+                        makeExternalFileBackup(externalBackup);
+                        break;
+                    case "mysqlDatabase":
+                        makeExternalDatabaseBackup(externalBackup);
+                        break;
                 }
+            }
+        }
+        
+        backupBackingUp = 0;
+        for (HashMap<String, Object> set : backupList) {
+            String type = set.get("path").toString();
+            String format = set.get("format").toString();
+            String create = set.get("create").toString();
 
-                MessageUtil.sendConsoleMessage("Doing backups for \"" + type + "\"");
-                if (create.equalsIgnoreCase("true")) {
-                    try {
-                        FileUtil.makeBackup(type, format, blackList);
-                    } catch (IllegalArgumentException exception) {
-                        MessageUtil.sendMessageToPlayersWithPermission("Failed to create a backup, path to folder to backup is absolute, expected a relative path", "drivebackup.linkAccounts", Collections.singletonList(initiator), true);
-                        MessageUtil.sendMessageToPlayersWithPermission("An absolute path can overwrite sensitive files, see the " + ChatColor.GOLD + "config.yml " + ChatColor.DARK_AQUA + "for more information", "drivebackup.linkAccounts", Collections.singletonList(initiator), true);
-
-                        errorOccurred = true;
-
-                        return;
-                    } catch (Exception exception) {
-                        MessageUtil.sendConsoleException(exception);
-                        MessageUtil.sendMessageToPlayersWithPermission("Failed to create a backup", "drivebackup.linkAccounts", Collections.singletonList(initiator), true);
-
-                        errorOccurred = true;
-
-                        return;
-                    }
+            ArrayList<String> blackList = new ArrayList<>();
+            if (set.containsKey("blacklist")) {
+                Object tempObject = set.get("blacklist");
+                if (tempObject instanceof List<?>) {
+                    blackList = (ArrayList<String>) tempObject;
                 }
+            }
+
+            MessageUtil.sendConsoleMessage("Doing backups for \"" + type + "\"");
+            if (create.equalsIgnoreCase("true")) {
+                backupStatus = BackupStatus.COMPRESSING;
 
                 try {
-                    if (FileUtil.isBaseFolder(type)) {
-                        type = "root";
-                    }
-    
-                    File file = FileUtil.getNewestBackup(type, format);
-                    ratismal.drivebackup.util.Timer timer = new Timer();
+                    FileUtil.makeBackup(type, format, blackList);
+                } catch (IllegalArgumentException exception) {
+                    MessageUtil.sendMessageToPlayersWithPermission("Failed to create a backup, path to folder to backup is absolute, expected a relative path", "drivebackup.linkAccounts", Collections.singletonList(initiator), true);
+                    MessageUtil.sendMessageToPlayersWithPermission("An absolute path can overwrite sensitive files, see the " + ChatColor.GOLD + "config.yml " + ChatColor.DARK_AQUA + "for more information", "drivebackup.linkAccounts", Collections.singletonList(initiator), true);
 
-                    if (googleDriveUploader != null) {
-                        MessageUtil.sendConsoleMessage("Uploading file to Google Drive");
-                        timer.start();
-                        googleDriveUploader.uploadFile(file, type);
-                        timer.end();
-                        MessageUtil.sendConsoleMessage(timer.getUploadTimeMessage(file));
-                    }
-                    if (oneDriveUploader != null) {
-                        MessageUtil.sendConsoleMessage("Uploading file to OneDrive");
-                        timer.start();
-                        oneDriveUploader.uploadFile(file, type);
-                        timer.end();
-                        MessageUtil.sendConsoleMessage(timer.getUploadTimeMessage(file));
-                    }
-                    if (ftpUploader != null) {
-                        MessageUtil.sendConsoleMessage("Uploading file to the (S)FTP server");
-                        timer.start();
-                        ftpUploader.uploadFile(file, type);
-                        timer.end();
-                        MessageUtil.sendConsoleMessage(timer.getUploadTimeMessage(file));
-                    }
-
-                    FileUtil.deleteFiles(type, format);
-                } catch (Exception e) {
-                    MessageUtil.sendConsoleException(e);
-                }
-            }
-
-            deleteFolder(new File("external-backups"));
-                
-            if (Config.getLocalKeepCount() != 0) {
-                MessageUtil.sendMessageToPlayersWithPermission(ChatColor.GOLD + "Local " + ChatColor.DARK_AQUA + "backup complete", "drivebackup.linkAccounts", Collections.singletonList(initiator), false);
-            }
-
-            if (googleDriveUploader != null) {
-                if (googleDriveUploader.isErrorWhileUploading()) {
-                    MessageUtil.sendMessageToPlayersWithPermission(TextComponent.builder()
-                    .append(
-                        TextComponent.of("Failed to backup to Google Drive, please run ")
-                        .color(TextColor.DARK_AQUA)
-                    )
-                    .append(
-                        TextComponent.of("/drivebackup linkaccount googledrive")
-                        .color(TextColor.GOLD)
-                        .hoverEvent(HoverEvent.showText(TextComponent.of("Run command")))
-                        .clickEvent(ClickEvent.runCommand("/drivebackup linkaccount googledrive"))
-                    )
-                    .build(), "drivebackup.linkAccounts", Collections.singletonList(initiator));
-
+                    backupStatus = BackupStatus.NOT_RUNNING;
                     errorOccurred = true;
-                } else {
-                    MessageUtil.sendMessageToPlayersWithPermission("Backup to " + ChatColor.GOLD + "Google Drive " + ChatColor.DARK_AQUA + "complete", "drivebackup.linkAccounts", Collections.singletonList(initiator), false);
-                }
-            }
 
-            if (oneDriveUploader != null) {
-                if (oneDriveUploader.isErrorWhileUploading()) {
-                    MessageUtil.sendMessageToPlayersWithPermission(TextComponent.builder()
-                    .append(
-                        TextComponent.of("Failed to backup to OneDrive, please run ")
-                        .color(TextColor.DARK_AQUA)
-                    )
-                    .append(
-                        TextComponent.of("/drivebackup linkaccount onedrive")
-                        .color(TextColor.GOLD)
-                        .hoverEvent(HoverEvent.showText(TextComponent.of("Run command")))
-                        .clickEvent(ClickEvent.runCommand("/drivebackup linkaccount onedrive"))
-                    )
-                    .build(), "drivebackup.linkAccounts", Collections.singletonList(initiator));
+                    return;
+                } catch (Exception exception) {
+                    MessageUtil.sendConsoleException(exception);
+                    MessageUtil.sendMessageToPlayersWithPermission("Failed to create a backup", "drivebackup.linkAccounts", Collections.singletonList(initiator), true);
 
+                    backupStatus = BackupStatus.NOT_RUNNING;
                     errorOccurred = true;
-                } else {
-                    MessageUtil.sendMessageToPlayersWithPermission("Backup to " + ChatColor.GOLD + "OneDrive " + ChatColor.DARK_AQUA + "complete", "drivebackup.linkAccounts", Collections.singletonList(initiator), false);
+
+                    return;
                 }
             }
 
-            if (ftpUploader != null) {
-                ftpUploader.close();
+            try {
+                backupStatus = BackupStatus.UPLOADING;
 
-                if (ftpUploader.isErrorWhileUploading()) {
-                    MessageUtil.sendMessageToPlayersWithPermission("Failed to backup to the (S)FTP server, please check the server credentials in the " + ChatColor.GOLD + "config.yml", "drivebackup.linkAccounts", Collections.singletonList(initiator), false);
-                
-                    errorOccurred = true;
-                } else {
-                    MessageUtil.sendMessageToPlayersWithPermission("Backup to the " + ChatColor.GOLD + "(S)FTP server " + ChatColor.DARK_AQUA + "complete", "drivebackup.linkAccounts", Collections.singletonList(initiator), false);
+                if (FileUtil.isBaseFolder(type)) {
+                    type = "root";
                 }
+
+                File file = FileUtil.getNewestBackup(type, format);
+                ratismal.drivebackup.util.Timer timer = new Timer();
+
+                if (googleDriveUploader != null) {
+                    MessageUtil.sendConsoleMessage("Uploading file to Google Drive");
+                    timer.start();
+                    googleDriveUploader.uploadFile(file, type);
+                    timer.end();
+                    MessageUtil.sendConsoleMessage(timer.getUploadTimeMessage(file));
+                }
+                if (oneDriveUploader != null) {
+                    MessageUtil.sendConsoleMessage("Uploading file to OneDrive");
+                    timer.start();
+                    oneDriveUploader.uploadFile(file, type);
+                    timer.end();
+                    MessageUtil.sendConsoleMessage(timer.getUploadTimeMessage(file));
+                }
+                if (ftpUploader != null) {
+                    MessageUtil.sendConsoleMessage("Uploading file to the (S)FTP server");
+                    timer.start();
+                    ftpUploader.uploadFile(file, type);
+                    timer.end();
+                    MessageUtil.sendConsoleMessage(timer.getUploadTimeMessage(file));
+                }
+
+                FileUtil.deleteFiles(type, format);
+            } catch (Exception e) {
+                MessageUtil.sendConsoleException(e);
             }
 
-            if (initiator != null) {
-                MessageUtil.sendMessageToAllPlayers(Config.getBackupDone());
+            backupBackingUp++;
+        }
+
+        deleteFolder(new File("external-backups"));
+
+        backupStatus = BackupStatus.NOT_RUNNING;
+            
+        if (Config.getLocalKeepCount() != 0) {
+            MessageUtil.sendMessageToPlayersWithPermission(ChatColor.GOLD + "Local " + ChatColor.DARK_AQUA + "backup complete", "drivebackup.linkAccounts", Collections.singletonList(initiator), false);
+        }
+
+        if (googleDriveUploader != null) {
+            if (googleDriveUploader.isErrorWhileUploading()) {
+                MessageUtil.sendMessageToPlayersWithPermission(TextComponent.builder()
+                .append(
+                    TextComponent.of("Failed to backup to Google Drive, please run ")
+                    .color(TextColor.DARK_AQUA)
+                )
+                .append(
+                    TextComponent.of("/drivebackup linkaccount googledrive")
+                    .color(TextColor.GOLD)
+                    .hoverEvent(HoverEvent.showText(TextComponent.of("Run command")))
+                    .clickEvent(ClickEvent.runCommand("/drivebackup linkaccount googledrive"))
+                )
+                .build(), "drivebackup.linkAccounts", Collections.singletonList(initiator));
+
+                errorOccurred = true;
             } else {
-                MessageUtil.sendMessageToAllPlayers(Config.getBackupDone() + " " + getNextAutoBackup());
+                MessageUtil.sendMessageToPlayersWithPermission("Backup to " + ChatColor.GOLD + "Google Drive " + ChatColor.DARK_AQUA + "complete", "drivebackup.linkAccounts", Collections.singletonList(initiator), false);
             }
+        }
 
-            if (Config.isBackupsRequirePlayers() && Bukkit.getOnlinePlayers().size() == 0 && PlayerListener.isAutoBackupsActive()) {
-                MessageUtil.sendConsoleMessage("Disabling automatic backups due to inactivity");
-                PlayerListener.setAutoBackupsActive(false);
-            }
+        if (oneDriveUploader != null) {
+            if (oneDriveUploader.isErrorWhileUploading()) {
+                MessageUtil.sendMessageToPlayersWithPermission(TextComponent.builder()
+                .append(
+                    TextComponent.of("Failed to backup to OneDrive, please run ")
+                    .color(TextColor.DARK_AQUA)
+                )
+                .append(
+                    TextComponent.of("/drivebackup linkaccount onedrive")
+                    .color(TextColor.GOLD)
+                    .hoverEvent(HoverEvent.showText(TextComponent.of("Run command")))
+                    .clickEvent(ClickEvent.runCommand("/drivebackup linkaccount onedrive"))
+                )
+                .build(), "drivebackup.linkAccounts", Collections.singletonList(initiator));
 
-            if (errorOccurred) {
-                DriveBackupApi.backupError();
+                errorOccurred = true;
             } else {
-                DriveBackupApi.backupDone();
+                MessageUtil.sendMessageToPlayersWithPermission("Backup to " + ChatColor.GOLD + "OneDrive " + ChatColor.DARK_AQUA + "complete", "drivebackup.linkAccounts", Collections.singletonList(initiator), false);
             }
+        }
+
+        if (ftpUploader != null) {
+            ftpUploader.close();
+
+            if (ftpUploader.isErrorWhileUploading()) {
+                MessageUtil.sendMessageToPlayersWithPermission("Failed to backup to the (S)FTP server, please check the server credentials in the " + ChatColor.GOLD + "config.yml", "drivebackup.linkAccounts", Collections.singletonList(initiator), false);
+            
+                errorOccurred = true;
+            } else {
+                MessageUtil.sendMessageToPlayersWithPermission("Backup to the " + ChatColor.GOLD + "(S)FTP server " + ChatColor.DARK_AQUA + "complete", "drivebackup.linkAccounts", Collections.singletonList(initiator), false);
+            }
+        }
+
+        if (initiator != null) {
+            MessageUtil.sendMessageToAllPlayers(Config.getBackupDone());
         } else {
-            MessageUtil.sendConsoleMessage("Skipping backup due to inactivity");
+            MessageUtil.sendMessageToAllPlayers(Config.getBackupDone() + " " + getNextAutoBackup());
+        }
+
+        if (Config.isBackupsRequirePlayers() && Bukkit.getOnlinePlayers().size() == 0 && PlayerListener.isAutoBackupsActive()) {
+            MessageUtil.sendConsoleMessage("Disabling automatic backups due to inactivity");
+            PlayerListener.setAutoBackupsActive(false);
+        }
+
+        if (errorOccurred) {
+            DriveBackupApi.backupError();
+        } else {
+            DriveBackupApi.backupDone();
         }
     }
 
     /**
      * Downloads files from a FTP server and stores them within the external-backups temporary folder, using the specified external backup settings
      * @param externalBackup the external backup settings
-     * @param backupList the list of folders to upload to the configured remote destinations
      */
-    private void makeExternalFileBackup(HashMap<String, Object> externalBackup, ArrayList<HashMap<String, Object>> backupList) {
+    private void makeExternalFileBackup(HashMap<String, Object> externalBackup) {
         MessageUtil.sendConsoleMessage("Downloading files from a (S)FTP server (" + getSocketAddress(externalBackup) + ") to include in backup");
 
         FTPUploader ftpUploader = new FTPUploader(
@@ -358,9 +411,8 @@ public class UploadThread implements Runnable {
     /**
      * Downloads databases from a MySQL server and stores them within the external-backups temporary folder, using the specified external backup settings
      * @param externalBackup the external backup settings
-     * @param backupList the list of folders to upload to the configured remote destinations
      */
-    private void makeExternalDatabaseBackup(HashMap<String, Object> externalBackup, ArrayList<HashMap<String, Object>> backupList) {
+    private void makeExternalDatabaseBackup(HashMap<String, Object> externalBackup) {
         MessageUtil.sendConsoleMessage("Downloading databases from a MySQL server (" + getSocketAddress(externalBackup) + ") to include in backup");
 
         // For backwards compatibility with <1.3.0
@@ -407,6 +459,32 @@ public class UploadThread implements Runnable {
         } else {
             MessageUtil.sendMessageToPlayersWithPermission("Databases from a " + ChatColor.GOLD + "MySQL server (" + getSocketAddress(externalBackup) + ") " + ChatColor.DARK_AQUA + "were successfully included in the backup", "drivebackup.linkAccounts", Collections.singletonList(initiator), false);
         }
+    }
+
+    /**
+     * Gets the current status of the backup thread
+     * @return the status of the backup thread as a {@code String}
+     */
+    public static String getBackupStatus() {
+        StringBuilder backupStatusMessage = new StringBuilder();
+
+        if (backupStatus == BackupStatus.NOT_RUNNING) {
+            backupStatusMessage.append("No backups are running");
+
+            return backupStatusMessage.toString();
+        }
+
+        switch (backupStatus) {
+            case COMPRESSING: backupStatusMessage.append("Compressing ");
+            case UPLOADING: backupStatusMessage.append("Uploading ");
+            default:
+        }
+
+        String backupSetName = (String) Config.getBackupList().get(backupBackingUp).get("path");
+
+        backupStatusMessage.append("backup set \"" + backupSetName + "\", set " + (backupBackingUp + 1) + " of " + Config.getBackupList().size());
+
+        return backupStatusMessage.toString();
     }
 
     /**
