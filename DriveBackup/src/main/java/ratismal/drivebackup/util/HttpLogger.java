@@ -21,6 +21,8 @@ public class HttpLogger implements Interceptor {
     MessageUtil.sendConsoleMessage(String.format("Received response for %s in %.1fms%n%s", response.request().url(),
         (t2 - t1) / 1e6d, response.headers()));
 
+    MessageUtil.sendConsoleMessage(response.body().string());
+
     return response;
   }
 }
