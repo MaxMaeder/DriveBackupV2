@@ -47,6 +47,7 @@ public class CommandTabComplete implements TabCompleter {
                 if (player.hasPermission("drivebackup.getBackupStatus")) commandList.add("status");
                 if (player.hasPermission("drivebackup.getNextBackup")) commandList.add("nextbackup");
                 if (player.hasPermission("drivebackup.backup")) commandList.add("backup");
+                if (player.hasPermission("drivebackup.backup")) commandList.add("test");
                     
                 return commandList;
             } else if (args[0].equalsIgnoreCase("linkaccount") && args.length == 2) {
@@ -58,6 +59,16 @@ public class CommandTabComplete implements TabCompleter {
                 List<String> commandList = new ArrayList<>();
                 commandList.add("googledrive");
                 commandList.add("onedrive");
+                
+                return commandList;
+            } else if (args[0].equalsIgnoreCase("test") && args.length == 2) {
+
+                if (!player.hasPermission("drivebackup.backup")) {
+                    return null;
+                }
+                
+                List<String> commandList = new ArrayList<>();
+                commandList.add("ftp");
                 
                 return commandList;
             }
