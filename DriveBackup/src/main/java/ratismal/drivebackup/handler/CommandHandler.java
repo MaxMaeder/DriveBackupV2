@@ -15,6 +15,7 @@ import net.kyori.text.event.ClickEvent;
 import net.kyori.text.event.HoverEvent;
 import net.kyori.text.format.TextColor;
 import ratismal.drivebackup.DriveBackup;
+import ratismal.drivebackup.TestThread;
 import ratismal.drivebackup.UploadThread;
 import ratismal.drivebackup.config.Config;
 import ratismal.drivebackup.googledrive.GoogleDriveUploader;
@@ -114,6 +115,13 @@ public class CommandHandler implements CommandExecutor {
                             new Thread(t).start();
                         }
                         break;
+                    case "test":
+                        if (hasPerm(sender, "drivebackup.backup")) {
+
+                            Runnable t = new TestThread(sender, args);
+                            new Thread(t).start();
+                        }
+                        break;
                     default:
                         sendHelp(sender);
                         break;
@@ -155,7 +163,9 @@ public class CommandHandler implements CommandExecutor {
         TextAdapter.sendMessage(player, genCommandHelpMessage("/drivebackup linkaccount onedrive", "Links your OneDrive account for backups"));
         TextAdapter.sendMessage(player, genCommandHelpMessage("/drivebackup reloadconfig", "Reloads the config.yml"));
         TextAdapter.sendMessage(player, genCommandHelpMessage("/drivebackup nextbackup", "Gets the time/date of the next auto backup"));
+        TextAdapter.sendMessage(player, genCommandHelpMessage("/drivebackup status", "Gets the status of the running backup"));
         TextAdapter.sendMessage(player, genCommandHelpMessage("/drivebackup backup", "Manually initiates a backup"));
+        TextAdapter.sendMessage(player, genCommandHelpMessage("/drivebackup test ftp", "Tests the connection to the (S)FTP server"));
     }
 
     /**

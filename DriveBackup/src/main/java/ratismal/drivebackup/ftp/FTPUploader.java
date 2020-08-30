@@ -12,6 +12,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by Ratismal on 2016-03-30.
@@ -112,6 +113,50 @@ public class FTPUploader {
         try {
             if (sftpClient != null) {
                 sftpClient.close();
+            }
+        } catch (Exception e) {
+            MessageUtil.sendConsoleException(e);
+            setErrorOccurred(true);
+        }
+    }
+
+    /**
+     * Tests the connection to the (S)FTP server by connecting and uploading a small file
+     * @param testFileName name of the test file to upload during the test
+     * @param testFileSize the size (in bytes) of the file
+     */
+    public void testConnection(String testFileName, int testFileSize) {
+        try {
+            if (sftpClient != null) {
+                sftpClient.testConnection(testFileName, testFileSize);
+                return;
+            }
+
+            String localTestFilePath = Config.getDir() + File.separator + testFileName;
+
+            new File(Config.getDir()).mkdirs();
+
+            try (FileOutputStream fos = new FileOutputStream(localTestFilePath)) {
+                java.util.Random byteGenerator = new java.util.Random();
+
+                byte[] randomBytes = new byte[testFileSize];
+                byteGenerator.nextBytes(randomBytes);
+
+                fos.write(randomBytes);
+                fos.flush();
+
+                resetWorkingDirectory();
+                createThenEnter(_remoteBaseFolder);
+
+                try (FileInputStream fis = new FileInputStream(localTestFilePath)) {
+                    ftpClient.storeFile(testFileName, fis);
+                }
+
+                TimeUnit.SECONDS.sleep(5);
+                
+                ftpClient.deleteFile(testFileName);
+            } finally {
+                new File(localTestFilePath).delete();
             }
         } catch (Exception e) {
             MessageUtil.sendConsoleException(e);

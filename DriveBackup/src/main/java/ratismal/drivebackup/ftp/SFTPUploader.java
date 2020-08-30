@@ -5,9 +5,13 @@ import ratismal.drivebackup.config.Config;
 import ratismal.drivebackup.util.MessageUtil;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 import net.schmizz.sshj.SSHClient;
+import net.schmizz.sshj.connection.channel.direct.Session;
 import net.schmizz.sshj.sftp.RemoteResourceInfo;
 import net.schmizz.sshj.sftp.StatefulSFTPClient;
 import net.schmizz.sshj.transport.verification.PromiscuousVerifier;
@@ -116,6 +120,39 @@ public class SFTPUploader {
      */
     public void close() throws Exception {
         sshClient.close();
+    }
+
+    /**
+     * Tests the connection to the (S)FTP server by connecting and uploading a small file
+     * @param testFileName name of the test file to upload during the test
+     * @param testFileSize the size (in bytes) of the file
+     * @throws Exception
+     */
+    public void testConnection(String testFileName, int testFileSize) throws Exception {
+        String localTestFilePath = Config.getDir() + File.separator + testFileName;
+
+        new File(Config.getDir()).mkdirs();
+
+        try (FileOutputStream fos = new FileOutputStream(localTestFilePath)) {
+            java.util.Random byteGenerator = new java.util.Random();
+
+            byte[] randomBytes = new byte[testFileSize];
+            byteGenerator.nextBytes(randomBytes);
+
+            fos.write(randomBytes);
+            fos.flush();
+
+            resetWorkingDirectory();
+            createThenEnter(_remoteBaseFolder);
+
+            sftpClient.put(localTestFilePath, testFileName);
+
+            TimeUnit.SECONDS.sleep(5);
+            
+            sftpClient.rm(testFileName);
+        } finally {
+            new File(localTestFilePath).delete();
+        }
     }
 
     /**
