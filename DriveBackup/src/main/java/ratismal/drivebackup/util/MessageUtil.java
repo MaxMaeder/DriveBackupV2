@@ -30,11 +30,7 @@ public class MessageUtil {
         message = translateMessageColors(message);
 
         for (Player p : Bukkit.getOnlinePlayers()) {
-            if (Config.isPrefixChatMessages()) {
-                p.sendMessage(prefixMessage(message));
-            } else {
-                p.sendMessage(ChatColor.DARK_AQUA + message);
-            }
+            p.sendMessage(prefixMessage(message));
         }
     }
 
@@ -154,7 +150,7 @@ public class MessageUtil {
      * @return the prefixed message
      */
     private static String prefixMessage(String message) {
-        return "\2476[\2474DriveBackupV2\2476]\2473 " + message;
+        return translateMessageColors(Config.getMessagePrefix() + Config.getDefaultMessageColor()) + message;
     }
 
     /**

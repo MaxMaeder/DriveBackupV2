@@ -58,7 +58,8 @@ public class Config {
     private static boolean metrics;
     private static boolean updateCheck;
     private static boolean debug;
-    private static boolean prefixChatMessages;
+    private static String messagePrefix;
+    private static String defaultMessageColor;
     private static String ftpFileSeperator;
     private static String dateLanguage;
 
@@ -189,9 +190,17 @@ public class Config {
         metrics = getBooleanWithFallback("advanced.metrics", "metrics");
         updateCheck = getBooleanWithFallback("advanced.update-check", "update-check");
         debug = !getBooleanWithFallback("advanced.suppress-errors", "suppress-errors");
-        prefixChatMessages = config.getBoolean("advanced.prefix-chat-messages");
+        defaultMessageColor = config.getString("advanced.default-message-color");
         ftpFileSeperator = getStringWithFallback("advanced.ftp-file-separator", "advanced.ftp-file-seperator");
         dateLanguage = config.getString("advanced.date-language");
+
+        if (config.isSet("advanced.message-prefix")) {
+            messagePrefix = config.getString("advanced.message-prefix");
+        } else if (config.isSet("advanced.prefix-chat-messages") && !config.isBoolean("advanced.prefix-chat-messages")) {
+            messagePrefix = "";
+        } else {
+            messagePrefix = config.getString("advanced.message-prefix");
+        }
     } 
 
     /**
@@ -516,11 +525,19 @@ public class Config {
     }
 
     /**
-     * Gets whether the public facing messages should be prefixed with the plugin name
-     * @return whether to prefix them
+     * Gets what to prefix plugin messages with
+     * @return the message prefix
      */
-    public static boolean isPrefixChatMessages() {
-        return prefixChatMessages;
+    public static String getMessagePrefix() {
+        return messagePrefix;
+    }
+
+    /**
+     * Gets the default color of the plugin messages
+     * @return the color, as a Minecraft color code
+     */
+    public static String getDefaultMessageColor() {
+        return defaultMessageColor;
     }
 
     /**
