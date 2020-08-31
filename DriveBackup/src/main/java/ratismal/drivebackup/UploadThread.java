@@ -123,6 +123,8 @@ public class UploadThread implements Runnable {
             return;
         }
 
+        setAutoSave(false);
+
         MessageUtil.sendMessageToAllPlayers(Config.getBackupStart());
 
         GoogleDriveUploader googleDriveUploader = null;
@@ -185,6 +187,8 @@ public class UploadThread implements Runnable {
                     backupStatus = BackupStatus.NOT_RUNNING;
                     errorOccurred = true;
 
+                    setAutoSave(true);
+
                     return;
                 } catch (Exception exception) {
                     MessageUtil.sendConsoleException(exception);
@@ -192,6 +196,8 @@ public class UploadThread implements Runnable {
 
                     backupStatus = BackupStatus.NOT_RUNNING;
                     errorOccurred = true;
+
+                    setAutoSave(true);
 
                     return;
                 }
@@ -309,6 +315,8 @@ public class UploadThread implements Runnable {
             MessageUtil.sendConsoleMessage("Disabling automatic backups due to inactivity");
             PlayerListener.setAutoBackupsActive(false);
         }
+
+        setAutoSave(true);
 
         if (errorOccurred) {
             DriveBackupApi.backupError();
@@ -602,5 +610,13 @@ public class UploadThread implements Runnable {
             }
         }
         return folder.delete();
+    }
+
+    /**
+     * Turns the server auto save on/off
+     * @param autoSave whether to save automatically
+     */
+    private static void setAutoSave(boolean autoSave) {
+        Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), autoSave ? "save-on" : "save-off");
     }
 }
