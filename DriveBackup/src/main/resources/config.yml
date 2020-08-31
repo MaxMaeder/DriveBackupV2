@@ -62,6 +62,7 @@ advanced:
   metrics: true
   update-check: true
   suppress-errors: false
-  prefix-chat-messages: true
+  message-prefix: "&6[&4DriveBackupV2&6] "
+  default-message-color: "&3"
   date-language: "en"
   ftp-file-separator: "/"
