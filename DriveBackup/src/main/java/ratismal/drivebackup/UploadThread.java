@@ -548,7 +548,7 @@ public class UploadThread implements Runnable {
                     .with(ChronoField.SECOND_OF_DAY, 0);
             }
 
-            if (weeksCheckedForDate == 2) {
+            if (weeksCheckedForDate == 1) {
                 nextBackupDate = nextBackupDate
                     .with(ChronoField.YEAR, now.get(ChronoField.YEAR))
                     .with(ChronoField.ALIGNED_WEEK_OF_YEAR, now.get(ChronoField.ALIGNED_WEEK_OF_YEAR) + 1);
