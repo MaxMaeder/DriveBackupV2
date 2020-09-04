@@ -28,6 +28,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoField;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
+import java.util.concurrent.Callable;
 
 /**
  * Created by Ratismal on 2016-01-22.
@@ -617,6 +618,13 @@ public class UploadThread implements Runnable {
      * @param autoSave whether to save automatically
      */
     private static void setAutoSave(boolean autoSave) {
-        Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), autoSave ? "save-on" : "save-off");
+        try {
+            Bukkit.getScheduler().callSyncMethod(DriveBackup.getInstance(), new Callable<Boolean>() {
+                @Override
+                public Boolean call() {
+                    return Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), autoSave ? "save-on" : "save-off");
+                }
+            }).get();
+        } catch (Exception exception) { }
     }
 }
