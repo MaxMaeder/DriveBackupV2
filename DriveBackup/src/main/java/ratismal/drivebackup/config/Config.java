@@ -18,6 +18,7 @@ public class Config {
     private static int backupThreadPriority;
     private static int keepCount;
     private static int localKeepCount;
+    private static int zipCompression;
     private static boolean backupsRequirePlayers;
 
     private static boolean scheduleBackups;
@@ -89,6 +90,7 @@ public class Config {
         backupThreadPriority = config.getInt("backup-thread-priority");
         keepCount = config.getInt("keep-count");
         localKeepCount = config.getInt("local-keep-count");
+        zipCompression = config.getInt("zip-compression");
         backupsRequirePlayers = config.getBoolean("backups-require-players");
 
         scheduleBackups = config.getBoolean("scheduled-backups");
@@ -265,6 +267,14 @@ public class Config {
      */
     public static int getLocalKeepCount() {
         return localKeepCount;
+    }
+
+    /**
+     * Gets the compression level of the backup zips
+     * @return the compression level
+     */
+    public static int getZipCompression() {
+        return zipCompression;
     }
 
     /**

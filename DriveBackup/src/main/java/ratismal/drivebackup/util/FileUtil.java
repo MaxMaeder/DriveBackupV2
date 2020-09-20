@@ -15,6 +15,7 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.regex.Pattern;
+import java.util.zip.Deflater;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -171,6 +172,7 @@ public class FileUtil {
         try {
             fileOutputStream = new FileOutputStream(outputFilePath);
             zipOutputStream = new ZipOutputStream(fileOutputStream);
+            zipOutputStream.setLevel(Config.getZipCompression());
 
             for (String file : fileList) {
                 zipOutputStream.putNextEntry(new ZipEntry(formattedInputFolderPath + File.separator + file));
