@@ -78,6 +78,10 @@
                             <pattern>net.kyori</pattern>
                             <shadedPattern>ratismal.drivebackup.DriveBackup.lib</shadedPattern>
                         </relocation>
+                        <relocation>
+                            <pattern>com.fasterxml</pattern>
+                            <shadedPattern>ratismal.drivebackup.DriveBackup.lib</shadedPattern>
+                        </relocation>
                     </relocations>
                     <filters>
                         <filter>
