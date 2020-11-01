@@ -17,6 +17,14 @@ DriveBackupV2 is a plugin that aims to provide an extra layer of security to you
 - Can automatically run backups at an interval or on a schedule
 - And **much** more!
 
+## Proudly Sponsored By:
+
+[![Bloom Logo](https://i.imgur.com/0BZxjXY.png)](https://bloom.host/)
+
+[Bloom](https://bloom.host/) offers dedicated core VPS and Minecraft hosting with Ryzen 9 processors using owned hardware. Bloom’s plans include tons of storage and with fully dedicated cores, there is no limit or throttling of your CPU. Join their [Discord](https://discord.gg/WpENw6F) to learn more.
+
+*Want to sponsor this plugin? Check out our [Patreon](https://www.patreon.com/DriveBackupV2)!*
+
 ## Basic Setup
 First, download the plugin [here](https://dev.bukkit.org/projects/drivebackupv2) and copy it to the `plugins` folder on your server. Then, restart your server. Finally, follow the instructions below for the backup method of your choice.
 
