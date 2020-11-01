@@ -21,7 +21,7 @@ DriveBackupV2 is a plugin that aims to provide an extra layer of security to you
 
 [![Bloom Logo](https://i.imgur.com/0BZxjXY.png)](https://bloom.host/)
 
-[Bloom](https://bloom.host/) offers dedicated core VPS and Minecraft hosting with Ryzen 9 processors using owned hardware. Bloom’s plans include tons of storage and with fully dedicated cores, there is no limit or throttling of your CPU. Join their [Discord](https://discord.gg/WpENw6F) to learn more.
+[Bloom](https://bloom.host/) offers dedicated core VPS and Minecraft hosting with Ryzen 9 processors using owned hardware. Bloom’s plans include tons of storage and with fully dedicated cores, there is no limit or throttling of your CPU. Join their [Discord](https://discord.gg/hysKgr4YGY) to learn more.
 
 *Want to sponsor this plugin? Check out our [Patreon](https://www.patreon.com/DriveBackupV2)!*
 
