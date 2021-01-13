@@ -618,6 +618,10 @@ public class UploadThread implements Runnable {
      * @param autoSave whether to save automatically
      */
     private static void setAutoSave(boolean autoSave) {
+        if (!Config.isSavingDisabledDuringBackups()) {
+            return;
+        }
+
         try {
             Bukkit.getScheduler().callSyncMethod(DriveBackup.getInstance(), new Callable<Boolean>() {
                 @Override
