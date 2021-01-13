@@ -485,7 +485,9 @@ public class UploadThread implements Runnable {
 
         switch (backupStatus) {
             case COMPRESSING: backupStatusMessage.append("Compressing ");
+                break;
             case UPLOADING: backupStatusMessage.append("Uploading ");
+                break;
             default:
         }
 
