@@ -20,6 +20,7 @@ public class Config {
     private static int localKeepCount;
     private static int zipCompression;
     private static boolean backupsRequirePlayers;
+    private static boolean disableSavingDuringBackups;
 
     private static boolean scheduleBackups;
     private static ZoneOffset backupScheduleTimezone;
@@ -92,6 +93,7 @@ public class Config {
         localKeepCount = config.getInt("local-keep-count");
         zipCompression = config.getInt("zip-compression");
         backupsRequirePlayers = config.getBoolean("backups-require-players");
+        disableSavingDuringBackups = config.getBoolean("disable-saving-during-backups");
 
         scheduleBackups = config.getBoolean("scheduled-backups");
         backupScheduleTimezone = ZoneOffset.of(config.getString("schedule-timezone"));
@@ -283,6 +285,14 @@ public class Config {
      */
     public static boolean isBackupsRequirePlayers() {
         return backupsRequirePlayers;
+    }
+
+    /**
+     * Gets whether to disable saving during backups
+     * @return whether to disable saving
+     */
+    public static boolean isSavingDisabledDuringBackups() {
+        return disableSavingDuringBackups;
     }
 
     /**
