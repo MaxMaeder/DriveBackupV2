@@ -25,7 +25,7 @@ import net.kyori.text.TextComponent;
 import ratismal.drivebackup.DriveBackup;
 import ratismal.drivebackup.config.Config;
 import ratismal.drivebackup.util.MessageUtil;
-import ratismal.drivebackup.uploader.Uploader;
+import ratismal.drivebackup.Uploader;
 
 import java.io.BufferedReader;
 import java.io.FileReader;

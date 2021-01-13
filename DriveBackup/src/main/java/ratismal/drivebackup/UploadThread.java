@@ -10,7 +10,7 @@ import net.kyori.text.event.HoverEvent;
 import net.kyori.text.format.TextColor;
 import ratismal.drivebackup.config.Config;
 import ratismal.drivebackup.ftp.FTPUploader;
-import ratismal.drivebackup.uploader.Uploader;
+import ratismal.drivebackup.Uploader;
 import ratismal.drivebackup.googledrive.GoogleDriveUploader;
 import ratismal.drivebackup.handler.PlayerListener;
 import ratismal.drivebackup.mysql.MySQLUploader;
@@ -133,13 +133,13 @@ public class UploadThread implements Runnable {
         ArrayList<Uploader> uploaders = new ArrayList<Uploader>();
 
         if (Config.isGoogleDriveEnabled()) {
-            uploaders.add(new GoogleDriveUploader());
+            uploaders.add((Uploader) new GoogleDriveUploader());
         }
         if (Config.isOneDriveEnabled()) {
-            uploaders.add(new OneDriveUploader());
+            uploaders.add((Uploader) new OneDriveUploader());
         }
         if (Config.isFtpEnabled()) {
-            uploaders.add(new FTPUploader());
+            uploaders.add((Uploader) new FTPUploader());
         }
 
         backupList = Config.getBackupList();
@@ -160,7 +160,7 @@ public class UploadThread implements Runnable {
                 }
             }
         }
-        
+
         backupBackingUp = 0;
         for (HashMap<String, Object> set : backupList) {
             String type = set.get("path").toString();
@@ -220,7 +220,11 @@ public class UploadThread implements Runnable {
                     timer.start();
                     uploaders.get(i).uploadFile(file, type);
                     timer.end();
-                    MessageUtil.sendConsoleMessage(timer.getUploadTimeMessage(file));
+                    if(!uploaders.get(i).isErrorWhileUploading()) {
+                        MessageUtil.sendConsoleMessage(timer.getUploadTimeMessage(file));
+                    } else {
+                        MessageUtil.sendConsoleMessage("Upload failed");
+                    }
                 }
 
                 FileUtil.deleteFiles(type, format);

@@ -9,7 +9,7 @@ import org.bukkit.ChatColor;
 import net.kyori.text.TextComponent;
 import ratismal.drivebackup.config.Config;
 import ratismal.drivebackup.util.MessageUtil;
-import ratismal.drivebackup.uploader.Uploader;
+import ratismal.drivebackup.Uploader;
 
 import java.io.File;
 import java.io.FileInputStream;
