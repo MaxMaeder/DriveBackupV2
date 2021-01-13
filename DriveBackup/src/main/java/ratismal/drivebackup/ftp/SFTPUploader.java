@@ -3,7 +3,6 @@ package ratismal.drivebackup.ftp;
 import ratismal.drivebackup.DriveBackup;
 import ratismal.drivebackup.config.Config;
 import ratismal.drivebackup.util.MessageUtil;
-import ratismal.drivebackup.uploader.Uploader;
 
 import java.io.File;
 import java.io.FileInputStream;

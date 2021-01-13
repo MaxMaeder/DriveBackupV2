@@ -21,7 +21,7 @@ import ratismal.drivebackup.DriveBackup;
 import ratismal.drivebackup.config.Config;
 import ratismal.drivebackup.util.HttpLogger;
 import ratismal.drivebackup.util.MessageUtil;
-import ratismal.drivebackup.uploader.Uploader;
+import ratismal.drivebackup.Uploader;
 
 import java.io.*;
 import java.text.DecimalFormat;
