@@ -20,9 +20,12 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+
+import net.kyori.text.TextComponent;
 import ratismal.drivebackup.DriveBackup;
 import ratismal.drivebackup.config.Config;
 import ratismal.drivebackup.util.MessageUtil;
+import ratismal.drivebackup.uploader.Uploader;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -41,7 +44,7 @@ import org.json.JSONObject;
  * Created by Ratismal on 2016-01-20.
  */
 
-public class GoogleDriveUploader {
+public class GoogleDriveUploader implements Uploader {
     private boolean errorOccurred;
     private String refreshToken;
 
@@ -330,6 +333,36 @@ public class GoogleDriveUploader {
     public boolean isErrorWhileUploading() {
         return this.errorOccurred;
     }
+
+    /**
+     * Gets the name of this upload service
+     * @return name of upload service
+     */
+    public String getName()
+    {
+        return "Google Drive";
+    }
+
+    /**
+     * Gets the setup instructions for this uploaders
+     * @return a TextComponent explaining how to set up this uploader
+     */
+    public TextComponent getSetupInstructions()
+    {
+        return TextComponent.builder()
+                    .append(
+                        TextComponent.of("Failed to backup to Google Drive, please run ")
+                        .color(TextColor.DARK_AQUA)
+                    )
+                    .append(
+                        TextComponent.of("/drivebackup linkaccount googledrive")
+                        .color(TextColor.GOLD)
+                        .hoverEvent(HoverEvent.showText(TextComponent.of("Run command")))
+                        .clickEvent(ClickEvent.runCommand("/drivebackup linkaccount googledrive"))
+                    )
+                    .build();
+    }
+
 
     /**
      * Creates a folder with the specified name in the specified parent folder in the authenticated user's Google Drive

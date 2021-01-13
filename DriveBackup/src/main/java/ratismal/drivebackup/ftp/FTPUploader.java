@@ -4,8 +4,12 @@ import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
 import org.apache.commons.net.ftp.FTPSClient;
+import org.bukkit.ChatColor;
+
+import net.kyori.text.TextComponent;
 import ratismal.drivebackup.config.Config;
 import ratismal.drivebackup.util.MessageUtil;
+import ratismal.drivebackup.uploader.Uploader;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -18,7 +22,7 @@ import java.util.concurrent.TimeUnit;
  * Created by Ratismal on 2016-03-30.
  */
 
-public class FTPUploader {
+public class FTPUploader implements Uploader {
     private FTPClient ftpClient;
     private SFTPUploader sftpClient;
 
@@ -265,6 +269,24 @@ public class FTPUploader {
      */
     public boolean isErrorWhileUploading() {
         return this._errorOccurred;
+    }
+
+    /**
+     * Gets the name of this upload service
+     * @return name of upload service
+     */
+    public String getName()
+    {
+        return "(S)FTP";
+    }
+
+    /**
+     * Gets the setup instructions for this uploaders
+     * @return a TextComponent explaining how to set up this uploader
+     */
+    public TextComponent getSetupInstructions()
+    {
+        return TextComponent.of("Failed to backup to the (S)FTP server, please check the server credentials in the " + ChatColor.GOLD + "config.yml");
     }
 
     /**

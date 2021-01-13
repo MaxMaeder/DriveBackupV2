@@ -308,8 +308,8 @@ public class DriveBackup extends JavaPlugin {
 
             backupTasks.add(taskScheduler.runTaskTimerAsynchronously(
                 getInstance(), 
-                new UploadThread(), 
-                Config.getBackupDelay() * 60 * 20, 
+                new UploadThread(),
+                Config.getBackupDelay() * 60 * 20,
                 Config.getBackupDelay() * 60 * 20
             ).getTaskId());
 
@@ -384,8 +384,7 @@ public class DriveBackup extends JavaPlugin {
         }
     }
 
-    /**
-     * Adds a Object to an ArrayList, if it doesn't already contain the Object
+    /**mysqlUploader, if it doesn't already contain the Object
      * @param list the ArrayList
      * @param item the Object
      */
