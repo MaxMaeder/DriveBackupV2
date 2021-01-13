@@ -11,6 +11,7 @@ keep-count: 20
 local-keep-count: 0
 zip-compression: -1
 backups-require-players: true
+disable-saving-during-backups: true
 
 scheduled-backups: false
 schedule-timezone: "-00:00"
