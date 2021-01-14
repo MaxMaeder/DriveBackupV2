@@ -7,6 +7,8 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.PathMatcher;
 import java.nio.file.Paths;
 import java.text.DateFormat;
@@ -15,6 +17,8 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import java.util.zip.Deflater;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -243,6 +247,25 @@ public class FileUtil {
                 generateFileList(new File(file, filename), inputFolderPath);
             }
         }
+    }
+
+    /**
+     * Finds all folders that match a glob
+     * @param glob the glob to search
+     * @param rootPath the path to start searching from
+     * @return List of all folders that match this glob under rootPath
+     */
+    public static List<Path> generateGlobFolderList(String glob, String rootPath) {
+        PathMatcher pathMatcher = FileSystems.getDefault().getPathMatcher("glob:./" + glob);
+        List<Path> list = new ArrayList<Path>();
+        try (Stream<Path> walk = Files.walk(Path.of(rootPath))) {
+            list = walk.filter(pathMatcher::matches).filter(Files::isDirectory).collect(Collectors.toList());
+        } catch (IOException e) {
+            //TODO: log exeption somewhere
+            MessageUtil.sendConsoleMessage(e.toString());
+            return list;
+        }
+        return list;
     }
 
     /**
