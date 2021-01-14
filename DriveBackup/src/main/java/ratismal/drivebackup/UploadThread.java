@@ -20,6 +20,7 @@ import ratismal.drivebackup.util.Timer;
 
 import java.io.File;
 import java.nio.file.FileSystems;
+import java.nio.file.Path;
 import java.nio.file.PathMatcher;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
@@ -163,7 +164,23 @@ public class UploadThread implements Runnable {
 
         backupBackingUp = 0;
         for (HashMap<String, Object> set : backupList) {
-            String type = set.get("path").toString();
+            String type;
+            Boolean doGlob = false;
+            if (set.containsKey("path")) {
+                type = set.get("path").toString();
+            } else if (set.containsKey("glob")) {
+                type = set.get("glob").toString();
+                doGlob = true;
+            } else {
+                // no path or glob specified
+                MessageUtil.sendMessageToPlayersWithPermission("Failed to create a backup, no path or glob was specified. ", "drivebackup.linkAccounts", Collections.singletonList(initiator), true);
+                backupStatus = BackupStatus.NOT_RUNNING;
+                errorOccurred = true;
+
+                setAutoSave(true);
+
+                return;
+            }
             String format = set.get("format").toString();
             String create = set.get("create").toString();
 
@@ -175,61 +192,23 @@ public class UploadThread implements Runnable {
                 }
             }
 
-            MessageUtil.sendConsoleMessage("Doing backups for \"" + type + "\"");
-            if (create.equalsIgnoreCase("true")) {
-                backupStatus = BackupStatus.COMPRESSING;
-
-                try {
-                    FileUtil.makeBackup(type, format, blackList);
-                } catch (IllegalArgumentException exception) {
-                    MessageUtil.sendMessageToPlayersWithPermission("Failed to create a backup, path to folder to backup is absolute, expected a relative path", "drivebackup.linkAccounts", Collections.singletonList(initiator), true);
-                    MessageUtil.sendMessageToPlayersWithPermission("An absolute path can overwrite sensitive files, see the " + ChatColor.GOLD + "config.yml " + ChatColor.DARK_AQUA + "for more information", "drivebackup.linkAccounts", Collections.singletonList(initiator), true);
-
-                    backupStatus = BackupStatus.NOT_RUNNING;
+            if(!doGlob) {
+                Boolean res = doSingleBackup(type, format, create, blackList, uploaders);
+                if(res) { // an error occurred
                     errorOccurred = true;
-
                     setAutoSave(true);
-
-                    return;
-                } catch (Exception exception) {
-                    MessageUtil.sendConsoleException(exception);
-                    MessageUtil.sendMessageToPlayersWithPermission("Failed to create a backup", "drivebackup.linkAccounts", Collections.singletonList(initiator), true);
-
-                    backupStatus = BackupStatus.NOT_RUNNING;
-                    errorOccurred = true;
-
-                    setAutoSave(true);
-
                     return;
                 }
-            }
-
-            try {
-                backupStatus = BackupStatus.UPLOADING;
-
-                if (FileUtil.isBaseFolder(type)) {
-                    type = "root";
-                }
-
-                File file = FileUtil.getNewestBackup(type, format);
-                ratismal.drivebackup.util.Timer timer = new Timer();
-
-
-                for(int i = 0; i < uploaders.size(); i++) {
-                    MessageUtil.sendConsoleMessage("Uploading file to " + uploaders.get(i).getName());
-                    timer.start();
-                    uploaders.get(i).uploadFile(file, type);
-                    timer.end();
-                    if(!uploaders.get(i).isErrorWhileUploading()) {
-                        MessageUtil.sendConsoleMessage(timer.getUploadTimeMessage(file));
-                    } else {
-                        MessageUtil.sendConsoleMessage("Upload failed");
+            } else {
+                List<Path> folders = FileUtil.generateGlobFolderList(type, ".");
+                for(Path folder : folders) {
+                    Boolean err = doSingleBackup(folder.toString(), format, create, blackList, uploaders);
+                    if(err) { // an error occurred
+                        errorOccurred = true;
+                        setAutoSave(true);
+                        return;
                     }
                 }
-
-                FileUtil.deleteFiles(type, format);
-            } catch (Exception e) {
-                MessageUtil.sendConsoleException(e);
             }
 
             backupBackingUp++;
@@ -271,6 +250,73 @@ public class UploadThread implements Runnable {
         } else {
             DriveBackupApi.backupDone();
         }
+    }
+
+    /**
+     * Backs up a single folder
+     * @param type Path to the folder
+     * @param format Save format configuration
+     * @param create Create the zip file or just upload it? ("True" / "False")
+     * @param blackList configured blacklist (with globs)
+     * @param uploaders All servies to upload to
+     * @return True if any error occurred
+     */
+    private Boolean doSingleBackup(String type, String format, String create, ArrayList<String> blackList, ArrayList<Uploader> uploaders) {
+        MessageUtil.sendConsoleMessage("Doing backups for \"" + type + "\"");
+        if (create.equalsIgnoreCase("true")) {
+            backupStatus = BackupStatus.COMPRESSING;
+
+            try {
+                FileUtil.makeBackup(type, format, blackList);
+            } catch (IllegalArgumentException exception) {
+                MessageUtil.sendMessageToPlayersWithPermission("Failed to create a backup, path to folder to backup is absolute, expected a relative path", "drivebackup.linkAccounts", Collections.singletonList(initiator), true);
+                MessageUtil.sendMessageToPlayersWithPermission("An absolute path can overwrite sensitive files, see the " + ChatColor.GOLD + "config.yml " + ChatColor.DARK_AQUA + "for more information", "drivebackup.linkAccounts", Collections.singletonList(initiator), true);
+
+                backupStatus = BackupStatus.NOT_RUNNING;
+
+                setAutoSave(true);
+
+                return true;
+            } catch (Exception exception) {
+                MessageUtil.sendConsoleException(exception);
+                MessageUtil.sendMessageToPlayersWithPermission("Failed to create a backup", "drivebackup.linkAccounts", Collections.singletonList(initiator), true);
+
+                backupStatus = BackupStatus.NOT_RUNNING;
+
+                setAutoSave(true);
+
+                return true;
+            }
+        }
+
+        try {
+            backupStatus = BackupStatus.UPLOADING;
+
+            if (FileUtil.isBaseFolder(type)) {
+                type = "root";
+            }
+
+            File file = FileUtil.getNewestBackup(type, format);
+            ratismal.drivebackup.util.Timer timer = new Timer();
+
+
+            for(int i = 0; i < uploaders.size(); i++) {
+                MessageUtil.sendConsoleMessage("Uploading file to " + uploaders.get(i).getName());
+                timer.start();
+                uploaders.get(i).uploadFile(file, type);
+                timer.end();
+                if(!uploaders.get(i).isErrorWhileUploading()) {
+                    MessageUtil.sendConsoleMessage(timer.getUploadTimeMessage(file));
+                } else {
+                    MessageUtil.sendConsoleMessage("Upload failed");
+                }
+            }
+
+            FileUtil.deleteFiles(type, format);
+        } catch (Exception e) {
+            MessageUtil.sendConsoleException(e);
+        }
+        return false;
     }
 
     /**
