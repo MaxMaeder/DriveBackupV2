@@ -2,6 +2,8 @@ package ratismal.drivebackup.util;
 
 import java.io.File;
 import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
+import java.util.Locale;
 import java.util.Date;
 
 /**
@@ -43,6 +45,8 @@ public class Timer {
      */
     public String getUploadTimeMessage(File file) {
         DecimalFormat df = new DecimalFormat("#.##");
+        df.setDecimalFormatSymbols(DecimalFormatSymbols.getInstance(Locale.ENGLISH));
+
         double difference = getTime();
         double length = difference / 1000;
         double speed = (file.length() / 1024) / length;
