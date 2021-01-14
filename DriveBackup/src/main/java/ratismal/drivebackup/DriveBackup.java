@@ -278,7 +278,7 @@ public class DriveBackup extends JavaPlugin {
 
                     backupTasks.add(taskScheduler.runTaskTimerAsynchronously(
                         getInstance(), 
-                        new UploadThread(), 
+                        new UploadThread(),
                         ChronoUnit.SECONDS.between(now, startingOccurrence) * 20, // 20 ticks per second 
                         ChronoUnit.SECONDS.between(previousOccurrence, nextOccurrence) * 20
                     ).getTaskId());
@@ -308,8 +308,8 @@ public class DriveBackup extends JavaPlugin {
 
             backupTasks.add(taskScheduler.runTaskTimerAsynchronously(
                 getInstance(), 
-                new UploadThread(), 
-                Config.getBackupDelay() * 60 * 20, 
+                new UploadThread(),
+                Config.getBackupDelay() * 60 * 20,
                 Config.getBackupDelay() * 60 * 20
             ).getTaskId());
 

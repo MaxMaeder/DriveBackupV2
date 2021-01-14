@@ -16,10 +16,12 @@ import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import net.kyori.text.TextComponent;
 import ratismal.drivebackup.DriveBackup;
 import ratismal.drivebackup.config.Config;
 import ratismal.drivebackup.util.HttpLogger;
 import ratismal.drivebackup.util.MessageUtil;
+import ratismal.drivebackup.Uploader;
 
 import java.io.*;
 import java.text.DecimalFormat;
@@ -33,7 +35,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * Created by Redemption on 2/24/2016.
  */
-public class OneDriveUploader {
+public class OneDriveUploader implements Uploader {
     private boolean errorOccurred;
     private long totalUploaded;
     private long lastUploaded;
@@ -337,6 +339,43 @@ public class OneDriveUploader {
     public boolean isErrorWhileUploading() {
         return this.errorOccurred;
     }
+
+    /**
+    * closes any remaining connectionsretrieveNewAccessToken
+    */
+   public void close() {
+       return; // nothing needs to be done
+   }
+
+    /**
+     * Gets the name of this upload service
+     * @return name of upload service
+     */
+    public String getName()
+    {
+        return "OneDrive";
+    }
+
+    /**
+     * Gets the setup instructions for this uploaders
+     * @return a TextComponent explaining how to set up this uploader
+     */
+    public TextComponent getSetupInstructions()
+    {
+        return TextComponent.builder()
+                    .append(
+                        TextComponent.of("Failed to backup to OneDrive, please run ")
+                        .color(TextColor.DARK_AQUA)
+                    )
+                    .append(
+                        TextComponent.of("/drivebackup linkaccount onedrive")
+                        .color(TextColor.GOLD)
+                        .hoverEvent(HoverEvent.showText(TextComponent.of("Run command")))
+                        .clickEvent(ClickEvent.runCommand("/drivebackup linkaccount onedrive"))
+                    )
+                    .build();
+    }
+
 
     /**
      * Creates a folder with the specified name in the specified parent folder in the authenticated user's OneDrive
