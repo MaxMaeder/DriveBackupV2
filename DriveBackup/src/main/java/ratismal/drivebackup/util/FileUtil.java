@@ -259,7 +259,7 @@ public class FileUtil {
         PathMatcher pathMatcher = FileSystems.getDefault().getPathMatcher("glob:./" + glob);
         List<Path> list = new ArrayList<Path>();
         try (Stream<Path> walk = Files.walk(Path.of(rootPath))) {
-            list = walk.filter(pathMatcher::matches).collect(Collectors.toList());
+            list = walk.filter(pathMatcher::matches).filter(Files::isDirectory).collect(Collectors.toList());
         } catch (IOException e) {
             //TODO: log exeption somewhere
             MessageUtil.sendConsoleMessage(e.toString());
