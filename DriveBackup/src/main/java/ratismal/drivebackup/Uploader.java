@@ -7,4 +7,5 @@ public interface Uploader {
     public TextComponent getSetupInstructions();
     public boolean isErrorWhileUploading();
     public void uploadFile(java.io.File file, String type) throws Exception;
+    public void close();
 }
