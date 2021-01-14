@@ -244,6 +244,7 @@ public class UploadThread implements Runnable {
         }
 
         for(int i = 0; i < uploaders.size(); i++) {
+            uploaders.get(i).close();
             if (uploaders.get(i).isErrorWhileUploading()) {
                 MessageUtil.sendMessageToPlayersWithPermission(uploaders.get(i).getSetupInstructions(), "drivebackup.linkAccounts", Collections.singletonList(initiator));
                 errorOccurred = true;
