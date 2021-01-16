@@ -6,6 +6,7 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
+import org.bukkit.command.RemoteConsoleCommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitScheduler;
 
@@ -46,7 +47,7 @@ public class CommandHandler implements CommandExecutor {
      * @return whether the command was handled
      */
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (!(sender instanceof Player || sender instanceof ConsoleCommandSender)) {
+        if (!(sender instanceof Player || sender instanceof ConsoleCommandSender || sender instanceof RemoteConsoleCommandSender)) {
             MessageUtil.sendMessage(sender, "DriveBackupV2 only supports commands sent in-game and via the console");
             return true;
         }
