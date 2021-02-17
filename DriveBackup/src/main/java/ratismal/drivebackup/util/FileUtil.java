@@ -258,7 +258,7 @@ public class FileUtil {
     public static List<Path> generateGlobFolderList(String glob, String rootPath) {
         PathMatcher pathMatcher = FileSystems.getDefault().getPathMatcher("glob:./" + glob);
         List<Path> list = new ArrayList<Path>();
-        try (Stream<Path> walk = Files.walk(Path.of(rootPath))) {
+        try (Stream<Path> walk = Files.walk(Paths.get(rootPath))) {
             list = walk.filter(pathMatcher::matches).filter(Files::isDirectory).collect(Collectors.toList());
         } catch (IOException e) {
             //TODO: log exeption somewhere
