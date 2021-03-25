@@ -37,6 +37,7 @@ public class Config {
 
     private static boolean googleDriveEnabled;
     private static boolean oneDriveEnabled;
+    private static boolean dropboxEnabled;
     private static boolean ftpEnabled;
     private static String ftpHost;
     private static int ftpPort;
@@ -171,6 +172,7 @@ public class Config {
 
         googleDriveEnabled = config.getBoolean("googledrive.enabled");
         oneDriveEnabled = config.getBoolean("onedrive.enabled");
+        dropboxEnabled = config.getBoolean("dropbox.enabled");
         ftpEnabled = config.getBoolean("ftp.enabled");
         ftpHost = config.getString("ftp.hostname");
         ftpPort = config.getInt("ftp.port");
@@ -374,6 +376,15 @@ public class Config {
      */
     public static boolean isOneDriveEnabled() {
         return oneDriveEnabled;
+    }
+
+    /**
+     * Gets whether a Dropbox is enabled as a backup method
+     * 
+     * @return whether Dropbox is enabled
+     */
+    public static boolean isDropboxEnabled() {
+        return dropboxEnabled;
     }
 
     /**

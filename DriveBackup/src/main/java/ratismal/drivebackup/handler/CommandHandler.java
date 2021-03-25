@@ -19,6 +19,7 @@ import ratismal.drivebackup.DriveBackup;
 import ratismal.drivebackup.TestThread;
 import ratismal.drivebackup.UploadThread;
 import ratismal.drivebackup.config.Config;
+import ratismal.drivebackup.dropbox.DropboxUploader;
 import ratismal.drivebackup.googledrive.GoogleDriveUploader;
 import ratismal.drivebackup.onedrive.OneDriveUploader;
 import ratismal.drivebackup.util.MessageUtil;
@@ -91,7 +92,16 @@ public class CommandHandler implements CommandExecutor {
                       				
                       				    MessageUtil.sendConsoleException(e);
                       			    }
-                      			    break;
+                                    break;
+                                case "dropbox":
+                                    try {
+                                        DropboxUploader.authenticateUser(plugin, sender);
+                                    } catch (Exception e) {
+                                        MessageUtil.sendMessage(sender, "Failed to link your Dropbox account");
+
+                                        MessageUtil.sendConsoleException(e);
+                                    }
+                                    break;
                                 default:
                                     sendHelp(sender);
                                     break;
@@ -162,6 +172,7 @@ public class CommandHandler implements CommandExecutor {
         TextAdapter.sendMessage(player, genCommandHelpMessage("/drivebackup v", "Displays the plugin version"));
         TextAdapter.sendMessage(player, genCommandHelpMessage("/drivebackup linkaccount googledrive", "Links your Google Drive account for backups"));
         TextAdapter.sendMessage(player, genCommandHelpMessage("/drivebackup linkaccount onedrive", "Links your OneDrive account for backups"));
+        TextAdapter.sendMessage(player, genCommandHelpMessage("/drivebackup linkaccount dropbox", "Links your Dropbox account for backups"));
         TextAdapter.sendMessage(player, genCommandHelpMessage("/drivebackup reloadconfig", "Reloads the config.yml"));
         TextAdapter.sendMessage(player, genCommandHelpMessage("/drivebackup nextbackup", "Gets the time/date of the next auto backup"));
         TextAdapter.sendMessage(player, genCommandHelpMessage("/drivebackup status", "Gets the status of the running backup"));

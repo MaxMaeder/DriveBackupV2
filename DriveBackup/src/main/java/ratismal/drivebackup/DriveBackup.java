@@ -33,8 +33,6 @@ import java.util.Locale;
 import java.util.concurrent.Callable;
 import java.util.logging.Logger;
 
-import com.mysql.cj.jdbc.result.UpdatableResultSet;
-
 public class DriveBackup extends JavaPlugin {
 
     private static String newVersionTitle = "";
@@ -165,6 +163,13 @@ public class DriveBackup extends JavaPlugin {
             @Override
             public String call() throws Exception {
             	return Config.isOneDriveEnabled() ? "Enabled" : "Disabled";
+            }
+        }));
+
+        metrics.addCustomChart(new Metrics.SimplePie("dropboxEnabled", new Callable<String>() {
+            @Override
+            public String call() throws Exception {
+                return Config.isDropboxEnabled() ? "Enabled" : "Disabled";
             }
         }));
 
