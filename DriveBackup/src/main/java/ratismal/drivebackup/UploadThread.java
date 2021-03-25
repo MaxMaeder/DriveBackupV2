@@ -4,13 +4,9 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 
-import net.kyori.text.TextComponent;
-import net.kyori.text.event.ClickEvent;
-import net.kyori.text.event.HoverEvent;
-import net.kyori.text.format.TextColor;
 import ratismal.drivebackup.config.Config;
+import ratismal.drivebackup.dropbox.DropboxUploader;
 import ratismal.drivebackup.ftp.FTPUploader;
-import ratismal.drivebackup.Uploader;
 import ratismal.drivebackup.googledrive.GoogleDriveUploader;
 import ratismal.drivebackup.handler.PlayerListener;
 import ratismal.drivebackup.mysql.MySQLUploader;
@@ -120,7 +116,7 @@ public class UploadThread implements Runnable {
 
         boolean errorOccurred = false;
 
-        if (!Config.isGoogleDriveEnabled() && !Config.isOneDriveEnabled() && !Config.isFtpEnabled() && Config.getLocalKeepCount() == 0) {
+        if (!Config.isGoogleDriveEnabled() && !Config.isOneDriveEnabled() && !Config.isDropboxEnabled() && !Config.isFtpEnabled() && Config.getLocalKeepCount() == 0) {
             MessageUtil.sendMessageToPlayersWithPermission("No backup method is enabled", "drivebackup.linkAccounts", Collections.singletonList(initiator), true);
 
             return;
@@ -138,6 +134,9 @@ public class UploadThread implements Runnable {
         }
         if (Config.isOneDriveEnabled()) {
             uploaders.add((Uploader) new OneDriveUploader());
+        }
+        if (Config.isDropboxEnabled()) {
+            uploaders.add((Uploader) new DropboxUploader());
         }
         if (Config.isFtpEnabled()) {
             uploaders.add((Uploader) new FTPUploader());
