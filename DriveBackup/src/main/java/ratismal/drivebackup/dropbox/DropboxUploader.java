@@ -15,6 +15,7 @@ import java.io.IOException;
 import org.bukkit.command.CommandSender;
 import org.bukkit.conversations.Conversable;
 import org.bukkit.conversations.Conversation;
+import org.bukkit.conversations.ConversationAbandonedEvent;
 import org.bukkit.conversations.ConversationContext;
 import org.bukkit.conversations.ConversationFactory;
 import org.bukkit.conversations.Prompt;
@@ -69,43 +70,36 @@ public class DropboxUploader implements Uploader {
      */
     public static void authenticateUser(final DriveBackup plugin, final CommandSender initiator) throws Exception {
 
+        Boolean[] errorOccured = {false};
         final String authorizeUrl = "https://www.dropbox.com/oauth2/authorize?token_access_type=offline&response_type=code&client_id="+APP_KEY;
 
         MessageUtil.sendMessage(initiator,
-                TextComponent.builder()
-                    .append(TextComponent.of("To link your Dropbox account, go to ").color(TextColor.DARK_AQUA))
-                    .append(TextComponent.of(authorizeUrl).color(TextColor.GOLD)
-                        .hoverEvent(HoverEvent.showText(TextComponent.of("Go to URL")))
-                        .clickEvent(ClickEvent.openUrl(authorizeUrl)))
-                    .build());
+            TextComponent.builder()
+                .append(TextComponent.of("To link your Dropbox account, go to ").color(TextColor.DARK_AQUA))
+                .append(TextComponent.of(authorizeUrl).color(TextColor.GOLD)
+                    .hoverEvent(HoverEvent.showText(TextComponent.of("Go to URL")))
+                    .clickEvent(ClickEvent.openUrl(authorizeUrl)))
+                .append(TextComponent.of(" and paste the code here:").color(TextColor.DARK_AQUA))
+                .build());
 
         final Prompt getToken = new StringPrompt() {
 
             @Override
             public String getPromptText(final ConversationContext context) {
-                return "and paste the code here: (or type 'exit' to escape the process)";
+                return "";
             }
 
             @Override
             public Prompt acceptInput(final ConversationContext context, String input) {
                 try {
                     input = input.trim();
-                    if (input == "exit") {
-                        MessageUtil.sendMessage(initiator, "Escaping Dropbox linking process");
-                        return Prompt.END_OF_CONVERSATION;
-                    }
 
-                    RequestBody requestBody = new FormBody.Builder()
-                        .add("code", input)
-                        .add("grant_type", "authorization_code")
-                        .add("client_id", APP_KEY)
-                        .add("client_secret", APP_SECRET)
-                        .build();
+                    RequestBody requestBody = new FormBody.Builder().add("code", input)
+                            .add("grant_type", "authorization_code").add("client_id", APP_KEY)
+                            .add("client_secret", APP_SECRET).build();
 
-                    Request request = new Request.Builder()
-                        .url("https://api.dropbox.com/oauth2/token")
-                        .post(requestBody)
-                        .build();
+                    Request request = new Request.Builder().url("https://api.dropbox.com/oauth2/token")
+                            .post(requestBody).build();
 
                     JSONObject parsedResponse = null;
                     try {
@@ -113,7 +107,7 @@ public class DropboxUploader implements Uploader {
                         parsedResponse = new JSONObject(response.body().string());
                         response.close();
                     } catch (Exception exception) {
-                        MessageUtil.sendMessage(initiator, "Failed to link your Dropbox account, please try again");
+                        errorOccured[0] = true;
                     }
 
                     if (parsedResponse.has("refresh_token")) {
@@ -125,9 +119,27 @@ public class DropboxUploader implements Uploader {
                             file.write(jsonObject.toString());
                             file.close();
                         } catch (IOException e) {
-                            MessageUtil.sendMessage(initiator, "Failed to link your Dropbox account, please try again");
+                            errorOccured[0] = true;
                         }
 
+                    } else if (parsedResponse.has("error")) {
+                        errorOccured[0] = true;
+                    }
+
+                } catch (final Exception ex) {
+                    errorOccured[0] = true;
+                }
+                return Prompt.END_OF_CONVERSATION;
+            }
+        };
+
+        final ConversationFactory factory = new ConversationFactory(plugin)
+            .withTimeout(60)
+            .withLocalEcho(false)
+            .withFirstPrompt(getToken)
+            .addConversationAbandonedListener((ConversationAbandonedEvent abandonedEvent) -> {
+                if (abandonedEvent.gracefulExit()) {
+                    if (!errorOccured[0]) {
                         MessageUtil.sendMessage(initiator, "Your Dropbox account is linked!");
 
                         if (!plugin.getConfig().getBoolean("dropbox.enabled")) {
@@ -138,23 +150,16 @@ public class DropboxUploader implements Uploader {
                             DriveBackup.reloadLocalConfig();
                             DriveBackup.startThread();
                         }
-                    } else if (!parsedResponse.has("error")) {
-                        MessageUtil.sendMessage(initiator,
-                            "Failed to link your Dropbox account, please try again");
+                    } else {
+                        MessageUtil.sendMessage(initiator, "Failed to link your Dropbox account, please try again");
                     }
-
-                } catch (final Exception ex) {
-                    MessageUtil.sendMessage(initiator, "Failed to link your Dropbox account, please try again");
+                } else {
+                    MessageUtil.sendMessage(initiator, "Abandoned Dropbox account linking");
                 }
-                return Prompt.END_OF_CONVERSATION;
-            }
-        };
+            });
 
-        final ConversationFactory factory = new ConversationFactory(plugin);
-        factory.withFirstPrompt(getToken);
-
-        final Conversation conversation = factory.buildConversation((Conversable) initiator);
-        conversation.begin();
+        Conversation conversation = factory.buildConversation((Conversable) initiator);
+        conversation.begin();        
     }
 
     /**
