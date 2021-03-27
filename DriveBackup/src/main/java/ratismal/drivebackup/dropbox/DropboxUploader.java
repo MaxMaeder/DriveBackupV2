@@ -94,12 +94,16 @@ public class DropboxUploader implements Uploader {
                 try {
                     input = input.trim();
 
-                    RequestBody requestBody = new FormBody.Builder().add("code", input)
-                            .add("grant_type", "authorization_code").add("client_id", APP_KEY)
-                            .add("client_secret", APP_SECRET).build();
+                    RequestBody requestBody = new FormBody.Builder()
+                        .add("code", input)
+                        .add("grant_type", "authorization_code")
+                        .add("client_id", APP_KEY)
+                        .add("client_secret", APP_SECRET).build();
 
-                    Request request = new Request.Builder().url("https://api.dropbox.com/oauth2/token")
-                            .post(requestBody).build();
+                    Request request = new Request.Builder()
+                        .url("https://api.dropbox.com/oauth2/token")
+                        .post(requestBody)
+                        .build();
 
                     JSONObject parsedResponse = null;
                     try {
@@ -170,34 +174,140 @@ public class DropboxUploader implements Uploader {
      * @param type the type of file (ex. plugins, world)
      */
     public void uploadFile(final java.io.File file, final String type) {
-        try (DataInputStream dis = new DataInputStream(new FileInputStream(file))) {
             String destination = Config.getDestination();
+            int fileSize = (int) file.length();
+            int fileSizeInMB =  fileSize / (1024*1024);
 
-            JSONObject dropbox_json = new JSONObject();
-            dropbox_json.put("path", "/" + destination + "/" + type + "/" + file.getName());
-            String dropbox_arg = dropbox_json.toString();
-            
-            MediaType OCTET_STREAM = MediaType.parse("application/octet-stream");
-            byte[] content = new byte[(int) file.length()];
-            dis.readFully(content);
-            RequestBody requestBody = RequestBody.create(content, OCTET_STREAM);
+            if (fileSizeInMB > 150) {
+                //More than 150MB - Chunked upload
+                final int CHUNKED_UPLOAD_CHUNK_SIZE = (1024 * 1024 * 10); //10 MB chunk
+                final int CHUNKED_UPLOAD_MAX_ATTEMPTS = 5;
+                int uploaded = 0;
+                String sessionId = null;
 
-            Request request = new Request.Builder()
-                .addHeader("Authorization", "Bearer " + returnAccessToken())
-                .addHeader("Dropbox-API-Arg", dropbox_arg)
-                .url("https://content.dropboxapi.com/2/files/upload")
-                .post(requestBody)
-                .build();
+                for (int i = 0; i < CHUNKED_UPLOAD_MAX_ATTEMPTS; ++i) {
+                    try (DataInputStream dataInputStream = new DataInputStream(new FileInputStream(file))) {
 
-            Response response = httpClient.newCall(request).execute();
-            response.close();
+                        // (1) Start
+                        if (sessionId == null) {
 
-            deleteFiles(type);
-        } catch(Exception e) {
-            e.printStackTrace();
-            MessageUtil.sendConsoleException(e);
-            setErrorOccurred(true);
-        }
+                            MediaType OCTET_STREAM = MediaType.parse("application/octet-stream");
+                            byte[] content = new byte[CHUNKED_UPLOAD_CHUNK_SIZE];
+                            dataInputStream.read(content, 0, CHUNKED_UPLOAD_CHUNK_SIZE);
+                            RequestBody requestBody = RequestBody.create(content, OCTET_STREAM);
+
+                            Request request = new Request.Builder()
+                                .addHeader("Authorization", "Bearer " + returnAccessToken())
+                                .post(requestBody)
+                                .url("https://content.dropboxapi.com/2/files/upload_session/start")
+                                .build();
+
+                            Response response = httpClient.newCall(request).execute();
+                            uploaded += CHUNKED_UPLOAD_CHUNK_SIZE;
+                            JSONObject parsedResponse = new JSONObject(response.body().string());
+                            sessionId = parsedResponse.getString("session_id");
+                            response.close();
+                        }
+
+                        // (2) Append
+                        while ((fileSize - uploaded) > CHUNKED_UPLOAD_CHUNK_SIZE) {
+                            MediaType OCTET_STREAM = MediaType.parse("application/octet-stream");
+                            byte[] content = new byte[CHUNKED_UPLOAD_CHUNK_SIZE];
+                            dataInputStream.skip(uploaded);
+                            dataInputStream.read(content, 0, CHUNKED_UPLOAD_CHUNK_SIZE);
+                            RequestBody requestBody = RequestBody.create(content, OCTET_STREAM);
+
+                            JSONObject dropbox_cursor = new JSONObject();
+                            dropbox_cursor.put("session_id", sessionId);
+                            dropbox_cursor.put("offset", uploaded);
+
+                            JSONObject dropbox_json = new JSONObject();
+                            dropbox_json.put("cursor", dropbox_cursor);
+                            String dropbox_arg = dropbox_json.toString();
+
+                            Request request = new Request.Builder()
+                                .addHeader("Dropbox-API-Arg", dropbox_arg)
+                                .addHeader("Authorization", "Bearer " + returnAccessToken())
+                                .post(requestBody)
+                                .url("https://content.dropboxapi.com/2/files/upload_session/append_v2")
+                                .build();
+
+                            Response response = httpClient.newCall(request).execute();
+                            response.close();
+                            uploaded += CHUNKED_UPLOAD_CHUNK_SIZE;
+                        }
+
+                        // (3) Finish
+                        int remaining = fileSize - uploaded;
+
+                        MediaType OCTET_STREAM = MediaType.parse("application/octet-stream");
+                        byte[] content = new byte[remaining];
+                        dataInputStream.skip(uploaded);
+                        dataInputStream.read(content, 0, remaining);
+                        RequestBody requestBody = RequestBody.create(content, OCTET_STREAM);
+
+                        JSONObject dropboxCursorJson = new JSONObject();
+                        dropboxCursorJson.put("session_id", sessionId);
+                        dropboxCursorJson.put("offset", uploaded);
+
+                        JSONObject dropboxCommitJson = new JSONObject();
+                        dropboxCommitJson.put("path", "/" + destination + "/" + type + "/" + file.getName());
+
+                        JSONObject dropboxJson = new JSONObject();
+                        dropboxJson.put("cursor", dropboxCursorJson);
+                        dropboxJson.put("commit", dropboxCommitJson);
+                        String dropbox_arg = dropboxJson.toString();
+
+                        Request request = new Request.Builder()
+                            .addHeader("Dropbox-API-Arg", dropbox_arg)
+                            .addHeader("Authorization", "Bearer " + returnAccessToken())
+                            .post(requestBody)
+                            .url("https://content.dropboxapi.com/2/files/upload_session/finish")
+                            .build();
+
+                        Response response = httpClient.newCall(request).execute();
+                        uploaded = fileSize;
+                        response.close();
+
+                        deleteFiles(type);
+                        return;
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        MessageUtil.sendConsoleException(e);
+                        setErrorOccurred(true);
+                        continue;
+                    }
+                }
+            } else {
+                //Less than 150MB - Single upload
+                try (DataInputStream dis = new DataInputStream(new FileInputStream(file))) {
+
+                    MediaType OCTET_STREAM = MediaType.parse("application/octet-stream");
+                    byte[] content = new byte[(int) file.length()];
+                    dis.readFully(content);
+                    RequestBody requestBody = RequestBody.create(content, OCTET_STREAM);
+
+                    JSONObject dropbox_json = new JSONObject();
+                    dropbox_json.put("path", "/" + destination + "/" + type + "/" + file.getName());
+                    String dropbox_arg = dropbox_json.toString();
+
+                    Request request = new Request.Builder()
+                        .addHeader("Authorization", "Bearer " + returnAccessToken())
+                        .addHeader("Dropbox-API-Arg", dropbox_arg)
+                        .url("https://content.dropboxapi.com/2/files/upload")
+                        .post(requestBody)
+                        .build();
+
+                    Response response = httpClient.newCall(request).execute();
+                    response.close();
+
+                    deleteFiles(type);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    MessageUtil.sendConsoleException(e);
+                    setErrorOccurred(true);
+                }
+            }
     }
 
     /**
