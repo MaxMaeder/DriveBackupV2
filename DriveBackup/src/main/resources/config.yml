@@ -36,6 +36,8 @@ googledrive:
   enabled: false
 onedrive:
   enabled: false
+dropbox:
+  enabled: false
 ftp:
   enabled: false
   hostname: "ftp.example.com"
