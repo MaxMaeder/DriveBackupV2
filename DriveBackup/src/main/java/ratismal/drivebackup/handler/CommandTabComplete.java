@@ -59,6 +59,7 @@ public class CommandTabComplete implements TabCompleter {
                 List<String> commandList = new ArrayList<>();
                 commandList.add("googledrive");
                 commandList.add("onedrive");
+                commandList.add("dropbox");
                 
                 return commandList;
             } else if (args[0].equalsIgnoreCase("test") && args.length == 2) {
