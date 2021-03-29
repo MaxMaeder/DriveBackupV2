@@ -3,6 +3,8 @@ package ratismal.drivebackup.config;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 
+import ratismal.drivebackup.util.MessageUtil;
+
 import java.io.File;
 import java.time.ZoneOffset;
 import java.time.DateTimeException;
@@ -96,6 +98,15 @@ public class Config {
         zipCompression = config.getInt("zip-compression");
         backupsRequirePlayers = config.getBoolean("backups-require-players");
         disableSavingDuringBackups = config.getBoolean("disable-saving-during-backups");
+        defaultMessageColor = config.getString("advanced.default-message-color");
+
+        if (config.isSet("advanced.message-prefix")) {
+            messagePrefix = config.getString("advanced.message-prefix");
+        } else if (config.isSet("advanced.prefix-chat-messages") && !config.isBoolean("advanced.prefix-chat-messages")) {
+            messagePrefix = "";
+        } else {
+            messagePrefix = config.getString("advanced.message-prefix");
+        }
 
         scheduleBackups = config.getBoolean("scheduled-backups");
         backupScheduleTimezone = getTimeWithFallback(config.getString("schedule-timezone"));
@@ -197,17 +208,8 @@ public class Config {
         metrics = getBooleanWithFallback("advanced.metrics", "metrics");
         updateCheck = getBooleanWithFallback("advanced.update-check", "update-check");
         debug = !getBooleanWithFallback("advanced.suppress-errors", "suppress-errors");
-        defaultMessageColor = config.getString("advanced.default-message-color");
         ftpFileSeperator = getStringWithFallback("advanced.ftp-file-separator", "advanced.ftp-file-seperator");
         dateLanguage = config.getString("advanced.date-language");
-
-        if (config.isSet("advanced.message-prefix")) {
-            messagePrefix = config.getString("advanced.message-prefix");
-        } else if (config.isSet("advanced.prefix-chat-messages") && !config.isBoolean("advanced.prefix-chat-messages")) {
-            messagePrefix = "";
-        } else {
-            messagePrefix = config.getString("advanced.message-prefix");
-        }
     } 
 
     /**
@@ -236,7 +238,7 @@ public class Config {
         try {
             return ZoneOffset.of(zoneId);
         } catch (DateTimeException exception) {
-            System.out.println("[DriveBackupV2] Timezone not valid, defaulting to 00:00");
+            MessageUtil.sendConsoleMessage("Timezone not valid, defaulting to 00:00");
             return ZoneOffset.of("-00:00");
         }
     }
