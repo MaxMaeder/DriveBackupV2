@@ -5,6 +5,7 @@ import org.bukkit.configuration.file.FileConfiguration;
 
 import java.io.File;
 import java.time.ZoneOffset;
+import java.time.DateTimeException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -97,7 +98,7 @@ public class Config {
         disableSavingDuringBackups = config.getBoolean("disable-saving-during-backups");
 
         scheduleBackups = config.getBoolean("scheduled-backups");
-        backupScheduleTimezone = ZoneOffset.of(config.getString("schedule-timezone"));
+        backupScheduleTimezone = getTimeWithFallback(config.getString("schedule-timezone"));
         List<Map<?, ?>> rawBackupScheduleList = config.getMapList("backup-schedule-list");
         ArrayList<HashMap<String, Object>> parsedBackupScheduleList = new ArrayList<>();
         for (Map<?, ?> rawBackupSchedule: rawBackupScheduleList) {
@@ -112,7 +113,7 @@ public class Config {
         }
         backupScheduleList = (ArrayList<HashMap<String, Object>>) parsedBackupScheduleList.clone();
 
-        backupFormatTimezone = ZoneOffset.of(config.getString("backup-format-timezone"));
+        backupFormatTimezone = getTimeWithFallback(config.getString("backup-format-timezone"));
         if (config.isList("backup-list")) {
 
             List<Map<?, ?>> rawBackupList = config.getMapList("backup-list");
@@ -222,6 +223,21 @@ public class Config {
             return config.getString(fallbackPath);
         } else { // Use default value
             return config.getString(path);
+        }
+    }
+
+    /**
+     * Returns the ZoneOffset in config, or if invalid use default
+     * 
+     * @param zoneId         the zone ID
+     * @return the value
+     */
+    private ZoneOffset getTimeWithFallback(String zoneId) {
+        try {
+            return ZoneOffset.of(zoneId);
+        } catch (DateTimeException exception) {
+            System.out.println("[DriveBackupV2] Timezone not valid, defaulting to 00:00");
+            return ZoneOffset.of("-00:00");
         }
     }
 
