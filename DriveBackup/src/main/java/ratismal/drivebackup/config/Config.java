@@ -7,6 +7,7 @@ import ratismal.drivebackup.util.MessageUtil;
 
 import java.io.File;
 import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.time.DateTimeException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -131,6 +132,12 @@ public class Config {
             ArrayList<HashMap<String, Object>> parsedBackupList = new ArrayList<>();
             for (Map<?, ?> rawBackup: rawBackupList) {
 
+                try {
+                    DateTimeFormatter.ofPattern((String) rawBackup.get("format"));
+                } catch (Exception ex) {
+                    MessageUtil.sendConsoleMessage("Format \"" + rawBackup.get("format") + "\" not valid, please check your config.yml");
+                    continue;
+                }
                 HashMap<String, Object> parsedBackup = new HashMap<>();
                 for (Entry<?, ?> rawBackupProperty : rawBackup.entrySet()) {
 
