@@ -11,17 +11,17 @@ import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.model.*;
-import net.kyori.text.TextComponent;
-import net.kyori.text.event.ClickEvent;
-import net.kyori.text.event.HoverEvent;
-import net.kyori.text.format.TextColor;
+
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.event.ClickEvent;
+import net.kyori.adventure.text.event.HoverEvent;
+import net.kyori.adventure.text.format.NamedTextColor;
 import okhttp3.FormBody;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
-import net.kyori.text.TextComponent;
 import ratismal.drivebackup.DriveBackup;
 import ratismal.drivebackup.config.Config;
 import ratismal.drivebackup.util.MessageUtil;
@@ -67,8 +67,8 @@ public class GoogleDriveUploader implements Uploader {
      * Location of the authenticated user's stored Google Drive refresh token
      */
     private static final String CLIENT_JSON_PATH = DriveBackup.getInstance().getDataFolder().getAbsolutePath()
-        + "/GoogleDriveCredential.json";
-    
+            + "/GoogleDriveCredential.json";
+
     /**
      * Google Drive API credentials
      */
@@ -108,46 +108,35 @@ public class GoogleDriveUploader implements Uploader {
         final String deviceCode = parsedResponse.getString("device_code");
         long responseCheckDelay = parsedResponse.getLong("interval");
 
-        MessageUtil.sendMessage(initiator, TextComponent.builder()
-                .append(
-                    TextComponent.of("To link your Google Drive account, go to ")
-                    .color(TextColor.DARK_AQUA)
-                )
-                .append(
-                    TextComponent.of(verificationUrl)
-                    .color(TextColor.GOLD)
-                    .hoverEvent(HoverEvent.showText(TextComponent.of("Go to URL")))
-                    .clickEvent(ClickEvent.openUrl(verificationUrl))
-                )
-                .append(
-                    TextComponent.of(" and enter code ")
-                    .color(TextColor.DARK_AQUA)
-                )
-                .append(
-                    TextComponent.of(userCode)
-                    .color(TextColor.GOLD)
-                    .hoverEvent(HoverEvent.showText(TextComponent.of("Copy code")))
-                    .clickEvent(ClickEvent.copyToClipboard(userCode))
-                )
+        MessageUtil.sendMessage(initiator,
+            Component.text()
+                .append(Component.text("To link your Google Drive account, go to ", NamedTextColor.DARK_AQUA))
+                .append(Component.text(verificationUrl, NamedTextColor.GOLD)
+                    .hoverEvent(HoverEvent.showText(Component.text("Go to URL")))
+                    .clickEvent(ClickEvent.openUrl(verificationUrl)))
+                .append(Component.text(" and enter code ", NamedTextColor.DARK_AQUA))
+                .append(Component.text(userCode, NamedTextColor.GOLD)
+                    .hoverEvent(HoverEvent.showText(Component.text("Copy code")))
+                    .clickEvent(ClickEvent.copyToClipboard(userCode)))
                 .build());
 
-        final int[] task = new int[]{-1};
+        final int[] task = new int[] {-1};
         task[0] = plugin.getServer().getScheduler().scheduleSyncRepeatingTask(plugin, new Runnable() {
             @Override
             public void run() {
-                
+
                 RequestBody requestBody = new FormBody.Builder()
                     .add("client_id", CLIENT_ID)
                     .add("client_secret", CLIENT_SECRET)
                     .add("grant_type", "urn:ietf:params:oauth:grant-type:device_code")
                     .add("device_code", deviceCode)
                     .build();
-        
+
                 Request request = new Request.Builder()
                     .url("https://oauth2.googleapis.com/token")
                     .post(requestBody)
                     .build();
-        
+
                 JSONObject parsedResponse = null;
                 try {
                     Response response = httpClient.newCall(request).execute();
@@ -159,7 +148,7 @@ public class GoogleDriveUploader implements Uploader {
                     Bukkit.getScheduler().cancelTask(task[0]);
                     return;
                 }
-                
+
                 if (parsedResponse.has("refresh_token")) {
                     JSONObject jsonObject = new JSONObject();
                     jsonObject.put("refresh_token", parsedResponse.getString("refresh_token"));
@@ -170,21 +159,21 @@ public class GoogleDriveUploader implements Uploader {
                         file.close();
                     } catch (IOException e) {
                         MessageUtil.sendMessage(initiator, "Failed to link your Google Drive account, please try again");
-                        
+
                         Bukkit.getScheduler().cancelTask(task[0]);
                     }
-                    
+
                     MessageUtil.sendMessage(initiator, "Your Google Drive account is linked!");
-                    
+
                     if (!plugin.getConfig().getBoolean("googledrive.enabled")) {
                         MessageUtil.sendMessage(initiator, "Automatically enabled Google Drive backups");
                         plugin.getConfig().set("googledrive.enabled", true);
                         plugin.saveConfig();
-                        
+
                         DriveBackup.reloadLocalConfig();
                         DriveBackup.startThread();
                     }
-                    
+
                     Bukkit.getScheduler().cancelTask(task[0]);
                 } else if (!parsedResponse.getString("error").equals("authorization_pending")) {
                     if (parsedResponse.getString("error").equals("expired_token")) {
@@ -192,7 +181,7 @@ public class GoogleDriveUploader implements Uploader {
                     } else {
                         MessageUtil.sendMessage(initiator, "Failed to link your Google Drive account, please try again");
                     }
-                    
+
                     Bukkit.getScheduler().cancelTask(task[0]);
                 }
             }
@@ -226,9 +215,8 @@ public class GoogleDriveUploader implements Uploader {
             setRefreshToken(readRefreshToken);
         } else {
             setRefreshToken("");
-        }   
+        }
     }
-
 
     /**
      * Gets a new Google Drive access token for the authenticated user
@@ -249,7 +237,7 @@ public class GoogleDriveUploader implements Uploader {
         Response response = httpClient.newCall(request).execute();
         JSONObject parsedResponse = new JSONObject(response.body().string());
         response.close();
-        
+
         if (!response.isSuccessful()) return;
 
         service = new Drive.Builder(
@@ -290,7 +278,7 @@ public class GoogleDriveUploader implements Uploader {
             ArrayList<String> typeFolders = new ArrayList<>();
             Collections.addAll(typeFolders, destination.split(java.io.File.separator.replace("\\", "\\\\")));
             Collections.addAll(typeFolders, type.split(java.io.File.separator.replace("\\", "\\\\")));
-            
+
             File folder = null;
 
             for (String typeFolder : typeFolders) {
@@ -319,7 +307,7 @@ public class GoogleDriveUploader implements Uploader {
             service.files().insert(fileMetadata, fileContent).execute();
 
             deleteFiles(folder);
-        } catch(Exception error) {;
+        } catch (Exception error) {
             error.printStackTrace();
             MessageUtil.sendConsoleException(error);
             setErrorOccurred(true);
@@ -343,33 +331,26 @@ public class GoogleDriveUploader implements Uploader {
 
     /**
      * Gets the name of this upload service
+     * 
      * @return name of upload service
      */
-    public String getName()
-    {
+    public String getName() {
         return "Google Drive";
     }
 
     /**
      * Gets the setup instructions for this uploaders
-     * @return a TextComponent explaining how to set up this uploader
+     * 
+     * @return a Component explaining how to set up this uploader
      */
-    public TextComponent getSetupInstructions()
-    {
-        return TextComponent.builder()
-                    .append(
-                        TextComponent.of("Failed to backup to Google Drive, please run ")
-                        .color(TextColor.DARK_AQUA)
-                    )
-                    .append(
-                        TextComponent.of("/drivebackup linkaccount googledrive")
-                        .color(TextColor.GOLD)
-                        .hoverEvent(HoverEvent.showText(TextComponent.of("Run command")))
-                        .clickEvent(ClickEvent.runCommand("/drivebackup linkaccount googledrive"))
-                    )
-                    .build();
+    public Component getSetupInstructions() {
+        return Component.text()
+                .append(Component.text("Failed to backup to Google Drive, please run ", NamedTextColor.DARK_AQUA))
+                .append(Component.text("/drivebackup linkaccount googledrive", NamedTextColor.GOLD)
+                        .hoverEvent(HoverEvent.showText(Component.text("Run command")))
+                        .clickEvent(ClickEvent.runCommand("/drivebackup linkaccount googledrive")))
+                .build();
     }
-
 
     /**
      * Creates a folder with the specified name in the specified parent folder in the authenticated user's Google Drive
@@ -422,7 +403,7 @@ public class GoogleDriveUploader implements Uploader {
         return folder;
     }
 
-    /**
+/**
      * Returns the folder in the specified parent folder of the authenticated user's Google Drive with the specified name
      * @param name the name of the folder
      * @param parent the parent folder

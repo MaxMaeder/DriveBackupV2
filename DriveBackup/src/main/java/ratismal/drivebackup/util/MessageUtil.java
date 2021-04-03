@@ -11,9 +11,9 @@ import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import net.kyori.text.TextComponent;
-import net.kyori.text.adapter.bukkit.TextAdapter;
-import net.kyori.text.format.TextColor;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+import ratismal.drivebackup.DriveBackup;
 import ratismal.drivebackup.config.Config;
 
 public class MessageUtil {
@@ -77,7 +77,7 @@ public class MessageUtil {
      * @param message the message to send
      * @param permission the permission
      */
-    public static void sendMessageToPlayersWithPermission(TextComponent message, String permission) {
+    public static void sendMessageToPlayersWithPermission(Component message, String permission) {
         sendMessageToPlayersWithPermission(message, permission, Collections.emptyList());
     }
 
@@ -87,7 +87,7 @@ public class MessageUtil {
      * @param permission the permission
      * @param additionalPlayers additional players to send the message to
      */
-    public static void sendMessageToPlayersWithPermission(TextComponent message, String permission, List<CommandSender> additionalPlayers) {
+    public static void sendMessageToPlayersWithPermission(Component message, String permission, List<CommandSender> additionalPlayers) {
         ArrayList<CommandSender> players = new ArrayList<>();
         players.addAll(additionalPlayers);
 
@@ -120,8 +120,8 @@ public class MessageUtil {
      * @param player the player to send the message to
      * @param message the message to send
      */
-    public static void sendMessage(CommandSender player, TextComponent message) {
-        TextAdapter.sendMessage(player, prefixMessage(message));
+    public static void sendMessage(CommandSender player, Component message) {
+        DriveBackup.adventure.sender(player).sendMessage(prefixMessage(message));
     }
 
     /**
@@ -133,17 +133,20 @@ public class MessageUtil {
     }
 
     /**
-     * Sends the stack trace corresponding to the specified exception to the console, only if suppress errors is disabled
+     * Sends the stack trace corresponding to the specified exception to the
+     * console, only if suppress errors is disabled
      * <p>
-     * Whether suppress errors is enabled is specified by the user in the {@code config.yml}
+     * Whether suppress errors is enabled is specified by the user in the
+     * {@code config.yml}
+     * 
      * @param exception Exception to send the stack trace of
      */
     public static void sendConsoleException(Exception exception) {
-    	if (Config.isDebug()) {
-    		exception.printStackTrace();
-    	}
+        if (Config.isDebug()) {
+            exception.printStackTrace();
+        }
     }
-    
+
     /**
      * Prefixes the specified message with the plugin name
      * @param message the message to prefix
@@ -158,21 +161,12 @@ public class MessageUtil {
      * @param message the message to prefix
      * @return the prefixed message
      */
-    private static TextComponent prefixMessage(TextComponent message) {
-        return TextComponent.builder()
-                .append(
-                    TextComponent.of("[")
-                    .color(TextColor.GOLD)
-                )
-                .append(
-                    TextComponent.of("DriveBackupV2")
-                    .color(TextColor.DARK_RED)
-                )
-                .append(
-                    TextComponent.of("] "))
-                    .color(TextColor.GOLD)
-                .append(message)
-                .build();
+    private static Component prefixMessage(Component message) {
+        return Component.text()
+            .append(Component.text("[", NamedTextColor.GOLD))
+            .append(Component.text("DriveBackupV2", NamedTextColor.DARK_RED))
+            .append(Component.text("] ", NamedTextColor.GOLD))
+            .append(message).build();
     }
 
     /**

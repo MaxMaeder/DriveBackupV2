@@ -6,7 +6,7 @@ import org.apache.commons.net.ftp.FTPFile;
 import org.apache.commons.net.ftp.FTPSClient;
 import org.bukkit.ChatColor;
 
-import net.kyori.text.TextComponent;
+import net.kyori.adventure.text.Component;
 import ratismal.drivebackup.config.Config;
 import ratismal.drivebackup.util.MessageUtil;
 import ratismal.drivebackup.Uploader;
@@ -66,7 +66,7 @@ public class FTPUploader implements Uploader {
      * @param publicKey the path to the SSH public key, relative to the "DriveBackupV2 folder" (leave blank if none)
      * @param passphrase the SSH public key passphrase (leave blank if none)
      * @param localBaseFolder the path to the folder which all local file paths are relative to
-     * @param remoteBaseFolder the path to the folder which all remote file paths are relative to 
+     * @param remoteBaseFolder the path to the folder which all remote file paths are relative to
      */
     public FTPUploader(String host, int port, String username, String password, boolean ftps, boolean sftp, String publicKey, String passphrase, String localBaseFolder, String remoteBaseFolder) {
         try {
@@ -81,7 +81,7 @@ public class FTPUploader implements Uploader {
         } catch (Exception e) {
             MessageUtil.sendConsoleException(e);
             setErrorOccurred(true);
-        }        
+        }
     }
 
     /**
@@ -157,7 +157,7 @@ public class FTPUploader implements Uploader {
                 }
 
                 TimeUnit.SECONDS.sleep(5);
-                
+
                 ftpClient.deleteFile(testFileName);
             } finally {
                 new File(localTestFilePath).delete();
@@ -175,7 +175,7 @@ public class FTPUploader implements Uploader {
      */
     public void uploadFile(File file, String type) {
         try {
-            type = type.replace(".."  + File.separator, "");
+            type = type.replace(".." + File.separator, "");
 
             if (sftpClient != null) {
                 sftpClient.uploadFile(file, type);
@@ -275,18 +275,17 @@ public class FTPUploader implements Uploader {
      * Gets the name of this upload service
      * @return name of upload service
      */
-    public String getName()
-    {
+    public String getName() {
         return "(S)FTP";
     }
 
     /**
      * Gets the setup instructions for this uploaders
-     * @return a TextComponent explaining how to set up this uploader
+     * 
+     * @return a Component explaining how to set up this uploader
      */
-    public TextComponent getSetupInstructions()
-    {
-        return TextComponent.of("Failed to backup to the (S)FTP server, please check the server credentials in the " + ChatColor.GOLD + "config.yml");
+    public Component getSetupInstructions() {
+        return Component.text("Failed to backup to the (S)FTP server, please check the server credentials in the " + ChatColor.GOLD + "config.yml");
     }
 
     /**

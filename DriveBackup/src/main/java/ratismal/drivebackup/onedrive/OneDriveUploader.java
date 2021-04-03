@@ -1,9 +1,9 @@
 package ratismal.drivebackup.onedrive;
 
-import net.kyori.text.TextComponent;
-import net.kyori.text.event.ClickEvent;
-import net.kyori.text.event.HoverEvent;
-import net.kyori.text.format.TextColor;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.event.ClickEvent;
+import net.kyori.adventure.text.event.HoverEvent;
+import net.kyori.adventure.text.format.NamedTextColor;
 import okhttp3.FormBody;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
@@ -16,7 +16,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import net.kyori.text.TextComponent;
 import ratismal.drivebackup.DriveBackup;
 import ratismal.drivebackup.config.Config;
 import ratismal.drivebackup.util.HttpLogger;
@@ -101,28 +100,17 @@ public class OneDriveUploader implements Uploader {
         final String deviceCode = parsedResponse.getString("device_code");
         long responseCheckDelay = parsedResponse.getLong("interval");
 
-        MessageUtil.sendMessage(initiator, TextComponent.builder()
-                .append(
-                    TextComponent.of("To link your OneDrive account, go to ")
-                    .color(TextColor.DARK_AQUA)
-                )
-                .append(
-                    TextComponent.of(verificationUrl)
-                    .color(TextColor.GOLD)
-                    .hoverEvent(HoverEvent.showText(TextComponent.of("Go to URL")))
-                    .clickEvent(ClickEvent.openUrl(verificationUrl))
-                )
-                .append(
-                    TextComponent.of(" and enter code ")
-                    .color(TextColor.DARK_AQUA)
-                )
-                .append(
-                    TextComponent.of(userCode)
-                    .color(TextColor.GOLD)
-                    .hoverEvent(HoverEvent.showText(TextComponent.of("Copy code")))
-                    .clickEvent(ClickEvent.copyToClipboard(userCode))
-                )
-                .build());
+        MessageUtil.sendMessage(initiator,
+                Component.text()
+                        .append(Component.text("To link your OneDrive account, go to ", NamedTextColor.DARK_AQUA))
+                        .append(Component.text(verificationUrl, NamedTextColor.GOLD)
+                                .hoverEvent(HoverEvent.showText(Component.text("Go to URL")))
+                                .clickEvent(ClickEvent.openUrl(verificationUrl)))
+                        .append(Component.text(" and enter code ", NamedTextColor.DARK_AQUA))
+                        .append(Component.text(userCode, NamedTextColor.GOLD)
+                                .hoverEvent(HoverEvent.showText(Component.text("Copy code")))
+                                .clickEvent(ClickEvent.copyToClipboard(userCode)))
+                        .build());
 
         final int[] task = new int[]{-1};
         task[0] = plugin.getServer().getScheduler().scheduleSyncRepeatingTask(plugin, new Runnable() {
@@ -351,33 +339,26 @@ public class OneDriveUploader implements Uploader {
      * Gets the name of this upload service
      * @return name of upload service
      */
-    public String getName()
-    {
+    public String getName() {
         return "OneDrive";
     }
 
     /**
      * Gets the setup instructions for this uploaders
-     * @return a TextComponent explaining how to set up this uploader
+     * 
+     * @return a Component explaining how to set up this uploader
      */
-    public TextComponent getSetupInstructions()
-    {
-        return TextComponent.builder()
-                    .append(
-                        TextComponent.of("Failed to backup to OneDrive, please run ")
-                        .color(TextColor.DARK_AQUA)
-                    )
-                    .append(
-                        TextComponent.of("/drivebackup linkaccount onedrive")
-                        .color(TextColor.GOLD)
-                        .hoverEvent(HoverEvent.showText(TextComponent.of("Run command")))
-                        .clickEvent(ClickEvent.runCommand("/drivebackup linkaccount onedrive"))
-                    )
-                    .build();
+    public Component getSetupInstructions() {
+        return Component.text()
+                .append(Component.text("Failed to backup to OneDrive, please run ", NamedTextColor.DARK_AQUA))
+                .append(Component.text("/drivebackup linkaccount onedrive", NamedTextColor.GOLD)
+                        .hoverEvent(HoverEvent.showText(Component.text("Run command")))
+                        .clickEvent(ClickEvent.runCommand("/drivebackup linkaccount onedrive")))
+                .build();
     }
 
 
-    /**
+/**
      * Creates a folder with the specified name in the specified parent folder in the authenticated user's OneDrive
      * @param name the name of the folder
      * @param parent the parent folder

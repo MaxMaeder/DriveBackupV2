@@ -23,10 +23,10 @@ import org.bukkit.conversations.StringPrompt;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import net.kyori.text.TextComponent;
-import net.kyori.text.event.ClickEvent;
-import net.kyori.text.event.HoverEvent;
-import net.kyori.text.format.TextColor;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.event.ClickEvent;
+import net.kyori.adventure.text.event.HoverEvent;
+import net.kyori.adventure.text.format.NamedTextColor;
 import okhttp3.FormBody;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
@@ -46,7 +46,7 @@ public class DropboxUploader implements Uploader {
      * Location of the authenticated user's stored Dropbox refresh token
      */
     private static final String CLIENT_JSON_PATH = DriveBackup.getInstance().getDataFolder().getAbsolutePath()
-        + "/DropboxCredential.json";
+            + "/DropboxCredential.json";
 
     /**
      * Global Dropbox tokens
@@ -74,13 +74,12 @@ public class DropboxUploader implements Uploader {
         final String authorizeUrl = "https://www.dropbox.com/oauth2/authorize?token_access_type=offline&response_type=code&client_id="+APP_KEY;
 
         MessageUtil.sendMessage(initiator,
-            TextComponent.builder()
-                .append(TextComponent.of("To link your Dropbox account, go to ").color(TextColor.DARK_AQUA))
-                .append(TextComponent.of(authorizeUrl).color(TextColor.GOLD)
-                    .hoverEvent(HoverEvent.showText(TextComponent.of("Go to URL")))
+            Component.text()
+                .append(Component.text("To link your Dropbox account, go to ", NamedTextColor.DARK_AQUA))
+                .append(Component.text(authorizeUrl, NamedTextColor.GOLD)
+                    .hoverEvent(HoverEvent.showText(Component.text("Go to URL")))
                     .clickEvent(ClickEvent.openUrl(authorizeUrl)))
-                .append(TextComponent.of(" and paste the code here:").color(TextColor.DARK_AQUA))
-                .build());
+                .append(Component.text(" and paste the code here:", NamedTextColor.DARK_AQUA)).build());
 
         final Prompt getToken = new StringPrompt() {
 
@@ -140,30 +139,30 @@ public class DropboxUploader implements Uploader {
         final ConversationFactory factory = new ConversationFactory(plugin)
             .withTimeout(60)
             .withLocalEcho(false)
-            .withFirstPrompt(getToken)
-            .addConversationAbandonedListener((ConversationAbandonedEvent abandonedEvent) -> {
-                if (abandonedEvent.gracefulExit()) {
-                    if (!errorOccured[0]) {
-                        MessageUtil.sendMessage(initiator, "Your Dropbox account is linked!");
+                .withFirstPrompt(getToken)
+                .addConversationAbandonedListener((ConversationAbandonedEvent abandonedEvent) -> {
+                    if (abandonedEvent.gracefulExit()) {
+                        if (!errorOccured[0]) {
+                            MessageUtil.sendMessage(initiator, "Your Dropbox account is linked!");
 
-                        if (!plugin.getConfig().getBoolean("dropbox.enabled")) {
-                            MessageUtil.sendMessage(initiator, "Automatically enabled Dropbox backups");
-                            plugin.getConfig().set("dropbox.enabled", true);
-                            plugin.saveConfig();
+                            if (!plugin.getConfig().getBoolean("dropbox.enabled")) {
+                                MessageUtil.sendMessage(initiator, "Automatically enabled Dropbox backups");
+                                plugin.getConfig().set("dropbox.enabled", true);
+                                plugin.saveConfig();
 
-                            DriveBackup.reloadLocalConfig();
-                            DriveBackup.startThread();
+                                DriveBackup.reloadLocalConfig();
+                                DriveBackup.startThread();
+                            }
+                        } else {
+                            MessageUtil.sendMessage(initiator, "Failed to link your Dropbox account, please try again");
                         }
                     } else {
-                        MessageUtil.sendMessage(initiator, "Failed to link your Dropbox account, please try again");
+                        MessageUtil.sendMessage(initiator, "Abandoned Dropbox account linking");
                     }
-                } else {
-                    MessageUtil.sendMessage(initiator, "Abandoned Dropbox account linking");
-                }
-            });
+                });
 
         Conversation conversation = factory.buildConversation((Conversable) initiator);
-        conversation.begin();        
+        conversation.begin();
     }
 
     /**
@@ -174,140 +173,140 @@ public class DropboxUploader implements Uploader {
      * @param type the type of file (ex. plugins, world)
      */
     public void uploadFile(final java.io.File file, final String type) {
-            String destination = Config.getDestination();
-            int fileSize = (int) file.length();
-            int fileSizeInMB =  fileSize / (1024*1024);
+        String destination = Config.getDestination();
+        int fileSize = (int) file.length();
+        int fileSizeInMB = fileSize / (1024 * 1024);
 
-            if (fileSizeInMB > 150) {
-                //More than 150MB - Chunked upload
-                final int CHUNKED_UPLOAD_CHUNK_SIZE = (1024 * 1024 * 10); //10 MB chunk
-                final int CHUNKED_UPLOAD_MAX_ATTEMPTS = 5;
-                int uploaded = 0;
-                String sessionId = null;
+        if (fileSizeInMB > 150) {
+            // More than 150MB - Chunked upload
+            final int CHUNKED_UPLOAD_CHUNK_SIZE = (1024 * 1024 * 10); // 10 MB chunk
+            final int CHUNKED_UPLOAD_MAX_ATTEMPTS = 5;
+            int uploaded = 0;
+            String sessionId = null;
 
-                for (int i = 0; i < CHUNKED_UPLOAD_MAX_ATTEMPTS; ++i) {
-                    try (DataInputStream dataInputStream = new DataInputStream(new FileInputStream(file))) {
+            for (int i = 0; i < CHUNKED_UPLOAD_MAX_ATTEMPTS; ++i) {
+                try (DataInputStream dataInputStream = new DataInputStream(new FileInputStream(file))) {
 
-                        // (1) Start
-                        if (sessionId == null) {
-
-                            MediaType OCTET_STREAM = MediaType.parse("application/octet-stream");
-                            byte[] content = new byte[CHUNKED_UPLOAD_CHUNK_SIZE];
-                            dataInputStream.read(content, 0, CHUNKED_UPLOAD_CHUNK_SIZE);
-                            RequestBody requestBody = RequestBody.create(content, OCTET_STREAM);
-
-                            Request request = new Request.Builder()
-                                .addHeader("Authorization", "Bearer " + returnAccessToken())
-                                .post(requestBody)
-                                .url("https://content.dropboxapi.com/2/files/upload_session/start")
-                                .build();
-
-                            Response response = httpClient.newCall(request).execute();
-                            uploaded += CHUNKED_UPLOAD_CHUNK_SIZE;
-                            JSONObject parsedResponse = new JSONObject(response.body().string());
-                            sessionId = parsedResponse.getString("session_id");
-                            response.close();
-                        }
-
-                        // (2) Append
-                        while ((fileSize - uploaded) > CHUNKED_UPLOAD_CHUNK_SIZE) {
-                            MediaType OCTET_STREAM = MediaType.parse("application/octet-stream");
-                            byte[] content = new byte[CHUNKED_UPLOAD_CHUNK_SIZE];
-                            dataInputStream.skip(uploaded);
-                            dataInputStream.read(content, 0, CHUNKED_UPLOAD_CHUNK_SIZE);
-                            RequestBody requestBody = RequestBody.create(content, OCTET_STREAM);
-
-                            JSONObject dropbox_cursor = new JSONObject();
-                            dropbox_cursor.put("session_id", sessionId);
-                            dropbox_cursor.put("offset", uploaded);
-
-                            JSONObject dropbox_json = new JSONObject();
-                            dropbox_json.put("cursor", dropbox_cursor);
-                            String dropbox_arg = dropbox_json.toString();
-
-                            Request request = new Request.Builder()
-                                .addHeader("Dropbox-API-Arg", dropbox_arg)
-                                .addHeader("Authorization", "Bearer " + returnAccessToken())
-                                .post(requestBody)
-                                .url("https://content.dropboxapi.com/2/files/upload_session/append_v2")
-                                .build();
-
-                            Response response = httpClient.newCall(request).execute();
-                            response.close();
-                            uploaded += CHUNKED_UPLOAD_CHUNK_SIZE;
-                        }
-
-                        // (3) Finish
-                        int remaining = fileSize - uploaded;
+                    // (1) Start
+                    if (sessionId == null) {
 
                         MediaType OCTET_STREAM = MediaType.parse("application/octet-stream");
-                        byte[] content = new byte[remaining];
-                        dataInputStream.skip(uploaded);
-                        dataInputStream.read(content, 0, remaining);
+                        byte[] content = new byte[CHUNKED_UPLOAD_CHUNK_SIZE];
+                        dataInputStream.read(content, 0, CHUNKED_UPLOAD_CHUNK_SIZE);
                         RequestBody requestBody = RequestBody.create(content, OCTET_STREAM);
 
-                        JSONObject dropboxCursorJson = new JSONObject();
-                        dropboxCursorJson.put("session_id", sessionId);
-                        dropboxCursorJson.put("offset", uploaded);
+                        Request request = new Request.Builder()
+                            .addHeader("Authorization", "Bearer " + returnAccessToken())
+                            .post(requestBody)
+                            .url("https://content.dropboxapi.com/2/files/upload_session/start")
+                            .build();
 
-                        JSONObject dropboxCommitJson = new JSONObject();
-                        dropboxCommitJson.put("path", "/" + destination + "/" + type + "/" + file.getName());
+                        Response response = httpClient.newCall(request).execute();
+                        uploaded += CHUNKED_UPLOAD_CHUNK_SIZE;
+                        JSONObject parsedResponse = new JSONObject(response.body().string());
+                        sessionId = parsedResponse.getString("session_id");
+                        response.close();
+                    }
 
-                        JSONObject dropboxJson = new JSONObject();
-                        dropboxJson.put("cursor", dropboxCursorJson);
-                        dropboxJson.put("commit", dropboxCommitJson);
-                        String dropbox_arg = dropboxJson.toString();
+                    // (2) Append
+                    while ((fileSize - uploaded) > CHUNKED_UPLOAD_CHUNK_SIZE) {
+                        MediaType OCTET_STREAM = MediaType.parse("application/octet-stream");
+                        byte[] content = new byte[CHUNKED_UPLOAD_CHUNK_SIZE];
+                        dataInputStream.skip(uploaded);
+                        dataInputStream.read(content, 0, CHUNKED_UPLOAD_CHUNK_SIZE);
+                        RequestBody requestBody = RequestBody.create(content, OCTET_STREAM);
+
+                        JSONObject dropbox_cursor = new JSONObject();
+                        dropbox_cursor.put("session_id", sessionId);
+                        dropbox_cursor.put("offset", uploaded);
+
+                        JSONObject dropbox_json = new JSONObject();
+                        dropbox_json.put("cursor", dropbox_cursor);
+                        String dropbox_arg = dropbox_json.toString();
 
                         Request request = new Request.Builder()
                             .addHeader("Dropbox-API-Arg", dropbox_arg)
                             .addHeader("Authorization", "Bearer " + returnAccessToken())
                             .post(requestBody)
-                            .url("https://content.dropboxapi.com/2/files/upload_session/finish")
+                            .url("https://content.dropboxapi.com/2/files/upload_session/append_v2")
                             .build();
 
                         Response response = httpClient.newCall(request).execute();
-                        uploaded = fileSize;
                         response.close();
-
-                        deleteFiles(type);
-                        return;
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        MessageUtil.sendConsoleException(e);
-                        setErrorOccurred(true);
-                        continue;
+                        uploaded += CHUNKED_UPLOAD_CHUNK_SIZE;
                     }
-                }
-            } else {
-                //Less than 150MB - Single upload
-                try (DataInputStream dis = new DataInputStream(new FileInputStream(file))) {
+
+                    // (3) Finish
+                    int remaining = fileSize - uploaded;
 
                     MediaType OCTET_STREAM = MediaType.parse("application/octet-stream");
-                    byte[] content = new byte[(int) file.length()];
-                    dis.readFully(content);
+                    byte[] content = new byte[remaining];
+                    dataInputStream.skip(uploaded);
+                    dataInputStream.read(content, 0, remaining);
                     RequestBody requestBody = RequestBody.create(content, OCTET_STREAM);
 
-                    JSONObject dropbox_json = new JSONObject();
-                    dropbox_json.put("path", "/" + destination + "/" + type + "/" + file.getName());
-                    String dropbox_arg = dropbox_json.toString();
+                    JSONObject dropboxCursorJson = new JSONObject();
+                    dropboxCursorJson.put("session_id", sessionId);
+                    dropboxCursorJson.put("offset", uploaded);
+
+                    JSONObject dropboxCommitJson = new JSONObject();
+                    dropboxCommitJson.put("path", "/" + destination + "/" + type + "/" + file.getName());
+
+                    JSONObject dropboxJson = new JSONObject();
+                    dropboxJson.put("cursor", dropboxCursorJson);
+                    dropboxJson.put("commit", dropboxCommitJson);
+                    String dropbox_arg = dropboxJson.toString();
 
                     Request request = new Request.Builder()
-                        .addHeader("Authorization", "Bearer " + returnAccessToken())
                         .addHeader("Dropbox-API-Arg", dropbox_arg)
-                        .url("https://content.dropboxapi.com/2/files/upload")
+                        .addHeader("Authorization", "Bearer " + returnAccessToken())
                         .post(requestBody)
+                        .url("https://content.dropboxapi.com/2/files/upload_session/finish")
                         .build();
 
                     Response response = httpClient.newCall(request).execute();
+                    uploaded = fileSize;
                     response.close();
 
                     deleteFiles(type);
+                    return;
                 } catch (Exception e) {
                     e.printStackTrace();
                     MessageUtil.sendConsoleException(e);
                     setErrorOccurred(true);
+                    continue;
                 }
             }
+        } else {
+            // Less than 150MB - Single upload
+            try (DataInputStream dis = new DataInputStream(new FileInputStream(file))) {
+
+                MediaType OCTET_STREAM = MediaType.parse("application/octet-stream");
+                byte[] content = new byte[(int) file.length()];
+                dis.readFully(content);
+                RequestBody requestBody = RequestBody.create(content, OCTET_STREAM);
+
+                JSONObject dropbox_json = new JSONObject();
+                dropbox_json.put("path", "/" + destination + "/" + type + "/" + file.getName());
+                String dropbox_arg = dropbox_json.toString();
+
+                Request request = new Request.Builder()
+                    .addHeader("Authorization", "Bearer " + returnAccessToken())
+                    .addHeader("Dropbox-API-Arg", dropbox_arg)
+                    .url("https://content.dropboxapi.com/2/files/upload")
+                    .post(requestBody)
+                    .build();
+
+                Response response = httpClient.newCall(request).execute();
+                response.close();
+
+                deleteFiles(type);
+            } catch (Exception e) {
+                e.printStackTrace();
+                MessageUtil.sendConsoleException(e);
+                setErrorOccurred(true);
+            }
+        }
     }
 
     /**
@@ -326,12 +325,12 @@ public class DropboxUploader implements Uploader {
         if (fileLimit == -1) {
             return;
         }
-        
+
         MediaType JSON = MediaType.parse("application/json; charset=utf-8");
         JSONObject json = new JSONObject();
         json.put("path", "/" + destination + "/" + type);
         RequestBody requestBody = RequestBody.create(json.toString(), JSON);
-        
+
         Request request = new Request.Builder()
             .addHeader("Authorization", "Bearer " + returnAccessToken())
             .url("https://api.dropboxapi.com/2/files/list_folder")
@@ -345,21 +344,21 @@ public class DropboxUploader implements Uploader {
 
         if (files.length() > fileLimit) {
             MessageUtil.sendConsoleMessage(
-                "There are " + files.length() + " file(s) which exceeds the limit of " + fileLimit + ", deleting");
+                    "There are " + files.length() + " file(s) which exceeds the limit of " + fileLimit + ", deleting");
             while (files.length() > fileLimit) {
                 JSONObject deleteJson = new JSONObject();
                 deleteJson.put("path", "/" + destination + "/" + type + "/" + files.getJSONObject(0).get("name"));
                 RequestBody deleteRequestBody = RequestBody.create(deleteJson.toString(), JSON);
 
                 Request deleteRequest = new Request.Builder()
-                    .addHeader("Authorization", "Bearer " + returnAccessToken())
-                    .url("https://api.dropboxapi.com/2/files/delete_v2")
-                    .post(deleteRequestBody)
-                    .build();
+                        .addHeader("Authorization", "Bearer " + returnAccessToken())
+                        .url("https://api.dropboxapi.com/2/files/delete_v2")
+                        .post(deleteRequestBody)
+                        .build();
 
                 Response deleteResponse = httpClient.newCall(deleteRequest).execute();
                 deleteResponse.close();
-                
+
                 files.remove(0);
             }
         }
@@ -424,13 +423,13 @@ public class DropboxUploader implements Uploader {
     /**
      * Gets the setup instructions for this uploaders
      * 
-     * @return a TextComponent explaining how to set up this uploader
+     * @return a Component explaining how to set up this uploader
      */
-    public TextComponent getSetupInstructions() {
-        return TextComponent.builder()
-            .append(TextComponent.of("Failed to backup to Dropbox, please run ").color(TextColor.DARK_AQUA))
-            .append(TextComponent.of("/drivebackup linkaccount dropbox").color(TextColor.GOLD)
-                .hoverEvent(HoverEvent.showText(TextComponent.of("Run command")))
+    public Component getSetupInstructions() {
+        return Component.text()
+            .append(Component.text("Failed to backup to Dropbox, please run ", NamedTextColor.DARK_AQUA))
+            .append(Component.text("/drivebackup linkaccount dropbox", NamedTextColor.GOLD)
+                .hoverEvent(HoverEvent.showText(Component.text("Run command")))
                 .clickEvent(ClickEvent.runCommand("/drivebackup linkaccount dropbox")))
             .build();
     }
