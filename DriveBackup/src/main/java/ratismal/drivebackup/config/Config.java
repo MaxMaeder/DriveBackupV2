@@ -3,8 +3,12 @@ package ratismal.drivebackup.config;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 
+import ratismal.drivebackup.util.MessageUtil;
+
 import java.io.File;
 import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
+import java.time.DateTimeException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -95,9 +99,18 @@ public class Config {
         zipCompression = config.getInt("zip-compression");
         backupsRequirePlayers = config.getBoolean("backups-require-players");
         disableSavingDuringBackups = config.getBoolean("disable-saving-during-backups");
+        defaultMessageColor = config.getString("advanced.default-message-color");
+
+        if (config.isSet("advanced.message-prefix")) {
+            messagePrefix = config.getString("advanced.message-prefix");
+        } else if (config.isSet("advanced.prefix-chat-messages") && !config.isBoolean("advanced.prefix-chat-messages")) {
+            messagePrefix = "";
+        } else {
+            messagePrefix = config.getString("advanced.message-prefix");
+        }
 
         scheduleBackups = config.getBoolean("scheduled-backups");
-        backupScheduleTimezone = ZoneOffset.of(config.getString("schedule-timezone"));
+        backupScheduleTimezone = getTimeWithFallback(config.getString("schedule-timezone"));
         List<Map<?, ?>> rawBackupScheduleList = config.getMapList("backup-schedule-list");
         ArrayList<HashMap<String, Object>> parsedBackupScheduleList = new ArrayList<>();
         for (Map<?, ?> rawBackupSchedule: rawBackupScheduleList) {
@@ -112,13 +125,19 @@ public class Config {
         }
         backupScheduleList = (ArrayList<HashMap<String, Object>>) parsedBackupScheduleList.clone();
 
-        backupFormatTimezone = ZoneOffset.of(config.getString("backup-format-timezone"));
+        backupFormatTimezone = getTimeWithFallback(config.getString("backup-format-timezone"));
         if (config.isList("backup-list")) {
 
             List<Map<?, ?>> rawBackupList = config.getMapList("backup-list");
             ArrayList<HashMap<String, Object>> parsedBackupList = new ArrayList<>();
             for (Map<?, ?> rawBackup: rawBackupList) {
 
+                try {
+                    DateTimeFormatter.ofPattern((String) rawBackup.get("format"));
+                } catch (Exception ex) {
+                    MessageUtil.sendConsoleMessage("Format \"" + rawBackup.get("format") + "\" not valid, please check your config.yml");
+                    continue;
+                }
                 HashMap<String, Object> parsedBackup = new HashMap<>();
                 for (Entry<?, ?> rawBackupProperty : rawBackup.entrySet()) {
 
@@ -196,17 +215,8 @@ public class Config {
         metrics = getBooleanWithFallback("advanced.metrics", "metrics");
         updateCheck = getBooleanWithFallback("advanced.update-check", "update-check");
         debug = !getBooleanWithFallback("advanced.suppress-errors", "suppress-errors");
-        defaultMessageColor = config.getString("advanced.default-message-color");
         ftpFileSeperator = getStringWithFallback("advanced.ftp-file-separator", "advanced.ftp-file-seperator");
         dateLanguage = config.getString("advanced.date-language");
-
-        if (config.isSet("advanced.message-prefix")) {
-            messagePrefix = config.getString("advanced.message-prefix");
-        } else if (config.isSet("advanced.prefix-chat-messages") && !config.isBoolean("advanced.prefix-chat-messages")) {
-            messagePrefix = "";
-        } else {
-            messagePrefix = config.getString("advanced.message-prefix");
-        }
     } 
 
     /**
@@ -222,6 +232,21 @@ public class Config {
             return config.getString(fallbackPath);
         } else { // Use default value
             return config.getString(path);
+        }
+    }
+
+    /**
+     * Returns the ZoneOffset in config, or if invalid use default
+     * 
+     * @param zoneId         the zone ID
+     * @return the value
+     */
+    private ZoneOffset getTimeWithFallback(String zoneId) {
+        try {
+            return ZoneOffset.of(zoneId);
+        } catch (DateTimeException exception) {
+            MessageUtil.sendConsoleMessage("Timezone not valid, defaulting to 00:00");
+            return ZoneOffset.of("-00:00");
         }
     }
 
