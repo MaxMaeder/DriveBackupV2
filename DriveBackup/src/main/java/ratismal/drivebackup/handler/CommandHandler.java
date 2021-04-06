@@ -10,11 +10,10 @@ import org.bukkit.command.RemoteConsoleCommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitScheduler;
 
-import net.kyori.text.TextComponent;
-import net.kyori.text.adapter.bukkit.TextAdapter;
-import net.kyori.text.event.ClickEvent;
-import net.kyori.text.event.HoverEvent;
-import net.kyori.text.format.TextColor;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.event.ClickEvent;
+import net.kyori.adventure.text.event.HoverEvent;
+import net.kyori.adventure.text.format.NamedTextColor;
 import ratismal.drivebackup.DriveBackup;
 import ratismal.drivebackup.TestThread;
 import ratismal.drivebackup.UploadThread;
@@ -167,17 +166,17 @@ public class CommandHandler implements CommandExecutor {
      */
     private void sendHelp(CommandSender player) {
         player.sendMessage(ChatColor.GOLD + "|======" + ChatColor.DARK_RED + "DriveBackupV2" + ChatColor.GOLD + "======|");
-        TextAdapter.sendMessage(player, genCommandHelpMessage("/drivebackup", "Displays this menu"));
-        TextAdapter.sendMessage(player, genCommandHelpMessage("/drivebackup help", "Displays help resources"));
-        TextAdapter.sendMessage(player, genCommandHelpMessage("/drivebackup v", "Displays the plugin version"));
-        TextAdapter.sendMessage(player, genCommandHelpMessage("/drivebackup linkaccount googledrive", "Links your Google Drive account for backups"));
-        TextAdapter.sendMessage(player, genCommandHelpMessage("/drivebackup linkaccount onedrive", "Links your OneDrive account for backups"));
-        TextAdapter.sendMessage(player, genCommandHelpMessage("/drivebackup linkaccount dropbox", "Links your Dropbox account for backups"));
-        TextAdapter.sendMessage(player, genCommandHelpMessage("/drivebackup reloadconfig", "Reloads the config.yml"));
-        TextAdapter.sendMessage(player, genCommandHelpMessage("/drivebackup nextbackup", "Gets the time/date of the next auto backup"));
-        TextAdapter.sendMessage(player, genCommandHelpMessage("/drivebackup status", "Gets the status of the running backup"));
-        TextAdapter.sendMessage(player, genCommandHelpMessage("/drivebackup backup", "Manually initiates a backup"));
-        TextAdapter.sendMessage(player, genCommandHelpMessage("/drivebackup test ftp", "Tests the connection to the (S)FTP server"));
+        DriveBackup.adventure.sender(player).sendMessage(genCommandHelpMessage("/drivebackup", "Displays this menu"));
+        DriveBackup.adventure.sender(player).sendMessage(genCommandHelpMessage("/drivebackup help", "Displays help resources"));
+        DriveBackup.adventure.sender(player).sendMessage(genCommandHelpMessage("/drivebackup v", "Displays the plugin version"));
+        DriveBackup.adventure.sender(player).sendMessage(genCommandHelpMessage("/drivebackup linkaccount googledrive", "Links your Google Drive account for backups"));
+        DriveBackup.adventure.sender(player).sendMessage(genCommandHelpMessage("/drivebackup linkaccount onedrive", "Links your OneDrive account for backups"));
+        DriveBackup.adventure.sender(player).sendMessage(genCommandHelpMessage("/drivebackup linkaccount dropbox", "Links your Dropbox account for backups"));
+        DriveBackup.adventure.sender(player).sendMessage(genCommandHelpMessage("/drivebackup reloadconfig", "Reloads the config.yml"));
+        DriveBackup.adventure.sender(player).sendMessage(genCommandHelpMessage("/drivebackup nextbackup", "Gets the time/date of the next auto backup"));
+        DriveBackup.adventure.sender(player).sendMessage(genCommandHelpMessage("/drivebackup status", "Gets the status of the running backup"));
+        DriveBackup.adventure.sender(player).sendMessage(genCommandHelpMessage("/drivebackup backup", "Manually initiates a backup"));
+        DriveBackup.adventure.sender(player).sendMessage(genCommandHelpMessage("/drivebackup test ftp", "Tests the connection to the (S)FTP server"));
     }
 
     /**
@@ -188,17 +187,17 @@ public class CommandHandler implements CommandExecutor {
      * @param description what the command does
      * @return the message
      */
-    private TextComponent genCommandHelpMessage(String command, String description) {
-        return TextComponent.builder()
+    private Component genCommandHelpMessage(String command, String description) {
+        return Component.text()
         .append(
-            TextComponent.of(command)
-            .color(TextColor.GOLD)
-            .hoverEvent(HoverEvent.showText(TextComponent.of("Run command")))
+            Component.text(command)
+            .color(NamedTextColor.GOLD)
+            .hoverEvent(HoverEvent.showText(Component.text("Run command")))
             .clickEvent(ClickEvent.runCommand(command))
         )
         .append(
-            TextComponent.of(" - " + description)
-            .color(TextColor.DARK_AQUA)
+            Component.text(" - " + description)
+            .color(NamedTextColor.DARK_AQUA)
         ).build();
     }
 
@@ -209,27 +208,27 @@ public class CommandHandler implements CommandExecutor {
     private void sendHelpResources(CommandSender player) {
         player.sendMessage(ChatColor.GOLD + "|======" + ChatColor.DARK_RED + "DriveBackupV2" + ChatColor.GOLD + "======|");
         player.sendMessage(ChatColor.DARK_AQUA + "Need help? Check out these helpful resources!");
-        TextAdapter.sendMessage(player, TextComponent.builder()
+        DriveBackup.adventure.sender(player).sendMessage(Component.text()
         .append(
-            TextComponent.of("Wiki: ")
-            .color(TextColor.DARK_AQUA)
+            Component.text("Wiki: ")
+            .color(NamedTextColor.DARK_AQUA)
         )
         .append(
-            TextComponent.of("http://bit.ly/3dDdmwK")
-            .color(TextColor.GOLD)
-            .hoverEvent(HoverEvent.showText(TextComponent.of("Go to URL")))
+            Component.text("http://bit.ly/3dDdmwK")
+            .color(NamedTextColor.GOLD)
+            .hoverEvent(HoverEvent.showText(Component.text("Go to URL")))
             .clickEvent(ClickEvent.openUrl("http://bit.ly/3dDdmwK"))
         )
         .build());
-        TextAdapter.sendMessage(player, TextComponent.builder()
+        DriveBackup.adventure.sender(player).sendMessage(Component.text()
         .append(
-            TextComponent.of("Discord: ")
-            .color(TextColor.DARK_AQUA)
+            Component.text("Discord: ")
+            .color(NamedTextColor.DARK_AQUA)
         )
         .append(
-            TextComponent.of("http://bit.ly/3f4VuuT")
-            .color(TextColor.GOLD)
-            .hoverEvent(HoverEvent.showText(TextComponent.of("Go to URL")))
+            Component.text("http://bit.ly/3f4VuuT")
+            .color(NamedTextColor.GOLD)
+            .hoverEvent(HoverEvent.showText(Component.text("Go to URL")))
             .clickEvent(ClickEvent.openUrl("http://bit.ly/3f4VuuT"))
         )
         .build());

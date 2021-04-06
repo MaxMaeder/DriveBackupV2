@@ -11,17 +11,16 @@ import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.model.*;
-import net.kyori.text.TextComponent;
-import net.kyori.text.event.ClickEvent;
-import net.kyori.text.event.HoverEvent;
-import net.kyori.text.format.TextColor;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.event.ClickEvent;
+import net.kyori.adventure.text.event.HoverEvent;
+import net.kyori.adventure.text.format.NamedTextColor;
 import okhttp3.FormBody;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
-import net.kyori.text.TextComponent;
 import ratismal.drivebackup.DriveBackup;
 import ratismal.drivebackup.config.Config;
 import ratismal.drivebackup.util.MessageUtil;
@@ -108,25 +107,25 @@ public class GoogleDriveUploader implements Uploader {
         final String deviceCode = parsedResponse.getString("device_code");
         long responseCheckDelay = parsedResponse.getLong("interval");
 
-        MessageUtil.sendMessage(initiator, TextComponent.builder()
+        MessageUtil.sendMessage(initiator, Component.text()
                 .append(
-                    TextComponent.of("To link your Google Drive account, go to ")
-                    .color(TextColor.DARK_AQUA)
+                    Component.text("To link your Google Drive account, go to ")
+                    .color(NamedTextColor.DARK_AQUA)
                 )
                 .append(
-                    TextComponent.of(verificationUrl)
-                    .color(TextColor.GOLD)
-                    .hoverEvent(HoverEvent.showText(TextComponent.of("Go to URL")))
+                    Component.text(verificationUrl)
+                    .color(NamedTextColor.GOLD)
+                    .hoverEvent(HoverEvent.showText(Component.text("Go to URL")))
                     .clickEvent(ClickEvent.openUrl(verificationUrl))
                 )
                 .append(
-                    TextComponent.of(" and enter code ")
-                    .color(TextColor.DARK_AQUA)
+                    Component.text(" and enter code ")
+                    .color(NamedTextColor.DARK_AQUA)
                 )
                 .append(
-                    TextComponent.of(userCode)
-                    .color(TextColor.GOLD)
-                    .hoverEvent(HoverEvent.showText(TextComponent.of("Copy code")))
+                    Component.text(userCode)
+                    .color(NamedTextColor.GOLD)
+                    .hoverEvent(HoverEvent.showText(Component.text("Copy code")))
                     .clickEvent(ClickEvent.copyToClipboard(userCode))
                 )
                 .build());
@@ -352,19 +351,19 @@ public class GoogleDriveUploader implements Uploader {
 
     /**
      * Gets the setup instructions for this uploaders
-     * @return a TextComponent explaining how to set up this uploader
+     * @return a Component explaining how to set up this uploader
      */
-    public TextComponent getSetupInstructions()
+    public Component getSetupInstructions()
     {
-        return TextComponent.builder()
+        return Component.text()
                     .append(
-                        TextComponent.of("Failed to backup to Google Drive, please run ")
-                        .color(TextColor.DARK_AQUA)
+                        Component.text("Failed to backup to Google Drive, please run ")
+                        .color(NamedTextColor.DARK_AQUA)
                     )
                     .append(
-                        TextComponent.of("/drivebackup linkaccount googledrive")
-                        .color(TextColor.GOLD)
-                        .hoverEvent(HoverEvent.showText(TextComponent.of("Run command")))
+                        Component.text("/drivebackup linkaccount googledrive")
+                        .color(NamedTextColor.GOLD)
+                        .hoverEvent(HoverEvent.showText(Component.text("Run command")))
                         .clickEvent(ClickEvent.runCommand("/drivebackup linkaccount googledrive"))
                     )
                     .build();
