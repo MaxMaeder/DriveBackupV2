@@ -4,10 +4,10 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 
-import net.kyori.text.TextComponent;
-import net.kyori.text.event.ClickEvent;
-import net.kyori.text.event.HoverEvent;
-import net.kyori.text.format.TextColor;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.event.ClickEvent;
+import net.kyori.adventure.text.event.HoverEvent;
+import net.kyori.adventure.text.format.NamedTextColor;
 import ratismal.drivebackup.DriveBackup;
 import ratismal.drivebackup.util.MessageUtil;
 
@@ -31,15 +31,15 @@ public class PlayerListener implements Listener {
 
         if (DriveBackup.isUpdateAvailable() && event.getPlayer().hasPermission("drivebackup.linkAccounts")) {
 
-            MessageUtil.sendMessage(event.getPlayer(), TextComponent.builder()
+            MessageUtil.sendMessage(event.getPlayer(), Component.text()
                 .append(
-                    TextComponent.of("An update is available, get it here: ")
-                    .color(TextColor.DARK_AQUA)
+                    Component.text("An update is available, get it here: ")
+                    .color(NamedTextColor.DARK_AQUA)
                 )
                 .append(
-                    TextComponent.of("http://bit.ly/2M14uVD")
-                    .color(TextColor.GOLD)
-                    .hoverEvent(HoverEvent.showText(TextComponent.of("Go to URL")))
+                    Component.text("http://bit.ly/2M14uVD")
+                    .color(NamedTextColor.GOLD)
+                    .hoverEvent(HoverEvent.showText(Component.text("Go to URL")))
                     .clickEvent(ClickEvent.openUrl("http://bit.ly/2M14uVD"))
                 ).build());
         }

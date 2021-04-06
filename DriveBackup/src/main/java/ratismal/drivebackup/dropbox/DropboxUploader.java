@@ -23,10 +23,10 @@ import org.bukkit.conversations.StringPrompt;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import net.kyori.text.TextComponent;
-import net.kyori.text.event.ClickEvent;
-import net.kyori.text.event.HoverEvent;
-import net.kyori.text.format.TextColor;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.event.ClickEvent;
+import net.kyori.adventure.text.event.HoverEvent;
+import net.kyori.adventure.text.format.NamedTextColor;
 import okhttp3.FormBody;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
@@ -74,12 +74,12 @@ public class DropboxUploader implements Uploader {
         final String authorizeUrl = "https://www.dropbox.com/oauth2/authorize?token_access_type=offline&response_type=code&client_id="+APP_KEY;
 
         MessageUtil.sendMessage(initiator,
-            TextComponent.builder()
-                .append(TextComponent.of("To link your Dropbox account, go to ").color(TextColor.DARK_AQUA))
-                .append(TextComponent.of(authorizeUrl).color(TextColor.GOLD)
-                    .hoverEvent(HoverEvent.showText(TextComponent.of("Go to URL")))
+            Component.text()
+                .append(Component.text("To link your Dropbox account, go to ").color(NamedTextColor.DARK_AQUA))
+                .append(Component.text(authorizeUrl).color(NamedTextColor.GOLD)
+                    .hoverEvent(HoverEvent.showText(Component.text("Go to URL")))
                     .clickEvent(ClickEvent.openUrl(authorizeUrl)))
-                .append(TextComponent.of(" and paste the code here:").color(TextColor.DARK_AQUA))
+                .append(Component.text(" and paste the code here:").color(NamedTextColor.DARK_AQUA))
                 .build());
 
         final Prompt getToken = new StringPrompt() {
@@ -424,13 +424,13 @@ public class DropboxUploader implements Uploader {
     /**
      * Gets the setup instructions for this uploaders
      * 
-     * @return a TextComponent explaining how to set up this uploader
+     * @return a Component explaining how to set up this uploader
      */
-    public TextComponent getSetupInstructions() {
-        return TextComponent.builder()
-            .append(TextComponent.of("Failed to backup to Dropbox, please run ").color(TextColor.DARK_AQUA))
-            .append(TextComponent.of("/drivebackup linkaccount dropbox").color(TextColor.GOLD)
-                .hoverEvent(HoverEvent.showText(TextComponent.of("Run command")))
+    public Component getSetupInstructions() {
+        return Component.text()
+            .append(Component.text("Failed to backup to Dropbox, please run ").color(NamedTextColor.DARK_AQUA))
+            .append(Component.text("/drivebackup linkaccount dropbox").color(NamedTextColor.GOLD)
+                .hoverEvent(HoverEvent.showText(Component.text("Run command")))
                 .clickEvent(ClickEvent.runCommand("/drivebackup linkaccount dropbox")))
             .build();
     }
