@@ -7,6 +7,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitScheduler;
 import org.json.JSONArray;
 
+import net.kyori.adventure.platform.bukkit.BukkitAudiences;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
@@ -50,6 +51,11 @@ public class DriveBackup extends JavaPlugin {
     private static final OkHttpClient httpClient = new OkHttpClient();
 
     /**
+     * Global instance of Adventure audience
+     */
+    public static BukkitAudiences adventure;
+
+    /**
      * List of the IDs of the scheduled backup tasks
      */
     private static ArrayList<Integer> backupTasks = new ArrayList<>();
@@ -73,6 +79,7 @@ public class DriveBackup extends JavaPlugin {
         getCommand("drivebackup").setTabCompleter(new CommandTabComplete(this));
         getCommand("drivebackup").setExecutor(new CommandHandler(this));
         plugin = this;
+        DriveBackup.adventure = BukkitAudiences.create(this);
 
         PluginManager pm = this.getServer().getPluginManager();
         pm.registerEvents(new PlayerListener(), this);
