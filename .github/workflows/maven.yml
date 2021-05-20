@@ -1,0 +1,22 @@
+name: DriveBackupV2 CI
+
+on: [push, pull_request]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up JDK 8
+      uses: actions/setup-java@v2
+      with:
+        java-version: '8'
+        distribution: 'adopt'
+    - name: Build with Maven
+      run: mvn package --file DriveBackup/pom.xml
+    - uses: actions/upload-artifact@v2
+      with:
+        name: DriveBackupV2.jar
+        path: DriveBackup/target/DriveBackupV2.jar
