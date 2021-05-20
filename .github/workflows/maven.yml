@@ -18,5 +18,5 @@ jobs:
       run: mvn package --file DriveBackup/pom.xml
     - uses: actions/upload-artifact@v2
       with:
-        name: DriveBackup.jar
+        name: DriveBackupV2.jar
         path: DriveBackup/target/DriveBackupV2.jar
