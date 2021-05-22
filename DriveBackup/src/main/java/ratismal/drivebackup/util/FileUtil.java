@@ -78,7 +78,7 @@ public class FileUtil {
 
         fileList.clear();
 
-        ZonedDateTime now = ZonedDateTime.now(Config.getBackupFormatTimezone());
+        ZonedDateTime now = ZonedDateTime.now(Config.getBackupScheduleTimezone());
         String fileName = now.format(DateTimeFormatter.ofPattern(formatString, new Locale(Config.getDateLanguage())));
 
         blacklist.clear();
