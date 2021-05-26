@@ -6,9 +6,8 @@ import org.bukkit.configuration.file.FileConfiguration;
 import ratismal.drivebackup.util.MessageUtil;
 
 import java.io.File;
-import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
-import java.time.DateTimeException;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -244,9 +243,9 @@ public class Config {
     private ZoneOffset getTimeWithFallback(String zoneId) {
         try {
             return ZoneOffset.of(zoneId);
-        } catch (DateTimeException exception) {
-            MessageUtil.sendConsoleMessage("Timezone not valid, defaulting to 00:00");
-            return ZoneOffset.of("-00:00");
+        } catch(Exception e) {
+            MessageUtil.sendConsoleMessage("Timezone not valid, defaulting to UTC");
+            return ZoneOffset.of("Z"); //Fallback to UTC
         }
     }
 
