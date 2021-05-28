@@ -66,6 +66,15 @@ public class CommandHandler implements CommandExecutor {
                             sendReloadConfig(sender);
                         }
                         break;
+                    case "debug":
+                        if (hasPerm(sender, "drivebackup.reloadconfig")) {
+                            MessageUtil.sendMessage(sender, "Generating Debug Log");
+
+                            DebugCollector debugInfo = new DebugCollector(this.plugin);
+                            String publishedUrl = debugInfo.publish(this.plugin);
+                            MessageUtil.sendMessage(sender, "Debug URL: " + publishedUrl);
+                        }
+                        break;
                     case "linkaccount":
                         if (args.length < 2) {
                             sendHelp(sender);
@@ -173,6 +182,7 @@ public class CommandHandler implements CommandExecutor {
         DriveBackup.adventure.sender(player).sendMessage(genCommandHelpMessage("/drivebackup linkaccount onedrive", "Links your OneDrive account for backups"));
         DriveBackup.adventure.sender(player).sendMessage(genCommandHelpMessage("/drivebackup linkaccount dropbox", "Links your Dropbox account for backups"));
         DriveBackup.adventure.sender(player).sendMessage(genCommandHelpMessage("/drivebackup reloadconfig", "Reloads the config.yml"));
+        DriveBackup.adventure.sender(player).sendMessage(genCommandHelpMessage("/drivebackup debug", "Generates a debug log"));
         DriveBackup.adventure.sender(player).sendMessage(genCommandHelpMessage("/drivebackup nextbackup", "Gets the time/date of the next auto backup"));
         DriveBackup.adventure.sender(player).sendMessage(genCommandHelpMessage("/drivebackup status", "Gets the status of the running backup"));
         DriveBackup.adventure.sender(player).sendMessage(genCommandHelpMessage("/drivebackup backup", "Manually initiates a backup"));
