@@ -19,7 +19,7 @@ DriveBackupV2 is a plugin that aims to provide an extra layer of security to you
 
 ## Proudly Sponsored By:
 
-[![Server Host Logo](assets/banner-ad)](https://serverhorse.com/)
+[![Server Horse Logo](https://raw.githubusercontent.com/MaxMaeder/DriveBackupV2/master/assets/banner-ad.png)](https://serverhorse.com/)
 
 You're missing out on the most powerful Minecraft Hosting experience if you aren't using Server Horse!
 
