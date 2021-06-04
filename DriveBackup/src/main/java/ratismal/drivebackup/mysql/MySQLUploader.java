@@ -81,7 +81,7 @@ public class MySQLUploader {
             Class.forName("com.mysql.cj.jdbc.Driver");
             Connection connection = DriverManager.getConnection(connectionUrl, username, password);
 
-            stmt = connection.createStatement();
+            stmt = connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
 
             String sql = getInsertStatements(name, blacklist);
     
