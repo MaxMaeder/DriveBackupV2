@@ -19,9 +19,13 @@ DriveBackupV2 is a plugin that aims to provide an extra layer of security to you
 
 ## Proudly Sponsored By:
 
-[![Bloom Logo](https://i.imgur.com/0BZxjXY.png)](https://bloom.host/)
+[![Server Host Logo](assets/banner-ad)](https://serverhorse.com/)
 
-[Bloom](https://bloom.host/) offers dedicated core VPS and Minecraft hosting with Ryzen 9 processors using owned hardware. Bloom’s plans include tons of storage and with fully dedicated cores, there is no limit or throttling of your CPU. Join their [Discord](https://discord.gg/hysKgr4YGY) to learn more.
+You're missing out on the most powerful Minecraft Hosting experience if you aren't using Server Horse!
+
+Having data loss or corruption is never fun. With Server Horse, you can be certain that your data is in safe hands with our powerful data redundancy features. Combine that with DriveBackupV2 and you have the most reliable Minecraft Server data security possible. Plus your Java Edition server will work on all editions (Xbox, Bedrock, etc.)! Server Horse is the future of Minecraft Server hosting, and we hope we can be a part of your hosting future! 
+
+**Start a Minecraft Server: [serverhorse.com](https://serverhorse.com/)**
 
 *Want to sponsor this plugin? Check out our [Patreon](https://www.patreon.com/DriveBackupV2)!*
 
