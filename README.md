@@ -10,7 +10,7 @@ Maybe your hard drive died. Maybe you used a server hosting service that termina
 DriveBackupV2 is a plugin that aims to provide an extra layer of security to your data by backing it up remotely.
 
 ## Features
-- Creates and/or uploads backups to Google Drive, OneDrive, or a remote (S)FTP server
+- Creates and/or uploads backups to Google Drive, OneDrive, Dropbox, or a remote (S)FTP server
 - Can create a backup out of any files or folders on your Minecraft server
 - Can include files and MySQL databases from external servers (such as a BungeeCord one!)
 - Deletes backups locally and remotely if they exceed a specified amount
