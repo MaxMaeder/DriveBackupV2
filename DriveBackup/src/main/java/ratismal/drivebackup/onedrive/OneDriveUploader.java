@@ -249,6 +249,49 @@ public class OneDriveUploader implements Uploader {
     }
 
     /**
+     * Tests the OneDrive account by uploading a small file
+     *  @param testFile the file to upload during the test
+     */
+    public void test(java.io.File testFile) {
+        try {
+            String destination = Config.getDestination();
+            
+            Request request = new Request.Builder()
+                .addHeader("Authorization", "Bearer " + returnAccessToken())
+                .url("https://graph.microsoft.com/v1.0/me/drive/root:/" + destination + "/" + testFile.getName() + ":/content")
+                .put(RequestBody.create(testFile, MediaType.parse("plain/txt")))
+                .build();
+
+            Response response = httpClient.newCall(request).execute();
+            int statusCode = response.code();
+            response.close();
+
+            if (statusCode != 201) {
+                setErrorOccurred(true);
+            }
+            
+            TimeUnit.SECONDS.sleep(5);
+                
+            request = new Request.Builder()
+                .addHeader("Authorization", "Bearer " + returnAccessToken())
+                .url("https://graph.microsoft.com/v1.0/me/drive/root:/" + destination + "/" + testFile.getName() + ":/")
+                .delete()
+                .build();
+            
+            response = httpClient.newCall(request).execute();
+            statusCode = response.code();
+            response.close();
+
+            if (statusCode != 204) {
+                setErrorOccurred(true);
+            }
+        } catch (Exception e) {
+            MessageUtil.sendConsoleException(e);
+            setErrorOccurred(true);
+        }
+    }
+
+    /**
      * Uploads the specified file to the authenticated user's OneDrive inside a folder for the specified file type
      * @param file the file
      * @param type the type of file (ex. plugins, world)
