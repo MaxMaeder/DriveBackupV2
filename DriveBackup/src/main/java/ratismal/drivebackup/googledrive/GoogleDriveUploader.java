@@ -34,6 +34,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
@@ -275,6 +276,36 @@ public class GoogleDriveUploader implements Uploader {
                 httpRequest.setReadTimeout(4 * 60 * 60000); // 4 hours read timeout
             }
         };
+    }
+
+    /**
+     * Tests the Google Drive account by uploading a small file
+     * @param testFile the file to upload during the test
+     */
+    public void test(java.io.File testFile) {
+        try {
+            String destination = Config.getDestination();
+            File body = new File();
+                body.setTitle(testFile.getName());
+                body.setDescription("DriveBackupV2 test file");
+
+            FileContent mediaContent = new FileContent("plain/txt", testFile);
+
+            File folder = getFolder(destination);
+            ParentReference fileParent = new ParentReference();
+            fileParent.setId(folder.getId());
+            body.setParents(Collections.singletonList(fileParent));
+
+            File uploadedFile = service.files().insert(body, mediaContent).execute();
+            String fileId = uploadedFile.getId();
+            
+            TimeUnit.SECONDS.sleep(5);
+                
+            service.files().delete(fileId).execute();
+        } catch (Exception e) {
+            MessageUtil.sendConsoleException(e);
+            setErrorOccurred(true);
+        }
     }
 
     /**

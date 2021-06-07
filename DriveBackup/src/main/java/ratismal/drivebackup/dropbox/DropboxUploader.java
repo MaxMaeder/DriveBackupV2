@@ -11,6 +11,7 @@ import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
 import org.bukkit.command.CommandSender;
 import org.bukkit.conversations.Conversable;
@@ -164,6 +165,64 @@ public class DropboxUploader implements Uploader {
 
         Conversation conversation = factory.buildConversation((Conversable) initiator);
         conversation.begin();        
+    }
+
+    /**
+     * Tests the Dropbox account by uploading a small file
+     *  @param testFile the file to upload during the test
+     */
+    public void test(java.io.File testFile) {
+        try (DataInputStream dis = new DataInputStream(new FileInputStream(testFile))) {
+            byte[] content = new byte[dis.available()];
+            dis.readFully(content);
+
+            MediaType OCTET_STREAM = MediaType.parse("application/octet-stream");
+            RequestBody requestBody = RequestBody.create(content, OCTET_STREAM);
+            String destination = Config.getDestination();
+
+            JSONObject dropbox_json = new JSONObject();
+            dropbox_json.put("path", "/" + destination + "/" + testFile.getName());
+            String dropbox_arg = dropbox_json.toString();
+
+            Request request = new Request.Builder()
+                .addHeader("Authorization", "Bearer " + returnAccessToken())
+                .addHeader("Dropbox-API-Arg", dropbox_arg)
+                .url("https://content.dropboxapi.com/2/files/upload")
+                .post(requestBody)
+                .build();
+
+            Response response = httpClient.newCall(request).execute();
+            int statusCode = response.code();
+            response.close();
+    
+            if (statusCode != 200) {
+                setErrorOccurred(true);
+            }
+            
+            TimeUnit.SECONDS.sleep(5);
+
+            MediaType JSON = MediaType.parse("application/json; charset=utf-8");
+            JSONObject deleteJson = new JSONObject();
+            deleteJson.put("path", "/" + destination + "/" + testFile.getName());
+            RequestBody deleteRequestBody = RequestBody.create(deleteJson.toString(), JSON);
+
+            request = new Request.Builder()
+                .addHeader("Authorization", "Bearer " + returnAccessToken())
+                .url("https://api.dropboxapi.com/2/files/delete_v2")
+                .post(deleteRequestBody)
+                .build();
+
+            response = httpClient.newCall(request).execute();
+            statusCode = response.code();
+            response.close();
+        
+            if (statusCode != 200) {
+                setErrorOccurred(true);
+            }
+        } catch (Exception e) {
+            MessageUtil.sendConsoleException(e);
+            setErrorOccurred(true);
+        }
     }
 
     /**
