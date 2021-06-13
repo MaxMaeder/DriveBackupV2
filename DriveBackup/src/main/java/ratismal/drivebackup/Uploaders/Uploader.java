@@ -1,4 +1,4 @@
-package ratismal.drivebackup;
+package ratismal.drivebackup.Uploaders;
 
 import net.kyori.adventure.text.Component;
 
