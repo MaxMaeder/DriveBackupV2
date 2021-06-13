@@ -199,16 +199,17 @@ public class CommandHandler implements CommandExecutor {
      */
     private Component genCommandHelpMessage(String command, String description) {
         return Component.text()
-        .append(
-            Component.text(command)
-            .color(NamedTextColor.GOLD)
-            .hoverEvent(HoverEvent.showText(Component.text("Run command")))
-            .clickEvent(ClickEvent.runCommand(command))
-        )
-        .append(
-            Component.text(" - " + description)
-            .color(NamedTextColor.DARK_AQUA)
-        ).build();
+            .append(
+                Component.text(command)
+                .color(NamedTextColor.GOLD)
+                .hoverEvent(HoverEvent.showText(Component.text("Run command")))
+                .clickEvent(ClickEvent.runCommand(command))
+            )
+            .append(
+                Component.text(" - " + description)
+                .color(NamedTextColor.DARK_AQUA)
+            )
+            .build();
     }
 
     /**
@@ -219,29 +220,29 @@ public class CommandHandler implements CommandExecutor {
         player.sendMessage(ChatColor.GOLD + "|======" + ChatColor.DARK_RED + "DriveBackupV2" + ChatColor.GOLD + "======|");
         player.sendMessage(ChatColor.DARK_AQUA + "Need help? Check out these helpful resources!");
         DriveBackup.adventure.sender(player).sendMessage(Component.text()
-        .append(
-            Component.text("Wiki: ")
-            .color(NamedTextColor.DARK_AQUA)
-        )
-        .append(
-            Component.text("http://bit.ly/3dDdmwK")
-            .color(NamedTextColor.GOLD)
-            .hoverEvent(HoverEvent.showText(Component.text("Go to URL")))
-            .clickEvent(ClickEvent.openUrl("http://bit.ly/3dDdmwK"))
-        )
-        .build());
+            .append(
+                Component.text("Wiki: ")
+                .color(NamedTextColor.DARK_AQUA)
+            )
+            .append(
+                Component.text("http://bit.ly/3dDdmwK")
+                .color(NamedTextColor.GOLD)
+                .hoverEvent(HoverEvent.showText(Component.text("Go to URL")))
+                .clickEvent(ClickEvent.openUrl("http://bit.ly/3dDdmwK"))
+            )
+            .build());
         DriveBackup.adventure.sender(player).sendMessage(Component.text()
-        .append(
-            Component.text("Discord: ")
-            .color(NamedTextColor.DARK_AQUA)
-        )
-        .append(
-            Component.text("http://bit.ly/3f4VuuT")
-            .color(NamedTextColor.GOLD)
-            .hoverEvent(HoverEvent.showText(Component.text("Go to URL")))
-            .clickEvent(ClickEvent.openUrl("http://bit.ly/3f4VuuT"))
-        )
-        .build());
+            .append(
+                Component.text("Discord: ")
+                .color(NamedTextColor.DARK_AQUA)
+            )
+            .append(
+                Component.text("http://bit.ly/3f4VuuT")
+                .color(NamedTextColor.GOLD)
+                .hoverEvent(HoverEvent.showText(Component.text("Go to URL")))
+                .clickEvent(ClickEvent.openUrl("http://bit.ly/3f4VuuT"))
+            )
+            .build());
     }
 
     /**
