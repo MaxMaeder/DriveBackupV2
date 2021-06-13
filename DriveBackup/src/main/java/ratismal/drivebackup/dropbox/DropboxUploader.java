@@ -177,6 +177,8 @@ public class DropboxUploader implements Uploader {
             dis.readFully(content);
 
             MediaType OCTET_STREAM = MediaType.parse("application/octet-stream");
+            MediaType JSON = MediaType.parse("application/json; charset=utf-8");
+
             RequestBody requestBody = RequestBody.create(content, OCTET_STREAM);
             String destination = Config.getDestination();
 
@@ -201,7 +203,6 @@ public class DropboxUploader implements Uploader {
             
             TimeUnit.SECONDS.sleep(5);
 
-            MediaType JSON = MediaType.parse("application/json; charset=utf-8");
             JSONObject deleteJson = new JSONObject();
             deleteJson.put("path", "/" + destination + "/" + testFile.getName());
             RequestBody deleteRequestBody = RequestBody.create(deleteJson.toString(), JSON);
@@ -389,8 +390,7 @@ public class DropboxUploader implements Uploader {
         response.close();
 
         if (files.length() > fileLimit) {
-            MessageUtil.sendConsoleMessage(
-                "There are " + files.length() + " file(s) which exceeds the limit of " + fileLimit + ", deleting");
+            MessageUtil.sendConsoleMessage("There are " + files.length() + " file(s) which exceeds the limit of " + fileLimit + ", deleting");
             while (files.length() > fileLimit) {
                 JSONObject deleteJson = new JSONObject();
                 deleteJson.put("path", "/" + destination + "/" + type + "/" + files.getJSONObject(0).get("name"));

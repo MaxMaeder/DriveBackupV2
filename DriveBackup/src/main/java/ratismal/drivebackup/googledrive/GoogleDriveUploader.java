@@ -109,27 +109,27 @@ public class GoogleDriveUploader implements Uploader {
         long responseCheckDelay = parsedResponse.getLong("interval");
 
         MessageUtil.sendMessage(initiator, Component.text()
-                .append(
-                    Component.text("To link your Google Drive account, go to ")
-                    .color(NamedTextColor.DARK_AQUA)
-                )
-                .append(
-                    Component.text(verificationUrl)
-                    .color(NamedTextColor.GOLD)
-                    .hoverEvent(HoverEvent.showText(Component.text("Go to URL")))
-                    .clickEvent(ClickEvent.openUrl(verificationUrl))
-                )
-                .append(
-                    Component.text(" and enter code ")
-                    .color(NamedTextColor.DARK_AQUA)
-                )
-                .append(
-                    Component.text(userCode)
-                    .color(NamedTextColor.GOLD)
-                    .hoverEvent(HoverEvent.showText(Component.text("Copy code")))
-                    .clickEvent(ClickEvent.copyToClipboard(userCode))
-                )
-                .build());
+            .append(
+                Component.text("To link your Google Drive account, go to ")
+                .color(NamedTextColor.DARK_AQUA)
+            )
+            .append(
+                Component.text(verificationUrl)
+                .color(NamedTextColor.GOLD)
+                .hoverEvent(HoverEvent.showText(Component.text("Go to URL")))
+                .clickEvent(ClickEvent.openUrl(verificationUrl))
+            )
+            .append(
+                Component.text(" and enter code ")
+                .color(NamedTextColor.DARK_AQUA)
+            )
+            .append(
+                Component.text(userCode)
+                .color(NamedTextColor.GOLD)
+                .hoverEvent(HoverEvent.showText(Component.text("Copy code")))
+                .clickEvent(ClickEvent.copyToClipboard(userCode))
+            )
+            .build());
 
         final int[] task = new int[]{-1};
         task[0] = plugin.getServer().getScheduler().scheduleSyncRepeatingTask(plugin, new Runnable() {
@@ -286,8 +286,8 @@ public class GoogleDriveUploader implements Uploader {
         try {
             String destination = Config.getDestination();
             File body = new File();
-                body.setTitle(testFile.getName());
-                body.setDescription("DriveBackupV2 test file");
+            body.setTitle(testFile.getName());
+            body.setDescription("DriveBackupV2 test file");
 
             FileContent mediaContent = new FileContent("plain/txt", testFile);
 
@@ -384,22 +384,20 @@ public class GoogleDriveUploader implements Uploader {
      * Gets the setup instructions for this uploaders
      * @return a Component explaining how to set up this uploader
      */
-    public Component getSetupInstructions()
-    {
+    public Component getSetupInstructions() {
         return Component.text()
-                    .append(
-                        Component.text("Failed to backup to Google Drive, please run ")
-                        .color(NamedTextColor.DARK_AQUA)
-                    )
-                    .append(
-                        Component.text("/drivebackup linkaccount googledrive")
-                        .color(NamedTextColor.GOLD)
-                        .hoverEvent(HoverEvent.showText(Component.text("Run command")))
-                        .clickEvent(ClickEvent.runCommand("/drivebackup linkaccount googledrive"))
-                    )
-                    .build();
+            .append(
+                Component.text("Failed to backup to Google Drive, please run ")
+                    .color(NamedTextColor.DARK_AQUA)
+            )
+            .append(
+                Component.text("/drivebackup linkaccount googledrive")
+                    .color(NamedTextColor.GOLD)
+                    .hoverEvent(HoverEvent.showText(Component.text("Run command")))
+                    .clickEvent(ClickEvent.runCommand("/drivebackup linkaccount googledrive"))
+                )
+            .build();
     }
-
 
     /**
      * Creates a folder with the specified name in the specified parent folder in the authenticated user's Google Drive
@@ -460,12 +458,11 @@ public class GoogleDriveUploader implements Uploader {
      */
     private File getFolder(String name, File parent) {
         try {
-            Drive.Files.List request = service.files().list().setQ(
-                    "mimeType='application/vnd.google-apps.folder' and trashed=false and '" + parent.getId() + "' in parents");
+            Drive.Files.List request = service.files().list()
+                .setQ("mimeType='application/vnd.google-apps.folder' and trashed=false and '" + parent.getId() + "' in parents");
             FileList files = request.execute();
             for (File folderfiles : files.getItems()) {
                 if (folderfiles.getTitle().equals(name)) {
-
                     return folderfiles;
                 }
             }
@@ -483,12 +480,11 @@ public class GoogleDriveUploader implements Uploader {
      */
     private File getFolder(String name) {
         try {
-            Drive.Files.List request = service.files().list().setQ(
-                    "mimeType='application/vnd.google-apps.folder' and trashed=false");
+            Drive.Files.List request = service.files().list()
+                .setQ("mimeType='application/vnd.google-apps.folder' and trashed=false");
             FileList files = request.execute();
             for (File folderfiles : files.getItems()) {
                 if (folderfiles.getTitle().equals(name)) {
-
                     return folderfiles;
                 }
             }
@@ -525,8 +521,7 @@ public class GoogleDriveUploader implements Uploader {
                 MessageUtil.sendConsoleException(e);
                 request.setPageToken(null);
             }
-        } while (request.getPageToken() != null &&
-                request.getPageToken().length() > 0);
+        } while (request.getPageToken() != null && request.getPageToken().length() > 0);
 
         return result;
     }
