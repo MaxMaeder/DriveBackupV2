@@ -4,13 +4,16 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 
+import ratismal.drivebackup.Uploaders.Uploader;
+import ratismal.drivebackup.Uploaders.dropbox.DropboxUploader;
+import ratismal.drivebackup.Uploaders.ftp.FTPUploader;
+import ratismal.drivebackup.Uploaders.googledrive.GoogleDriveUploader;
+import ratismal.drivebackup.Uploaders.onedrive.OneDriveUploader;
 import ratismal.drivebackup.config.Config;
-import ratismal.drivebackup.dropbox.DropboxUploader;
-import ratismal.drivebackup.ftp.FTPUploader;
-import ratismal.drivebackup.googledrive.GoogleDriveUploader;
 import ratismal.drivebackup.handler.PlayerListener;
 import ratismal.drivebackup.mysql.MySQLUploader;
-import ratismal.drivebackup.onedrive.OneDriveUploader;
+import ratismal.drivebackup.plugin.DriveBackup;
+import ratismal.drivebackup.plugin.Scheduler;
 import ratismal.drivebackup.util.*;
 import ratismal.drivebackup.util.Timer;
 
@@ -505,7 +508,7 @@ public class UploadThread implements Runnable {
 
             int weeksCheckedForDate;
             for (weeksCheckedForDate = 0; weeksCheckedForDate < 2; weeksCheckedForDate++) {
-                for (ZonedDateTime date : DriveBackup.getBackupDatesList()) {
+                for (ZonedDateTime date : Scheduler.getBackupDatesList()) {
 
                     if (nextBackupDate == null &&
 

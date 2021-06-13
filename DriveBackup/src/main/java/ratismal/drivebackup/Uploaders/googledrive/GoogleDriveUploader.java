@@ -1,4 +1,4 @@
-package ratismal.drivebackup.googledrive;
+package ratismal.drivebackup.Uploaders.googledrive;
 
 import com.google.api.client.auth.oauth2.BearerToken;
 import com.google.api.client.auth.oauth2.Credential;
@@ -20,11 +20,12 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
-
-import ratismal.drivebackup.DriveBackup;
+import ratismal.drivebackup.Uploaders.Uploader;
 import ratismal.drivebackup.config.Config;
+import ratismal.drivebackup.plugin.DriveBackup;
+import ratismal.drivebackup.plugin.Scheduler;
 import ratismal.drivebackup.util.MessageUtil;
-import ratismal.drivebackup.Uploader;
+import ratismal.drivebackup.util.SchedulerUtil;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -86,117 +87,122 @@ public class GoogleDriveUploader implements Uploader {
      * 
      * @param plugin    a reference to the {@code DriveBackup} plugin
      * @param initiator user who initiated the authentication
-     * @throws Exception
      */
-    public static void authenticateUser(final DriveBackup plugin, final CommandSender initiator) throws Exception {
-        RequestBody requestBody = new FormBody.Builder()
-            .add("client_id", CLIENT_ID)
-            .add("scope", "https://www.googleapis.com/auth/drive.file")
-            .build();
+    public static void authenticateUser(final DriveBackup plugin, final CommandSender initiator) {
+        try {
+            RequestBody requestBody = new FormBody.Builder()
+                .add("client_id", CLIENT_ID)
+                .add("scope", "https://www.googleapis.com/auth/drive.file")
+                .build();
 
-        Request request = new Request.Builder()
-            .url("https://oauth2.googleapis.com/device/code")
-            .post(requestBody)
-            .build();
+            Request request = new Request.Builder()
+                .url("https://oauth2.googleapis.com/device/code")
+                .post(requestBody)
+                .build();
 
-        Response response = httpClient.newCall(request).execute();
-        JSONObject parsedResponse = new JSONObject(response.body().string());
-        response.close();
+            Response response = httpClient.newCall(request).execute();
+            JSONObject parsedResponse = new JSONObject(response.body().string());
+            response.close();
 
-        String verificationUrl = parsedResponse.getString("verification_url");
-        String userCode = parsedResponse.getString("user_code");
-        final String deviceCode = parsedResponse.getString("device_code");
-        long responseCheckDelay = parsedResponse.getLong("interval");
+            String verificationUrl = parsedResponse.getString("verification_url");
+            String userCode = parsedResponse.getString("user_code");
+            final String deviceCode = parsedResponse.getString("device_code");
+            long responseCheckDelay = SchedulerUtil.sToTicks(parsedResponse.getLong("interval"));
 
-        MessageUtil.sendMessage(initiator, Component.text()
-                .append(
-                    Component.text("To link your Google Drive account, go to ")
-                    .color(NamedTextColor.DARK_AQUA)
-                )
-                .append(
-                    Component.text(verificationUrl)
-                    .color(NamedTextColor.GOLD)
-                    .hoverEvent(HoverEvent.showText(Component.text("Go to URL")))
-                    .clickEvent(ClickEvent.openUrl(verificationUrl))
-                )
-                .append(
-                    Component.text(" and enter code ")
-                    .color(NamedTextColor.DARK_AQUA)
-                )
-                .append(
-                    Component.text(userCode)
-                    .color(NamedTextColor.GOLD)
-                    .hoverEvent(HoverEvent.showText(Component.text("Copy code")))
-                    .clickEvent(ClickEvent.copyToClipboard(userCode))
-                )
-                .build());
+            MessageUtil.sendMessage(initiator, Component.text()
+                    .append(
+                        Component.text("To link your Google Drive account, go to ")
+                        .color(NamedTextColor.DARK_AQUA)
+                    )
+                    .append(
+                        Component.text(verificationUrl)
+                        .color(NamedTextColor.GOLD)
+                        .hoverEvent(HoverEvent.showText(Component.text("Go to URL")))
+                        .clickEvent(ClickEvent.openUrl(verificationUrl))
+                    )
+                    .append(
+                        Component.text(" and enter code ")
+                        .color(NamedTextColor.DARK_AQUA)
+                    )
+                    .append(
+                        Component.text(userCode)
+                        .color(NamedTextColor.GOLD)
+                        .hoverEvent(HoverEvent.showText(Component.text("Copy code")))
+                        .clickEvent(ClickEvent.copyToClipboard(userCode))
+                    )
+                    .build());
 
-        final int[] task = new int[]{-1};
-        task[0] = plugin.getServer().getScheduler().scheduleSyncRepeatingTask(plugin, new Runnable() {
-            @Override
-            public void run() {
-                
-                RequestBody requestBody = new FormBody.Builder()
-                    .add("client_id", CLIENT_ID)
-                    .add("client_secret", CLIENT_SECRET)
-                    .add("grant_type", "urn:ietf:params:oauth:grant-type:device_code")
-                    .add("device_code", deviceCode)
-                    .build();
-        
-                Request request = new Request.Builder()
-                    .url("https://oauth2.googleapis.com/token")
-                    .post(requestBody)
-                    .build();
-        
-                JSONObject parsedResponse = null;
-                try {
-                    Response response = httpClient.newCall(request).execute();
-                    parsedResponse = new JSONObject(response.body().string());
-                    response.close();
-                } catch (Exception exception) {
-                    MessageUtil.sendMessage(initiator, "Failed to link your Google Drive account, please try again");
-
-                    Bukkit.getScheduler().cancelTask(task[0]);
-                    return;
-                }
-                
-                if (parsedResponse.has("refresh_token")) {
-                    JSONObject jsonObject = new JSONObject();
-                    jsonObject.put("refresh_token", parsedResponse.getString("refresh_token"));
-
+            final int[] task = new int[]{-1};
+            task[0] = plugin.getServer().getScheduler().scheduleSyncRepeatingTask(plugin, new Runnable() {
+                @Override
+                public void run() {
+                    
+                    RequestBody requestBody = new FormBody.Builder()
+                        .add("client_id", CLIENT_ID)
+                        .add("client_secret", CLIENT_SECRET)
+                        .add("grant_type", "urn:ietf:params:oauth:grant-type:device_code")
+                        .add("device_code", deviceCode)
+                        .build();
+            
+                    Request request = new Request.Builder()
+                        .url("https://oauth2.googleapis.com/token")
+                        .post(requestBody)
+                        .build();
+            
+                    JSONObject parsedResponse = null;
                     try {
-                        FileWriter file = new FileWriter(CLIENT_JSON_PATH);
-                        file.write(jsonObject.toString());
-                        file.close();
-                    } catch (IOException e) {
+                        Response response = httpClient.newCall(request).execute();
+                        parsedResponse = new JSONObject(response.body().string());
+                        response.close();
+                    } catch (Exception exception) {
                         MessageUtil.sendMessage(initiator, "Failed to link your Google Drive account, please try again");
+
+                        Bukkit.getScheduler().cancelTask(task[0]);
+                        return;
+                    }
+                    
+                    if (parsedResponse.has("refresh_token")) {
+                        JSONObject jsonObject = new JSONObject();
+                        jsonObject.put("refresh_token", parsedResponse.getString("refresh_token"));
+
+                        try {
+                            FileWriter file = new FileWriter(CLIENT_JSON_PATH);
+                            file.write(jsonObject.toString());
+                            file.close();
+                        } catch (IOException e) {
+                            MessageUtil.sendMessage(initiator, "Failed to link your Google Drive account, please try again");
+                            
+                            Bukkit.getScheduler().cancelTask(task[0]);
+                        }
+                        
+                        MessageUtil.sendMessage(initiator, "Your Google Drive account is linked!");
+                        
+                        if (!plugin.getConfig().getBoolean("googledrive.enabled")) {
+                            MessageUtil.sendMessage(initiator, "Automatically enabled Google Drive backups");
+                            plugin.getConfig().set("googledrive.enabled", true);
+                            plugin.saveConfig();
+                            
+                            DriveBackup.reloadLocalConfig();
+                            Scheduler.startBackupThread();
+                        }
+                        
+                        Bukkit.getScheduler().cancelTask(task[0]);
+                    } else if (!parsedResponse.getString("error").equals("authorization_pending")) {
+                        if (parsedResponse.getString("error").equals("expired_token")) {
+                            MessageUtil.sendMessage(initiator, "The Google Drive account linking process timed out, please try again");
+                        } else {
+                            MessageUtil.sendMessage(initiator, "Failed to link your Google Drive account, please try again");
+                        }
                         
                         Bukkit.getScheduler().cancelTask(task[0]);
                     }
-                    
-                    MessageUtil.sendMessage(initiator, "Your Google Drive account is linked!");
-                    
-                    if (!plugin.getConfig().getBoolean("googledrive.enabled")) {
-                        MessageUtil.sendMessage(initiator, "Automatically enabled Google Drive backups");
-                        plugin.getConfig().set("googledrive.enabled", true);
-                        plugin.saveConfig();
-                        
-                        DriveBackup.reloadLocalConfig();
-                        DriveBackup.startThread();
-                    }
-                    
-                    Bukkit.getScheduler().cancelTask(task[0]);
-                } else if (!parsedResponse.getString("error").equals("authorization_pending")) {
-                    if (parsedResponse.getString("error").equals("expired_token")) {
-                        MessageUtil.sendMessage(initiator, "The Google Drive account linking process timed out, please try again");
-                    } else {
-                        MessageUtil.sendMessage(initiator, "Failed to link your Google Drive account, please try again");
-                    }
-                    
-                    Bukkit.getScheduler().cancelTask(task[0]);
                 }
-            }
-        }, responseCheckDelay * 20L, responseCheckDelay * 20L);
+            }, responseCheckDelay, responseCheckDelay);
+        } catch (Exception e) {
+            MessageUtil.sendMessage(initiator, "Failed to link your Google Drive account");
+        
+            MessageUtil.sendConsoleException(e);
+        }
     }
 
     /**

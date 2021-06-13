@@ -7,11 +7,12 @@ import java.util.Random;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 
+import ratismal.drivebackup.Uploaders.Uploader;
+import ratismal.drivebackup.Uploaders.dropbox.DropboxUploader;
+import ratismal.drivebackup.Uploaders.ftp.FTPUploader;
+import ratismal.drivebackup.Uploaders.googledrive.GoogleDriveUploader;
+import ratismal.drivebackup.Uploaders.onedrive.OneDriveUploader;
 import ratismal.drivebackup.config.Config;
-import ratismal.drivebackup.dropbox.DropboxUploader;
-import ratismal.drivebackup.ftp.FTPUploader;
-import ratismal.drivebackup.googledrive.GoogleDriveUploader;
-import ratismal.drivebackup.onedrive.OneDriveUploader;
 import ratismal.drivebackup.util.MessageUtil;
 
 public class TestThread implements Runnable {
