@@ -1,4 +1,4 @@
-package ratismal.drivebackup.ftp;
+package ratismal.drivebackup.uploaders.ftp;
 
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
@@ -7,9 +7,9 @@ import org.apache.commons.net.ftp.FTPSClient;
 import org.bukkit.ChatColor;
 
 import net.kyori.adventure.text.Component;
+import ratismal.drivebackup.uploaders.Uploader;
 import ratismal.drivebackup.config.Config;
 import ratismal.drivebackup.util.MessageUtil;
-import ratismal.drivebackup.Uploader;
 
 import java.io.File;
 import java.io.FileInputStream;

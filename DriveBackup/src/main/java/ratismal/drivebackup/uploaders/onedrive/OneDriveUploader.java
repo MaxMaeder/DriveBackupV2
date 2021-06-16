@@ -1,4 +1,4 @@
-package ratismal.drivebackup.onedrive;
+package ratismal.drivebackup.uploaders.onedrive;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
@@ -16,11 +16,14 @@ import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import ratismal.drivebackup.DriveBackup;
+
+import ratismal.drivebackup.uploaders.Uploader;
 import ratismal.drivebackup.config.Config;
+import ratismal.drivebackup.plugin.DriveBackup;
+import ratismal.drivebackup.plugin.Scheduler;
 import ratismal.drivebackup.util.HttpLogger;
 import ratismal.drivebackup.util.MessageUtil;
-import ratismal.drivebackup.Uploader;
+import ratismal.drivebackup.util.SchedulerUtil;
 
 import java.io.*;
 import java.text.DecimalFormat;
@@ -97,7 +100,7 @@ public class OneDriveUploader implements Uploader {
         String verificationUrl = parsedResponse.getString("verification_uri");
         String userCode = parsedResponse.getString("user_code");
         final String deviceCode = parsedResponse.getString("device_code");
-        long responseCheckDelay = parsedResponse.getLong("interval");
+        long responseCheckDelay = SchedulerUtil.sToTicks(parsedResponse.getLong("interval"));
 
         MessageUtil.sendMessage(initiator, Component.text()
             .append(
@@ -171,7 +174,7 @@ public class OneDriveUploader implements Uploader {
                         plugin.saveConfig();
                         
                         DriveBackup.reloadLocalConfig();
-                        DriveBackup.startThread();
+                        Scheduler.startBackupThread();
                     }
                     
                     Bukkit.getScheduler().cancelTask(task[0]);
@@ -189,7 +192,7 @@ public class OneDriveUploader implements Uploader {
                     response.close();
                 }
             }
-        }, responseCheckDelay * 20L, responseCheckDelay * 20L);
+        }, responseCheckDelay, responseCheckDelay);
     }
     
     /**

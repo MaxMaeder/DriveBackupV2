@@ -8,7 +8,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
-import ratismal.drivebackup.DriveBackup;
+import ratismal.drivebackup.plugin.UpdateChecker;
 import ratismal.drivebackup.util.MessageUtil;
 
 /**
@@ -29,7 +29,7 @@ public class PlayerListener implements Listener {
             autoBackupsActive = true;
         }
 
-        if (DriveBackup.isUpdateAvailable() && event.getPlayer().hasPermission("drivebackup.linkAccounts")) {
+        if (UpdateChecker.isUpdateAvailable() && event.getPlayer().hasPermission("drivebackup.linkAccounts")) {
 
             MessageUtil.sendMessage(event.getPlayer(), Component.text()
                 .append(

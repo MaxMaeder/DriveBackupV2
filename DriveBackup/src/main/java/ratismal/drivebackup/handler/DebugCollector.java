@@ -15,8 +15,8 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
-import ratismal.drivebackup.DriveBackup;
 import ratismal.drivebackup.config.Config;
+import ratismal.drivebackup.plugin.DriveBackup;
 
 public class DebugCollector {
 
@@ -27,7 +27,7 @@ public class DebugCollector {
     private List<PluginInfo> plugins;
     private RamInfo ramInfo;
 
-    DebugCollector(DriveBackup plugin) {
+    public DebugCollector(DriveBackup plugin) {
         this.serverType = plugin.getServer().getName();
         this.serverVersion = plugin.getServer().getVersion();
         this.onlineMode = plugin.getServer().getOnlineMode();
