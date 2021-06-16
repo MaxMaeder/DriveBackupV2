@@ -7,11 +7,11 @@ import java.util.Random;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 
-import ratismal.drivebackup.Uploaders.Uploader;
-import ratismal.drivebackup.Uploaders.dropbox.DropboxUploader;
-import ratismal.drivebackup.Uploaders.ftp.FTPUploader;
-import ratismal.drivebackup.Uploaders.googledrive.GoogleDriveUploader;
-import ratismal.drivebackup.Uploaders.onedrive.OneDriveUploader;
+import ratismal.drivebackup.uploaders.Uploader;
+import ratismal.drivebackup.uploaders.dropbox.DropboxUploader;
+import ratismal.drivebackup.uploaders.ftp.FTPUploader;
+import ratismal.drivebackup.uploaders.googledrive.GoogleDriveUploader;
+import ratismal.drivebackup.uploaders.onedrive.OneDriveUploader;
 import ratismal.drivebackup.config.Config;
 import ratismal.drivebackup.util.MessageUtil;
 

@@ -1,7 +1,7 @@
-package ratismal.drivebackup.Uploaders.dropbox;
+package ratismal.drivebackup.uploaders.dropbox;
 
 import ratismal.drivebackup.util.MessageUtil;
-import ratismal.drivebackup.Uploaders.Uploader;
+import ratismal.drivebackup.uploaders.Uploader;
 import ratismal.drivebackup.config.Config;
 import ratismal.drivebackup.plugin.DriveBackup;
 import ratismal.drivebackup.plugin.Scheduler;
