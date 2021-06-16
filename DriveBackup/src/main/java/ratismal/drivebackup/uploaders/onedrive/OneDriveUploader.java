@@ -1,4 +1,4 @@
-package ratismal.drivebackup.Uploaders.onedrive;
+package ratismal.drivebackup.uploaders.onedrive;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
@@ -17,7 +17,7 @@ import org.bukkit.command.CommandSender;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import ratismal.drivebackup.Uploaders.Uploader;
+import ratismal.drivebackup.uploaders.Uploader;
 import ratismal.drivebackup.config.Config;
 import ratismal.drivebackup.plugin.DriveBackup;
 import ratismal.drivebackup.plugin.Scheduler;

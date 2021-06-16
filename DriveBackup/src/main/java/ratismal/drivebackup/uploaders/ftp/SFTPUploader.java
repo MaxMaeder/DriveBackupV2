@@ -1,4 +1,4 @@
-package ratismal.drivebackup.Uploaders.ftp;
+package ratismal.drivebackup.uploaders.ftp;
 
 import ratismal.drivebackup.config.Config;
 import ratismal.drivebackup.plugin.DriveBackup;
