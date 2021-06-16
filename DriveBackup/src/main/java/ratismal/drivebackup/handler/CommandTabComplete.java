@@ -6,8 +6,9 @@ import java.util.List;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
-import ratismal.drivebackup.DriveBackup;
+
 import ratismal.drivebackup.config.Config;
+import ratismal.drivebackup.plugin.DriveBackup;
 
 /**
  * Created by Ratismal on 2016-01-20.

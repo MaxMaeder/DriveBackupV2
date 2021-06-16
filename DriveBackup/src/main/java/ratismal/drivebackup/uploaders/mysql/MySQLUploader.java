@@ -3,7 +3,7 @@
  * https://github.com/SeunMatt/mysql-backup4j
  */
 
-package ratismal.drivebackup.mysql;
+package ratismal.drivebackup.uploaders.mysql;
 
 import java.io.File;
 import java.io.FileOutputStream;
