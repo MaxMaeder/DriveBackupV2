@@ -154,7 +154,6 @@ public class DropboxUploader implements Uploader {
                             plugin.saveConfig();
 
                             DriveBackup.reloadLocalConfig();
-                            Scheduler.startBackupThread();
                         }
                     } else {
                         MessageUtil.sendMessage(initiator, "Failed to link your Dropbox account, please try again");

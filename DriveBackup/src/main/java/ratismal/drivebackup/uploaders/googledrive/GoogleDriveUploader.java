@@ -183,7 +183,6 @@ public class GoogleDriveUploader implements Uploader {
                             plugin.saveConfig();
                             
                             DriveBackup.reloadLocalConfig();
-                            Scheduler.startBackupThread();
                         }
                         
                         Bukkit.getScheduler().cancelTask(task[0]);
