@@ -9,7 +9,9 @@ import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalAccessor;
 import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 
@@ -46,42 +48,31 @@ public class Scheduler {
 
             for (HashMap<String, Object> schedule : Config.getBackupScheduleList()) {
 
-                ArrayList<String> scheduleDays = new ArrayList<>();
+                LinkedHashSet<String> scheduleDays = new LinkedHashSet<>();
                 scheduleDays.addAll((List<String>) schedule.get("days"));
 
-                for (int i = 0; i < scheduleDays.size(); i++) {
-                    switch (scheduleDays.get(i)) {
+                for (String entry : new LinkedHashSet<>(scheduleDays)) {
+                    switch (entry) {
                         case "weekdays":
-                            scheduleDays.remove(scheduleDays.get(i));
-                            addIfNotAdded(scheduleDays, "monday");
-                            addIfNotAdded(scheduleDays, "tuesday");
-                            addIfNotAdded(scheduleDays, "wednesday");
-                            addIfNotAdded(scheduleDays, "thursday");
-                            addIfNotAdded(scheduleDays, "friday");
+                            scheduleDays.remove(entry);
+                            scheduleDays.addAll(Arrays.asList("monday", "tuesday", "wednesday", "thursday", "friday"));
                             break;
                         case "weekends":
-                            scheduleDays.remove(scheduleDays.get(i));
-                            addIfNotAdded(scheduleDays, "sunday");
-                            addIfNotAdded(scheduleDays, "saturday");
+                            scheduleDays.remove(entry);
+                            scheduleDays.addAll(Arrays.asList("sunday", "saturday"));
                             break;
                         case "everyday":
-                            scheduleDays.remove(scheduleDays.get(i));
-                            addIfNotAdded(scheduleDays, "sunday");
-                            addIfNotAdded(scheduleDays, "monday");
-                            addIfNotAdded(scheduleDays, "tuesday");
-                            addIfNotAdded(scheduleDays, "wednesday");
-                            addIfNotAdded(scheduleDays, "thursday");
-                            addIfNotAdded(scheduleDays, "friday");
-                            addIfNotAdded(scheduleDays, "saturday");
+                            scheduleDays.remove(entry);
+                            scheduleDays.addAll(Arrays.asList("sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"));
                             break;
                     }
                 }
 
                 TemporalAccessor scheduleTime = DateTimeFormatter.ofPattern ("kk:mm", Locale.ENGLISH).parse((String) schedule.get("time"));
 
-                for (int i = 0; i < scheduleDays.size(); i++) {
+                for (String entry : new LinkedHashSet<>(scheduleDays)) {
                     ZonedDateTime previousOccurrence = ZonedDateTime.now(timezone)
-                        .with(TemporalAdjusters.previous(DayOfWeek.valueOf(scheduleDays.get(i).toUpperCase())))
+                        .with(TemporalAdjusters.previous(DayOfWeek.valueOf(entry.toUpperCase())))
                         .with(ChronoField.CLOCK_HOUR_OF_DAY, scheduleTime.get(ChronoField.CLOCK_HOUR_OF_DAY))
                         .with(ChronoField.MINUTE_OF_HOUR, scheduleTime.get(ChronoField.MINUTE_OF_HOUR))
                         .with(ChronoField.SECOND_OF_MINUTE, 0);
@@ -89,7 +80,7 @@ public class Scheduler {
                     ZonedDateTime now = ZonedDateTime.now(timezone);
                     
                     ZonedDateTime nextOccurrence = ZonedDateTime.now(timezone)
-                        .with(TemporalAdjusters.nextOrSame(DayOfWeek.valueOf(scheduleDays.get(i).toUpperCase())))
+                        .with(TemporalAdjusters.nextOrSame(DayOfWeek.valueOf(entry.toUpperCase())))
                         .with(ChronoField.CLOCK_HOUR_OF_DAY, scheduleTime.get(ChronoField.CLOCK_HOUR_OF_DAY))
                         .with(ChronoField.MINUTE_OF_HOUR, scheduleTime.get(ChronoField.MINUTE_OF_HOUR))
                         .with(ChronoField.SECOND_OF_MINUTE, 0);
@@ -117,12 +108,11 @@ public class Scheduler {
                 scheduleMessage.append("Scheduling a backup to run at ");
                 scheduleMessage.append(scheduleMessageTime.format(DateTimeFormatter.ofPattern("hh:mm a")));
                 scheduleMessage.append(" every ");
-                for (int i = 0; i < scheduleDays.size(); i++) {
-                    if (i != 0) {
-                        scheduleMessage.append(", ");
-                    }
-                    scheduleMessage.append(scheduleDays.get(i).substring(0, 1).toUpperCase() + scheduleDays.get(i).substring(1));
+                ArrayList<String> daysFormatted = new ArrayList<>();
+                for (String word : scheduleDays) {
+                    daysFormatted.add(word.substring(0, 1).toUpperCase() + word.substring(1));
                 }
+                scheduleMessage.append(String.join(", ", daysFormatted));
                 MessageUtil.sendConsoleMessage(scheduleMessage.toString());
             }
         } else if (Config.getBackupDelay() != -1) {
@@ -157,14 +147,5 @@ public class Scheduler {
      */
     public static ArrayList<ZonedDateTime> getBackupDatesList() {
         return backupDatesList;
-    }
-
-        /**
-     * Adds a String to an ArrayList, if it doesn't already contain the String
-     * @param list the ArrayList
-     * @param item the String
-     */
-    private static void addIfNotAdded(ArrayList<String> list, String item) {
-        if (!list.contains(item)) list.add(item);
     }
 }
