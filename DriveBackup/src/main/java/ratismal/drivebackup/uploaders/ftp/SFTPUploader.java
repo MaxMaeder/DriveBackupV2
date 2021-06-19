@@ -1,7 +1,7 @@
-package ratismal.drivebackup.ftp;
+package ratismal.drivebackup.uploaders.ftp;
 
-import ratismal.drivebackup.DriveBackup;
 import ratismal.drivebackup.config.Config;
+import ratismal.drivebackup.plugin.DriveBackup;
 import ratismal.drivebackup.util.MessageUtil;
 
 import java.io.File;
@@ -128,30 +128,18 @@ public class SFTPUploader {
      * @param testFileSize the size (in bytes) of the file
      * @throws Exception
      */
-    public void testConnection(String testFileName, int testFileSize) throws Exception {
-        String localTestFilePath = Config.getDir() + File.separator + testFileName;
-
-        new File(Config.getDir()).mkdirs();
-
-        try (FileOutputStream fos = new FileOutputStream(localTestFilePath)) {
-            java.util.Random byteGenerator = new java.util.Random();
-
-            byte[] randomBytes = new byte[testFileSize];
-            byteGenerator.nextBytes(randomBytes);
-
-            fos.write(randomBytes);
-            fos.flush();
-
+    public void test(File testFile) throws Exception {
+        try (FileOutputStream fos = new FileOutputStream(testFile)) {
             resetWorkingDirectory();
             createThenEnter(_remoteBaseFolder);
 
-            sftpClient.put(localTestFilePath, testFileName);
+            sftpClient.put(testFile.getAbsolutePath(), testFile.getName());
 
             TimeUnit.SECONDS.sleep(5);
             
-            sftpClient.rm(testFileName);
-        } finally {
-            new File(localTestFilePath).delete();
+            sftpClient.rm(testFile.getName());
+        } catch (Exception e) {
+            MessageUtil.sendConsoleException(e);
         }
     }
 

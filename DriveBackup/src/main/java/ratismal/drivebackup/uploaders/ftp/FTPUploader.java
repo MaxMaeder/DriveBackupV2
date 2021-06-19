@@ -1,4 +1,4 @@
-package ratismal.drivebackup.ftp;
+package ratismal.drivebackup.uploaders.ftp;
 
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
@@ -7,9 +7,9 @@ import org.apache.commons.net.ftp.FTPSClient;
 import org.bukkit.ChatColor;
 
 import net.kyori.adventure.text.Component;
+import ratismal.drivebackup.uploaders.Uploader;
 import ratismal.drivebackup.config.Config;
 import ratismal.drivebackup.util.MessageUtil;
-import ratismal.drivebackup.Uploader;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -129,38 +129,22 @@ public class FTPUploader implements Uploader {
      * @param testFileName name of the test file to upload during the test
      * @param testFileSize the size (in bytes) of the file
      */
-    public void testConnection(String testFileName, int testFileSize) {
+    public void test(File testFile) {
         try {
             if (sftpClient != null) {
-                sftpClient.testConnection(testFileName, testFileSize);
+                sftpClient.test(testFile);
                 return;
             }
-
-            String localTestFilePath = Config.getDir() + File.separator + testFileName;
-
-            new File(Config.getDir()).mkdirs();
-
-            try (FileOutputStream fos = new FileOutputStream(localTestFilePath)) {
-                java.util.Random byteGenerator = new java.util.Random();
-
-                byte[] randomBytes = new byte[testFileSize];
-                byteGenerator.nextBytes(randomBytes);
-
-                fos.write(randomBytes);
-                fos.flush();
-
+            
+            try (FileInputStream fis = new FileInputStream(testFile)) {
                 resetWorkingDirectory();
                 createThenEnter(_remoteBaseFolder);
-
-                try (FileInputStream fis = new FileInputStream(localTestFilePath)) {
-                    ftpClient.storeFile(testFileName, fis);
-                }
+                
+                ftpClient.storeFile(testFile.getName(), fis);
 
                 TimeUnit.SECONDS.sleep(5);
-                
-                ftpClient.deleteFile(testFileName);
-            } finally {
-                new File(localTestFilePath).delete();
+                    
+                ftpClient.deleteFile(testFile.getName());
             }
         } catch (Exception e) {
             MessageUtil.sendConsoleException(e);

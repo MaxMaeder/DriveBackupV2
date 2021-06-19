@@ -260,9 +260,8 @@ public class FileUtil {
         List<Path> list = new ArrayList<Path>();
         try (Stream<Path> walk = Files.walk(Paths.get(rootPath))) {
             list = walk.filter(pathMatcher::matches).filter(Files::isDirectory).collect(Collectors.toList());
-        } catch (IOException e) {
-            //TODO: log exeption somewhere
-            MessageUtil.sendConsoleMessage(e.toString());
+        } catch (IOException exception) {
+            MessageUtil.sendConsoleException(exception);
             return list;
         }
         return list;
