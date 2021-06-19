@@ -297,10 +297,16 @@ public class GoogleDriveUploader implements Uploader {
                     continue;
                 }
 
-                if (folder == null) {
-                    folder = createFolder(typeFolder);
-                } else {
-                    folder = createFolder(typeFolder, folder);
+                try {
+                    if (folder == null) {
+                        folder = createFolder(typeFolder);
+                    } else {
+                        folder = createFolder(typeFolder, folder);
+                    }
+                } catch (Exception exception) {
+                    MessageUtil.sendConsoleMessage("Failed to create folder(s) in Google Drive, these folders MUST NOT exist before the plugin creates them.");
+
+                    throw exception;
                 }
             }
 
@@ -318,8 +324,7 @@ public class GoogleDriveUploader implements Uploader {
             service.files().insert(fileMetadata, fileContent).execute();
 
             deleteFiles(folder);
-        } catch(Exception error) {;
-            error.printStackTrace();
+        } catch(Exception error) {
             MessageUtil.sendConsoleException(error);
             setErrorOccurred(true);
         }
