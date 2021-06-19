@@ -23,16 +23,47 @@ import org.bukkit.configuration.Configuration;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 
-import ratismal.drivebackup.config.Config.BackupScheduling;
-import ratismal.drivebackup.config.Config.BackupStorage;
-import ratismal.drivebackup.config.Config.BackupList.BackupListEntry;
-import ratismal.drivebackup.config.Config.BackupScheduling.BackupScheduleEntry;
+import ratismal.drivebackup.config.configSections.Advanced;
+import ratismal.drivebackup.config.configSections.BackupList;
+import ratismal.drivebackup.config.configSections.BackupMethods;
+import ratismal.drivebackup.config.configSections.BackupScheduling;
+import ratismal.drivebackup.config.configSections.BackupStorage;
+import ratismal.drivebackup.config.configSections.ExternalBackups;
 import ratismal.drivebackup.util.MessageUtil;
 import ratismal.drivebackup.util.SchedulerUtil;
 
 public class ConfigParser {
+    public interface Logger {
+        public void log(String message);
+    }
+
+    public static class Config {
+        public final BackupStorage backupStorage;
+        public final BackupScheduling backupScheduling;
+        public final BackupList backupList;
+        public final ExternalBackups externalBackups;
+        public final BackupMethods backupMethods;
+        public final Advanced advanced;
+    
+        private Config(
+            BackupStorage backupStorage, 
+            BackupScheduling backupScheduling, 
+            BackupList backupList,
+            ExternalBackups externalBackups,
+            BackupMethods backupMethods,
+            Advanced advanced
+            ) {
+    
+            this.backupStorage = backupStorage;
+            this.backupScheduling = backupScheduling;
+            this.backupList = backupList;
+            this.externalBackups = externalBackups;
+            this.backupMethods = backupMethods;
+            this.advanced = advanced;
+        }
+    }
+
     private FileConfiguration config;
-    private Configuration defaultConfig;
     private Config parsedConfig;
 
     /**
@@ -41,7 +72,6 @@ public class ConfigParser {
      */
     public ConfigParser(FileConfiguration config) {
         this.config = config;
-        this.defaultConfig = config.getDefaults();
     }
 
     /**
@@ -50,7 +80,6 @@ public class ConfigParser {
      */
     public void reload(FileConfiguration config, CommandSender initiator) {
         this.config = config;
-        this.defaultConfig = config.getDefaults();
         reload(initiator);
     }
 
@@ -66,115 +95,15 @@ public class ConfigParser {
      * Reloads the plugin's {@code config.yml}
      */
     public void reload(CommandSender initiator) {
+        Logger logger = message -> {
+            MessageUtil.sendMessage(initiator, message);
+            MessageUtil.sendConsoleMessage(message);
+        };
 
-    } 
-
-    private BackupStorage parseBackupStorage(CommandSender initiator) {
-        long delay = config.getLong("delay");
-        if (delay <= 5) {
-            MessageUtil.sendMessage(initiator, "Inputted backup delay invalid, using default");
-            delay = defaultConfig.getLong("delay");
-        }
-
-        int threadPriority = config.getInt("backup-thread-priority");
-        if (threadPriority < Thread.MIN_PRIORITY) {
-            MessageUtil.sendMessage(initiator, "Inputted thread priority less than minimum, using minimum");
-            threadPriority = Thread.MIN_PRIORITY;
-        } else if (threadPriority > Thread.MAX_PRIORITY) {
-            MessageUtil.sendMessage(initiator, "Inputted thread priority more than maximum, using maximum");
-            threadPriority = Thread.MAX_PRIORITY;
-        }
-
-        int keepCount = config.getInt("keep-count");
-        if (keepCount < -1) {
-            MessageUtil.sendMessage(initiator, "Keep count invalid, using default");
-            keepCount = defaultConfig.getInt("keep-count");
-        }
-
-        int localKeepCount = config.getInt("local-keep-count");
-        if (localKeepCount < -1) {
-            MessageUtil.sendMessage(initiator, "Inputted local keep count invalid, using default");
-            localKeepCount = defaultConfig.getInt("local-keep-count");
-        }
-
-        int zipCompression = config.getInt("zip-compression");
-        if (zipCompression < Deflater.BEST_SPEED) {
-            MessageUtil.sendMessage(initiator, "Inputted zip compression less than minimum, using minimum");
-            zipCompression = Deflater.BEST_SPEED;
-        } else if (zipCompression > Deflater.BEST_COMPRESSION) {
-            MessageUtil.sendMessage(initiator, "Inputted zip compression more than maximum, using maximum");
-            zipCompression = Deflater.BEST_COMPRESSION;
-        }
-
-        boolean backupsRequirePlayers = config.getBoolean("backups-require-players");
-        boolean disableSavingDuringBackups = config.getBoolean("disable-saving-during-backups");
-
-        String localDirectory = config.getString("dir");
-        String remoteDirectory = config.getString("directory");
-
-        return new BackupStorage(delay, threadPriority, keepCount, localKeepCount, zipCompression, backupsRequirePlayers, disableSavingDuringBackups, localDirectory, remoteDirectory);
-    }
-
-    private BackupScheduling parseBackupScheduling(CommandSender initiator) {
-        boolean schedulingEnabled = config.getBoolean("scheduled-backups");
-
-        ZoneOffset scheduleTimezone;
-        try {
-            scheduleTimezone = ZoneOffset.of(config.getString("schedule-timezone"));
-        } catch(Exception e) {
-            MessageUtil.sendMessage(initiator, "Inputted schedule timezone not valid, using UTC");
-            scheduleTimezone = ZoneOffset.of("Z"); //Fallback to UTC
-        }
-
-        List<Map<?, ?>> rawSchedule = config.getMapList("backup-schedule-list");
-        ArrayList<BackupScheduleEntry> schedule = new ArrayList<>();
-        for (Map<?, ?> rawScheduleEntry : rawSchedule) {
-            
-            List<String> rawDays;
-            try {
-                rawDays = (List<String>) rawScheduleEntry.get("days");
-            } catch (Exception e) {
-                MessageUtil.sendMessage(initiator, "Days list invalid, skipping schedule entry");
-                continue;
-            }
-
-            Set<DayOfWeek> days = new HashSet<DayOfWeek>();
-            for (String rawDay : rawDays) {
-                try {
-                    days.add(DayOfWeek.valueOf(rawDay));
-                } catch (Exception e) {
-                    MessageUtil.sendMessage(initiator, "Day of week invalid, skipping day of week");
-                }
-            }
-
-            if (days.size() == 0) {
-                MessageUtil.sendMessage(initiator, "Day of week list empty, skipping schedule entry");
-                continue;
-            }
-
-            TemporalAccessor time;
-            try {
-                time = SchedulerUtil.parseTime((String) rawScheduleEntry.get("time"));
-            } catch (Exception e) {
-                MessageUtil.sendMessage(initiator, "Time invalid, skipping schedule entry");
-                continue;
-            }
-
-            schedule.add(new BackupScheduling.BackupScheduleEntry(
-                (DayOfWeek[]) days.toArray(),
-                time
-                ));
-        }
-
-        if (rawSchedule.size() == 0) {
-            MessageUtil.sendMessage(initiator, "Backup schedule empty, disabling schedule-based backups");
-            schedulingEnabled = false;
-        }
-
-        return new BackupScheduling(
-            schedulingEnabled, 
-            scheduleTimezone, 
-            (BackupScheduleEntry[]) schedule.toArray()
-            );
+        parsedConfig = new Config(
+            BackupStorage.parse(config, logger),
+            BackupScheduling.parse(config, logger)
+            Advanced.parse(config, logger)
+        )
     }
 }
