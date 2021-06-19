@@ -1,4 +1,4 @@
-package ratismal.drivebackup.onedrive;
+package ratismal.drivebackup.uploaders.onedrive;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
@@ -16,11 +16,14 @@ import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import ratismal.drivebackup.DriveBackup;
+
+import ratismal.drivebackup.uploaders.Uploader;
 import ratismal.drivebackup.config.Config;
+import ratismal.drivebackup.plugin.DriveBackup;
+import ratismal.drivebackup.plugin.Scheduler;
 import ratismal.drivebackup.util.HttpLogger;
 import ratismal.drivebackup.util.MessageUtil;
-import ratismal.drivebackup.Uploader;
+import ratismal.drivebackup.util.SchedulerUtil;
 
 import java.io.*;
 import java.text.DecimalFormat;
@@ -48,7 +51,6 @@ public class OneDriveUploader implements Uploader {
         .connectTimeout(1, TimeUnit.MINUTES)
         .writeTimeout(3, TimeUnit.MINUTES)
         .readTimeout(3, TimeUnit.MINUTES)
-        //.addInterceptor(new HttpLogger())
         .build();
     private static final MediaType zipMediaType = MediaType.parse("application/zip; charset=utf-8");
     private static final MediaType jsonMediaType = MediaType.parse("application/json; charset=utf-8");
@@ -67,7 +69,7 @@ public class OneDriveUploader implements Uploader {
      * Location of the authenticated user's stored OneDrive refresh token
      */
     private static final String CLIENT_JSON_PATH = DriveBackup.getInstance().getDataFolder().getAbsolutePath()
-            + "/OneDriveCredential.json";
+        + "/OneDriveCredential.json";
 
     /**
      * OneDrive API credentials
@@ -98,30 +100,30 @@ public class OneDriveUploader implements Uploader {
         String verificationUrl = parsedResponse.getString("verification_uri");
         String userCode = parsedResponse.getString("user_code");
         final String deviceCode = parsedResponse.getString("device_code");
-        long responseCheckDelay = parsedResponse.getLong("interval");
+        long responseCheckDelay = SchedulerUtil.sToTicks(parsedResponse.getLong("interval"));
 
         MessageUtil.sendMessage(initiator, Component.text()
-                .append(
-                    Component.text("To link your OneDrive account, go to ")
-                    .color(NamedTextColor.DARK_AQUA)
-                )
-                .append(
-                    Component.text(verificationUrl)
-                    .color(NamedTextColor.GOLD)
-                    .hoverEvent(HoverEvent.showText(Component.text("Go to URL")))
-                    .clickEvent(ClickEvent.openUrl(verificationUrl))
-                )
-                .append(
-                    Component.text(" and enter code ")
-                    .color(NamedTextColor.DARK_AQUA)
-                )
-                .append(
-                    Component.text(userCode)
-                    .color(NamedTextColor.GOLD)
-                    .hoverEvent(HoverEvent.showText(Component.text("Copy code")))
-                    .clickEvent(ClickEvent.copyToClipboard(userCode))
-                )
-                .build());
+            .append(
+                Component.text("To link your OneDrive account, go to ")
+                .color(NamedTextColor.DARK_AQUA)
+            )
+            .append(
+                Component.text(verificationUrl)
+                .color(NamedTextColor.GOLD)
+                .hoverEvent(HoverEvent.showText(Component.text("Go to URL")))
+                .clickEvent(ClickEvent.openUrl(verificationUrl))
+            )
+            .append(
+                Component.text(" and enter code ")
+                .color(NamedTextColor.DARK_AQUA)
+            )
+            .append(
+                Component.text(userCode)
+                .color(NamedTextColor.GOLD)
+                .hoverEvent(HoverEvent.showText(Component.text("Copy code")))
+                .clickEvent(ClickEvent.copyToClipboard(userCode))
+            )
+            .build());
 
         final int[] task = new int[]{-1};
         task[0] = plugin.getServer().getScheduler().scheduleSyncRepeatingTask(plugin, new Runnable() {
@@ -172,7 +174,6 @@ public class OneDriveUploader implements Uploader {
                         plugin.saveConfig();
                         
                         DriveBackup.reloadLocalConfig();
-                        DriveBackup.startThread();
                     }
                     
                     Bukkit.getScheduler().cancelTask(task[0]);
@@ -190,7 +191,7 @@ public class OneDriveUploader implements Uploader {
                     response.close();
                 }
             }
-        }, responseCheckDelay * 20L, responseCheckDelay * 20L);
+        }, responseCheckDelay, responseCheckDelay);
     }
     
     /**
@@ -246,6 +247,49 @@ public class OneDriveUploader implements Uploader {
         response.close();
 
         setAccessToken(parsedResponse.getString("access_token"));
+    }
+
+    /**
+     * Tests the OneDrive account by uploading a small file
+     *  @param testFile the file to upload during the test
+     */
+    public void test(java.io.File testFile) {
+        try {
+            String destination = Config.getDestination();
+            
+            Request request = new Request.Builder()
+                .addHeader("Authorization", "Bearer " + returnAccessToken())
+                .url("https://graph.microsoft.com/v1.0/me/drive/root:/" + destination + "/" + testFile.getName() + ":/content")
+                .put(RequestBody.create(testFile, MediaType.parse("plain/txt")))
+                .build();
+
+            Response response = httpClient.newCall(request).execute();
+            int statusCode = response.code();
+            response.close();
+
+            if (statusCode != 201) {
+                setErrorOccurred(true);
+            }
+            
+            TimeUnit.SECONDS.sleep(5);
+                
+            request = new Request.Builder()
+                .addHeader("Authorization", "Bearer " + returnAccessToken())
+                .url("https://graph.microsoft.com/v1.0/me/drive/root:/" + destination + "/" + testFile.getName() + ":/")
+                .delete()
+                .build();
+            
+            response = httpClient.newCall(request).execute();
+            statusCode = response.code();
+            response.close();
+
+            if (statusCode != 204) {
+                setErrorOccurred(true);
+            }
+        } catch (Exception e) {
+            MessageUtil.sendConsoleException(e);
+            setErrorOccurred(true);
+        }
     }
 
     /**
@@ -362,17 +406,17 @@ public class OneDriveUploader implements Uploader {
     public Component getSetupInstructions()
     {
         return Component.text()
-                    .append(
-                        Component.text("Failed to backup to OneDrive, please run ")
-                        .color(NamedTextColor.DARK_AQUA)
-                    )
-                    .append(
-                        Component.text("/drivebackup linkaccount onedrive")
-                        .color(NamedTextColor.GOLD)
-                        .hoverEvent(HoverEvent.showText(Component.text("Run command")))
-                        .clickEvent(ClickEvent.runCommand("/drivebackup linkaccount onedrive"))
-                    )
-                    .build();
+            .append(
+                Component.text("Failed to backup to OneDrive, please run ")
+                .color(NamedTextColor.DARK_AQUA)
+            )
+            .append(
+                Component.text("/drivebackup linkaccount onedrive")
+                .color(NamedTextColor.GOLD)
+                .hoverEvent(HoverEvent.showText(Component.text("Run command")))
+                .clickEvent(ClickEvent.runCommand("/drivebackup linkaccount onedrive"))
+            )
+            .build();
     }
 
 
@@ -587,7 +631,6 @@ public class OneDriveUploader implements Uploader {
          * Creates a reference of the {@code File} object
          */
         File() {
-
         }
 
         /**

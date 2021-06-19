@@ -1,10 +1,18 @@
 package ratismal.drivebackup;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.util.Random;
+
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 
+import ratismal.drivebackup.uploaders.Uploader;
+import ratismal.drivebackup.uploaders.dropbox.DropboxUploader;
+import ratismal.drivebackup.uploaders.ftp.FTPUploader;
+import ratismal.drivebackup.uploaders.googledrive.GoogleDriveUploader;
+import ratismal.drivebackup.uploaders.onedrive.OneDriveUploader;
 import ratismal.drivebackup.config.Config;
-import ratismal.drivebackup.ftp.FTPUploader;
 import ratismal.drivebackup.util.MessageUtil;
 
 public class TestThread implements Runnable {
@@ -54,36 +62,88 @@ public class TestThread implements Runnable {
             testFileSize = 1000;
         }
 
-        switch (args[1]) {
-            case "ftp": 
-                testFtp(testFileName, testFileSize);
-                break;
-            default: MessageUtil.sendMessage(initiator, "\"" + args[1] + "\" isn't a supported backup method");
+        try {
+            testUploadMethod(testFileName, testFileSize, args[1]);
+        } catch (Exception exception) {
+            MessageUtil.sendMessage(initiator, args[1] + " isn't a valid backup method");
         }
     }
 
     /**
-     * Tests the connection to the (S)FTP server
+     * Tests a specific upload method
      * @param testFileName name of the test file to upload during the test
      * @param testFileSize the size (in bytes) of the file
+     * @param method name of the upload method to test
      */
-    private void testFtp(String testFileName, int testFileSize) {
-        if (Config.isFtpEnabled()) {
-            MessageUtil.sendMessage(initiator, "Beginning the (S)FTP connection and upload test");
-        } else {
-            MessageUtil.sendMessage(initiator, "(S)FTP backups are disabled, you can enable them in the " + ChatColor.GOLD + "config.yml");
+    private void testUploadMethod(String testFileName, int testFileSize, String method) throws Exception {
 
-            return;
+        Uploader uploadMethod = null;
+        
+        switch (method) {
+            case "ftp":
+                if (Config.isFtpEnabled()) {
+                    uploadMethod = new FTPUploader();
+                } else {
+                    MessageUtil.sendMessage(initiator, "(S)FTP backups are disabled, you can enable them in the " + ChatColor.GOLD + "config.yml");
+                    return;
+                }
+                break;
+            case "googledrive":
+                if (Config.isGoogleDriveEnabled()) {
+                    uploadMethod = new GoogleDriveUploader();
+                } else {
+                    MessageUtil.sendMessage(initiator, "Google Drive backups are disabled, you can enable them in the " + ChatColor.GOLD + "config.yml");
+                    return;
+                }
+                break;
+            case "onedrive":
+                if (Config.isOneDriveEnabled()) {
+                    uploadMethod = new OneDriveUploader();
+                } else {
+                    MessageUtil.sendMessage(initiator, "OneDrive backups are disabled, you can enable them in the " + ChatColor.GOLD + "config.yml");
+                    return;
+                }
+                break;
+            case "dropbox":
+                if (Config.isDropboxEnabled()) {
+                    uploadMethod = new DropboxUploader();
+                } else {
+                    MessageUtil.sendMessage(initiator, "Dropbox backups are disabled, you can enable them in the " + ChatColor.GOLD + "config.yml");
+                    return;
+                }
+                break;
+            default:
+                throw new Exception(method + " isn't a valid backup method");
         }
 
-        FTPUploader ftpUploader = new FTPUploader();
+        MessageUtil.sendMessage(initiator, "Beginning the test on " + uploadMethod.getName());
 
-        ftpUploader.testConnection(testFileName, testFileSize);
+        String localTestFilePath = Config.getDir() + File.separator + testFileName;
+        new File(Config.getDir()).mkdirs();
 
-        if (ftpUploader.isErrorWhileUploading()) {
-            MessageUtil.sendMessage(initiator, "The (S)FTP connection and upload test was unsuccessful, please check the server credentials in the " + ChatColor.GOLD + "config.yml");
-        } else {
-            MessageUtil.sendMessage(initiator, "The (S)FTP connection and upload test was successful");
+        try (FileOutputStream fos = new FileOutputStream(localTestFilePath)) {
+            Random byteGenerator = new Random();
+            
+            byte[] randomBytes = new byte[testFileSize];
+            byteGenerator.nextBytes(randomBytes);
+
+            fos.write(randomBytes);
+            fos.flush();
+        } catch (Exception exception) {
+            MessageUtil.sendMessage(initiator, "Test file creation failed, please try again");
+            MessageUtil.sendConsoleException(exception);
         }
+
+        File testFile = new File(localTestFilePath);
+        
+        uploadMethod.test(testFile);
+
+        if (uploadMethod.isErrorWhileUploading()) {
+            MessageUtil.sendMessage(initiator, "The " + uploadMethod.getName() + " test was unsuccessful, please check the " + ChatColor.GOLD + "config.yml");
+        } else {
+            MessageUtil.sendMessage(initiator, "The " + uploadMethod.getName() + " test was successful");
+        }
+        
+        testFile.delete();
     }
 }

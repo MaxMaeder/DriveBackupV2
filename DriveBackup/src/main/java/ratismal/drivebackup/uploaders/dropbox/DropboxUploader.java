@@ -1,9 +1,10 @@
-package ratismal.drivebackup.dropbox;
+package ratismal.drivebackup.uploaders.dropbox;
 
-import ratismal.drivebackup.DriveBackup;
 import ratismal.drivebackup.util.MessageUtil;
-import ratismal.drivebackup.Uploader;
+import ratismal.drivebackup.uploaders.Uploader;
 import ratismal.drivebackup.config.Config;
+import ratismal.drivebackup.plugin.DriveBackup;
+import ratismal.drivebackup.plugin.Scheduler;
 
 import java.io.BufferedReader;
 import java.io.DataInputStream;
@@ -11,6 +12,7 @@ import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
 import org.bukkit.command.CommandSender;
 import org.bukkit.conversations.Conversable;
@@ -152,7 +154,6 @@ public class DropboxUploader implements Uploader {
                             plugin.saveConfig();
 
                             DriveBackup.reloadLocalConfig();
-                            DriveBackup.startThread();
                         }
                     } else {
                         MessageUtil.sendMessage(initiator, "Failed to link your Dropbox account, please try again");
@@ -164,6 +165,65 @@ public class DropboxUploader implements Uploader {
 
         Conversation conversation = factory.buildConversation((Conversable) initiator);
         conversation.begin();        
+    }
+
+    /**
+     * Tests the Dropbox account by uploading a small file
+     *  @param testFile the file to upload during the test
+     */
+    public void test(java.io.File testFile) {
+        try (DataInputStream dis = new DataInputStream(new FileInputStream(testFile))) {
+            byte[] content = new byte[dis.available()];
+            dis.readFully(content);
+
+            MediaType OCTET_STREAM = MediaType.parse("application/octet-stream");
+            MediaType JSON = MediaType.parse("application/json; charset=utf-8");
+
+            RequestBody requestBody = RequestBody.create(content, OCTET_STREAM);
+            String destination = Config.getDestination();
+
+            JSONObject dropbox_json = new JSONObject();
+            dropbox_json.put("path", "/" + destination + "/" + testFile.getName());
+            String dropbox_arg = dropbox_json.toString();
+
+            Request request = new Request.Builder()
+                .addHeader("Authorization", "Bearer " + returnAccessToken())
+                .addHeader("Dropbox-API-Arg", dropbox_arg)
+                .url("https://content.dropboxapi.com/2/files/upload")
+                .post(requestBody)
+                .build();
+
+            Response response = httpClient.newCall(request).execute();
+            int statusCode = response.code();
+            response.close();
+    
+            if (statusCode != 200) {
+                setErrorOccurred(true);
+            }
+            
+            TimeUnit.SECONDS.sleep(5);
+
+            JSONObject deleteJson = new JSONObject();
+            deleteJson.put("path", "/" + destination + "/" + testFile.getName());
+            RequestBody deleteRequestBody = RequestBody.create(deleteJson.toString(), JSON);
+
+            request = new Request.Builder()
+                .addHeader("Authorization", "Bearer " + returnAccessToken())
+                .url("https://api.dropboxapi.com/2/files/delete_v2")
+                .post(deleteRequestBody)
+                .build();
+
+            response = httpClient.newCall(request).execute();
+            statusCode = response.code();
+            response.close();
+        
+            if (statusCode != 200) {
+                setErrorOccurred(true);
+            }
+        } catch (Exception e) {
+            MessageUtil.sendConsoleException(e);
+            setErrorOccurred(true);
+        }
     }
 
     /**
@@ -330,8 +390,7 @@ public class DropboxUploader implements Uploader {
         response.close();
 
         if (files.length() > fileLimit) {
-            MessageUtil.sendConsoleMessage(
-                "There are " + files.length() + " file(s) which exceeds the limit of " + fileLimit + ", deleting");
+            MessageUtil.sendConsoleMessage("There are " + files.length() + " file(s) which exceeds the limit of " + fileLimit + ", deleting");
             while (files.length() > fileLimit) {
                 JSONObject deleteJson = new JSONObject();
                 deleteJson.put("path", "/" + destination + "/" + type + "/" + files.getJSONObject(0).get("name"));
