@@ -19,27 +19,26 @@ public class BackupScheduling {
         public final DayOfWeek[] days;
         public final TemporalAccessor time;
 
-        public BackupScheduleEntry(DayOfWeek[] days, TemporalAccessor time) {
+        private BackupScheduleEntry(DayOfWeek[] days, TemporalAccessor time) {
             this.days = days;
             this.time = time;
         }
     }
 
-    public final boolean schedulingEnabled;
-    public final ZoneOffset scheduleTimezone;
-    public final BackupScheduleEntry[] backupScheduleEntries;
+    public final boolean enabled;
+    public final ZoneOffset timezone;
+    public final BackupScheduleEntry[] schedule;
 
     private BackupScheduling(
-        boolean schedulingEnabled, 
-        ZoneOffset scheduleTimezone,
-        BackupScheduleEntry[] backupScheduleEntries
+        boolean enabled, 
+        ZoneOffset timezone,
+        BackupScheduleEntry[] schedule
         ) {
 
-        this.schedulingEnabled = schedulingEnabled;
-        this.scheduleTimezone = scheduleTimezone;
-        this.backupScheduleEntries = backupScheduleEntries;
+        this.enabled = enabled;
+        this.timezone = timezone;
+        this.schedule = schedule;
     }
-
 
     public static BackupScheduling parse(FileConfiguration config, Logger logger) {
         boolean schedulingEnabled = config.getBoolean("scheduled-backups");
@@ -55,12 +54,13 @@ public class BackupScheduling {
         List<Map<?, ?>> rawSchedule = config.getMapList("backup-schedule-list");
         ArrayList<BackupScheduleEntry> schedule = new ArrayList<>();
         for (Map<?, ?> rawScheduleEntry : rawSchedule) {
+            int entryIndex = rawSchedule.indexOf(rawScheduleEntry) + 1;
             
             List<String> rawDays;
             try {
                 rawDays = (List<String>) rawScheduleEntry.get("days");
             } catch (Exception e) {
-                logger.log("Days list invalid, skipping schedule entry index" + (rawSchedule.indexOf(rawScheduleEntry) + 1));
+                logger.log("Days list invalid, skipping schedule entry index " + entryIndex);
                 continue;
             }
 
@@ -74,7 +74,7 @@ public class BackupScheduling {
             }
 
             if (days.size() == 0) {
-                logger.log("Day of week list empty, skipping schedule entry index" + (rawSchedule.indexOf(rawScheduleEntry) + 1));
+                logger.log("Day of week list empty, skipping schedule entry index " + entryIndex);
                 continue;
             }
 

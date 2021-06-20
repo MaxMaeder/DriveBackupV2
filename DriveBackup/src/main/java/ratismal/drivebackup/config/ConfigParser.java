@@ -64,7 +64,7 @@ public class ConfigParser {
     }
 
     private FileConfiguration config;
-    private Config parsedConfig;
+    private static Config parsedConfig;
 
     /**
      * Creates an instance of the {@code Config} object
@@ -84,10 +84,10 @@ public class ConfigParser {
     }
 
     /**
-     * Gets the plugion's parsed config
+     * Gets the plugin's parsed config
      * @return the config
      */
-    public Config getConfig() {
+    public static Config getConfig() {
         return parsedConfig;
     }
 
@@ -102,8 +102,11 @@ public class ConfigParser {
 
         parsedConfig = new Config(
             BackupStorage.parse(config, logger),
-            BackupScheduling.parse(config, logger)
+            BackupScheduling.parse(config, logger),
+            BackupList.parse(config, logger),
+            ExternalBackups.parse(config, logger),
+            BackupMethods.parse(config, logger),
             Advanced.parse(config, logger)
-        )
+        );
     }
 }

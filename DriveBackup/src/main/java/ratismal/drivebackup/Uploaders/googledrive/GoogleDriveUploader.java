@@ -21,7 +21,6 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 import ratismal.drivebackup.Uploaders.Uploader;
-import ratismal.drivebackup.config.Config;
 import ratismal.drivebackup.plugin.DriveBackup;
 import ratismal.drivebackup.plugin.Scheduler;
 import ratismal.drivebackup.util.MessageUtil;

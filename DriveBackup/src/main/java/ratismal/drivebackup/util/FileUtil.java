@@ -261,8 +261,6 @@ public class FileUtil {
         try (Stream<Path> walk = Files.walk(Paths.get(rootPath))) {
             list = walk.filter(pathMatcher::matches).filter(Files::isDirectory).collect(Collectors.toList());
         } catch (IOException e) {
-            //TODO: log exeption somewhere
-            MessageUtil.sendConsoleMessage(e.toString());
             return list;
         }
         return list;
