@@ -9,6 +9,8 @@
         <github.global.oauth>${GITHUB_OAUTH_TOKEN}</github.global.oauth>
         <project.http.version>1.19.0</project.http.version>
         <project.oauth.version>1.19.0</project.oauth.version>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
     </properties>
     <build>
         <finalName>${project.artifactId}</finalName>
