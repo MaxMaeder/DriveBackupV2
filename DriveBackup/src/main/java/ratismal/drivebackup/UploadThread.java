@@ -501,67 +501,21 @@ public class UploadThread implements Runnable {
         String nextBackupMessage = "";
 
         if (Config.isBackupsScheduled()) {
+            long now = ZonedDateTime.now(Config.getBackupScheduleTimezone()).toEpochSecond();
 
-            ZonedDateTime nextBackupDate = null;
-
-            ZonedDateTime now = ZonedDateTime.now(Config.getBackupScheduleTimezone());
-
-            int weeksCheckedForDate;
-            for (weeksCheckedForDate = 0; weeksCheckedForDate < 2; weeksCheckedForDate++) {
-                for (ZonedDateTime date : Scheduler.getBackupDatesList()) {
-
-                    if (nextBackupDate == null &&
-
-                        ((LocalTime.from(date).isAfter(LocalTime.from(now)) && // This might not work if time specified is 00:00
-                        date.getDayOfWeek().compareTo(now.getDayOfWeek()) == 0) ||
-
-                        date.getDayOfWeek().compareTo(now.getDayOfWeek()) > 0)
-                    ) {
-                        nextBackupDate = date;
-                        continue;
-                    }
-
-                    if (nextBackupDate != null &&
-
-                        ((LocalTime.from(date).isBefore(LocalTime.from(nextBackupDate)) && // This might not work if time specified is 00:00
-                        LocalTime.from(date).isAfter(LocalTime.from(now)) &&
-                        (date.getDayOfWeek().compareTo(nextBackupDate.getDayOfWeek()) == 0 ||
-                        date.getDayOfWeek().compareTo(now.getDayOfWeek()) == 0)) || 
-
-                        (date.getDayOfWeek().compareTo(nextBackupDate.getDayOfWeek()) < 0 &&
-                        date.getDayOfWeek().compareTo(now.getDayOfWeek()) > 0))
-                    ) {
-                        nextBackupDate = date;
-                    }
+            ZonedDateTime nextBackupDate = Collections.min(Scheduler.getBackupDatesList(), new Comparator<ZonedDateTime>() {
+                public int compare(ZonedDateTime d1, ZonedDateTime d2) {
+                    long diff1 = Math.abs(d1.toEpochSecond() - now);
+                    long diff2 = Math.abs(d2.toEpochSecond() - now);
+                    return Long.compare(diff1, diff2);
                 }
-
-                if (nextBackupDate != null) {
-                    break;
-                }
-
-                now = now
-                    .with(ChronoField.DAY_OF_WEEK, 1)
-                    .with(ChronoField.CLOCK_HOUR_OF_DAY, 1)
-                    .with(ChronoField.MINUTE_OF_HOUR, 0)
-                    .with(ChronoField.SECOND_OF_DAY, 0);
-            }
-
-            if (weeksCheckedForDate == 1) {
-                nextBackupDate = nextBackupDate
-                    .with(ChronoField.YEAR, now.get(ChronoField.YEAR))
-                    .with(ChronoField.ALIGNED_WEEK_OF_YEAR, now.get(ChronoField.ALIGNED_WEEK_OF_YEAR) + 1);
-            } else {
-                nextBackupDate = nextBackupDate
-                    .with(ChronoField.YEAR, now.get(ChronoField.YEAR))
-                    .with(ChronoField.ALIGNED_WEEK_OF_YEAR, now.get(ChronoField.ALIGNED_WEEK_OF_YEAR));
-            }
+            });
 
             nextBackupMessage = Config.getBackupNextScheduled().replaceAll("%DATE", nextBackupDate.format(DateTimeFormatter.ofPattern(Config.getBackupNextScheduledFormat(), new Locale(Config.getDateLanguage()))));
         } else if (Config.getBackupDelay() != -1) {
             nextBackupMessage = Config.getBackupNext().replaceAll("%TIME", String.valueOf(LocalDateTime.now().until(nextIntervalBackupTime, ChronoUnit.MINUTES)));
         } else {
-            nextBackupMessage = Config.getAutoBackupsDisabled();
-        }
+            nextBackupMessage = Config.getAutoBackupsDisabled();        }
 
         return nextBackupMessage;
     }
