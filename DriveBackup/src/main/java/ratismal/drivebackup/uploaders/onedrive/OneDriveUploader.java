@@ -286,8 +286,10 @@ public class OneDriveUploader implements Uploader {
             if (statusCode != 204) {
                 setErrorOccurred(true);
             }
-        } catch (Exception e) {
-            MessageUtil.sendConsoleException(e);
+        } catch (UnknownHostException exception) {
+            MessageUtil.sendMessageToPlayersWithPermission("Failed to upload test file to OneDrive, check your network connection", "drivebackup.linkAccounts", true);
+        } catch (Exception exception) {
+            MessageUtil.sendConsoleException(exception);
             setErrorOccurred(true);
         }
     }
@@ -367,6 +369,9 @@ public class OneDriveUploader implements Uploader {
             }
 
             deleteFiles(folder);
+        } catch (UnknownHostException exception) {
+            MessageUtil.sendMessageToPlayersWithPermission("Failed to upload backup to OneDrive, check your network connection", "drivebackup.linkAccounts", true);
+            setErrorOccurred(true);
         } catch(Exception error) {
             MessageUtil.sendConsoleException(error);
             setErrorOccurred(true);

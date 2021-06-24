@@ -1,6 +1,7 @@
 package ratismal.drivebackup.plugin;
 
 import java.io.IOException;
+import java.net.UnknownHostException;
 
 import org.json.JSONArray;
 
@@ -57,6 +58,8 @@ public class UpdateChecker {
                                 } else {
                                     MessageUtil.sendConsoleMessage("Hooray! You are running the latest release!");
                                 }
+                            } catch (UnknownHostException exception) {
+                                MessageUtil.sendMessageToPlayersWithPermission("There was an issue attempting to check for the latest DriveBackupV2 release, check your network connection", "drivebackup.linkAccounts", true);
                             } catch (Exception exception) {
                                 MessageUtil.sendConsoleMessage("There was an issue attempting to check for the latest DriveBackupV2 release");
                                 MessageUtil.sendConsoleException(exception);
@@ -87,7 +90,7 @@ public class UpdateChecker {
         return Double.valueOf(versionTitle.replaceFirst("\\.", ""));
     }
 
-    public double getLatest() throws IOException, NumberFormatException {
+    public double getLatest() throws IOException, NumberFormatException, UnknownHostException {
         Request request = new Request.Builder()
             .url("https://api.curseforge.com/servermods/files?projectids=" + BUKKIT_PROJECT_ID)
             .post(RequestBody.create("", null)) // Send empty request body
