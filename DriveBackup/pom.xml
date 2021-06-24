@@ -41,10 +41,6 @@
                             <shadedPattern>ratismal.drivebackup.DriveBackup.lib</shadedPattern>
                         </relocation>
                         <relocation>
-                            <pattern>com.google.oauth-client</pattern>
-                            <shadedPattern>ratismal.drivebackup.DriveBackup.lib</shadedPattern>
-                        </relocation>
-                        <relocation>
                             <pattern>okhttp3</pattern>
                             <shadedPattern>ratismal.drivebackup.DriveBackup.lib</shadedPattern>
                         </relocation>
@@ -171,11 +167,6 @@
             <groupId>com.google.apis</groupId>
             <artifactId>google-api-services-drive</artifactId>
             <version>v2-rev200-1.21.0</version>
-        </dependency>
-        <dependency>
-            <groupId>com.google.oauth-client</groupId>
-            <artifactId>google-oauth-client-jetty</artifactId>
-            <version>${project.oauth.version}</version>
         </dependency>
 		<dependency>
 			<groupId>org.bstats</groupId>
