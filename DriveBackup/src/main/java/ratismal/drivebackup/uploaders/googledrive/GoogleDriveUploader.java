@@ -23,7 +23,6 @@ import okhttp3.Response;
 import ratismal.drivebackup.uploaders.Uploader;
 import ratismal.drivebackup.config.Config;
 import ratismal.drivebackup.plugin.DriveBackup;
-import ratismal.drivebackup.plugin.Scheduler;
 import ratismal.drivebackup.util.MessageUtil;
 import ratismal.drivebackup.util.SchedulerUtil;
 
@@ -31,6 +30,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -197,6 +197,9 @@ public class GoogleDriveUploader implements Uploader {
                     }
                 }
             }, responseCheckDelay, responseCheckDelay);
+        } catch (UnknownHostException exception) {
+            MessageUtil.sendMessageToPlayersWithPermission("Failed to link your Google Drive account,, check your network connection", "drivebackup.linkAccounts", true);
+            
         } catch (Exception e) {
             MessageUtil.sendMessage(initiator, "Failed to link your Google Drive account");
         
@@ -307,6 +310,8 @@ public class GoogleDriveUploader implements Uploader {
             TimeUnit.SECONDS.sleep(5);
                 
             service.files().delete(fileId).execute();
+        } catch (UnknownHostException exception) {
+            MessageUtil.sendMessageToPlayersWithPermission("Failed to upload test file to Google Drive, check your network connection", "drivebackup.linkAccounts", true);
         } catch (Exception e) {
             MessageUtil.sendConsoleException(e);
             setErrorOccurred(true);
@@ -360,6 +365,9 @@ public class GoogleDriveUploader implements Uploader {
             service.files().insert(fileMetadata, fileContent).execute();
 
             deleteFiles(folder);
+        } catch (UnknownHostException exception) {
+            MessageUtil.sendMessageToPlayersWithPermission("Failed to upload backup to Google Drive, check your network connection", "drivebackup.linkAccounts", true);
+            setErrorOccurred(true);
         } catch(Exception error) {
             MessageUtil.sendConsoleException(error);
             setErrorOccurred(true);
