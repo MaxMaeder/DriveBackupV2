@@ -26,6 +26,7 @@ import ratismal.drivebackup.util.MessageUtil;
 import ratismal.drivebackup.util.SchedulerUtil;
 
 import java.io.*;
+import java.net.UnknownHostException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
