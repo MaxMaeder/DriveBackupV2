@@ -8,7 +8,6 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
-import ratismal.drivebackup.config.Config;
 import ratismal.drivebackup.plugin.DriveBackup;
 import ratismal.drivebackup.plugin.UpdateChecker;
 import ratismal.drivebackup.util.MessageUtil;

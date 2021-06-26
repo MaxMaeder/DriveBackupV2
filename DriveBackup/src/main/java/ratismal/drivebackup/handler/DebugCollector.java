@@ -15,17 +15,21 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
-import ratismal.drivebackup.config.Config;
+import ratismal.drivebackup.config.ConfigParser;
+import ratismal.drivebackup.config.ConfigParser.Config;
+import ratismal.drivebackup.config.configSections.BackupList;
+import ratismal.drivebackup.config.configSections.BackupScheduling;
 import ratismal.drivebackup.plugin.DriveBackup;
 
 public class DebugCollector {
+    private static final String PASTEBIN_UPLOAD_URL = "https://api.mclo.gs/1/log";
 
-    private String serverType;
-    private String serverVersion;
-    private boolean onlineMode;
-    private ConfigInfo configInfo;
+    private final String serverType;
+    private final String serverVersion;
+    private final boolean onlineMode;
+    private final ConfigInfo configInfo;
     private List<PluginInfo> plugins;
-    private RamInfo ramInfo;
+    private final RamInfo ramInfo;
 
     public DebugCollector(DriveBackup plugin) {
         this.serverType = plugin.getServer().getName();
@@ -52,7 +56,7 @@ public class DebugCollector {
 
 
         Request request = new Request.Builder()
-            .url("https://api.mclo.gs/1/log")
+            .url(PASTEBIN_UPLOAD_URL)
             .post(formBody)
             .build();
 
@@ -69,13 +73,13 @@ public class DebugCollector {
         }
     }
 
-    public static class PluginInfo {
-        public String name;
-        public String version;
-        public String main;
-        public List<String> authors;
+    private static class PluginInfo {
+        private final String name;
+        private final String version;
+        private final String main;
+        private final List<String> authors;
 
-        public PluginInfo(String name2, String version2, String main2, List<String> authors2) {
+        private PluginInfo(String name2, String version2, String main2, List<String> authors2) {
             this.name = name2;
             this.version = version2;
             this.main = main2;
@@ -83,16 +87,12 @@ public class DebugCollector {
         }
     }
 
-    public static class ConfigInfo {
-
+    private static class ConfigInfo {
         private final boolean backupsRequirePlayers;
         private final boolean disableSavingDuringBackups;
 
-        private final boolean scheduleBackups;
-        private final ZoneOffset backupScheduleTimezone;
-
-        private final ZoneOffset backupFormatTimezone;
-        private static ArrayList<HashMap<String, Object>> backupList;
+        private final BackupScheduling scheduleBackups;
+        private final BackupList backupList;
 
         private final boolean googleDriveEnabled;
         private final boolean oneDriveEnabled;
@@ -100,29 +100,46 @@ public class DebugCollector {
         private final boolean ftpEnabled;
         private final String ftpType;
 
-        ConfigInfo() {
-            this.googleDriveEnabled = Config.isGoogleDriveEnabled();
-            this.oneDriveEnabled = Config.isOneDriveEnabled();
-            this.dropboxEnabled = Config.isDropboxEnabled();
-            this.ftpEnabled = Config.isFtpEnabled();
-            this.ftpType = Config.isFtpEnabled() ? (Config.isFtpFtps() ? "FTPS" : "SFTP") : "None";
-            this.backupsRequirePlayers = Config.isBackupsRequirePlayers();
-            this.disableSavingDuringBackups = Config.isSavingDisabledDuringBackups();
-            this.scheduleBackups = Config.isBackupsScheduled();
-            this.backupScheduleTimezone = Config.getBackupScheduleTimezone();
-            this.backupFormatTimezone = Config.getBackupFormatTimezone();
+        private final ZoneOffset timezone;
 
+        private ConfigInfo() {
+            Config config = ConfigParser.getConfig();
+
+            this.backupsRequirePlayers = config.backupStorage.backupsRequirePlayers;
+            this.disableSavingDuringBackups = config.backupStorage.disableSavingDuringBackups;
+
+            this.scheduleBackups = config.backupScheduling;
+            this.backupList = config.backupList;
+
+            this.googleDriveEnabled = config.backupMethods.googleDrive.enabled;
+            this.oneDriveEnabled = config.backupMethods.oneDrive.enabled;
+            this.dropboxEnabled = config.backupMethods.dropbox.enabled;
+            this.ftpEnabled = config.backupMethods.ftp.enabled;
+
+            if (ftpEnabled) {
+                if (config.backupMethods.ftp.sftp) {
+                    this.ftpType = "SFTP";
+                } else if (config.backupMethods.ftp.ftps) {
+                    this.ftpType = "FTPS";
+                } else {
+                    this.ftpType = "FTP";
+                }
+            } else {
+                this.ftpType = "none";
+            }
+
+            this.timezone = config.advanced.dateTimezone;
         }
     }
 
-    public static class RamInfo {
-
+    private static class RamInfo {
         private static final long MEGABYTE = 1024L * 1024L;
+
         private final long free;
         private final long total;
         private final long max;
 
-        RamInfo() {
+        private RamInfo() {
             this.free = Runtime.getRuntime().freeMemory() / MEGABYTE;
             this.total = Runtime.getRuntime().totalMemory() / MEGABYTE;
             this.max = Runtime.getRuntime().maxMemory() / MEGABYTE;

@@ -14,10 +14,8 @@ backups-require-players: true
 disable-saving-during-backups: true
 
 scheduled-backups: false
-schedule-timezone: "-00:00"
 backup-schedule-list:
 
-backup-format-timezone: "-00:00"
 backup-list:
 - path: "world"
   format: "'Backup-world-'yyyy-M-d--HH-mm'.zip'"
@@ -67,4 +65,5 @@ advanced:
   message-prefix: "&6[&4DriveBackupV2&6] "
   default-message-color: "&3"
   date-language: "en"
+  date-format-timezone: "-00:00"
   ftp-file-separator: "/"

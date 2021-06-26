@@ -8,7 +8,7 @@ import org.bukkit.ChatColor;
 
 import net.kyori.adventure.text.Component;
 import ratismal.drivebackup.Uploaders.Uploader;
-import ratismal.drivebackup.config.Config;
+import ratismal.drivebackup.config.ConfigParser;
 import ratismal.drivebackup.util.MessageUtil;
 
 import java.io.File;
@@ -281,7 +281,7 @@ public class FTPUploader implements Uploader {
      * @throws Exception
      */
     private void deleteFiles(String type) throws Exception {
-        int fileLimit = Config.getKeepCount();
+        int fileLimit = ConfigParser.getConfig().backupStorage.keepCount;
         if (fileLimit == -1) {
             return;
         }
@@ -331,15 +331,6 @@ public class FTPUploader implements Uploader {
      */
     private void resetWorkingDirectory() throws Exception {
         ftpClient.changeWorkingDirectory(initialRemoteFolder);
-    }
-
-    /**
-     * Replaces any file seperators in the specified path with the configured file seperator
-     * @param path the file path
-     * @return the file path with replaced seperators
-     */
-    private static String replaceFileSeperators(String path) {
-        return path.replace("/", Config.getFtpFileSeperator()).replace("\\", Config.getFtpFileSeperator());
     }
 
     /**

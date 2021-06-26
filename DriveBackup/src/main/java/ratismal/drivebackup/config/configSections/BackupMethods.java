@@ -34,15 +34,15 @@ public class BackupMethods {
     }
 
     public static class FTPBackupMethod extends BackupMethod {
-        String hostname; 
-        int port;
-        boolean sftp;
-        boolean ftps;
-        String username;
-        String password;
-        Path publicKey;
-        String passphrase;
-        Path baseDirectory;
+        public final String hostname; 
+        public final int port;
+        public final boolean sftp;
+        public final boolean ftps;
+        public final String username;
+        public final String password;
+        public final Path publicKey;
+        public final String passphrase;
+        public final Path baseDirectory;
 
         public FTPBackupMethod(
             boolean enabled, 
@@ -61,6 +61,7 @@ public class BackupMethods {
             this.hostname = hostname;
             this.port = port;
             this.sftp = sftp;
+            this.ftps = ftps;
             this.username = username;
             this.password = password;
             this.publicKey = publicKey;
@@ -69,16 +70,16 @@ public class BackupMethods {
         }
     }
 
-    public final GoogleDriveBackupMethod googleDriveMethod;
-    public final OneDriveBackupMethod oneDriveMethod;
-    public final DropboxBackupMethod dropboxMethod;
-    public final FTPBackupMethod ftpMethod;
+    public final GoogleDriveBackupMethod googleDrive;
+    public final OneDriveBackupMethod oneDrive;
+    public final DropboxBackupMethod dropbox;
+    public final FTPBackupMethod ftp;
 
-    private BackupMethods(GoogleDriveBackupMethod googleDriveMethod, OneDriveBackupMethod oneDriveMethod, DropboxBackupMethod dropboxMethod, FTPBackupMethod ftpMethod) {
-        this.googleDriveMethod = googleDriveMethod;
-        this.oneDriveMethod = oneDriveMethod;
-        this.dropboxMethod = dropboxMethod;
-        this.ftpMethod = ftpMethod;
+    private BackupMethods(GoogleDriveBackupMethod googleDrive, OneDriveBackupMethod oneDrive, DropboxBackupMethod dropbox, FTPBackupMethod ftp) {
+        this.googleDrive = googleDrive;
+        this.oneDrive = oneDrive;
+        this.dropbox = dropbox;
+        this.ftp = ftp;
     }
 
     public static BackupMethods parse(FileConfiguration config, Logger logger) {
