@@ -18,7 +18,7 @@ public class UpdateChecker {
     /**
      * How often to check for updates, in seconds
      */
-    private static final double UPDATE_CHECK_INTERVAL = 60 * 60 * 4;
+    private static final long UPDATE_CHECK_INTERVAL = 60 * 60 * 4;
 
     /**
      * Global instance of the HTTP client

@@ -63,27 +63,16 @@ public class BackupList {
         }
     }
 
-    public final ZoneOffset formatTimezone;
     public final BackupListEntry[] list;
 
     private BackupList(
-        ZoneOffset formatTimezone, 
         BackupListEntry[] list
         ) {
 
-        this.formatTimezone = formatTimezone;
         this.list = list;
     }
 
     public static BackupList parse(FileConfiguration config, Logger logger) {
-        ZoneOffset timezone;
-        try {
-            timezone = ZoneOffset.of(config.getString("backup-format-timezone"));
-        } catch(Exception e) {
-            logger.log("Inputted schedule timezone not valid, using UTC");
-            timezone = ZoneOffset.of("Z"); //Fallback to UTC
-        }
-
         List<Map<?, ?>> rawList = config.getMapList("backup-list");
         ArrayList<BackupListEntry> list = new ArrayList<>();
         for (Map<?, ?> rawListEntry : rawList) {
@@ -94,14 +83,14 @@ public class BackupList {
                 try {
                     location = new BackupListEntry.GlobBackupLocation((String) rawListEntry.get("glob"));
                 } catch (Exception e) {
-                    logger.log("Invalid glob, skipping backup list entry " + entryIndex);
+                    logger.log("Glob invalid, skipping backup list entry " + entryIndex);
                     continue;
                 }
             } else if (rawListEntry.containsKey("path")) {
                 try {
                     location = new BackupListEntry.PathBackupLocation((String) rawListEntry.get("path"));
                 } catch (Exception e) {
-                    logger.log("Invalid path, skipping backup list entry " + entryIndex);
+                    logger.log("Path invalid, skipping backup list entry " + entryIndex);
                     continue;
                 }
             } else {
@@ -111,18 +100,9 @@ public class BackupList {
 
             LocalDateTimeFormatter formatter;
             try {
-                StringBuilder formatBuilder = new StringBuilder((String) rawListEntry.get("format"));
-
-                // Escape non date format characters
-                formatBuilder.insert(0, "'");
-                formatBuilder.insert(formatBuilder.length(), "'");
-                String format = formatBuilder.toString();
-                
-                format = format.replace("{format}", "'yyyy-M-d--HH-mm'");
-
-                formatter = LocalDateTimeFormatter.ofPattern(format);
+                formatter = LocalDateTimeFormatter.ofPattern((String) rawListEntry.get("format"));
             } catch (Exception e) {
-                logger.log("Invalid format, skipping backup list entry " + entryIndex);
+                logger.log("Format invalid, skipping backup list entry " + entryIndex);
                 continue;
             }
 
@@ -133,17 +113,18 @@ public class BackupList {
                 // Do nothing, assume true
             }
 
-            List<String> blacklist = new ArrayList<>();
+            String[] blacklist;
             try {
-                blacklist = (List<String>) rawListEntry.get("blacklist");
+                blacklist = (String[]) ((List<String>) rawListEntry.get("blacklist")).toArray();
             } catch (Exception e) {
                 // Do nothing, blacklist not required
+                blacklist = new String[0];
             }
 
             
-            list.add(new BackupListEntry(location, formatter, create, (String[]) blacklist.toArray()));
+            list.add(new BackupListEntry(location, formatter, create, (String[]) blacklist));
         }
 
-        return new BackupList(timezone, (BackupListEntry[]) list.toArray());
+        return new BackupList((BackupListEntry[]) list.toArray());
     }
 }

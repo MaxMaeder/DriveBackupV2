@@ -26,8 +26,8 @@ public class SchedulerUtil {
      * @param seconds the number of seconds
      * @return the number of game ticks
      */
-    public static long sToTicks(double seconds) {
-        return (long) seconds * TICKS_PER_SECOND;
+    public static long sToTicks(long seconds) {
+        return seconds * TICKS_PER_SECOND;
     }
 
     /**

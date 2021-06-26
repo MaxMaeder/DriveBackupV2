@@ -90,7 +90,7 @@ public class MessageUtil {
         players.addAll(additionalPlayers);
 
         for (Player player : Bukkit.getServer().getOnlinePlayers()) {
-            if (player.hasPermission("drivebackup.linkAccounts") && !players.contains(player)) {
+            if (player.hasPermission(permission) && !players.contains(player)) {
                 players.add(player);
             }
         }

@@ -13,7 +13,18 @@ public class LocalDateTimeFormatter {
     }
 
     public static LocalDateTimeFormatter ofPattern(String pattern) throws IllegalArgumentException {
-        return new LocalDateTimeFormatter(DateTimeFormatter.ofPattern(pattern));
+        StringBuilder finalPatternBuilder = new StringBuilder(pattern);
+
+        // Escape non date format characters, if user specified {format} in the pattern
+        if (finalPatternBuilder.indexOf("{format}") != -1) {
+            finalPatternBuilder.insert(0, "'");
+            finalPatternBuilder.insert(finalPatternBuilder.length(), "'");
+        }
+
+        String finalPattern = finalPatternBuilder.toString();
+        finalPattern = finalPattern.replace("{format}", "'yyyy-M-d--HH-mm'");
+
+        return new LocalDateTimeFormatter(DateTimeFormatter.ofPattern(finalPattern));
     }
 
     public String format(ZonedDateTime timeDate) {

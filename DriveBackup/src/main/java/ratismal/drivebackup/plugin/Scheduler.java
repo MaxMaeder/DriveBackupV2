@@ -9,6 +9,7 @@ import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalAccessor;
 import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -17,7 +18,9 @@ import org.bukkit.Bukkit;
 import org.bukkit.scheduler.BukkitScheduler;
 
 import ratismal.drivebackup.UploadThread;
-import ratismal.drivebackup.config.Config;
+import ratismal.drivebackup.config.ConfigParser;
+import ratismal.drivebackup.config.ConfigParser.Config;
+import ratismal.drivebackup.config.configSections.BackupScheduling.BackupScheduleEntry;
 import ratismal.drivebackup.util.MessageUtil;
 import ratismal.drivebackup.util.SchedulerUtil;
 
@@ -36,62 +39,30 @@ public class Scheduler {
      * Starts the backup thread
      */
     public static void startBackupThread() {
+        Config config = ConfigParser.getConfig();
         BukkitScheduler taskScheduler = Bukkit.getServer().getScheduler();
 
-        if (Config.isBackupsScheduled()) {
+        if (config.backupScheduling.enabled) {
             SchedulerUtil.cancelTasks(backupTasks);
             backupDatesList.clear();
 
-            ZoneOffset timezone = Config.getBackupScheduleTimezone();
+            for (BackupScheduleEntry entry : config.backupScheduling.schedule) {
 
-            for (HashMap<String, Object> schedule : Config.getBackupScheduleList()) {
+                ZoneOffset timezone = config.advanced.dateTimezone;
 
-                ArrayList<String> scheduleDays = new ArrayList<>();
-                scheduleDays.addAll((List<String>) schedule.get("days"));
-
-                for (int i = 0; i < scheduleDays.size(); i++) {
-                    switch (scheduleDays.get(i)) {
-                        case "weekdays":
-                            scheduleDays.remove(scheduleDays.get(i));
-                            addIfNotAdded(scheduleDays, "monday");
-                            addIfNotAdded(scheduleDays, "tuesday");
-                            addIfNotAdded(scheduleDays, "wednesday");
-                            addIfNotAdded(scheduleDays, "thursday");
-                            addIfNotAdded(scheduleDays, "friday");
-                            break;
-                        case "weekends":
-                            scheduleDays.remove(scheduleDays.get(i));
-                            addIfNotAdded(scheduleDays, "sunday");
-                            addIfNotAdded(scheduleDays, "saturday");
-                            break;
-                        case "everyday":
-                            scheduleDays.remove(scheduleDays.get(i));
-                            addIfNotAdded(scheduleDays, "sunday");
-                            addIfNotAdded(scheduleDays, "monday");
-                            addIfNotAdded(scheduleDays, "tuesday");
-                            addIfNotAdded(scheduleDays, "wednesday");
-                            addIfNotAdded(scheduleDays, "thursday");
-                            addIfNotAdded(scheduleDays, "friday");
-                            addIfNotAdded(scheduleDays, "saturday");
-                            break;
-                    }
-                }
-
-                TemporalAccessor scheduleTime = DateTimeFormatter.ofPattern ("kk:mm", Locale.ENGLISH).parse((String) schedule.get("time"));
-
-                for (int i = 0; i < scheduleDays.size(); i++) {
+                for (DayOfWeek day : entry.days) {
                     ZonedDateTime previousOccurrence = ZonedDateTime.now(timezone)
-                        .with(TemporalAdjusters.previous(DayOfWeek.valueOf(scheduleDays.get(i).toUpperCase())))
-                        .with(ChronoField.CLOCK_HOUR_OF_DAY, scheduleTime.get(ChronoField.CLOCK_HOUR_OF_DAY))
-                        .with(ChronoField.MINUTE_OF_HOUR, scheduleTime.get(ChronoField.MINUTE_OF_HOUR))
+                        .with(TemporalAdjusters.previous(day))
+                        .with(ChronoField.CLOCK_HOUR_OF_DAY, entry.time.get(ChronoField.CLOCK_HOUR_OF_DAY))
+                        .with(ChronoField.MINUTE_OF_HOUR, entry.time.get(ChronoField.MINUTE_OF_HOUR))
                         .with(ChronoField.SECOND_OF_MINUTE, 0);
 
                     ZonedDateTime now = ZonedDateTime.now(timezone);
                     
                     ZonedDateTime nextOccurrence = ZonedDateTime.now(timezone)
-                        .with(TemporalAdjusters.nextOrSame(DayOfWeek.valueOf(scheduleDays.get(i).toUpperCase())))
-                        .with(ChronoField.CLOCK_HOUR_OF_DAY, scheduleTime.get(ChronoField.CLOCK_HOUR_OF_DAY))
-                        .with(ChronoField.MINUTE_OF_HOUR, scheduleTime.get(ChronoField.MINUTE_OF_HOUR))
+                        .with(TemporalAdjusters.nextOrSame(day))
+                        .with(ChronoField.CLOCK_HOUR_OF_DAY, entry.time.get(ChronoField.CLOCK_HOUR_OF_DAY))
+                        .with(ChronoField.MINUTE_OF_HOUR, entry.time.get(ChronoField.MINUTE_OF_HOUR))
                         .with(ChronoField.SECOND_OF_MINUTE, 0);
 
                     // Adjusts nextOccurrence date when it was set to earlier on same day, as the DayOfWeek TemporalAdjuster only takes into account the day, not the time
@@ -103,20 +74,22 @@ public class Scheduler {
                     backupTasks.add(taskScheduler.runTaskTimerAsynchronously(
                         DriveBackup.getInstance(), 
                         new UploadThread(),
-                        ChronoUnit.SECONDS.between(now, startingOccurrence) * 20, // 20 ticks per second 
-                        ChronoUnit.SECONDS.between(previousOccurrence, nextOccurrence) * 20
+                        SchedulerUtil.sToTicks(ChronoUnit.SECONDS.between(now, startingOccurrence)),
+                        SchedulerUtil.sToTicks(ChronoUnit.SECONDS.between(previousOccurrence, nextOccurrence))
                     ).getTaskId());
 
                     backupDatesList.add(startingOccurrence);
                 }
 
                 ZonedDateTime scheduleMessageTime = ZonedDateTime.now(timezone)
-                    .with(ChronoField.CLOCK_HOUR_OF_DAY, scheduleTime.get(ChronoField.CLOCK_HOUR_OF_DAY))
-                    .with(ChronoField.MINUTE_OF_HOUR, scheduleTime.get(ChronoField.MINUTE_OF_HOUR));
+                    .with(ChronoField.CLOCK_HOUR_OF_DAY, entry.time.get(ChronoField.CLOCK_HOUR_OF_DAY))
+                    .with(ChronoField.MINUTE_OF_HOUR, entry.time.get(ChronoField.MINUTE_OF_HOUR));
+
                 StringBuilder scheduleMessage = new StringBuilder();
                 scheduleMessage.append("Scheduling a backup to run at ");
                 scheduleMessage.append(scheduleMessageTime.format(DateTimeFormatter.ofPattern("hh:mm a")));
                 scheduleMessage.append(" every ");
+
                 for (int i = 0; i < scheduleDays.size(); i++) {
                     if (i != 0) {
                         scheduleMessage.append(", ");
@@ -125,12 +98,12 @@ public class Scheduler {
                 }
                 MessageUtil.sendConsoleMessage(scheduleMessage.toString());
             }
-        } else if (Config.getBackupDelay() != -1) {
+        } else if (config.backupStorage.delay != -1) {
             SchedulerUtil.cancelTasks(backupTasks);
 
-            MessageUtil.sendConsoleMessage("Scheduling a backup to run every " + Config.getBackupDelay() + " minutes");
+            MessageUtil.sendConsoleMessage("Scheduling a backup to run every " + config.backupStorage.delay + " minutes");
 
-            long interval = SchedulerUtil.sToTicks(Config.getBackupDelay() * 60);
+            long interval = SchedulerUtil.sToTicks(config.backupStorage.delay * 60);
 
             backupTasks.add(taskScheduler.runTaskTimerAsynchronously(
                 DriveBackup.getInstance(), 

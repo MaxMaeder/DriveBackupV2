@@ -1,26 +1,8 @@
 package ratismal.drivebackup.config;
 
-import java.nio.file.InvalidPathException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.time.DayOfWeek;
-import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
-import java.time.temporal.TemporalAccessor;
-import java.util.ArrayList;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.Map.Entry;
-import java.util.zip.Deflater;
-import java.util.zip.ZipOutputStream;
 
 import org.bukkit.command.CommandSender;
-import org.bukkit.configuration.Configuration;
-import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 
 import ratismal.drivebackup.config.configSections.Advanced;
@@ -30,7 +12,6 @@ import ratismal.drivebackup.config.configSections.BackupScheduling;
 import ratismal.drivebackup.config.configSections.BackupStorage;
 import ratismal.drivebackup.config.configSections.ExternalBackups;
 import ratismal.drivebackup.util.MessageUtil;
-import ratismal.drivebackup.util.SchedulerUtil;
 
 public class ConfigParser {
     public interface Logger {
@@ -78,7 +59,7 @@ public class ConfigParser {
      * Reloads the plugin's {@code config.yml}
      * @param config A reference to the plugin's {@code config.yml}
      */
-    public void reload(FileConfiguration config, CommandSender initiator) {
+    public void reload(FileConfiguration config, List<CommandSender> initiator) {
         this.config = config;
         reload(initiator);
     }
@@ -94,9 +75,11 @@ public class ConfigParser {
     /**
      * Reloads the plugin's {@code config.yml}
      */
-    public void reload(CommandSender initiator) {
+    public void reload(List<CommandSender> initiators) {
         Logger logger = message -> {
-            MessageUtil.sendMessage(initiator, message);
+            for (CommandSender initiator : initiators) {
+                MessageUtil.sendMessage(initiator, message);
+            }
             MessageUtil.sendConsoleMessage(message);
         };
 

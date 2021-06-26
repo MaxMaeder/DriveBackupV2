@@ -4,6 +4,8 @@ import java.io.File;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 
+import ratismal.drivebackup.config.ConfigParser;
+
 public class SystemDependentPath {
     private static final String REGEX_FILE_SEPARATOR = File.separator.replace("\\", "\\\\"); // Escapes the backslash for the regex on Windows servers
     
@@ -38,6 +40,10 @@ public class SystemDependentPath {
 
     public String toWindowsString() {
         return toStringWithSeparator("\\");
+    }
+
+    public String toFtpString() {
+        return toStringWithSeparator(ConfigParser.getConfig().advanced.fileSeparator);
     }
 
     public String[] split() {

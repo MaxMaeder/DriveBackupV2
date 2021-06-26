@@ -1,10 +1,13 @@
 package ratismal.drivebackup.plugin;
 
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import net.kyori.adventure.platform.bukkit.BukkitAudiences;
-import ratismal.drivebackup.config.Config;
+import ratismal.drivebackup.config.ConfigParser;
+import ratismal.drivebackup.config.Permissions;
+import ratismal.drivebackup.config.ConfigParser.Config;
 import ratismal.drivebackup.handler.CommandTabComplete;
 import ratismal.drivebackup.handler.PlayerListener;
 import ratismal.drivebackup.handler.commandHandler.CommandHandler;
@@ -12,8 +15,8 @@ import ratismal.drivebackup.util.MessageUtil;
 
 public class DriveBackup extends JavaPlugin {
 
-    private static Config pluginconfig;
     private static DriveBackup plugin;
+    private static ConfigParser config;
 
     /**
      * Global instance of Adventure audience
@@ -29,8 +32,8 @@ public class DriveBackup extends JavaPlugin {
         saveDefaultConfig();
 
         reloadConfig();
-        pluginconfig = new Config(getConfig());
-        pluginconfig.reload();
+        config = new ConfigParser(getConfig());
+        config.reload(Permissions.getPlayersWithPerm(Permissions.RELOAD_CONFIG));
 
         getCommand("drivebackup").setTabCompleter(new CommandTabComplete(plugin));
         getCommand("drivebackup").setExecutor(new CommandHandler(plugin));
@@ -67,8 +70,11 @@ public class DriveBackup extends JavaPlugin {
      */
     public static void reloadLocalConfig() {
         Scheduler.stopBackupThread();
+
         getInstance().reloadConfig();
-        pluginconfig.reload(getInstance().getConfig());
+        FileConfiguration fileConfiguration = getInstance().getConfig();
+        config.reload(fileConfiguration, Permissions.getPlayersWithPerm(Permissions.RELOAD_CONFIG));
+
         Scheduler.startBackupThread();
     }
 }

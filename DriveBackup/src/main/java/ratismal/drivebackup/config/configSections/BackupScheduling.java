@@ -6,6 +6,7 @@ import java.time.temporal.TemporalAccessor;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -26,30 +27,19 @@ public class BackupScheduling {
     }
 
     public final boolean enabled;
-    public final ZoneOffset timezone;
     public final BackupScheduleEntry[] schedule;
 
     private BackupScheduling(
         boolean enabled, 
-        ZoneOffset timezone,
         BackupScheduleEntry[] schedule
         ) {
 
         this.enabled = enabled;
-        this.timezone = timezone;
         this.schedule = schedule;
     }
 
     public static BackupScheduling parse(FileConfiguration config, Logger logger) {
-        boolean schedulingEnabled = config.getBoolean("scheduled-backups");
-
-        ZoneOffset scheduleTimezone;
-        try {
-            scheduleTimezone = ZoneOffset.of(config.getString("schedule-timezone"));
-        } catch(Exception e) {
-            logger.log("Inputted schedule timezone not valid, using UTC");
-            scheduleTimezone = ZoneOffset.of("Z"); //Fallback to UTC
-        }
+        boolean enabled = config.getBoolean("scheduled-backups");
 
         List<Map<?, ?>> rawSchedule = config.getMapList("backup-schedule-list");
         ArrayList<BackupScheduleEntry> schedule = new ArrayList<>();
@@ -64,10 +54,31 @@ public class BackupScheduling {
                 continue;
             }
 
-            Set<DayOfWeek> days = new HashSet<DayOfWeek>();
+            Set<DayOfWeek> days = new HashSet<>();
             for (String rawDay : rawDays) {
                 try {
-                    days.add(DayOfWeek.valueOf(rawDay));
+                    boolean isDayGroup = false;
+
+                    if (rawDay.equals("weekdays") || rawDay.equals("everyday")) {
+                        isDayGroup = true;
+
+                        days.add(DayOfWeek.MONDAY);
+                        days.add(DayOfWeek.TUESDAY);
+                        days.add(DayOfWeek.WEDNESDAY);
+                        days.add(DayOfWeek.THURSDAY);
+                        days.add(DayOfWeek.FRIDAY);
+                    }
+
+                    if (rawDay.equals("weekends") || rawDay.equals("everyday")) {
+                        isDayGroup = true;
+
+                        days.add(DayOfWeek.SATURDAY);
+                        days.add(DayOfWeek.SUNDAY);
+                    }
+
+                    if (!isDayGroup) {
+                        days.add(DayOfWeek.valueOf(rawDay.toUpperCase(Locale.ROOT)));
+                    }
                 } catch (Exception e) {
                     logger.log("Day of week invalid, skipping day of week \"" + rawDay + "\"");
                 }
@@ -94,12 +105,11 @@ public class BackupScheduling {
 
         if (rawSchedule.size() == 0) {
             logger.log("Backup schedule empty, disabling schedule-based backups");
-            schedulingEnabled = false;
+            enabled = false;
         }
 
         return new BackupScheduling(
-            schedulingEnabled, 
-            scheduleTimezone, 
+            enabled, 
             (BackupScheduleEntry[]) schedule.toArray()
             );
     }
