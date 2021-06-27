@@ -1,6 +1,7 @@
 package ratismal.drivebackup.util;
 
-import ratismal.drivebackup.config.Config;
+import ratismal.drivebackup.config.ConfigParser;
+import ratismal.drivebackup.config.ConfigParser.Config;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -67,19 +68,21 @@ public class FileUtil {
     /**
      * Creates a local backup zip file for the specified backup type
      * @param type what to back up (world, plugin, etc)
-     * @param formatString the format of the file name
+     * @param formatter the format of the file name
      * @param blacklistGlobs a list of glob patterns of files/folders to not include in the backup
      * @throws Exception
      */
-    public static void makeBackup(String type, String formatString, List<String> blacklistGlobs) throws Exception {
+    public static void makeBackup(String type, LocalDateTimeFormatter formatter, List<String> blacklistGlobs) throws Exception {
+        Config config = ConfigParser.getConfig();
+
         if (type.charAt(0) == File.separatorChar) {
             throw new IllegalArgumentException(); 
         }
 
         fileList.clear();
 
-        ZonedDateTime now = ZonedDateTime.now(Config.getBackupScheduleTimezone());
-        String fileName = now.format(DateTimeFormatter.ofPattern(formatString, new Locale(Config.getDateLanguage())));
+        ZonedDateTime now = ZonedDateTime.now(config.advanced.dateTimezone);
+        String fileName = formatter.format(now);
 
         blacklist.clear();
         backupFiles = 0;

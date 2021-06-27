@@ -1,7 +1,6 @@
 package ratismal.drivebackup.config.configSections;
 
 import java.time.DayOfWeek;
-import java.time.ZoneOffset;
 import java.time.temporal.TemporalAccessor;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -20,7 +19,7 @@ public class BackupScheduling {
         public final DayOfWeek[] days;
         public final TemporalAccessor time;
 
-        private BackupScheduleEntry(DayOfWeek[] days, TemporalAccessor time) {
+        public BackupScheduleEntry(DayOfWeek[] days, TemporalAccessor time) {
             this.days = days;
             this.time = time;
         }
@@ -29,7 +28,7 @@ public class BackupScheduling {
     public final boolean enabled;
     public final BackupScheduleEntry[] schedule;
 
-    private BackupScheduling(
+    public BackupScheduling(
         boolean enabled, 
         BackupScheduleEntry[] schedule
         ) {

@@ -33,8 +33,8 @@ public class ExternalBackups {
 
     public static class ExternalFTPSource extends ExternalBackupSource {
         public static class ExternalBackupListEntry {
-            SystemDependentPath path;
-            String[] blacklist;
+            public final SystemDependentPath path;
+            public final String[] blacklist;
 
             private ExternalBackupListEntry(SystemDependentPath path, String[] blacklist) {
                 this.path = path;
@@ -85,7 +85,7 @@ public class ExternalBackups {
         }
 
         public final boolean ssl;
-        public final MySQLDatabaseBackup[] mySQLDatabaseBackups;
+        public final MySQLDatabaseBackup[] databaseList;
 
         private ExternalMySQLSource(
             String hostname, 
@@ -94,22 +94,22 @@ public class ExternalBackups {
             String password, 
             LocalDateTimeFormatter format,
             boolean ssl, 
-            MySQLDatabaseBackup[] mySQLDatabaseBackup
+            MySQLDatabaseBackup[] databaseList
             ) {
             super(hostname, port, username, password, format);
 
             this.ssl = ssl;
-            this.mySQLDatabaseBackups = mySQLDatabaseBackup;
+            this.databaseList = databaseList;
         }
     }
 
-    public final ExternalBackupSource[] externalBackupSources;
+    public final ExternalBackupSource[] sources;
 
     private ExternalBackups(
-        ExternalBackupSource[] externalBackupSources
+        ExternalBackupSource[] sources
         ) {
 
-        this.externalBackupSources = externalBackupSources;
+        this.sources = sources;
     }
 
     public static ExternalBackups parse(FileConfiguration config, Logger logger) {

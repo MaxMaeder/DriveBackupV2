@@ -28,6 +28,6 @@ public class LocalDateTimeFormatter {
     }
 
     public String format(ZonedDateTime timeDate) {
-        return timeDate.format(formatter.withLocale(ConfigParser.getConfig().));
+        return timeDate.format(formatter.withLocale(ConfigParser.getConfig().advanced.dateLanguage));
     }
 }

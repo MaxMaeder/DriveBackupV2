@@ -12,7 +12,8 @@ import ratismal.drivebackup.Uploaders.dropbox.DropboxUploader;
 import ratismal.drivebackup.Uploaders.ftp.FTPUploader;
 import ratismal.drivebackup.Uploaders.googledrive.GoogleDriveUploader;
 import ratismal.drivebackup.Uploaders.onedrive.OneDriveUploader;
-import ratismal.drivebackup.config.Config;
+import ratismal.drivebackup.config.ConfigParser;
+import ratismal.drivebackup.config.ConfigParser.Config;
 import ratismal.drivebackup.util.MessageUtil;
 
 public class TestThread implements Runnable {
@@ -76,20 +77,12 @@ public class TestThread implements Runnable {
      * @param method name of the upload method to test
      */
     private void testUploadMethod(String testFileName, int testFileSize, String method) throws Exception {
-
+        Config config = ConfigParser.getConfig();
         Uploader uploadMethod = null;
         
         switch (method) {
-            case "ftp":
-                if (Config.isFtpEnabled()) {
-                    uploadMethod = new FTPUploader();
-                } else {
-                    MessageUtil.sendMessage(initiator, "(S)FTP backups are disabled, you can enable them in the " + ChatColor.GOLD + "config.yml");
-                    return;
-                }
-                break;
             case "googledrive":
-                if (Config.isGoogleDriveEnabled()) {
+                if (config.backupMethods.googleDrive.enabled) {
                     uploadMethod = new GoogleDriveUploader();
                 } else {
                     MessageUtil.sendMessage(initiator, "Google Drive backups are disabled, you can enable them in the " + ChatColor.GOLD + "config.yml");
@@ -97,7 +90,7 @@ public class TestThread implements Runnable {
                 }
                 break;
             case "onedrive":
-                if (Config.isOneDriveEnabled()) {
+                if (config.backupMethods.oneDrive.enabled) {
                     uploadMethod = new OneDriveUploader();
                 } else {
                     MessageUtil.sendMessage(initiator, "OneDrive backups are disabled, you can enable them in the " + ChatColor.GOLD + "config.yml");
@@ -105,10 +98,18 @@ public class TestThread implements Runnable {
                 }
                 break;
             case "dropbox":
-                if (Config.isDropboxEnabled()) {
+                if (config.backupMethods.dropbox.enabled) {
                     uploadMethod = new DropboxUploader();
                 } else {
                     MessageUtil.sendMessage(initiator, "Dropbox backups are disabled, you can enable them in the " + ChatColor.GOLD + "config.yml");
+                    return;
+                }
+                break;
+            case "ftp":
+                if (config.backupMethods.ftp.enabled) {
+                    uploadMethod = new FTPUploader();
+                } else {
+                    MessageUtil.sendMessage(initiator, "(S)FTP backups are disabled, you can enable them in the " + ChatColor.GOLD + "config.yml");
                     return;
                 }
                 break;
@@ -118,8 +119,8 @@ public class TestThread implements Runnable {
 
         MessageUtil.sendMessage(initiator, "Beginning the test on " + uploadMethod.getName());
 
-        String localTestFilePath = Config.getDir() + File.separator + testFileName;
-        new File(Config.getDir()).mkdirs();
+        String localTestFilePath = config.backupStorage.localDirectory + File.separator + testFileName;
+        new File(config.backupStorage.localDirectory).mkdirs();
 
         try (FileOutputStream fos = new FileOutputStream(localTestFilePath)) {
             Random byteGenerator = new Random();

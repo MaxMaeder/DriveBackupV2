@@ -75,7 +75,7 @@ public class BackupMethods {
     public final DropboxBackupMethod dropbox;
     public final FTPBackupMethod ftp;
 
-    private BackupMethods(GoogleDriveBackupMethod googleDrive, OneDriveBackupMethod oneDrive, DropboxBackupMethod dropbox, FTPBackupMethod ftp) {
+    public BackupMethods(GoogleDriveBackupMethod googleDrive, OneDriveBackupMethod oneDrive, DropboxBackupMethod dropbox, FTPBackupMethod ftp) {
         this.googleDrive = googleDrive;
         this.oneDrive = oneDrive;
         this.dropbox = dropbox;
