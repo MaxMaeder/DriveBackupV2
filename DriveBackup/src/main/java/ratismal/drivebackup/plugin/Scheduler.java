@@ -131,13 +131,4 @@ public class Scheduler {
     public static ArrayList<ZonedDateTime> getBackupDatesList() {
         return backupDatesList;
     }
-
-        /**
-     * Adds a String to an ArrayList, if it doesn't already contain the String
-     * @param list the ArrayList
-     * @param item the String
-     */
-    private static void addIfNotAdded(ArrayList<String> list, String item) {
-        if (!list.contains(item)) list.add(item);
-    }
 }

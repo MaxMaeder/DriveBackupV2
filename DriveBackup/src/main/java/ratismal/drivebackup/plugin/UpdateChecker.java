@@ -8,7 +8,7 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
-import ratismal.drivebackup.config.Config;
+import ratismal.drivebackup.config.ConfigParser;
 import ratismal.drivebackup.util.MessageUtil;
 import ratismal.drivebackup.util.SchedulerUtil;
 
@@ -40,7 +40,7 @@ public class UpdateChecker {
 
                     @Override
                     public void run() {
-                        if (Config.isUpdateCheck()) {
+                        if (ConfigParser.getConfig().advanced.updateCheckEnabled) {
                             try {
                                 MessageUtil.sendConsoleMessage("Checking for updates...");
 

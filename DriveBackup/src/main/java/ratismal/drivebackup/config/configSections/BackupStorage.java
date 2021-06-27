@@ -18,7 +18,7 @@ public class BackupStorage {
     public final String localDirectory;
     public final String remoteDirectory;
 
-    private BackupStorage(
+    public BackupStorage(
         long delay, 
         int threadPriority, 
         int keepCount, 

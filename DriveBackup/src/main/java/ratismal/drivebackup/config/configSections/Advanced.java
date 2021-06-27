@@ -17,7 +17,7 @@ public class Advanced {
     public final ZoneOffset dateTimezone;
     public final String fileSeparator;
 
-    private Advanced(
+    public Advanced(
         boolean metricsEnabled, 
         boolean updateCheckEnabled, 
         boolean suppressErrors, 

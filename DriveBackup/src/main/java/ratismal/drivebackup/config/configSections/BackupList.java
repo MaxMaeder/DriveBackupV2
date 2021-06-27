@@ -1,7 +1,6 @@
 package ratismal.drivebackup.config.configSections;
 
 import java.nio.file.Path;
-import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -18,29 +17,38 @@ public class BackupList {
     public static class BackupListEntry {
         public interface BackupLocation {
             public List<Path> getPaths();
+            public String toString();
         }
 
         public static class PathBackupLocation implements BackupLocation {
             private final Path path;
 
-            private PathBackupLocation(String path) {
+            public PathBackupLocation(String path) {
                 this.path = Path.of(path);
             }
 
             public List<Path> getPaths() {
                 return Collections.singletonList(path);
             }
+
+            public String toString() {
+                return path.toString();
+            }
         }
 
         public static class GlobBackupLocation implements BackupLocation {
             private final String glob;
 
-            private GlobBackupLocation(String glob) {
+            public GlobBackupLocation(String glob) {
                 this.glob = glob;
             }
 
             public List<Path> getPaths() {
                 return FileUtil.generateGlobFolderList(glob, ".");
+            }
+
+            public String toString() {
+                return glob;
             }
         }
 
@@ -49,7 +57,7 @@ public class BackupList {
         public final boolean create;
         public final String[] blacklist;
         
-        private BackupListEntry(
+        public BackupListEntry(
             BackupLocation location,
             LocalDateTimeFormatter formatter, 
             boolean create, 
@@ -65,7 +73,7 @@ public class BackupList {
 
     public final BackupListEntry[] list;
 
-    private BackupList(
+    public BackupList(
         BackupListEntry[] list
         ) {
 

@@ -21,6 +21,7 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 import ratismal.drivebackup.Uploaders.Uploader;
+import ratismal.drivebackup.config.ConfigParser;
 import ratismal.drivebackup.plugin.DriveBackup;
 import ratismal.drivebackup.plugin.Scheduler;
 import ratismal.drivebackup.util.MessageUtil;
@@ -289,7 +290,7 @@ public class GoogleDriveUploader implements Uploader {
      */
     public void test(java.io.File testFile) {
         try {
-            String destination = Config.getDestination();
+            String destination = ConfigParser.getConfig().backupStorage.remoteDirectory;
             File body = new File();
                 body.setTitle(testFile.getName());
                 body.setDescription("DriveBackupV2 test file");
@@ -320,7 +321,7 @@ public class GoogleDriveUploader implements Uploader {
      */
     public void uploadFile(java.io.File file, String type) {
         try {
-            String destination = Config.getDestination();
+            String destination = ConfigParser.getConfig().backupStorage.remoteDirectory;
 
             ArrayList<String> typeFolders = new ArrayList<>();
             Collections.addAll(typeFolders, destination.split(java.io.File.separator.replace("\\", "\\\\")));
@@ -544,7 +545,7 @@ public class GoogleDriveUploader implements Uploader {
      * @throws Exception
      */
     private void deleteFiles(File folder) throws Exception {
-        int fileLimit = Config.getKeepCount();
+        int fileLimit = ConfigParser.getConfig().backupStorage.keepCount;
 
         if (fileLimit == -1) {
             return;
