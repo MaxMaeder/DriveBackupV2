@@ -9,6 +9,8 @@ import org.bukkit.ChatColor;
 import net.kyori.adventure.text.Component;
 import ratismal.drivebackup.Uploaders.Uploader;
 import ratismal.drivebackup.config.ConfigParser;
+import ratismal.drivebackup.config.ConfigParser.Config;
+import ratismal.drivebackup.config.configSections.BackupMethods.FTPBackupMethod;
 import ratismal.drivebackup.util.MessageUtil;
 
 import java.io.File;
@@ -37,10 +39,13 @@ public class FTPUploader implements Uploader {
      */
     public FTPUploader() {
         try {
-            if (Config.isFtpSftp()) {
+            Config config = ConfigParser.getConfig();
+            FTPBackupMethod ftp = config.backupMethods.ftp;
+
+            if (ftp.sftp) {
                 sftpClient = new SFTPUploader();
             } else {
-                connect(Config.getFtpHost(), Config.getFtpPort(), Config.getFtpUser(), Config.getFtpPass(), Config.isFtpFtps());
+                connect(ftp.hostname, ftp.port, ftp.username, ftp.password, ftp.ftps);
             }
 
             _localBaseFolder = ".";

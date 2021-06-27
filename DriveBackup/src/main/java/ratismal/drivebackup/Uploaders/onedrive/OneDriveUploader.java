@@ -18,7 +18,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import ratismal.drivebackup.Uploaders.Uploader;
-import ratismal.drivebackup.config.Config;
+import ratismal.drivebackup.config.ConfigParser;
 import ratismal.drivebackup.plugin.DriveBackup;
 import ratismal.drivebackup.plugin.Scheduler;
 import ratismal.drivebackup.util.HttpLogger;
@@ -257,7 +257,7 @@ public class OneDriveUploader implements Uploader {
      */
     public void test(java.io.File testFile) {
         try {
-            String destination = Config.getDestination();
+            String destination = ConfigParser.getConfig().backupStorage.remoteDirectory;
             
             Request request = new Request.Builder()
                 .addHeader("Authorization", "Bearer " + returnAccessToken())
@@ -303,7 +303,7 @@ public class OneDriveUploader implements Uploader {
         try {
             resetRanges();
 
-            String destination = Config.getDestination();
+            String destination = ConfigParser.getConfig().backupStorage.remoteDirectory;
             
             ArrayList<String> typeFolders = new ArrayList<>();
             Collections.addAll(typeFolders, destination.split(java.io.File.separator.replace("\\", "\\\\")));
@@ -577,7 +577,7 @@ public class OneDriveUploader implements Uploader {
      * @throws Exception
      */
     private void deleteFiles(File parent) throws Exception {
-        int fileLimit = Config.getKeepCount();
+        int fileLimit = ConfigParser.getConfig().backupStorage.keepCount;
 
         if (fileLimit == -1) {
             return;

@@ -12,6 +12,7 @@ import org.bukkit.entity.Player;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import ratismal.drivebackup.config.Config;
+import ratismal.drivebackup.config.ConfigParser;
 import ratismal.drivebackup.plugin.DriveBackup;
 
 public class MessageUtil {
@@ -137,7 +138,7 @@ public class MessageUtil {
      * @param exception Exception to send the stack trace of
      */
     public static void sendConsoleException(Exception exception) {
-    	if (Config.isDebug()) {
+    	if (ConfigParser.getConfig().advanced.suppressErrors) {
     		exception.printStackTrace();
     	}
     }

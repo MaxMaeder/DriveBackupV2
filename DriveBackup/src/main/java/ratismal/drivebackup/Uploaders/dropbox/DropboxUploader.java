@@ -3,6 +3,7 @@ package ratismal.drivebackup.Uploaders.dropbox;
 import ratismal.drivebackup.util.MessageUtil;
 import ratismal.drivebackup.Uploaders.Uploader;
 import ratismal.drivebackup.config.ConfigParser;
+import ratismal.drivebackup.config.ConfigParser.Config;
 import ratismal.drivebackup.plugin.DriveBackup;
 import ratismal.drivebackup.plugin.Scheduler;
 
@@ -367,8 +368,10 @@ public class DropboxUploader implements Uploader {
      * @throws Exception
      */
     private void deleteFiles(String type) throws Exception {
-        String destination = ConfigParser.getConfig().backupStorage.remoteDirectory;
-        int fileLimit = ConfigParser.getConfig().backupStorage.keepCount;
+        Config config = ConfigParser.getConfig();
+
+        String destination = config.backupStorage.remoteDirectory;
+        int fileLimit = config.backupStorage.keepCount;
         if (fileLimit == -1) {
             return;
         }

@@ -1,6 +1,8 @@
 package ratismal.drivebackup.Uploaders.ftp;
 
-import ratismal.drivebackup.config.Config;
+import ratismal.drivebackup.config.ConfigParser;
+import ratismal.drivebackup.config.ConfigParser.Config;
+import ratismal.drivebackup.config.configSections.BackupMethods.FTPBackupMethod;
 import ratismal.drivebackup.plugin.DriveBackup;
 import ratismal.drivebackup.util.MessageUtil;
 
@@ -37,7 +39,10 @@ public class SFTPUploader {
      * @throws Exception
      */
     public SFTPUploader() throws Exception {
-        connect(Config.getFtpHost(), Config.getFtpPort(), Config.getFtpUser(), Config.getFtpPass(), Config.getSftpPublicKey(), Config.getSftpPass());
+        Config config = ConfigParser.getConfig();
+        FTPBackupMethod ftp = config.backupMethods.ftp;
+
+        connect(ftp.hostname, ftp.port, ftp.username, ftp.password, ftp.publicKey, ftp.passphrase);
 
         _localBaseFolder = ".";
         if (Config.getFtpDir() == null) {
@@ -208,7 +213,7 @@ public class SFTPUploader {
      * @throws Exception
      */
     private void deleteFiles() throws Exception {
-        int fileLimit = Config.getKeepCount();
+        int fileLimit = ConfigParser.getConfig().backupStorage.keepCount;
         if (fileLimit == -1) {
             return;
         }
