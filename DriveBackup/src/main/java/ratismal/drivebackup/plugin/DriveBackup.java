@@ -6,17 +6,22 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import net.kyori.adventure.platform.bukkit.BukkitAudiences;
 import ratismal.drivebackup.config.ConfigParser;
+import ratismal.drivebackup.config.Localization;
 import ratismal.drivebackup.config.Permissions;
-import ratismal.drivebackup.config.ConfigParser.Config;
 import ratismal.drivebackup.handler.CommandTabComplete;
 import ratismal.drivebackup.handler.PlayerListener;
 import ratismal.drivebackup.handler.commandHandler.CommandHandler;
+import ratismal.drivebackup.util.CustomConfig;
 import ratismal.drivebackup.util.MessageUtil;
 
 public class DriveBackup extends JavaPlugin {
 
     private static DriveBackup plugin;
+
     private static ConfigParser config;
+
+    private static CustomConfig localizationConfig;
+    private static Localization localization;
 
     /**
      * Global instance of Adventure audience
@@ -33,6 +38,9 @@ public class DriveBackup extends JavaPlugin {
 
         config = new ConfigParser(getConfig());
         config.reload(Permissions.getPlayersWithPerm(Permissions.RELOAD_CONFIG));
+
+        localizationConfig = new CustomConfig("intl.yml");
+        localization = new Localization(localizationConfig.getConfig());
 
         getCommand("drivebackup").setTabCompleter(new CommandTabComplete(plugin));
         getCommand("drivebackup").setExecutor(new CommandHandler(plugin));
@@ -71,8 +79,12 @@ public class DriveBackup extends JavaPlugin {
         Scheduler.stopBackupThread();
 
         getInstance().reloadConfig();
-        FileConfiguration fileConfiguration = getInstance().getConfig();
-        config.reload(fileConfiguration, Permissions.getPlayersWithPerm(Permissions.RELOAD_CONFIG));
+        FileConfiguration configFile = getInstance().getConfig();
+        config.reload(configFile, Permissions.getPlayersWithPerm(Permissions.RELOAD_CONFIG));
+
+        localizationConfig.reloadConfig();
+        FileConfiguration localizationFile = localizationConfig.getConfig();
+        localization.reload(localizationFile);
 
         Scheduler.startBackupThread();
     }

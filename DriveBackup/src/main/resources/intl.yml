@@ -1,0 +1,7 @@
+no-perm: "You don't have permission to do this!"
+backup-start: "Creating backups, the server may lag for a little while..."
+backup-complete: "Backup complete,"
+next-backup: "the next backup is in %TIME minutes"
+next-schedule-backup: "the next backup is at %DATE"
+next-schedule-backup-format: "h:mm a EEE, MMM d O"
+auto-backups-disabled: "Automatic backups are disabled"
