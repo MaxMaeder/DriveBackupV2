@@ -20,7 +20,6 @@ import ratismal.drivebackup.config.configSections.ExternalBackups.ExternalFTPSou
 import ratismal.drivebackup.config.configSections.ExternalBackups.ExternalMySQLSource.MySQLDatabaseBackup;
 import ratismal.drivebackup.handler.PlayerListener;
 import ratismal.drivebackup.mysql.MySQLUploader;
-import ratismal.drivebackup.plugin.DriveBackup;
 import ratismal.drivebackup.plugin.Scheduler;
 import ratismal.drivebackup.util.*;
 import ratismal.drivebackup.util.Timer;
@@ -28,7 +27,6 @@ import ratismal.drivebackup.util.Timer;
 import java.io.File;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
-import java.nio.file.PathMatcher;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -37,7 +35,6 @@ import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoField;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
-import java.util.concurrent.Callable;
 
 import static ratismal.drivebackup.config.Localization.intl;
 
@@ -163,9 +160,9 @@ public class UploadThread implements Runnable {
             uploaders.add(new FTPUploader());
         }
 
-        backupList = Arrays.asList(config.backupList.list);
+        backupList = config.backupList.list;
 
-        ExternalBackupSource[] externalBackupList = config.externalBackups.sources;
+        List<ExternalBackupSource> externalBackupList = config.externalBackups.sources;
         for (ExternalBackupSource externalBackup : externalBackupList) {
             if (externalBackup instanceof ExternalFTPSource) {
                 makeExternalFileBackup((ExternalFTPSource) externalBackup);
@@ -440,10 +437,10 @@ public class UploadThread implements Runnable {
             default:
         }
 
-        BackupListEntry[] backupList = config.backupList.list;
-        String backupSetName = backupList[backupBackingUp].location.toString();
+        List<BackupListEntry> backupList = config.backupList.list;
+        String backupSetName = backupList.get(backupBackingUp).location.toString();
 
-        backupStatusMessage.append("backup set \"" + backupSetName + "\", set " + (backupBackingUp + 1) + " of " + backupList.length);
+        backupStatusMessage.append("backup set \"" + backupSetName + "\", set " + (backupBackingUp + 1) + " of " + backupList.size());
 
         return backupStatusMessage.toString();
     }

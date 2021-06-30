@@ -72,10 +72,10 @@ public class BackupList {
         }
     }
 
-    public final BackupListEntry[] list;
+    public final List<BackupListEntry> list;
 
     public BackupList(
-        BackupListEntry[] list
+        List<BackupListEntry> list
         ) {
 
         this.list = list;
@@ -134,6 +134,6 @@ public class BackupList {
             list.add(new BackupListEntry(location, formatter, create, (String[]) blacklist));
         }
 
-        return new BackupList((BackupListEntry[]) list.toArray());
+        return new BackupList(list);
     }
 }
