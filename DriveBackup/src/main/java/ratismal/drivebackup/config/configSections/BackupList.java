@@ -1,6 +1,7 @@
 package ratismal.drivebackup.config.configSections;
 
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -24,7 +25,7 @@ public class BackupList {
             private final Path path;
 
             public PathBackupLocation(String path) {
-                this.path = Path.of(path);
+                this.path = Paths.get(path);
             }
 
             public List<Path> getPaths() {
