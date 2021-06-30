@@ -1,7 +1,6 @@
 package ratismal.drivebackup.config.configSections;
 
 import java.nio.file.InvalidPathException;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -103,10 +102,10 @@ public class ExternalBackups {
         }
     }
 
-    public final ExternalBackupSource[] sources;
+    public final List<ExternalBackupSource> sources;
 
     private ExternalBackups(
-        ExternalBackupSource[] sources
+        List<ExternalBackupSource> sources
         ) {
 
         this.sources = sources;
@@ -258,6 +257,6 @@ public class ExternalBackups {
             }
         }
 
-        return new ExternalBackups((ExternalBackupSource[]) list.toArray());
+        return new ExternalBackups(list);
     }
 }

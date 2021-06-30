@@ -1,6 +1,6 @@
 package ratismal.drivebackup.config.configSections;
 
-import java.nio.file.Path;
+import com.google.api.client.util.Strings;
 
 import org.bukkit.configuration.file.FileConfiguration;
 
@@ -99,18 +99,18 @@ public class BackupMethods {
         boolean ftpEnabled = config.getBoolean("ftp.enabled");
 
         String publicKey = "";
-        if (!config.getString("ftp.sftp-public-key").trim().isEmpty() && ftpEnabled) {
+        if (Strings.isNullOrEmpty(config.getString("ftp.sftp-public-key")) && ftpEnabled) {
             try {
-                publicKey = ConfigParser.verifyPath(config.getString("ftp.sftp-public-key"));
+                publicKey = ConfigParser.verifyPath(config.getString("ftp.sftp-public-key").trim());
             } catch (Exception e) {
                 // TODO:: ERROR
             }
         }
 
         String baseDir = "";
-        if (!config.getString("ftp.base-dir").trim().isEmpty() && ftpEnabled) {
+        if (Strings.isNullOrEmpty(config.getString("ftp.base-dir")) && ftpEnabled) {
             try {
-                baseDir = ConfigParser.verifyPath(config.getString("ftp.base-dir"));
+                baseDir = ConfigParser.verifyPath(config.getString("ftp.base-dir").trim());
             } catch (Exception e) {
                 // TODO:: ERROR
             }

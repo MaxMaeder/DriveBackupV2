@@ -26,11 +26,11 @@ public class BackupScheduling {
     }
 
     public final boolean enabled;
-    public final BackupScheduleEntry[] schedule;
+    public final List<BackupScheduleEntry> schedule;
 
     public BackupScheduling(
         boolean enabled, 
-        BackupScheduleEntry[] schedule
+        List<BackupScheduleEntry> schedule
         ) {
 
         this.enabled = enabled;
@@ -41,7 +41,7 @@ public class BackupScheduling {
         boolean enabled = config.getBoolean("scheduled-backups");
 
         List<Map<?, ?>> rawSchedule = config.getMapList("backup-schedule-list");
-        ArrayList<BackupScheduleEntry> schedule = new ArrayList<>();
+        List<BackupScheduleEntry> schedule = new ArrayList<>();
         for (Map<?, ?> rawScheduleEntry : rawSchedule) {
             int entryIndex = rawSchedule.indexOf(rawScheduleEntry) + 1;
             
@@ -107,9 +107,11 @@ public class BackupScheduling {
             enabled = false;
         }
 
+
+
         return new BackupScheduling(
             enabled, 
-            (BackupScheduleEntry[]) schedule.toArray()
+            schedule
             );
     }
 }

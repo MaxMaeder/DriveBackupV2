@@ -149,7 +149,12 @@ public class MessageUtil {
      * @return the prefixed message
      */
     private static String prefixMessage(String message) {
-        Messages messages = ConfigParser.getConfig().messages;
+        Messages messages;
+        try {
+            messages = ConfigParser.getConfig().messages;
+        } catch (Exception exception) {
+            messages = Messages.defaultConfig();
+        }
 
         return translateMessageColors(messages.prefix + messages.defaultColor) + message;
     }

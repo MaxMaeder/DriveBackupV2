@@ -2,7 +2,6 @@ package ratismal.drivebackup.handler;
 
 import java.time.ZoneOffset;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 import org.bukkit.plugin.Plugin;
