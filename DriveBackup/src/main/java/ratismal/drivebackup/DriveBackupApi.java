@@ -7,6 +7,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
+import ratismal.drivebackup.config.ConfigParser;
+import ratismal.drivebackup.config.ConfigParser.Config;
 import ratismal.drivebackup.plugin.DriveBackup;
 import ratismal.drivebackup.util.MessageUtil;
 
@@ -63,6 +65,14 @@ public class DriveBackupApi {
         for (Runnable runnable : onBackupErrorRunnables) {
             new Thread(runnable).start();
         }
+    }
+
+    /**
+     * Gets the plugin's parsed config as an object
+     * @returns the config
+     */
+    public static Config getConfig() {
+        return ConfigParser.getConfig();
     }
 
     /**

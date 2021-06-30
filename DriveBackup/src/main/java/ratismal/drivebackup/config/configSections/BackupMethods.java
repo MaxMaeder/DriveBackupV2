@@ -4,6 +4,7 @@ import java.nio.file.Path;
 
 import org.bukkit.configuration.file.FileConfiguration;
 
+import ratismal.drivebackup.config.ConfigParser;
 import ratismal.drivebackup.config.ConfigParser.Logger;
 
 public class BackupMethods {
@@ -40,9 +41,9 @@ public class BackupMethods {
         public final boolean ftps;
         public final String username;
         public final String password;
-        public final Path publicKey;
+        public final String publicKey;
         public final String passphrase;
-        public final Path baseDirectory;
+        public final String baseDirectory;
 
         public FTPBackupMethod(
             boolean enabled, 
@@ -52,9 +53,9 @@ public class BackupMethods {
             boolean ftps, 
             String username, 
             String password, 
-            Path publicKey, 
+            String publicKey, 
             String passphrase, 
-            Path baseDirectory
+            String baseDirectory
             ) {
             super(enabled);
 
@@ -97,20 +98,22 @@ public class BackupMethods {
 
         boolean ftpEnabled = config.getBoolean("ftp.enabled");
 
-        Path publicKey = Path.of("");
-        try {
-            publicKey = Path.of(config.getString("ftp.sftp-public-key"));
-        } catch (Exception e) {
-            logger.log("Path to public key invalid, disabling the FTP backup method");
-            ftpEnabled = false;
+        String publicKey = "";
+        if (!config.getString("ftp.sftp-public-key").isBlank() && ftpEnabled) {
+            try {
+                publicKey = ConfigParser.verifyPath(config.getString("ftp.sftp-public-key"));
+            } catch (Exception e) {
+                // TODO:: ERROR
+            }
         }
 
-        Path baseDir = Path.of("");
-        try {
-            baseDir = Path.of(config.getString("ftp.base-dir"));
-        } catch (Exception e) {
-            logger.log("Path to base dir invalid, disabling the FTP backup method");
-            ftpEnabled = false;
+        String baseDir = "";
+        if (!config.getString("ftp.base-dir").isBlank() && ftpEnabled) {
+            try {
+                baseDir = ConfigParser.verifyPath(config.getString("ftp.base-dir"));
+            } catch (Exception e) {
+                // TODO:: ERROR
+            }
         }
 
         FTPBackupMethod ftpMethod = new FTPBackupMethod(

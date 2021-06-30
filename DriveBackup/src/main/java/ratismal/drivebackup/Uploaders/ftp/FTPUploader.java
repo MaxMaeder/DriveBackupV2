@@ -35,6 +35,14 @@ public class FTPUploader implements Uploader {
     private String _remoteBaseFolder;
 
     /**
+     * Returns the configured FTP file separator
+     * @return the separator
+     */
+    public static String sep() {
+        return ConfigParser.getConfig().advanced.fileSeparator;
+    }
+
+    /**
      * Creates an instance of the {@code FTPUploader} object using the server credentials specified by the user in the {@code config.yml}
      */
     public FTPUploader() {
@@ -49,10 +57,10 @@ public class FTPUploader implements Uploader {
             }
 
             _localBaseFolder = ".";
-            if (Config.getFtpDir() == null) {
-                _remoteBaseFolder = Config.getDestination();
+            if (ftp.baseDirectory.isBlank()) {
+                _remoteBaseFolder = config.backupStorage.remoteDirectory;
             } else {
-                _remoteBaseFolder = Config.getFtpDir() + File.separator + Config.getDestination();
+                _remoteBaseFolder = ftp.baseDirectory + sep() + config.backupStorage.remoteDirectory;
             }
         } catch (Exception e) {
             MessageUtil.sendConsoleException(e);
@@ -164,7 +172,7 @@ public class FTPUploader implements Uploader {
      */
     public void uploadFile(File file, String type) {
         try {
-            type = type.replace(".."  + File.separator, "");
+            type = type.replace(".."  + sep(), "");
 
             if (sftpClient != null) {
                 sftpClient.uploadFile(file, type);
@@ -203,12 +211,12 @@ public class FTPUploader implements Uploader {
             resetWorkingDirectory();
             ftpClient.changeWorkingDirectory(_remoteBaseFolder);
 
-            File outputFile = new File(_localBaseFolder + File.separator + type);
+            File outputFile = new File(_localBaseFolder + sep() + type);
             if (!outputFile.exists()) {
                 outputFile.mkdirs();
             }
 
-            OutputStream outputStream = new FileOutputStream(_localBaseFolder + File.separator + type + File.separator + new File(filePath).getName());
+            OutputStream outputStream = new FileOutputStream(_localBaseFolder + "/" + type + "/" + new File(filePath).getName());
             ftpClient.retrieveFile(filePath, outputStream);
 
             outputStream.flush();
@@ -239,7 +247,7 @@ public class FTPUploader implements Uploader {
             for (FTPFile file : ftpClient.mlistDir()) {
                 if (file.isDirectory()) {
                     // file.getName() = file path
-                    filePaths.addAll(prependToAll(getFiles(file.getName()), new File(file.getName()).getName() + File.separator));
+                    filePaths.addAll(prependToAll(getFiles(file.getName()), new File(file.getName()).getName() + sep()));
                 } else {
                     filePaths.add(file.getName());
                 }

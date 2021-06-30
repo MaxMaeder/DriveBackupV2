@@ -21,7 +21,6 @@ import ratismal.drivebackup.Uploaders.Uploader;
 import ratismal.drivebackup.config.ConfigParser;
 import ratismal.drivebackup.plugin.DriveBackup;
 import ratismal.drivebackup.plugin.Scheduler;
-import ratismal.drivebackup.util.HttpLogger;
 import ratismal.drivebackup.util.MessageUtil;
 import ratismal.drivebackup.util.SchedulerUtil;
 
@@ -306,8 +305,8 @@ public class OneDriveUploader implements Uploader {
             String destination = ConfigParser.getConfig().backupStorage.remoteDirectory;
             
             ArrayList<String> typeFolders = new ArrayList<>();
-            Collections.addAll(typeFolders, destination.split(java.io.File.separator.replace("\\", "\\\\")));
-            Collections.addAll(typeFolders, type.split(java.io.File.separator.replace("\\", "\\\\")));
+            Collections.addAll(typeFolders, destination.split("/"));
+            Collections.addAll(typeFolders, type.split("/"));
 
             File folder = null;
 

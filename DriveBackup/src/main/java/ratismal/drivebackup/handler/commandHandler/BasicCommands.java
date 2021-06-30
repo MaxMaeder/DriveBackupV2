@@ -12,6 +12,8 @@ import ratismal.drivebackup.plugin.DriveBackup;
 import ratismal.drivebackup.plugin.UpdateChecker;
 import ratismal.drivebackup.util.MessageUtil;
 
+import static ratismal.drivebackup.config.Localization.intl;
+
 public class BasicCommands {
     /**
      * Sends a list of links to help resources to the specified player
@@ -109,7 +111,7 @@ public class BasicCommands {
      * @param player the player to send the message to
      */
     public static void sendNoPerms(CommandSender player) {
-        String noPerms = Config.getNoPerms();
+        String noPerms = intl("no-perm");
         noPerms = MessageUtil.translateMessageColors(noPerms);
         MessageUtil.sendMessage(player, noPerms);
     }

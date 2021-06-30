@@ -9,10 +9,10 @@ import java.util.Map;
 
 import org.bukkit.configuration.file.FileConfiguration;
 
+import ratismal.drivebackup.config.ConfigParser;
 import ratismal.drivebackup.config.ConfigParser.Logger;
 import ratismal.drivebackup.config.configSections.ExternalBackups.ExternalFTPSource.ExternalBackupListEntry;
 import ratismal.drivebackup.util.LocalDateTimeFormatter;
-import ratismal.drivebackup.util.SystemDependentPath;
 
 public class ExternalBackups {
     public static class ExternalBackupSource {
@@ -33,10 +33,10 @@ public class ExternalBackups {
 
     public static class ExternalFTPSource extends ExternalBackupSource {
         public static class ExternalBackupListEntry {
-            public final SystemDependentPath path;
+            public final String path;
             public final String[] blacklist;
 
-            private ExternalBackupListEntry(SystemDependentPath path, String[] blacklist) {
+            private ExternalBackupListEntry(String path, String[] blacklist) {
                 this.path = path;
                 this.blacklist = blacklist;
             }
@@ -44,9 +44,9 @@ public class ExternalBackups {
 
         public final boolean sftp;
         public final boolean ftps;
-        public final SystemDependentPath publicKey;
+        public final String publicKey;
         public final String passphrase;
-        public final SystemDependentPath baseDirectory;
+        public final String baseDirectory;
         public final ExternalBackupListEntry[] backupList;
 
         private ExternalFTPSource(
@@ -57,9 +57,9 @@ public class ExternalBackups {
             LocalDateTimeFormatter format,
             boolean sftp,
             boolean ftps,
-            SystemDependentPath publicKey, 
+            String publicKey, 
             String passphrase, 
-            SystemDependentPath baseDirectory, 
+            String baseDirectory, 
             ExternalBackupListEntry[] backupList
             ) {
             super(hostname, port, username, password, format);
@@ -163,88 +163,84 @@ public class ExternalBackups {
                 case "ftpServer":
                 case "ftpsServer":
                 case "sftpServer":
-                    try {
-                        SystemDependentPath publicKey = null;
-                        if (rawListEntry.containsKey("sftp-public-key")) {
-                            try {
-                                publicKey = SystemDependentPath.of((String) rawListEntry.get("sftp-public-key"));
-                            } catch (Exception e) {
-                                logger.log("Path to public key invalid in external backup entry " + entryIndex + ", leaving blank");
-                                if (e instanceof InvalidPathException) e.getMessage();
-                            }
-                        }
-
-                        String passphrase = "";
-                        if (rawListEntry.containsKey("passphrase")) {
-                            try {
-                                passphrase = (String) rawListEntry.get("passphrase");
-                            } catch (Exception e) {
-                                logger.log("Passphrase invalid in external backup entry " + entryIndex + ", leaving blank");
-                            }
-                        }
-
-                        SystemDependentPath baseDirectory = null;
+                    String publicKey = "";
+                    if (rawListEntry.containsKey("sftp-public-key")) {
                         try {
-                            baseDirectory = SystemDependentPath.of((String) rawListEntry.get("base-dir"));
+                            publicKey = ConfigParser.verifyPath((String) rawListEntry.get("sftp-public-key"));
                         } catch (Exception e) {
-                            logger.log("Path to base directory invalid, skipping external backup entry " + entryIndex);
+                            logger.log("Path to public key invalid in external backup entry " + entryIndex + ", leaving blank");
+                            if (e instanceof InvalidPathException) e.getMessage();
+                        }
+                    }
+
+                    String passphrase = "";
+                    if (rawListEntry.containsKey("passphrase")) {
+                        try {
+                            passphrase = (String) rawListEntry.get("passphrase");
+                        } catch (Exception e) {
+                            logger.log("Passphrase invalid in external backup entry " + entryIndex + ", leaving blank");
+                        }
+                    }
+
+                    String baseDirectory = "";
+                    if (rawListEntry.containsKey("base-dir")) {
+                        try {
+                            baseDirectory = ConfigParser.verifyPath((String) rawListEntry.get("base-dir"));
+                        } catch (Exception e) {
+                            logger.log("Path to base directory key invalid in external backup entry " + entryIndex + ", leaving blank");
+                            if (e instanceof InvalidPathException) e.getMessage();
+                        }
+                    }
+
+                    List<Map<?, ?>> rawBackupList;
+                    try {
+                        rawBackupList = (List<Map<?, ?>>) rawListEntry.get("backup-list");
+                    } catch (Exception e) {
+                        logger.log("Backup list invalid, skipping external backup entry " + entryIndex);
+                        continue;
+                    }
+
+                    ArrayList<ExternalBackupListEntry> backupList = new ArrayList<>();
+                    for (Map<?, ?> rawBackupListEntry : rawBackupList) {
+                        int entryBackupIndex = rawBackupList.indexOf(rawBackupListEntry) + 1;
+
+                        String path;
+                        try {
+                            path = ConfigParser.verifyPath((String) rawBackupListEntry.get("path"));
+                        } catch (Exception e) {
+                            logger.log("Path invalid, skipping external backup backup list entry " + entryBackupIndex);
                             if (e instanceof InvalidPathException) e.getMessage();
                             continue;
                         }
 
-                        List<Map<?, ?>> rawBackupList;
+                        String[] blacklist;
                         try {
-                            rawBackupList = (List<Map<?, ?>>) rawListEntry.get("backup-list");
+                            blacklist = (String[]) ((List<String>) rawBackupListEntry.get("blacklist")).toArray();
                         } catch (Exception e) {
-                            logger.log("Backup list invalid, skipping external backup entry " + entryIndex);
-                            continue;
+                            // Do nothing, blacklist not required
+                            blacklist = new String[0];
                         }
 
-                        ArrayList<ExternalBackupListEntry> backupList = new ArrayList<>();
-                        for (Map<?, ?> rawBackupListEntry : rawBackupList) {
-                            int entryBackupIndex = rawBackupList.indexOf(rawBackupListEntry) + 1;
-
-                            SystemDependentPath path;
-                            try {
-                                path = SystemDependentPath.of((String) rawBackupListEntry.get("path"));
-                            } catch (Exception e) {
-                                logger.log("Path invalid, skipping external backup backup list entry " + entryBackupIndex);
-                                if (e instanceof InvalidPathException) e.getMessage();
-                                continue;
-                            }
-
-                            String[] blacklist;
-                            try {
-                                blacklist = (String[]) ((List<String>) rawBackupListEntry.get("blacklist")).toArray();
-                            } catch (Exception e) {
-                                // Do nothing, blacklist not required
-                                blacklist = new String[0];
-                            }
-
-                            backupList.add(
-                                new ExternalBackupListEntry(path, blacklist)
-                            );
-                        }
-
-                        list.add(
-                            new ExternalFTPSource(
-                                hostname, 
-                                port, 
-                                username, 
-                                password, 
-                                formatter,
-                                type == "sftpServer",
-                                type == "ftpsServer",
-                                publicKey,
-                                passphrase,
-                                baseDirectory,
-                                (ExternalBackupListEntry[]) backupList.toArray()
-                                )
-                            );
-                    } catch (Exception e) {
-                        logger.log("External Backup entry " + entryIndex + " has an invalid configuration, skipping");
-                        continue;
+                        backupList.add(
+                            new ExternalBackupListEntry(path, blacklist)
+                        );
                     }
+
+                    list.add(
+                        new ExternalFTPSource(
+                            hostname, 
+                            port, 
+                            username, 
+                            password, 
+                            formatter,
+                            type == "sftpServer",
+                            type == "ftpsServer",
+                            publicKey,
+                            passphrase,
+                            baseDirectory,
+                            (ExternalBackupListEntry[]) backupList.toArray()
+                            )
+                        );
 
                     break;
                 case "mysqlDatabase":

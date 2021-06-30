@@ -18,10 +18,10 @@ backup-schedule-list:
 
 backup-list:
 - path: "world"
-  format: "'Backup-world-'yyyy-M-d--HH-mm'.zip'"
+  format: "Backup-world-%FORMAT.zip"
   create: true
 - path: "plugins"
-  format: "'Backup-plugins-'yyyy-M-d--HH-mm'.zip'"
+  format: "Backup-plugins-%FORMAT.zip"
   create: true
 
 external-backup-list:
@@ -50,13 +50,13 @@ ftp:
 
 messages:
   send-in-chat: true
+  prefix: "&6[&4DriveBackupV2&6] "
+  default-color: "&3"
 
 advanced:
   metrics: true
   update-check: true
   suppress-errors: false
-  message-prefix: "&6[&4DriveBackupV2&6] "
-  default-message-color: "&3"
   date-language: "en"
   date-format-timezone: "-00:00"
   ftp-file-separator: "/"

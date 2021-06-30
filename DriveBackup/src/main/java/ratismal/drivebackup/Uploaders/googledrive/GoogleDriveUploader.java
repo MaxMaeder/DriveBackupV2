@@ -324,8 +324,8 @@ public class GoogleDriveUploader implements Uploader {
             String destination = ConfigParser.getConfig().backupStorage.remoteDirectory;
 
             ArrayList<String> typeFolders = new ArrayList<>();
-            Collections.addAll(typeFolders, destination.split(java.io.File.separator.replace("\\", "\\\\")));
-            Collections.addAll(typeFolders, type.split(java.io.File.separator.replace("\\", "\\\\")));
+            Collections.addAll(typeFolders, destination.split("/"));
+            Collections.addAll(typeFolders, type.split("/"));
             
             File folder = null;
 

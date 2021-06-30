@@ -29,7 +29,7 @@ import java.util.zip.ZipOutputStream;
  */
 
 public class FileUtil {
-    private static final TreeMap<Date, File> backupList = new TreeMap<>();
+    private static final TreeMap<Long, File> backupList = new TreeMap<>();
     private static final List<String> fileList = new ArrayList<>();
     private static ArrayList<HashMap<String, Object>> blacklist = new ArrayList<>();
     private static int backupFiles = 0;
@@ -37,25 +37,24 @@ public class FileUtil {
     /**
      * Gets the most recent backup of the specified backup type
      * @param type the type of back up (world, plugin, etc)
-     * @param format the format of the file name
+     * @param formatter the format of the file name
      * @return The file to upload
      */
-    public static File getNewestBackup(String type, String format) {
-        type = type.replace(".." + File.separator, "");
+    public static File getNewestBackup(String type, LocalDateTimeFormatter formatter) {
+        type = type.replace("../", "");
 
         backupList.clear();
-        String path = new File(Config.getDir()).getAbsolutePath() + File.separator + type;
+        String path = new File(ConfigParser.getConfig().backupStorage.localDirectory).getAbsolutePath() + "/" + type;
         File[] files = new File(path).listFiles();
 
         for (File file : files) {
             if (file.getName().endsWith(".zip")) {
 
                 String dateString = file.getName();
-                DateFormat dateFormat = new SimpleDateFormat(format, new Locale(Config.getDateLanguage()));
 
                 try {
-                    Date date = dateFormat.parse(dateString);
-                    backupList.put(date, file);
+                    ZonedDateTime date = formatter.parse(dateString);
+                    backupList.put(date.toEpochSecond(), file);
                 } catch (Exception e) {
                     MessageUtil.sendConsoleException(e);
                 }
@@ -75,7 +74,7 @@ public class FileUtil {
     public static void makeBackup(String type, LocalDateTimeFormatter formatter, List<String> blacklistGlobs) throws Exception {
         Config config = ConfigParser.getConfig();
 
-        if (type.charAt(0) == File.separatorChar) {
+        if (type.charAt(0) == '/') {
             throw new IllegalArgumentException(); 
         }
 
@@ -101,7 +100,7 @@ public class FileUtil {
             subfolderName = "root";
         }
 
-        File path = new File((Config.getDir() + File.separator + subfolderName).replace(".." + File.separator, "")); // Keeps working directory inside backups folder
+        File path = new File((config.backupStorage.localDirectory + "/" + subfolderName).replace("../", "")); // Keeps working directory inside backups folder
         if (!path.exists()) {
             path.mkdirs();
         }
@@ -121,7 +120,7 @@ public class FileUtil {
             MessageUtil.sendConsoleMessage("Didn't include " + backupFiles + " file(s) in the backup, as they are in the folder used for backups");
         }
 
-        zipIt(type, path.getPath() + File.separator + fileName);
+        zipIt(type, path.getPath() + "/" + fileName);
     }
 
     /**
@@ -129,27 +128,28 @@ public class FileUtil {
      * <p>
      * The number of files to retain locally is specified by the user in the {@code config.yml}
      * @param type the type of file (ex. plugins, world)
-     * @param formatString the format of the files name
+     * @param formatter the format of the files name
      * @throws IOException
      */
-    public static void deleteFiles(String type, String formatString) throws IOException {
-        type = type.replace(".." + File.separator, "");
+    public static void deleteFiles(String type, LocalDateTimeFormatter formatter) throws IOException {
+        int localKeepCount = ConfigParser.getConfig().backupStorage.localKeepCount;
+        type = type.replace("../", "");
 
-        if (Config.getLocalKeepCount() != -1) {
+        if (localKeepCount != -1) {
             try {
-                getNewestBackup(type, formatString);
+                getNewestBackup(type, formatter);
 
-                if (backupList.size() > Config.getLocalKeepCount()) {
-                    MessageUtil.sendConsoleMessage("There are " + backupList.size() + " file(s) which exceeds the local limit of " + Config.getLocalKeepCount() + ", deleting oldest");
+                if (backupList.size() > localKeepCount) {
+                    MessageUtil.sendConsoleMessage("There are " + backupList.size() + " file(s) which exceeds the local limit of " + localKeepCount + ", deleting oldest");
                 }
                 
 
-                while (backupList.size() > Config.getLocalKeepCount()) {
+                while (backupList.size() > localKeepCount) {
                     File fileToDelete = backupList.descendingMap().lastEntry().getValue();
-                    Date dateOfFile = backupList.descendingMap().lastKey();
+                    long dateOfFile = backupList.descendingMap().lastKey();
 
                     if (!fileToDelete.delete()) {
-                        MessageUtil.sendConsoleMessage("Failed to delete local backup \"" + backupList.descendingMap().lastEntry().getValue().getName() + "\"");
+                        MessageUtil.sendConsoleMessage("Failed to delete local backup \"" + fileToDelete.getName() + "\"");
                     }
                     
                     backupList.remove(dateOfFile);
@@ -179,19 +179,19 @@ public class FileUtil {
         try {
             fileOutputStream = new FileOutputStream(outputFilePath);
             zipOutputStream = new ZipOutputStream(fileOutputStream);
-            zipOutputStream.setLevel(Config.getZipCompression());
+            zipOutputStream.setLevel(ConfigParser.getConfig().backupStorage.zipCompression);
 
             for (String file : fileList) {
-                zipOutputStream.putNextEntry(new ZipEntry(formattedInputFolderPath + File.separator + file));
+                zipOutputStream.putNextEntry(new ZipEntry(formattedInputFolderPath + "/" + file));
 
-                try (FileInputStream fileInputStream = new FileInputStream(inputFolderPath + File.separator + file)) {
+                try (FileInputStream fileInputStream = new FileInputStream(inputFolderPath + "/" + file)) {
                     
                     int len;
                     while ((len = fileInputStream.read(buffer)) > 0) {
                         zipOutputStream.write(buffer, 0, len);
                     }
                 } catch (Exception e) {
-                    MessageUtil.sendConsoleMessage("Failed to include \"" + new File(inputFolderPath + File.separator + file).getPath() + "\" in the backup, is it locked?");
+                    MessageUtil.sendConsoleMessage("Failed to include \"" + new File(inputFolderPath + "/" + file).getPath() + "\" in the backup, is it locked?");
                 }
 
                 zipOutputStream.closeEntry();
@@ -225,7 +225,7 @@ public class FileUtil {
     private static void generateFileList(File file, String inputFolderPath) throws Exception {
 
         if (file.isFile()) {
-            if (file.getCanonicalPath().startsWith(new File(Config.getDir()).getCanonicalPath())) {
+            if (file.getCanonicalPath().startsWith(new File(ConfigParser.getConfig().backupStorage.localDirectory).getCanonicalPath())) {
                 backupFiles++;
 
                 return;
@@ -275,7 +275,7 @@ public class FileUtil {
      * @param baseFolderPath the absolute path of the folder
      */
     private static String getFileRelativePath(File file, String baseFolderPath) {
-        return file.getAbsolutePath().replaceFirst(Pattern.quote(baseFolderPath + File.separator), "");
+        return file.getAbsolutePath().replaceFirst(Pattern.quote(baseFolderPath + "/"), "");
     }
 
     /**
@@ -286,7 +286,7 @@ public class FileUtil {
      * @param baseFolderPath the path of the folder
      */
     private static String getFileRelativePath(String filePath, String baseFolderPath) {
-        return filePath.replaceFirst(Pattern.quote(baseFolderPath + File.separator), "");
+        return filePath.replaceFirst(Pattern.quote(baseFolderPath + "/"), "");
     }
 
     /**
