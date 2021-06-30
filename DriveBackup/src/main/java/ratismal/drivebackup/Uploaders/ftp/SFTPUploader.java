@@ -7,13 +7,11 @@ import ratismal.drivebackup.plugin.DriveBackup;
 import ratismal.drivebackup.util.MessageUtil;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 import net.schmizz.sshj.SSHClient;
-import net.schmizz.sshj.connection.channel.direct.Session;
 import net.schmizz.sshj.sftp.RemoteResourceInfo;
 import net.schmizz.sshj.sftp.StatefulSFTPClient;
 import net.schmizz.sshj.transport.verification.PromiscuousVerifier;
@@ -45,10 +43,10 @@ public class SFTPUploader {
         connect(ftp.hostname, ftp.port, ftp.username, ftp.password, ftp.publicKey, ftp.passphrase);
 
         _localBaseFolder = ".";
-        if (Config.getFtpDir() == null) {
-            _remoteBaseFolder = Config.getDestination();
+        if (ftp.baseDirectory.isBlank()) {
+            _remoteBaseFolder = config.backupStorage.remoteDirectory;
         } else {
-            _remoteBaseFolder = Config.getFtpDir() + File.separator + Config.getDestination();
+            _remoteBaseFolder = ftp.baseDirectory + "/" + config.backupStorage.remoteDirectory;
         }
     }
 
@@ -88,7 +86,7 @@ public class SFTPUploader {
 
         ArrayList<AuthMethod> sshAuthMethods = new ArrayList<>();
 
-        if (password != null) {
+        if (!password.isBlank()) {
             sshAuthMethods.add(new AuthPassword(new PasswordFinder() {
                 @Override
                 public char[] reqPassword(Resource<?> resource) {
@@ -102,14 +100,14 @@ public class SFTPUploader {
             }));
         }
 
-        if (publicKey != null) {
-            if (passphrase != null) {
+        if (!publicKey.isBlank()) {
+            if (!passphrase.isBlank()) {
                 sshAuthMethods.add(new AuthPublickey(sshClient.loadKeys(
-                        DriveBackup.getInstance().getDataFolder().getAbsolutePath() + File.separator + publicKey,
+                        DriveBackup.getInstance().getDataFolder().getAbsolutePath() + "/" + publicKey,
                         passphrase.toCharArray())));
             } else {
                 sshAuthMethods.add(new AuthPublickey(sshClient.loadKeys(
-                    DriveBackup.getInstance().getDataFolder().getAbsolutePath() + File.separator + publicKey)));
+                    DriveBackup.getInstance().getDataFolder().getAbsolutePath() + "/" + publicKey)));
             }
         }
 
@@ -174,12 +172,12 @@ public class SFTPUploader {
         resetWorkingDirectory();
         sftpClient.cd(_remoteBaseFolder);
 
-        File outputFile = new File(_localBaseFolder + File.separator + type);
+        File outputFile = new File(_localBaseFolder + "/" + type);
         if (!outputFile.exists()) {
             outputFile.mkdirs();
         }
 
-        sftpClient.get(filePath, _localBaseFolder + File.separator + type + File.separator + new File(filePath).getName());
+        sftpClient.get(filePath, _localBaseFolder + "/" + type + "/" + new File(filePath).getName());
     }
 
     /**

@@ -121,14 +121,14 @@ public class BackupList {
                 // Do nothing, assume true
             }
 
-            String[] blacklist;
-            try {
-                blacklist = (String[]) ((List<String>) rawListEntry.get("blacklist")).toArray();
-            } catch (Exception e) {
-                // Do nothing, blacklist not required
-                blacklist = new String[0];
+            String[] blacklist = new String[0];
+            if (rawListEntry.containsKey("blacklist")) {
+                try {
+                    blacklist = (String[]) ((List<String>) rawListEntry.get("blacklist")).toArray();
+                } catch (Exception e) {
+                    logger.log("Blacklist invalid in backup entry " + entryIndex + ", leaving blank");
+                }
             }
-
             
             list.add(new BackupListEntry(location, formatter, create, (String[]) blacklist));
         }

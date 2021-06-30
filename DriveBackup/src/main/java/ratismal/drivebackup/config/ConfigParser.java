@@ -1,5 +1,6 @@
 package ratismal.drivebackup.config;
 
+import java.nio.file.InvalidPathException;
 import java.util.List;
 
 import org.bukkit.command.CommandSender;
@@ -11,6 +12,7 @@ import ratismal.drivebackup.config.configSections.BackupMethods;
 import ratismal.drivebackup.config.configSections.BackupScheduling;
 import ratismal.drivebackup.config.configSections.BackupStorage;
 import ratismal.drivebackup.config.configSections.ExternalBackups;
+import ratismal.drivebackup.config.configSections.Messages;
 import ratismal.drivebackup.util.MessageUtil;
 
 public class ConfigParser {
@@ -24,6 +26,7 @@ public class ConfigParser {
         public final BackupList backupList;
         public final ExternalBackups externalBackups;
         public final BackupMethods backupMethods;
+        public final Messages messages;
         public final Advanced advanced;
     
         private Config(
@@ -32,6 +35,7 @@ public class ConfigParser {
             BackupList backupList,
             ExternalBackups externalBackups,
             BackupMethods backupMethods,
+            Messages messages,
             Advanced advanced
             ) {
     
@@ -40,6 +44,7 @@ public class ConfigParser {
             this.backupList = backupList;
             this.externalBackups = externalBackups;
             this.backupMethods = backupMethods;
+            this.messages = messages;
             this.advanced = advanced;
         }
     }
@@ -89,7 +94,18 @@ public class ConfigParser {
             BackupList.parse(config, logger),
             ExternalBackups.parse(config, logger),
             BackupMethods.parse(config, logger),
+            Messages.parse(config, logger),
             Advanced.parse(config, logger)
         );
+    }
+
+    public static String verifyPath(String path) throws InvalidPathException {
+        if (
+            path.contains("\\")
+        ) {
+            throw new InvalidPathException(path, "Path must use the unix file separator, \"/\"");
+        }
+
+        return path;
     }
 }

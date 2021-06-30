@@ -39,6 +39,8 @@ import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.Callable;
 
+import static ratismal.drivebackup.config.Localization.intl;
+
 /**
  * Created by Ratismal on 2016-01-22.
  */
@@ -141,9 +143,9 @@ public class UploadThread implements Runnable {
             return;
         }
 
-        setAutoSave(false);
+        ServerUtil.setAutoSave(false);
 
-        MessageUtil.sendMessageToAllPlayers(Config.getBackupStart());
+        MessageUtil.sendMessageToAllPlayers(intl("backup-start"));
 
 
         ArrayList<Uploader> uploaders = new ArrayList<Uploader>();
@@ -179,7 +181,7 @@ public class UploadThread implements Runnable {
                 if(err) { // an error occurred
                     backupStatus = BackupStatus.NOT_RUNNING;
                     errorOccurred = true;
-                    setAutoSave(true);
+                    ServerUtil.setAutoSave(true);
                     return;
                 }
             }
@@ -206,9 +208,9 @@ public class UploadThread implements Runnable {
         }
 
         if (initiator != null) {
-            MessageUtil.sendMessageToAllPlayers(Config.getBackupDone());
+            MessageUtil.sendMessageToAllPlayers(intl("backup-complete"));
         } else {
-            MessageUtil.sendMessageToAllPlayers(Config.getBackupDone() + " " + getNextAutoBackup());
+            MessageUtil.sendMessageToAllPlayers(intl("backup-complete") + " " + getNextAutoBackup());
         }
 
         if (config.backupStorage.backupsRequirePlayers && Bukkit.getOnlinePlayers().size() == 0 && PlayerListener.isAutoBackupsActive()) {
@@ -216,7 +218,7 @@ public class UploadThread implements Runnable {
             PlayerListener.setAutoBackupsActive(false);
         }
 
-        setAutoSave(true);
+        ServerUtil.setAutoSave(true);
 
         if (errorOccurred) {
             DriveBackupApi.backupError();
@@ -228,26 +230,26 @@ public class UploadThread implements Runnable {
     /**
      * Backs up a single folder
      * @param type Path to the folder
-     * @param format Save format configuration
+     * @param formatter Save format configuration
      * @param create Create the zip file or just upload it? ("True" / "False")
      * @param blackList configured blacklist (with globs)
      * @param uploaders All servies to upload to
      * @return True if any error occurred
      */
-    private Boolean doSingleBackup(String type, LocalDateTimeFormatter  format, boolean create, List<String> blackList, List<Uploader> uploaders) {
+    private Boolean doSingleBackup(String type, LocalDateTimeFormatter  formatter, boolean create, List<String> blackList, List<Uploader> uploaders) {
         MessageUtil.sendConsoleMessage("Doing backups for \"" + type + "\"");
         if (create) {
             backupStatus = BackupStatus.COMPRESSING;
 
             try {
-                FileUtil.makeBackup(type, format, blackList);
+                FileUtil.makeBackup(type, formatter, blackList);
             } catch (IllegalArgumentException exception) {
                 MessageUtil.sendMessageToPlayersWithPermission("Failed to create a backup, path to folder to backup is absolute, expected a relative path", "drivebackup.linkAccounts", Collections.singletonList(initiator), true);
                 MessageUtil.sendMessageToPlayersWithPermission("An absolute path can overwrite sensitive files, see the " + ChatColor.GOLD + "config.yml " + ChatColor.DARK_AQUA + "for more information", "drivebackup.linkAccounts", Collections.singletonList(initiator), true);
 
                 backupStatus = BackupStatus.NOT_RUNNING;
 
-                setAutoSave(true);
+                ServerUtil.setAutoSave(true);
 
                 return true;
             } catch (Exception exception) {
@@ -256,7 +258,7 @@ public class UploadThread implements Runnable {
 
                 backupStatus = BackupStatus.NOT_RUNNING;
 
-                setAutoSave(true);
+                ServerUtil.setAutoSave(true);
 
                 return true;
             }
@@ -269,7 +271,7 @@ public class UploadThread implements Runnable {
                 type = "root";
             }
 
-            File file = FileUtil.getNewestBackup(type, format);
+            File file = FileUtil.getNewestBackup(type, formatter);
             ratismal.drivebackup.util.Timer timer = new Timer();
 
 
@@ -285,7 +287,7 @@ public class UploadThread implements Runnable {
                 }
             }
 
-            FileUtil.deleteFiles(type, format);
+            FileUtil.deleteFiles(type, formatter);
         } catch (Exception e) {
             MessageUtil.sendConsoleException(e);
         }
@@ -323,8 +325,15 @@ public class UploadThread implements Runnable {
                 blacklist.add(blacklistEntry);
             }
 
-            for (String relativeFilePath : ftpUploader.getFiles(externalBackup.get("base-dir") + "/" + backup.get("path"))) {
-                String filePath = externalBackup.get("base-dir") + "/" + backup.get("path") + "/" + relativeFilePath;
+            String baseDirectory;
+            if (externalBackup.baseDirectory.isBlank()) {
+                baseDirectory = backup.path;
+            } else {
+                baseDirectory = externalBackup.baseDirectory + "/" + backup.path;
+            }
+
+            for (String relativeFilePath : ftpUploader.getFiles(baseDirectory)) {
+                String filePath = baseDirectory + "/" + relativeFilePath;
 
                 for (BlacklistEntry blacklistEntry : blacklist) {
                     if (blacklistEntry.getPathMatcher().matches(Paths.get(relativeFilePath))) {
@@ -337,12 +346,12 @@ public class UploadThread implements Runnable {
                 String parentFolder = new File(relativeFilePath).getParent();
                 String parentFolderPath;
                 if (parentFolder != null) {
-                    parentFolderPath = File.separator + parentFolder;
+                    parentFolderPath = "/" + parentFolder;
                 } else {
                     parentFolderPath = "";
                 }
 
-                ftpUploader.downloadFile(filePath, getTempFolderName(externalBackup) + File.separator + backup.get("path") + parentFolderPath);
+                ftpUploader.downloadFile(filePath, getTempFolderName(externalBackup) + "/" + backup.path + parentFolderPath);
             }
 
             for (BlacklistEntry blacklistEntry : blacklist) {
@@ -357,10 +366,12 @@ public class UploadThread implements Runnable {
 
         ftpUploader.close();
 
-        HashMap<String, Object> backup = new HashMap<>();
-        backup.put("path", "external-backups" + File.separator + getTempFolderName(externalBackup));
-        backup.put("format", externalBackup.get("format"));
-        backup.put("create", "true");
+        BackupListEntry backup = new BackupListEntry(
+            new PathBackupLocation("external-backups" + File.separator + getTempFolderName(externalBackup)),
+            externalBackup.format,
+            true,
+            new String[0]
+        );
         backupList.add(backup);
 
         if (ftpUploader.isErrorWhileUploading()) {
@@ -501,12 +512,12 @@ public class UploadThread implements Runnable {
                     .with(ChronoField.ALIGNED_WEEK_OF_YEAR, now.get(ChronoField.ALIGNED_WEEK_OF_YEAR));
             }
 
-            DateTimeFormatter backupDateFormatter = DateTimeFormatter.ofPattern(Config.getBackupNextScheduledFormat(), config.advanced.dateLanguage);
-            nextBackupMessage = Config.getBackupNextScheduled().replaceAll("%DATE", nextBackupDate.format(backupDateFormatter));
-        } else if (Config.getBackupDelay() != -1) {
-            nextBackupMessage = Config.getBackupNext().replaceAll("%TIME", String.valueOf(LocalDateTime.now().until(nextIntervalBackupTime, ChronoUnit.MINUTES)));
+            DateTimeFormatter backupDateFormatter = DateTimeFormatter.ofPattern(intl("next-schedule-backup-format"), config.advanced.dateLanguage);
+            nextBackupMessage = intl("next-schedule-backup").replaceAll("%DATE", nextBackupDate.format(backupDateFormatter));
+        } else if (config.backupStorage.delay != -1) {
+            nextBackupMessage = intl("next-backup").replaceAll("%TIME", String.valueOf(LocalDateTime.now().until(nextIntervalBackupTime, ChronoUnit.MINUTES)));
         } else {
-            nextBackupMessage = Config.getAutoBackupsDisabled();
+            nextBackupMessage = intl("auto-backups-disabled");
         }
 
         return nextBackupMessage;
@@ -554,24 +565,5 @@ public class UploadThread implements Runnable {
             }
         }
         return folder.delete();
-    }
-
-    /**
-     * Turns the server auto save on/off
-     * @param autoSave whether to save automatically
-     */
-    private static void setAutoSave(boolean autoSave) {
-        if (!ConfigParser.getConfig().backupStorage.disableSavingDuringBackups) {
-            return;
-        }
-
-        try {
-            Bukkit.getScheduler().callSyncMethod(DriveBackup.getInstance(), new Callable<Boolean>() {
-                @Override
-                public Boolean call() {
-                    return Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), autoSave ? "save-on" : "save-off");
-                }
-            }).get();
-        } catch (Exception exception) { }
     }
 }

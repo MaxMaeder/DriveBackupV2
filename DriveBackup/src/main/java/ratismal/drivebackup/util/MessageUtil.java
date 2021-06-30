@@ -11,8 +11,8 @@ import org.bukkit.entity.Player;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
-import ratismal.drivebackup.config.Config;
 import ratismal.drivebackup.config.ConfigParser;
+import ratismal.drivebackup.config.configSections.Messages;
 import ratismal.drivebackup.plugin.DriveBackup;
 
 public class MessageUtil {
@@ -24,7 +24,7 @@ public class MessageUtil {
     public static void sendMessageToAllPlayers(String message) {
         Bukkit.getConsoleSender().sendMessage(prefixMessage(message));
 
-        if (!Config.isSendMessagesInChat()) return;
+        if (!ConfigParser.getConfig().messages.sendInChat) return;
 
         message = translateMessageColors(message);
 
@@ -149,7 +149,9 @@ public class MessageUtil {
      * @return the prefixed message
      */
     private static String prefixMessage(String message) {
-        return translateMessageColors(Config.getMessagePrefix() + Config.getDefaultMessageColor()) + message;
+        Messages messages = ConfigParser.getConfig().messages;
+
+        return translateMessageColors(messages.prefix + messages.defaultColor) + message;
     }
 
     /**

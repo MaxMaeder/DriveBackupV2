@@ -4,6 +4,7 @@ import java.time.DayOfWeek;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.TextStyle;
 import java.time.temporal.ChronoField;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalAccessor;
@@ -90,12 +91,19 @@ public class Scheduler {
                 scheduleMessage.append(scheduleMessageTime.format(DateTimeFormatter.ofPattern("hh:mm a")));
                 scheduleMessage.append(" every ");
 
-                for (int i = 0; i < scheduleDays.size(); i++) {
+                for (int i = 0; i < entry.days.length; i++) {
                     if (i != 0) {
-                        scheduleMessage.append(", ");
+                        if (i == entry.days.length - 1) {
+                            scheduleMessage.append(" and ");
+                        } else {
+                            scheduleMessage.append(", ");
+                        }
                     }
-                    scheduleMessage.append(scheduleDays.get(i).substring(0, 1).toUpperCase() + scheduleDays.get(i).substring(1));
+
+                    String dayName = entry.days[i].getDisplayName(TextStyle.FULL, config.advanced.dateLanguage);
+                    scheduleMessage.append(dayName);
                 }
+
                 MessageUtil.sendConsoleMessage(scheduleMessage.toString());
             }
         } else if (config.backupStorage.delay != -1) {
