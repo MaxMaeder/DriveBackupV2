@@ -57,7 +57,7 @@ public class FTPUploader implements Uploader {
             }
 
             _localBaseFolder = ".";
-            if (ftp.baseDirectory.isBlank()) {
+            if (ftp.baseDirectory.trim().isEmpty()) {
                 _remoteBaseFolder = config.backupStorage.remoteDirectory;
             } else {
                 _remoteBaseFolder = ftp.baseDirectory + sep() + config.backupStorage.remoteDirectory;

@@ -326,7 +326,7 @@ public class UploadThread implements Runnable {
             }
 
             String baseDirectory;
-            if (externalBackup.baseDirectory.isBlank()) {
+            if (externalBackup.baseDirectory.trim().isEmpty()) {
                 baseDirectory = backup.path;
             } else {
                 baseDirectory = externalBackup.baseDirectory + "/" + backup.path;
