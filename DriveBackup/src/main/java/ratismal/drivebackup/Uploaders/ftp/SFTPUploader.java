@@ -43,7 +43,7 @@ public class SFTPUploader {
         connect(ftp.hostname, ftp.port, ftp.username, ftp.password, ftp.publicKey, ftp.passphrase);
 
         _localBaseFolder = ".";
-        if (ftp.baseDirectory.isBlank()) {
+        if (ftp.baseDirectory.trim().isEmpty()) {
             _remoteBaseFolder = config.backupStorage.remoteDirectory;
         } else {
             _remoteBaseFolder = ftp.baseDirectory + "/" + config.backupStorage.remoteDirectory;
@@ -86,7 +86,7 @@ public class SFTPUploader {
 
         ArrayList<AuthMethod> sshAuthMethods = new ArrayList<>();
 
-        if (!password.isBlank()) {
+        if (!password.trim().isEmpty()) {
             sshAuthMethods.add(new AuthPassword(new PasswordFinder() {
                 @Override
                 public char[] reqPassword(Resource<?> resource) {
@@ -100,8 +100,8 @@ public class SFTPUploader {
             }));
         }
 
-        if (!publicKey.isBlank()) {
-            if (!passphrase.isBlank()) {
+        if (!publicKey.trim().isEmpty()) {
+            if (!passphrase.trim().isEmpty()) {
                 sshAuthMethods.add(new AuthPublickey(sshClient.loadKeys(
                         DriveBackup.getInstance().getDataFolder().getAbsolutePath() + "/" + publicKey,
                         passphrase.toCharArray())));

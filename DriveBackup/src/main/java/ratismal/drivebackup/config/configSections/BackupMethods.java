@@ -99,7 +99,7 @@ public class BackupMethods {
         boolean ftpEnabled = config.getBoolean("ftp.enabled");
 
         String publicKey = "";
-        if (!config.getString("ftp.sftp-public-key").isBlank() && ftpEnabled) {
+        if (!config.getString("ftp.sftp-public-key").trim().isEmpty() && ftpEnabled) {
             try {
                 publicKey = ConfigParser.verifyPath(config.getString("ftp.sftp-public-key"));
             } catch (Exception e) {
@@ -108,7 +108,7 @@ public class BackupMethods {
         }
 
         String baseDir = "";
-        if (!config.getString("ftp.base-dir").isBlank() && ftpEnabled) {
+        if (!config.getString("ftp.base-dir").trim().isEmpty() && ftpEnabled) {
             try {
                 baseDir = ConfigParser.verifyPath(config.getString("ftp.base-dir"));
             } catch (Exception e) {
