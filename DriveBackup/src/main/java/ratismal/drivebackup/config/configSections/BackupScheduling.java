@@ -102,7 +102,7 @@ public class BackupScheduling {
                 ));
         }
 
-        if (rawSchedule.size() == 0) {
+        if (rawSchedule.size() == 0 && enabled) {
             logger.log("Backup schedule empty, disabling schedule-based backups");
             enabled = false;
         }
