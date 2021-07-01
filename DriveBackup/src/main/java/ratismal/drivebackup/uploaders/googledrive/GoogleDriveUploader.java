@@ -1,4 +1,4 @@
-package ratismal.drivebackup.Uploaders.googledrive;
+package ratismal.drivebackup.uploaders.googledrive;
 
 import com.google.api.client.auth.oauth2.BearerToken;
 import com.google.api.client.auth.oauth2.Credential;
@@ -20,10 +20,9 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
-import ratismal.drivebackup.Uploaders.Uploader;
+import ratismal.drivebackup.uploaders.Uploader;
 import ratismal.drivebackup.config.ConfigParser;
 import ratismal.drivebackup.plugin.DriveBackup;
-import ratismal.drivebackup.plugin.Scheduler;
 import ratismal.drivebackup.util.MessageUtil;
 import ratismal.drivebackup.util.SchedulerUtil;
 
@@ -31,6 +30,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -183,7 +183,6 @@ public class GoogleDriveUploader implements Uploader {
                             plugin.saveConfig();
                             
                             DriveBackup.reloadLocalConfig();
-                            Scheduler.startBackupThread();
                         }
                         
                         Bukkit.getScheduler().cancelTask(task[0]);
@@ -198,6 +197,9 @@ public class GoogleDriveUploader implements Uploader {
                     }
                 }
             }, responseCheckDelay, responseCheckDelay);
+        } catch (UnknownHostException exception) {
+            MessageUtil.sendMessageToPlayersWithPermission("Failed to link your Google Drive account,, check your network connection", "drivebackup.linkAccounts", true);
+            
         } catch (Exception e) {
             MessageUtil.sendMessage(initiator, "Failed to link your Google Drive account");
         
@@ -308,6 +310,8 @@ public class GoogleDriveUploader implements Uploader {
             TimeUnit.SECONDS.sleep(5);
                 
             service.files().delete(fileId).execute();
+        } catch (UnknownHostException exception) {
+            MessageUtil.sendMessageToPlayersWithPermission("Failed to upload test file to Google Drive, check your network connection", "drivebackup.linkAccounts", true);
         } catch (Exception e) {
             MessageUtil.sendConsoleException(e);
             setErrorOccurred(true);
@@ -334,10 +338,16 @@ public class GoogleDriveUploader implements Uploader {
                     continue;
                 }
 
-                if (folder == null) {
-                    folder = createFolder(typeFolder);
-                } else {
-                    folder = createFolder(typeFolder, folder);
+                try {
+                    if (folder == null) {
+                        folder = createFolder(typeFolder);
+                    } else {
+                        folder = createFolder(typeFolder, folder);
+                    }
+                } catch (Exception exception) {
+                    MessageUtil.sendConsoleMessage("Failed to create folder(s) in Google Drive, these folders MUST NOT exist before the plugin creates them.");
+
+                    throw exception;
                 }
             }
 
@@ -355,8 +365,10 @@ public class GoogleDriveUploader implements Uploader {
             service.files().insert(fileMetadata, fileContent).execute();
 
             deleteFiles(folder);
-        } catch(Exception error) {;
-            error.printStackTrace();
+        } catch (UnknownHostException exception) {
+            MessageUtil.sendMessageToPlayersWithPermission("Failed to upload backup to Google Drive, check your network connection", "drivebackup.linkAccounts", true);
+            setErrorOccurred(true);
+        } catch(Exception error) {
             MessageUtil.sendConsoleException(error);
             setErrorOccurred(true);
         }

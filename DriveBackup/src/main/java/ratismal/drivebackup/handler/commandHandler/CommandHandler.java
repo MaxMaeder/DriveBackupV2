@@ -9,9 +9,9 @@ import org.bukkit.entity.Player;
 
 import ratismal.drivebackup.TestThread;
 import ratismal.drivebackup.UploadThread;
-import ratismal.drivebackup.Uploaders.dropbox.DropboxUploader;
-import ratismal.drivebackup.Uploaders.googledrive.GoogleDriveUploader;
-import ratismal.drivebackup.Uploaders.onedrive.OneDriveUploader;
+import ratismal.drivebackup.uploaders.dropbox.DropboxUploader;
+import ratismal.drivebackup.uploaders.googledrive.GoogleDriveUploader;
+import ratismal.drivebackup.uploaders.onedrive.OneDriveUploader;
 import ratismal.drivebackup.config.Permissions;
 import ratismal.drivebackup.handler.DebugCollector;
 import ratismal.drivebackup.plugin.DriveBackup;

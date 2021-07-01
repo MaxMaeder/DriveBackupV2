@@ -1,4 +1,4 @@
-package ratismal.drivebackup.Uploaders.ftp;
+package ratismal.drivebackup.uploaders.ftp;
 
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
@@ -7,7 +7,7 @@ import org.apache.commons.net.ftp.FTPSClient;
 import org.bukkit.ChatColor;
 
 import net.kyori.adventure.text.Component;
-import ratismal.drivebackup.Uploaders.Uploader;
+import ratismal.drivebackup.uploaders.Uploader;
 import ratismal.drivebackup.config.ConfigParser;
 import ratismal.drivebackup.config.ConfigParser.Config;
 import ratismal.drivebackup.config.configSections.BackupMethods.FTPBackupMethod;
@@ -17,6 +17,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
+import java.net.UnknownHostException;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -161,6 +162,8 @@ public class FTPUploader implements Uploader {
                     
                 ftpClient.deleteFile(testFile.getName());
             }
+        } catch (UnknownHostException exception) {
+            MessageUtil.sendMessageToPlayersWithPermission("Failed to upload test file to FTP, check your network connection", "drivebackup.linkAccounts", true);
         } catch (Exception e) {
             MessageUtil.sendConsoleException(e);
             setErrorOccurred(true);
@@ -192,6 +195,9 @@ public class FTPUploader implements Uploader {
             deleteFiles(type);
 
             ftpClient.disconnect();
+        } catch (UnknownHostException exception) {
+            MessageUtil.sendMessageToPlayersWithPermission("Failed to upload backup to FTP, check your network connection", "drivebackup.linkAccounts", true);
+            setErrorOccurred(true);
         } catch (Exception e) {
             MessageUtil.sendConsoleException(e);
             setErrorOccurred(true);
