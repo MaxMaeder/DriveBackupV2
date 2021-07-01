@@ -1,4 +1,4 @@
-package ratismal.drivebackup.Uploaders.ftp;
+package ratismal.drivebackup.uploaders.ftp;
 
 import ratismal.drivebackup.config.ConfigParser;
 import ratismal.drivebackup.config.ConfigParser.Config;
@@ -8,6 +8,7 @@ import ratismal.drivebackup.util.MessageUtil;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.net.UnknownHostException;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -133,7 +134,7 @@ public class SFTPUploader {
      * @param testFileSize the size (in bytes) of the file
      * @throws Exception
      */
-    public void test(File testFile) throws Exception {
+    public void test(File testFile) {
         try (FileOutputStream fos = new FileOutputStream(testFile)) {
             resetWorkingDirectory();
             createThenEnter(_remoteBaseFolder);
@@ -143,6 +144,8 @@ public class SFTPUploader {
             TimeUnit.SECONDS.sleep(5);
             
             sftpClient.rm(testFile.getName());
+        } catch (UnknownHostException exception) {
+            MessageUtil.sendMessageToPlayersWithPermission("Failed to upload test file to SFTP, check your network connection", "drivebackup.linkAccounts", true);
         } catch (Exception e) {
             MessageUtil.sendConsoleException(e);
         }
@@ -154,7 +157,7 @@ public class SFTPUploader {
      * @param type the type of file (ex. plugins, world)
      * @throws Exception
      */
-    public void uploadFile(File file, String type) throws Exception {
+    public void uploadFile(File file, String type) throws Exception, UnknownHostException {
         resetWorkingDirectory();
         createThenEnter(_remoteBaseFolder);
         createThenEnter(type);

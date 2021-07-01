@@ -166,19 +166,19 @@ public class MessageUtil {
      */
     private static Component prefixMessage(Component message) {
         return Component.text()
-                .append(
-                    Component.text("[")
-                    .color(NamedTextColor.GOLD)
-                )
-                .append(
-                    Component.text("DriveBackupV2")
-                    .color(NamedTextColor.DARK_RED)
-                )
-                .append(
-                    Component.text("] "))
-                    .color(NamedTextColor.GOLD)
-                .append(message)
-                .build();
+            .append(
+                Component.text("[")
+                .color(NamedTextColor.GOLD)
+            )
+            .append(
+                Component.text("DriveBackupV2")
+                .color(NamedTextColor.DARK_RED)
+            )
+            .append(
+                Component.text("] "))
+                .color(NamedTextColor.GOLD)
+            .append(message)
+            .build();
     }
 
     /**

@@ -1,4 +1,4 @@
-package ratismal.drivebackup.Uploaders.onedrive;
+package ratismal.drivebackup.uploaders.onedrive;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
@@ -17,14 +17,14 @@ import org.bukkit.command.CommandSender;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import ratismal.drivebackup.Uploaders.Uploader;
+import ratismal.drivebackup.uploaders.Uploader;
 import ratismal.drivebackup.config.ConfigParser;
 import ratismal.drivebackup.plugin.DriveBackup;
-import ratismal.drivebackup.plugin.Scheduler;
 import ratismal.drivebackup.util.MessageUtil;
 import ratismal.drivebackup.util.SchedulerUtil;
 
 import java.io.*;
+import java.net.UnknownHostException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -50,7 +50,6 @@ public class OneDriveUploader implements Uploader {
         .connectTimeout(1, TimeUnit.MINUTES)
         .writeTimeout(3, TimeUnit.MINUTES)
         .readTimeout(3, TimeUnit.MINUTES)
-        //.addInterceptor(new HttpLogger())
         .build();
     private static final MediaType zipMediaType = MediaType.parse("application/zip; charset=utf-8");
     private static final MediaType jsonMediaType = MediaType.parse("application/json; charset=utf-8");
@@ -69,7 +68,7 @@ public class OneDriveUploader implements Uploader {
      * Location of the authenticated user's stored OneDrive refresh token
      */
     private static final String CLIENT_JSON_PATH = DriveBackup.getInstance().getDataFolder().getAbsolutePath()
-            + "/OneDriveCredential.json";
+        + "/OneDriveCredential.json";
 
     /**
      * OneDrive API credentials
@@ -103,27 +102,27 @@ public class OneDriveUploader implements Uploader {
         long responseCheckDelay = SchedulerUtil.sToTicks(parsedResponse.getLong("interval"));
 
         MessageUtil.sendMessage(initiator, Component.text()
-                .append(
-                    Component.text("To link your OneDrive account, go to ")
-                    .color(NamedTextColor.DARK_AQUA)
-                )
-                .append(
-                    Component.text(verificationUrl)
-                    .color(NamedTextColor.GOLD)
-                    .hoverEvent(HoverEvent.showText(Component.text("Go to URL")))
-                    .clickEvent(ClickEvent.openUrl(verificationUrl))
-                )
-                .append(
-                    Component.text(" and enter code ")
-                    .color(NamedTextColor.DARK_AQUA)
-                )
-                .append(
-                    Component.text(userCode)
-                    .color(NamedTextColor.GOLD)
-                    .hoverEvent(HoverEvent.showText(Component.text("Copy code")))
-                    .clickEvent(ClickEvent.copyToClipboard(userCode))
-                )
-                .build());
+            .append(
+                Component.text("To link your OneDrive account, go to ")
+                .color(NamedTextColor.DARK_AQUA)
+            )
+            .append(
+                Component.text(verificationUrl)
+                .color(NamedTextColor.GOLD)
+                .hoverEvent(HoverEvent.showText(Component.text("Go to URL")))
+                .clickEvent(ClickEvent.openUrl(verificationUrl))
+            )
+            .append(
+                Component.text(" and enter code ")
+                .color(NamedTextColor.DARK_AQUA)
+            )
+            .append(
+                Component.text(userCode)
+                .color(NamedTextColor.GOLD)
+                .hoverEvent(HoverEvent.showText(Component.text("Copy code")))
+                .clickEvent(ClickEvent.copyToClipboard(userCode))
+            )
+            .build());
 
         final int[] task = new int[]{-1};
         task[0] = plugin.getServer().getScheduler().scheduleSyncRepeatingTask(plugin, new Runnable() {
@@ -174,7 +173,6 @@ public class OneDriveUploader implements Uploader {
                         plugin.saveConfig();
                         
                         DriveBackup.reloadLocalConfig();
-                        Scheduler.startBackupThread();
                     }
                     
                     Bukkit.getScheduler().cancelTask(task[0]);
@@ -287,8 +285,10 @@ public class OneDriveUploader implements Uploader {
             if (statusCode != 204) {
                 setErrorOccurred(true);
             }
-        } catch (Exception e) {
-            MessageUtil.sendConsoleException(e);
+        } catch (UnknownHostException exception) {
+            MessageUtil.sendMessageToPlayersWithPermission("Failed to upload test file to OneDrive, check your network connection", "drivebackup.linkAccounts", true);
+        } catch (Exception exception) {
+            MessageUtil.sendConsoleException(exception);
             setErrorOccurred(true);
         }
     }
@@ -368,6 +368,9 @@ public class OneDriveUploader implements Uploader {
             }
 
             deleteFiles(folder);
+        } catch (UnknownHostException exception) {
+            MessageUtil.sendMessageToPlayersWithPermission("Failed to upload backup to OneDrive, check your network connection", "drivebackup.linkAccounts", true);
+            setErrorOccurred(true);
         } catch(Exception error) {
             MessageUtil.sendConsoleException(error);
             setErrorOccurred(true);
@@ -407,17 +410,17 @@ public class OneDriveUploader implements Uploader {
     public Component getSetupInstructions()
     {
         return Component.text()
-                    .append(
-                        Component.text("Failed to backup to OneDrive, please run ")
-                        .color(NamedTextColor.DARK_AQUA)
-                    )
-                    .append(
-                        Component.text("/drivebackup linkaccount onedrive")
-                        .color(NamedTextColor.GOLD)
-                        .hoverEvent(HoverEvent.showText(Component.text("Run command")))
-                        .clickEvent(ClickEvent.runCommand("/drivebackup linkaccount onedrive"))
-                    )
-                    .build();
+            .append(
+                Component.text("Failed to backup to OneDrive, please run ")
+                .color(NamedTextColor.DARK_AQUA)
+            )
+            .append(
+                Component.text("/drivebackup linkaccount onedrive")
+                .color(NamedTextColor.GOLD)
+                .hoverEvent(HoverEvent.showText(Component.text("Run command")))
+                .clickEvent(ClickEvent.runCommand("/drivebackup linkaccount onedrive"))
+            )
+            .build();
     }
 
 
@@ -632,7 +635,6 @@ public class OneDriveUploader implements Uploader {
          * Creates a reference of the {@code File} object
          */
         File() {
-
         }
 
         /**
