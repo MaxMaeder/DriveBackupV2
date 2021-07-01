@@ -44,8 +44,8 @@ public class DriveBackup extends JavaPlugin {
         localizationConfig.saveDefaultConfig();
         localization = new Localization(localizationConfig.getConfig());
 
-        getCommand("drivebackup").setTabCompleter(new CommandTabComplete(plugin));
-        getCommand("drivebackup").setExecutor(new CommandHandler(plugin));
+        getCommand(CommandHandler.CHAT_KEYWORD).setTabCompleter(new CommandTabComplete(plugin));
+        getCommand(CommandHandler.CHAT_KEYWORD).setExecutor(new CommandHandler(plugin));
         
         DriveBackup.adventure = BukkitAudiences.create(plugin);
 

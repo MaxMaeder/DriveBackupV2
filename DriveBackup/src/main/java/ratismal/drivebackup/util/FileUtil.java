@@ -14,7 +14,6 @@ import java.nio.file.PathMatcher;
 import java.nio.file.Paths;
 import java.time.ZonedDateTime;
 import java.util.*;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
@@ -187,7 +186,7 @@ public class FileUtil {
                         zipOutputStream.write(buffer, 0, len);
                     }
                 } catch (Exception e) {
-                    MessageUtil.sendConsoleMessage("Failed to include \"" + new File(inputFolderPath + "/" + file).getPath() + "\" in the backup, is it locked?");
+                    MessageUtil.sendConsoleMessage("Failed to include \"" + new File(inputFolderPath, file).getPath() + "\" in the backup, is it locked?");
                 }
 
                 zipOutputStream.closeEntry();
@@ -221,24 +220,28 @@ public class FileUtil {
     private static void generateFileList(File file, String inputFolderPath) throws Exception {
 
         if (file.isFile()) {
+            // Verify not backing up previous backups
             if (file.getCanonicalPath().startsWith(new File(ConfigParser.getConfig().backupStorage.localDirectory).getCanonicalPath())) {
                 backupFiles++;
 
                 return;
             }
 
+            Path relativePath = Paths.get(inputFolderPath).relativize(file.toPath());
+
             for (HashMap<String, Object> blacklistEntry : blacklist) {
                 PathMatcher pathMatcher = (PathMatcher) blacklistEntry.get("pathMatcher");
                 int blacklistedFiles = (int) blacklistEntry.get("blacklistedFiles");
 
-                if (pathMatcher.matches(Paths.get(getFileRelativePath(file.toString(), inputFolderPath)))) {
+                
+
+                if (pathMatcher.matches(relativePath)) {
                     blacklistEntry.put("blacklistedFiles", ++blacklistedFiles);
 
                     return;
                 }
             }
-
-            fileList.add(getFileRelativePath(file.toString(), inputFolderPath));
+            fileList.add(relativePath.toString());
         }
 
         if (file.isDirectory()) {
@@ -263,26 +266,6 @@ public class FileUtil {
             return list;
         }
         return list;
-    }
-
-    /**
-     * Gets the path of the specifed file relative to the specifed folder
-     * @param file the file
-     * @param baseFolderPath the absolute path of the folder
-     */
-    private static String getFileRelativePath(File file, String baseFolderPath) {
-        return file.getAbsolutePath().replaceFirst(Pattern.quote(baseFolderPath + "/"), "");
-    }
-
-    /**
-     * Gets the path of the specifed file relative to the specifed folder
-     * <p>
-     * Both paths mush be relative or both must be absolute
-     * @param file the file's path
-     * @param baseFolderPath the path of the folder
-     */
-    private static String getFileRelativePath(String filePath, String baseFolderPath) {
-        return filePath.replaceFirst(Pattern.quote(baseFolderPath + "/"), "");
     }
 
     /**
