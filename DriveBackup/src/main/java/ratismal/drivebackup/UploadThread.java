@@ -36,6 +36,8 @@ import java.time.temporal.ChronoField;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 
+import com.google.api.client.util.Strings;
+
 import static ratismal.drivebackup.config.Localization.intl;
 
 /**
@@ -160,9 +162,9 @@ public class UploadThread implements Runnable {
             uploaders.add(new FTPUploader());
         }
 
-        backupList = config.backupList.list;
+        backupList = Arrays.asList(config.backupList.list);
 
-        List<ExternalBackupSource> externalBackupList = config.externalBackups.sources;
+        List<ExternalBackupSource> externalBackupList = Arrays.asList(config.externalBackups.sources);
         for (ExternalBackupSource externalBackup : externalBackupList) {
             if (externalBackup instanceof ExternalFTPSource) {
                 makeExternalFileBackup((ExternalFTPSource) externalBackup);
@@ -323,7 +325,7 @@ public class UploadThread implements Runnable {
             }
 
             String baseDirectory;
-            if (externalBackup.baseDirectory.trim().isEmpty()) {
+            if (Strings.isNullOrEmpty(externalBackup.baseDirectory)) {
                 baseDirectory = backup.path;
             } else {
                 baseDirectory = externalBackup.baseDirectory + "/" + backup.path;
@@ -437,7 +439,7 @@ public class UploadThread implements Runnable {
             default:
         }
 
-        List<BackupListEntry> backupList = config.backupList.list;
+        List<BackupListEntry> backupList = Arrays.asList(config.backupList.list);
         String backupSetName = backupList.get(backupBackingUp).location.toString();
 
         backupStatusMessage.append("backup set \"" + backupSetName + "\", set " + (backupBackingUp + 1) + " of " + backupList.size());

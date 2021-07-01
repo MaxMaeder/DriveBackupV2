@@ -99,20 +99,20 @@ public class BackupMethods {
         boolean ftpEnabled = config.getBoolean("ftp.enabled");
 
         String publicKey = "";
-        if (Strings.isNullOrEmpty(config.getString("ftp.sftp-public-key")) && ftpEnabled) {
+        if (!Strings.isNullOrEmpty(config.getString("ftp.sftp-public-key")) && ftpEnabled) {
             try {
-                publicKey = ConfigParser.verifyPath(config.getString("ftp.sftp-public-key").trim());
+                publicKey = ConfigParser.verifyPath(config.getString("ftp.sftp-public-key"));
             } catch (Exception e) {
-                // TODO:: ERROR
+                logger.log("Path to public key invalid for FTP backup method, leaving blank");
             }
         }
 
         String baseDir = "";
-        if (Strings.isNullOrEmpty(config.getString("ftp.base-dir")) && ftpEnabled) {
+        if (!Strings.isNullOrEmpty(config.getString("ftp.base-dir")) && ftpEnabled) {
             try {
-                baseDir = ConfigParser.verifyPath(config.getString("ftp.base-dir").trim());
+                baseDir = ConfigParser.verifyPath(config.getString("ftp.base-dir"));
             } catch (Exception e) {
-                // TODO:: ERROR
+                logger.log("Passphrase invalid for FTP backup method, leaving blank");
             }
         }
 

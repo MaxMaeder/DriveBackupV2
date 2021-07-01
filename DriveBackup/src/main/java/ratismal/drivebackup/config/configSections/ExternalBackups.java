@@ -102,10 +102,10 @@ public class ExternalBackups {
         }
     }
 
-    public final List<ExternalBackupSource> sources;
+    public final ExternalBackupSource[] sources;
 
     private ExternalBackups(
-        List<ExternalBackupSource> sources
+        ExternalBackupSource[] sources
         ) {
 
         this.sources = sources;
@@ -134,7 +134,7 @@ public class ExternalBackups {
             int port;
             try {
                 hostname = (String) rawListEntry.get("hostname");
-                port = (int) rawListEntry.get("port");
+                port = (int) (Integer) rawListEntry.get("port");
             } catch (Exception e) {
                 logger.log("Hostname/port invalid, skipping external backup entry " + entryIndex);
                 continue;
@@ -212,12 +212,13 @@ public class ExternalBackups {
                             continue;
                         }
 
-                        String[] blacklist;
-                        try {
-                            blacklist = (String[]) ((List<String>) rawBackupListEntry.get("blacklist")).toArray();
-                        } catch (Exception e) {
-                            // Do nothing, blacklist not required
-                            blacklist = new String[0];
+                        String[] blacklist = new String[0];
+                        if (rawBackupListEntry.containsKey("blacklist")) {
+                            try {
+                                blacklist = ((List<String>) rawBackupListEntry.get("blacklist")).toArray(new String[0]);
+                            } catch (Exception e) {
+                                logger.log("Blacklist invalid in external backup backup list entry " + entryBackupIndex + ", leaving blank");
+                            }
                         }
 
                         backupList.add(
@@ -237,7 +238,7 @@ public class ExternalBackups {
                             publicKey,
                             passphrase,
                             baseDirectory,
-                            (ExternalBackupListEntry[]) backupList.toArray()
+                            backupList.toArray(new ExternalBackupListEntry[0])
                             )
                         );
 
@@ -257,6 +258,8 @@ public class ExternalBackups {
             }
         }
 
-        return new ExternalBackups(list);
+        return new ExternalBackups(
+            list.toArray(new ExternalBackupSource[0])
+            );
     }
 }

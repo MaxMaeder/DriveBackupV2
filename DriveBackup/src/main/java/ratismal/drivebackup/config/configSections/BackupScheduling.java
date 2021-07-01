@@ -26,11 +26,11 @@ public class BackupScheduling {
     }
 
     public final boolean enabled;
-    public final List<BackupScheduleEntry> schedule;
+    public final BackupScheduleEntry[] schedule;
 
     public BackupScheduling(
         boolean enabled, 
-        List<BackupScheduleEntry> schedule
+        BackupScheduleEntry[] schedule
         ) {
 
         this.enabled = enabled;
@@ -111,7 +111,7 @@ public class BackupScheduling {
 
         return new BackupScheduling(
             enabled, 
-            schedule
+            schedule.toArray(new BackupScheduleEntry[0])
             );
     }
 }

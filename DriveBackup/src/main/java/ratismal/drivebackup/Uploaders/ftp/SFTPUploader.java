@@ -11,6 +11,8 @@ import java.io.FileOutputStream;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
+import com.google.api.client.util.Strings;
+
 import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.sftp.RemoteResourceInfo;
 import net.schmizz.sshj.sftp.StatefulSFTPClient;
@@ -43,7 +45,7 @@ public class SFTPUploader {
         connect(ftp.hostname, ftp.port, ftp.username, ftp.password, ftp.publicKey, ftp.passphrase);
 
         _localBaseFolder = ".";
-        if (ftp.baseDirectory.trim().isEmpty()) {
+        if (Strings.isNullOrEmpty(ftp.baseDirectory)) {
             _remoteBaseFolder = config.backupStorage.remoteDirectory;
         } else {
             _remoteBaseFolder = ftp.baseDirectory + "/" + config.backupStorage.remoteDirectory;
@@ -86,7 +88,7 @@ public class SFTPUploader {
 
         ArrayList<AuthMethod> sshAuthMethods = new ArrayList<>();
 
-        if (!password.trim().isEmpty()) {
+        if (!Strings.isNullOrEmpty(password)) {
             sshAuthMethods.add(new AuthPassword(new PasswordFinder() {
                 @Override
                 public char[] reqPassword(Resource<?> resource) {
@@ -100,8 +102,8 @@ public class SFTPUploader {
             }));
         }
 
-        if (!publicKey.trim().isEmpty()) {
-            if (!passphrase.trim().isEmpty()) {
+        if (!Strings.isNullOrEmpty(publicKey)) {
+            if (!Strings.isNullOrEmpty(passphrase)) {
                 sshAuthMethods.add(new AuthPublickey(sshClient.loadKeys(
                         DriveBackup.getInstance().getDataFolder().getAbsolutePath() + "/" + publicKey,
                         passphrase.toCharArray())));
