@@ -26,7 +26,7 @@ import java.util.zip.ZipOutputStream;
 public class FileUtil {
     private static final TreeMap<Long, File> backupList = new TreeMap<>();
     private static final List<String> fileList = new ArrayList<>();
-    private static ArrayList<HashMap<String, Object>> blacklist = new ArrayList<>();
+    private static List<BlacklistEntry> blacklist = new ArrayList<>();
     private static int backupFiles = 0;
 
     /**
@@ -81,11 +81,10 @@ public class FileUtil {
         blacklist.clear();
         backupFiles = 0;
         for (String blacklistGlob : blacklistGlobs) {
-            HashMap<String, Object> blacklistEntry = new HashMap<>();
-
-            blacklistEntry.put("globPattern", blacklistGlob);
-            blacklistEntry.put("pathMatcher", FileSystems.getDefault().getPathMatcher("glob:" + blacklistGlob));
-            blacklistEntry.put("blacklistedFiles", 0);
+            BlacklistEntry blacklistEntry = new BlacklistEntry(
+                blacklistGlob, 
+                FileSystems.getDefault().getPathMatcher("glob:" + blacklistGlob)
+                );
 
             blacklist.add(blacklistEntry);
         }
@@ -102,9 +101,9 @@ public class FileUtil {
 
         generateFileList(type);
 
-        for (HashMap<String, Object> blacklistEntry : blacklist) {
-            String globPattern = (String) blacklistEntry.get("globPattern");
-            int blacklistedFiles = (int) blacklistEntry.get("blacklistedFiles");
+        for (BlacklistEntry blacklistEntry : blacklist) {
+            String globPattern = blacklistEntry.getGlobPattern();
+            int blacklistedFiles = blacklistEntry.getBlacklistedFiles();
 
             if (blacklistedFiles > 0) {
                 MessageUtil.sendConsoleMessage("Didn't include " + blacklistedFiles + " file(s) in the backup, as they are blacklisted by \"" + globPattern + "\"");
@@ -229,14 +228,9 @@ public class FileUtil {
 
             Path relativePath = Paths.get(inputFolderPath).relativize(file.toPath());
 
-            for (HashMap<String, Object> blacklistEntry : blacklist) {
-                PathMatcher pathMatcher = (PathMatcher) blacklistEntry.get("pathMatcher");
-                int blacklistedFiles = (int) blacklistEntry.get("blacklistedFiles");
-
-                
-
-                if (pathMatcher.matches(relativePath)) {
-                    blacklistEntry.put("blacklistedFiles", ++blacklistedFiles);
+            for (BlacklistEntry blacklistEntry : blacklist) {
+                if (blacklistEntry.getPathMatcher().matches(relativePath)) {
+                    blacklistEntry.incrementBlacklistedFiles();
 
                     return;
                 }
