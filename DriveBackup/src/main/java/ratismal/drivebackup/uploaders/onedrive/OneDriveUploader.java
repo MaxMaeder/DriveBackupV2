@@ -18,10 +18,8 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import ratismal.drivebackup.uploaders.Uploader;
-import ratismal.drivebackup.config.Config;
+import ratismal.drivebackup.config.ConfigParser;
 import ratismal.drivebackup.plugin.DriveBackup;
-import ratismal.drivebackup.plugin.Scheduler;
-import ratismal.drivebackup.util.HttpLogger;
 import ratismal.drivebackup.util.MessageUtil;
 import ratismal.drivebackup.util.SchedulerUtil;
 
@@ -256,7 +254,7 @@ public class OneDriveUploader implements Uploader {
      */
     public void test(java.io.File testFile) {
         try {
-            String destination = Config.getDestination();
+            String destination = ConfigParser.getConfig().backupStorage.remoteDirectory;
             
             Request request = new Request.Builder()
                 .addHeader("Authorization", "Bearer " + returnAccessToken())
@@ -304,11 +302,11 @@ public class OneDriveUploader implements Uploader {
         try {
             resetRanges();
 
-            String destination = Config.getDestination();
+            String destination = ConfigParser.getConfig().backupStorage.remoteDirectory;
             
             ArrayList<String> typeFolders = new ArrayList<>();
-            Collections.addAll(typeFolders, destination.split(java.io.File.separator.replace("\\", "\\\\")));
-            Collections.addAll(typeFolders, type.split(java.io.File.separator.replace("\\", "\\\\")));
+            Collections.addAll(typeFolders, destination.split("/"));
+            Collections.addAll(typeFolders, type.split("/"));
 
             File folder = null;
 
@@ -581,7 +579,7 @@ public class OneDriveUploader implements Uploader {
      * @throws Exception
      */
     private void deleteFiles(File parent) throws Exception {
-        int fileLimit = Config.getKeepCount();
+        int fileLimit = ConfigParser.getConfig().backupStorage.keepCount;
 
         if (fileLimit == -1) {
             return;

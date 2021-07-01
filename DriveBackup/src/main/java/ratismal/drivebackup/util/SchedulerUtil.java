@@ -1,6 +1,9 @@
 package ratismal.drivebackup.util;
 
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.TemporalAccessor;
 import java.util.ArrayList;
+import java.util.Locale;
 
 import org.bukkit.Bukkit;
 
@@ -23,7 +26,16 @@ public class SchedulerUtil {
      * @param seconds the number of seconds
      * @return the number of game ticks
      */
-    public static long sToTicks(double seconds) {
-        return (long) seconds * TICKS_PER_SECOND;
+    public static long sToTicks(long seconds) {
+        return seconds * TICKS_PER_SECOND;
+    }
+
+    /**
+     * Parses the time
+     * @param time the time, as a String
+     * @return the parsed time
+     */
+    public static TemporalAccessor parseTime(String time) throws IllegalArgumentException {
+        return DateTimeFormatter.ofPattern("kk:mm", Locale.ENGLISH).parse(time);
     }
 }

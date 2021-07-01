@@ -2,7 +2,8 @@ package ratismal.drivebackup.uploaders.dropbox;
 
 import ratismal.drivebackup.util.MessageUtil;
 import ratismal.drivebackup.uploaders.Uploader;
-import ratismal.drivebackup.config.Config;
+import ratismal.drivebackup.config.ConfigParser;
+import ratismal.drivebackup.config.ConfigParser.Config;
 import ratismal.drivebackup.plugin.DriveBackup;
 
 import java.io.BufferedReader;
@@ -180,7 +181,7 @@ public class DropboxUploader implements Uploader {
             MediaType JSON = MediaType.parse("application/json; charset=utf-8");
 
             RequestBody requestBody = RequestBody.create(content, OCTET_STREAM);
-            String destination = Config.getDestination();
+            String destination = ConfigParser.getConfig().backupStorage.remoteDirectory;
 
             JSONObject dropbox_json = new JSONObject();
             dropbox_json.put("path", "/" + destination + "/" + testFile.getName());
@@ -236,7 +237,7 @@ public class DropboxUploader implements Uploader {
      * @param type the type of file (ex. plugins, world)
      */
     public void uploadFile(final java.io.File file, final String type) {
-        String destination = Config.getDestination();
+        String destination = ConfigParser.getConfig().backupStorage.remoteDirectory;
         int fileSize = (int) file.length();
         MediaType OCTET_STREAM = MediaType.parse("application/octet-stream");
 
@@ -371,8 +372,10 @@ public class DropboxUploader implements Uploader {
      * @throws Exception
      */
     private void deleteFiles(String type) throws Exception {
-        String destination = Config.getDestination();
-        int fileLimit = Config.getKeepCount();
+        Config config = ConfigParser.getConfig();
+
+        String destination = config.backupStorage.remoteDirectory;
+        int fileLimit = config.backupStorage.keepCount;
         if (fileLimit == -1) {
             return;
         }

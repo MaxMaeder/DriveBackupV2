@@ -1,6 +1,11 @@
 package ratismal.drivebackup.config;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 
 import ratismal.drivebackup.handler.commandHandler.BasicCommands;
 
@@ -23,5 +28,22 @@ public class Permissions {
             return false;
         }
         return true;
+    }
+
+    /**
+     * Returns a list of players with the specified permission
+     * @param permission the permission, as a {@code String}
+     * @return the list of players
+     */
+    public static List<CommandSender> getPlayersWithPerm(String permission) {
+        ArrayList<CommandSender> players = new ArrayList<>();
+
+        for (Player player : Bukkit.getServer().getOnlinePlayers()) {
+            if (player.hasPermission(permission)) {
+                players.add(player);
+            }
+        }
+
+        return players;
     }
 }

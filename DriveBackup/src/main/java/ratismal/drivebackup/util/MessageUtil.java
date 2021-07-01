@@ -11,7 +11,8 @@ import org.bukkit.entity.Player;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
-import ratismal.drivebackup.config.Config;
+import ratismal.drivebackup.config.ConfigParser;
+import ratismal.drivebackup.config.configSections.Messages;
 import ratismal.drivebackup.plugin.DriveBackup;
 
 public class MessageUtil {
@@ -23,7 +24,7 @@ public class MessageUtil {
     public static void sendMessageToAllPlayers(String message) {
         Bukkit.getConsoleSender().sendMessage(prefixMessage(message));
 
-        if (!Config.isSendMessagesInChat()) return;
+        if (!ConfigParser.getConfig().messages.sendInChat) return;
 
         message = translateMessageColors(message);
 
@@ -90,7 +91,7 @@ public class MessageUtil {
         players.addAll(additionalPlayers);
 
         for (Player player : Bukkit.getServer().getOnlinePlayers()) {
-            if (player.hasPermission("drivebackup.linkAccounts") && !players.contains(player)) {
+            if (player.hasPermission(permission) && !players.contains(player)) {
                 players.add(player);
             }
         }
@@ -137,7 +138,7 @@ public class MessageUtil {
      * @param exception Exception to send the stack trace of
      */
     public static void sendConsoleException(Exception exception) {
-    	if (Config.isDebug()) {
+    	if (ConfigParser.getConfig().advanced.suppressErrors) {
     		exception.printStackTrace();
     	}
     }
@@ -148,7 +149,14 @@ public class MessageUtil {
      * @return the prefixed message
      */
     private static String prefixMessage(String message) {
-        return translateMessageColors(Config.getMessagePrefix() + Config.getDefaultMessageColor()) + message;
+        Messages messages;
+        try {
+            messages = ConfigParser.getConfig().messages;
+        } catch (Exception exception) {
+            messages = Messages.defaultConfig();
+        }
+
+        return translateMessageColors(messages.prefix + messages.defaultColor) + message;
     }
 
     /**

@@ -5,14 +5,15 @@ import java.util.concurrent.Callable;
 
 import org.bstats.bukkit.*;
 
-import ratismal.drivebackup.config.Config;
+import ratismal.drivebackup.config.ConfigParser;
+import ratismal.drivebackup.config.ConfigParser.Config;
 import ratismal.drivebackup.util.MessageUtil;
 
 public class BstatsMetrics {
     public static final int METRICS_ID = 7537;
 
     public static void initMetrics() {
-        if (Config.isMetrics()) {
+        if (ConfigParser.getConfig().advanced.metricsEnabled) {
             try {
                 BstatsMetrics metrics = new BstatsMetrics(DriveBackup.getInstance());
                 metrics.updateMetrics();
@@ -31,12 +32,14 @@ public class BstatsMetrics {
     }
 
     public void updateMetrics() throws IOException {
+        Config config = ConfigParser.getConfig();
+
         metrics.addCustomChart(new Metrics.SimplePie("automaticBackupType", new Callable<String>() {
             @Override
             public String call() throws Exception {
-                if (Config.isBackupsScheduled()) {
+                if (config.backupScheduling.enabled) {
                     return "Schedule Based";
-                } else if (Config.getBackupDelay() != -1) {
+                } else if (config.backupStorage.delay != -1) {
                     return "Interval Based";
                 } else {
                     return "Not Enabled";
@@ -47,43 +50,47 @@ public class BstatsMetrics {
         metrics.addCustomChart(new Metrics.SimplePie("backupMethodEnabled", new Callable<String>() {
             @Override
             public String call() throws Exception {
-                return (Config.isGoogleDriveEnabled() || Config.isOneDriveEnabled() || Config.isFtpEnabled()) ? "Enabled" : "Disabled";
+                return enabled(
+                    config.backupMethods.googleDrive.enabled || 
+                    config.backupMethods.oneDrive.enabled || 
+                    config.backupMethods.dropbox.enabled ||
+                    config.backupMethods.ftp.enabled);
             }
         }));
 
         metrics.addCustomChart(new Metrics.SimplePie("googleDriveEnabled", new Callable<String>() {
             @Override
             public String call() throws Exception {
-                return Config.isGoogleDriveEnabled() ? "Enabled" : "Disabled";
+                return enabled(config.backupMethods.googleDrive.enabled);
             }
         }));
         
         metrics.addCustomChart(new Metrics.SimplePie("oneDriveEnabled", new Callable<String>() {
             @Override
             public String call() throws Exception {
-                return Config.isOneDriveEnabled() ? "Enabled" : "Disabled";
+                return enabled(config.backupMethods.oneDrive.enabled);
             }
         }));
 
         metrics.addCustomChart(new Metrics.SimplePie("dropboxEnabled", new Callable<String>() {
             @Override
             public String call() throws Exception {
-                return Config.isDropboxEnabled() ? "Enabled" : "Disabled";
+                return enabled(config.backupMethods.dropbox.enabled);
             }
         }));
 
         metrics.addCustomChart(new Metrics.SimplePie("ftpEnabled", new Callable<String>() {
             @Override
             public String call() throws Exception {
-                return Config.isFtpEnabled() ? "Enabled" : "Disabled";
+                return enabled(config.backupMethods.ftp.enabled);
             }
         }));
 
-        if (Config.isFtpEnabled()) {
+        if (config.backupMethods.ftp.enabled) {
             metrics.addCustomChart(new Metrics.SimplePie("sftpEnabledNew", new Callable<String>() {
                 @Override
                 public String call() throws Exception {
-                    return Config.isFtpSftp() ? "FTP using SSH" : "FTP";
+                    return config.backupMethods.ftp.sftp ? "FTP using SSH" : "FTP";
                 }
             }));
         }
@@ -91,8 +98,12 @@ public class BstatsMetrics {
         metrics.addCustomChart(new Metrics.SimplePie("updateCheckEnabled", new Callable<String>() {
             @Override
             public String call() throws Exception {
-                return Config.isUpdateCheck() ? "Enabled" : "Disabled";
+                return config.advanced.updateCheckEnabled ? "Enabled" : "Disabled";
             }
         }));
+    }
+
+    private String enabled(boolean enabled) {
+        return enabled ? "Enabled" : "Disabled";
     }
 }

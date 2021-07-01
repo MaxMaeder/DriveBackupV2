@@ -8,7 +8,9 @@ import org.bukkit.ChatColor;
 
 import net.kyori.adventure.text.Component;
 import ratismal.drivebackup.uploaders.Uploader;
-import ratismal.drivebackup.config.Config;
+import ratismal.drivebackup.config.ConfigParser;
+import ratismal.drivebackup.config.ConfigParser.Config;
+import ratismal.drivebackup.config.configSections.BackupMethods.FTPBackupMethod;
 import ratismal.drivebackup.util.MessageUtil;
 
 import java.io.File;
@@ -18,6 +20,8 @@ import java.io.OutputStream;
 import java.net.UnknownHostException;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+
+import com.google.api.client.util.Strings;
 
 /**
  * Created by Ratismal on 2016-03-30.
@@ -34,21 +38,32 @@ public class FTPUploader implements Uploader {
     private String _remoteBaseFolder;
 
     /**
+     * Returns the configured FTP file separator
+     * @return the separator
+     */
+    public static String sep() {
+        return ConfigParser.getConfig().advanced.fileSeparator;
+    }
+
+    /**
      * Creates an instance of the {@code FTPUploader} object using the server credentials specified by the user in the {@code config.yml}
      */
     public FTPUploader() {
         try {
-            if (Config.isFtpSftp()) {
+            Config config = ConfigParser.getConfig();
+            FTPBackupMethod ftp = config.backupMethods.ftp;
+
+            if (ftp.sftp) {
                 sftpClient = new SFTPUploader();
             } else {
-                connect(Config.getFtpHost(), Config.getFtpPort(), Config.getFtpUser(), Config.getFtpPass(), Config.isFtpFtps());
+                connect(ftp.hostname, ftp.port, ftp.username, ftp.password, ftp.ftps);
             }
 
             _localBaseFolder = ".";
-            if (Config.getFtpDir() == null) {
-                _remoteBaseFolder = Config.getDestination();
+            if (Strings.isNullOrEmpty(ftp.baseDirectory)) {
+                _remoteBaseFolder = config.backupStorage.remoteDirectory;
             } else {
-                _remoteBaseFolder = Config.getFtpDir() + File.separator + Config.getDestination();
+                _remoteBaseFolder = ftp.baseDirectory + sep() + config.backupStorage.remoteDirectory;
             }
         } catch (Exception e) {
             MessageUtil.sendConsoleException(e);
@@ -162,7 +177,7 @@ public class FTPUploader implements Uploader {
      */
     public void uploadFile(File file, String type) {
         try {
-            type = type.replace(".."  + File.separator, "");
+            type = type.replace(".."  + sep(), "");
 
             if (sftpClient != null) {
                 sftpClient.uploadFile(file, type);
@@ -204,12 +219,12 @@ public class FTPUploader implements Uploader {
             resetWorkingDirectory();
             ftpClient.changeWorkingDirectory(_remoteBaseFolder);
 
-            File outputFile = new File(_localBaseFolder + File.separator + type);
+            File outputFile = new File(_localBaseFolder + sep() + type);
             if (!outputFile.exists()) {
                 outputFile.mkdirs();
             }
 
-            OutputStream outputStream = new FileOutputStream(_localBaseFolder + File.separator + type + File.separator + new File(filePath).getName());
+            OutputStream outputStream = new FileOutputStream(_localBaseFolder + "/" + type + "/" + new File(filePath).getName());
             ftpClient.retrieveFile(filePath, outputStream);
 
             outputStream.flush();
@@ -240,7 +255,7 @@ public class FTPUploader implements Uploader {
             for (FTPFile file : ftpClient.mlistDir()) {
                 if (file.isDirectory()) {
                     // file.getName() = file path
-                    filePaths.addAll(prependToAll(getFiles(file.getName()), new File(file.getName()).getName() + File.separator));
+                    filePaths.addAll(prependToAll(getFiles(file.getName()), new File(file.getName()).getName() + sep()));
                 } else {
                     filePaths.add(file.getName());
                 }
@@ -287,7 +302,7 @@ public class FTPUploader implements Uploader {
      * @throws Exception
      */
     private void deleteFiles(String type) throws Exception {
-        int fileLimit = Config.getKeepCount();
+        int fileLimit = ConfigParser.getConfig().backupStorage.keepCount;
         if (fileLimit == -1) {
             return;
         }
@@ -337,15 +352,6 @@ public class FTPUploader implements Uploader {
      */
     private void resetWorkingDirectory() throws Exception {
         ftpClient.changeWorkingDirectory(initialRemoteFolder);
-    }
-
-    /**
-     * Replaces any file seperators in the specified path with the configured file seperator
-     * @param path the file path
-     * @return the file path with replaced seperators
-     */
-    private static String replaceFileSeperators(String path) {
-        return path.replace("/", Config.getFtpFileSeperator()).replace("\\", Config.getFtpFileSeperator());
     }
 
     /**
