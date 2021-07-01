@@ -72,10 +72,10 @@ public class BackupList {
         }
     }
 
-    public final List<BackupListEntry> list;
+    public final BackupListEntry[] list;
 
     public BackupList(
-        List<BackupListEntry> list
+        BackupListEntry[] list
         ) {
 
         this.list = list;
@@ -117,7 +117,7 @@ public class BackupList {
 
             boolean create = true;
             try {
-                create = (boolean) rawListEntry.get("create");
+                create = (boolean) (Boolean) rawListEntry.get("create");
             } catch (Exception e) { 
                 // Do nothing, assume true
             }
@@ -125,15 +125,15 @@ public class BackupList {
             String[] blacklist = new String[0];
             if (rawListEntry.containsKey("blacklist")) {
                 try {
-                    blacklist = (String[]) ((List<String>) rawListEntry.get("blacklist")).toArray();
+                    blacklist = ((List<String>) rawListEntry.get("blacklist")).toArray(new String[0]);
                 } catch (Exception e) {
                     logger.log("Blacklist invalid in backup entry " + entryIndex + ", leaving blank");
                 }
             }
             
-            list.add(new BackupListEntry(location, formatter, create, (String[]) blacklist));
+            list.add(new BackupListEntry(location, formatter, create, blacklist));
         }
 
-        return new BackupList(list);
+        return new BackupList(list.toArray(new BackupListEntry[0]));
     }
 }

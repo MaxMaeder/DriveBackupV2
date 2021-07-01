@@ -20,6 +20,8 @@ import java.io.OutputStream;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
+import com.google.api.client.util.Strings;
+
 /**
  * Created by Ratismal on 2016-03-30.
  */
@@ -57,7 +59,7 @@ public class FTPUploader implements Uploader {
             }
 
             _localBaseFolder = ".";
-            if (ftp.baseDirectory.trim().isEmpty()) {
+            if (Strings.isNullOrEmpty(ftp.baseDirectory)) {
                 _remoteBaseFolder = config.backupStorage.remoteDirectory;
             } else {
                 _remoteBaseFolder = ftp.baseDirectory + sep() + config.backupStorage.remoteDirectory;
