@@ -4,11 +4,12 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 
-import ratismal.drivebackup.Uploaders.Uploader;
-import ratismal.drivebackup.Uploaders.dropbox.DropboxUploader;
-import ratismal.drivebackup.Uploaders.ftp.FTPUploader;
-import ratismal.drivebackup.Uploaders.googledrive.GoogleDriveUploader;
-import ratismal.drivebackup.Uploaders.onedrive.OneDriveUploader;
+import ratismal.drivebackup.uploaders.Uploader;
+import ratismal.drivebackup.uploaders.dropbox.DropboxUploader;
+import ratismal.drivebackup.uploaders.ftp.FTPUploader;
+import ratismal.drivebackup.uploaders.googledrive.GoogleDriveUploader;
+import ratismal.drivebackup.uploaders.onedrive.OneDriveUploader;
+import ratismal.drivebackup.uploaders.mysql.MySQLUploader;
 import ratismal.drivebackup.config.ConfigParser;
 import ratismal.drivebackup.config.ConfigParser.Config;
 import ratismal.drivebackup.config.configSections.BackupList.BackupListEntry;
@@ -19,7 +20,6 @@ import ratismal.drivebackup.config.configSections.ExternalBackups.ExternalMySQLS
 import ratismal.drivebackup.config.configSections.ExternalBackups.ExternalFTPSource.ExternalBackupListEntry;
 import ratismal.drivebackup.config.configSections.ExternalBackups.ExternalMySQLSource.MySQLDatabaseBackup;
 import ratismal.drivebackup.handler.PlayerListener;
-import ratismal.drivebackup.mysql.MySQLUploader;
 import ratismal.drivebackup.plugin.Scheduler;
 import ratismal.drivebackup.util.*;
 import ratismal.drivebackup.util.Timer;
@@ -29,10 +29,8 @@ import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoField;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 
@@ -456,60 +454,15 @@ public class UploadThread implements Runnable {
         String nextBackupMessage = "";
 
         if (config.backupScheduling.enabled) {
+            long now = ZonedDateTime.now(config.advanced.dateTimezone).toEpochSecond();
 
-            ZonedDateTime nextBackupDate = null;
-
-            ZonedDateTime now = ZonedDateTime.now(config.advanced.dateTimezone);
-
-            int weeksCheckedForDate;
-            for (weeksCheckedForDate = 0; weeksCheckedForDate < 2; weeksCheckedForDate++) {
-                for (ZonedDateTime date : Scheduler.getBackupDatesList()) {
-
-                    if (nextBackupDate == null &&
-
-                        ((LocalTime.from(date).isAfter(LocalTime.from(now)) && // This might not work if time specified is 00:00
-                        date.getDayOfWeek().compareTo(now.getDayOfWeek()) == 0) ||
-
-                        date.getDayOfWeek().compareTo(now.getDayOfWeek()) > 0)
-                    ) {
-                        nextBackupDate = date;
-                        continue;
-                    }
-
-                    if (nextBackupDate != null &&
-
-                        ((LocalTime.from(date).isBefore(LocalTime.from(nextBackupDate)) && // This might not work if time specified is 00:00
-                        LocalTime.from(date).isAfter(LocalTime.from(now)) &&
-                        (date.getDayOfWeek().compareTo(nextBackupDate.getDayOfWeek()) == 0 ||
-                        date.getDayOfWeek().compareTo(now.getDayOfWeek()) == 0)) || 
-
-                        (date.getDayOfWeek().compareTo(nextBackupDate.getDayOfWeek()) < 0 &&
-                        date.getDayOfWeek().compareTo(now.getDayOfWeek()) > 0))
-                    ) {
-                        nextBackupDate = date;
-                    }
+            ZonedDateTime nextBackupDate = Collections.min(Scheduler.getBackupDatesList(), new Comparator<ZonedDateTime>() {
+                public int compare(ZonedDateTime d1, ZonedDateTime d2) {
+                    long diff1 = Math.abs(d1.toEpochSecond() - now);
+                    long diff2 = Math.abs(d2.toEpochSecond() - now);
+                    return Long.compare(diff1, diff2);
                 }
-
-                if (nextBackupDate != null) {
-                    break;
-                }
-
-                now = now
-                    .with(ChronoField.DAY_OF_WEEK, 1)
-                    .with(ChronoField.CLOCK_HOUR_OF_DAY, 1)
-                    .with(ChronoField.MINUTE_OF_HOUR, 0)
-                    .with(ChronoField.SECOND_OF_DAY, 0);
-            }
-
-            if (weeksCheckedForDate == 1) {
-                nextBackupDate = nextBackupDate
-                    .with(ChronoField.YEAR, now.get(ChronoField.YEAR))
-                    .with(ChronoField.ALIGNED_WEEK_OF_YEAR, now.get(ChronoField.ALIGNED_WEEK_OF_YEAR) + 1);
-            } else {
-                nextBackupDate = nextBackupDate
-                    .with(ChronoField.YEAR, now.get(ChronoField.YEAR))
-                    .with(ChronoField.ALIGNED_WEEK_OF_YEAR, now.get(ChronoField.ALIGNED_WEEK_OF_YEAR));
-            }
+            });
 
             DateTimeFormatter backupDateFormatter = DateTimeFormatter.ofPattern(intl("next-schedule-backup-format"), config.advanced.dateLanguage);
             nextBackupMessage = intl("next-schedule-backup").replaceAll("%DATE", nextBackupDate.format(backupDateFormatter));
