@@ -43,6 +43,6 @@ public class HttpLogger implements Interceptor {
     responseBody.close();
     MessageUtil.sendConsoleMessage("res: " + responseBodyString);
 
-    return response.newBuilder().body(ResponseBody.create(responseBodyContentType, responseBodyString)).build();
+    return response.newBuilder().body(ResponseBody.create(responseBodyString, responseBodyContentType)).build();
   }
 }

@@ -22,7 +22,7 @@ import ratismal.drivebackup.util.MessageUtil;
  */
 
 public class CommandHandler implements CommandExecutor {
-    private static final String CHAT_KEYWORD = "drivebackup";
+    public static final String CHAT_KEYWORD = "drivebackup";
 
     private DriveBackup plugin;
 

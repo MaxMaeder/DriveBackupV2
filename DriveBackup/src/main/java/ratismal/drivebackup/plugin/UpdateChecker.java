@@ -9,7 +9,7 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
-import ratismal.drivebackup.config.Config;
+import ratismal.drivebackup.config.ConfigParser;
 import ratismal.drivebackup.util.MessageUtil;
 import ratismal.drivebackup.util.SchedulerUtil;
 
@@ -19,7 +19,7 @@ public class UpdateChecker {
     /**
      * How often to check for updates, in seconds
      */
-    private static final double UPDATE_CHECK_INTERVAL = 60 * 60 * 4;
+    private static final long UPDATE_CHECK_INTERVAL = 60 * 60 * 4;
 
     /**
      * Global instance of the HTTP client
@@ -41,7 +41,7 @@ public class UpdateChecker {
 
                     @Override
                     public void run() {
-                        if (Config.isUpdateCheck()) {
+                        if (ConfigParser.getConfig().advanced.updateCheckEnabled) {
                             try {
                                 MessageUtil.sendConsoleMessage("Checking for updates...");
 

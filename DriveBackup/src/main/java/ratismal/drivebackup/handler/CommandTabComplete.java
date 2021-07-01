@@ -7,7 +7,8 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 
-import ratismal.drivebackup.config.Config;
+import ratismal.drivebackup.config.ConfigParser;
+import ratismal.drivebackup.config.configSections.BackupMethods;
 import ratismal.drivebackup.plugin.DriveBackup;
 
 /**
@@ -73,16 +74,18 @@ public class CommandTabComplete implements TabCompleter {
                 
                 List<String> commandList = new ArrayList<>();
 
-                if (Config.isGoogleDriveEnabled()) {
+                BackupMethods methods = ConfigParser.getConfig().backupMethods;
+
+                if (methods.googleDrive.enabled) {
                     commandList.add("googledrive");
                 }
-                if (Config.isOneDriveEnabled()) {
+                if (methods.oneDrive.enabled) {
                     commandList.add("onedrive");
                 }
-                if (Config.isDropboxEnabled()) {
+                if (methods.dropbox.enabled) {
                     commandList.add("dropbox");
                 }
-                if (Config.isFtpEnabled()) {
+                if (methods.ftp.enabled) {
                     commandList.add("ftp");
                 }
                 
