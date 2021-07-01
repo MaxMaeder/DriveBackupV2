@@ -439,10 +439,10 @@ public class UploadThread implements Runnable {
             default:
         }
 
-        List<BackupListEntry> backupList = Arrays.asList(config.backupList.list);
-        String backupSetName = backupList.get(backupBackingUp).location.toString();
+        BackupListEntry[] backupList = config.backupList.list;
+        String backupSetName = backupList[backupBackingUp].location.toString();
 
-        backupStatusMessage.append("backup set \"" + backupSetName + "\", set " + (backupBackingUp + 1) + " of " + backupList.size());
+        backupStatusMessage.append("backup set \"" + backupSetName + "\", set " + (backupBackingUp + 1) + " of " + backupList.length);
 
         return backupStatusMessage.toString();
     }
