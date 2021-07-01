@@ -1,5 +1,6 @@
 package ratismal.drivebackup.handler;
 
+import java.net.UnknownHostException;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
@@ -66,6 +67,8 @@ public class DebugCollector {
             String url = responseJson.getString("url");
 
             return url;
+        } catch (UnknownHostException e) {
+            return "Network error, check your connection";
         } catch (Exception e) {
             e.printStackTrace();
             return "Failed";

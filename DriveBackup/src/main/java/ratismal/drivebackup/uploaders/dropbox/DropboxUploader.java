@@ -1,11 +1,10 @@
-package ratismal.drivebackup.Uploaders.dropbox;
+package ratismal.drivebackup.uploaders.dropbox;
 
 import ratismal.drivebackup.util.MessageUtil;
-import ratismal.drivebackup.Uploaders.Uploader;
+import ratismal.drivebackup.uploaders.Uploader;
 import ratismal.drivebackup.config.ConfigParser;
 import ratismal.drivebackup.config.ConfigParser.Config;
 import ratismal.drivebackup.plugin.DriveBackup;
-import ratismal.drivebackup.plugin.Scheduler;
 
 import java.io.BufferedReader;
 import java.io.DataInputStream;
@@ -13,6 +12,7 @@ import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.net.UnknownHostException;
 import java.util.concurrent.TimeUnit;
 
 import org.bukkit.command.CommandSender;
@@ -125,7 +125,7 @@ public class DropboxUploader implements Uploader {
                             FileWriter file = new FileWriter(CLIENT_JSON_PATH);
                             file.write(jsonObject.toString());
                             file.close();
-                        } catch (IOException e) {
+                        } catch (IOException exception) {
                             errorOccured[0] = true;
                         }
 
@@ -133,7 +133,7 @@ public class DropboxUploader implements Uploader {
                         errorOccured[0] = true;
                     }
 
-                } catch (final Exception ex) {
+                } catch (Exception exception) {
                     errorOccured[0] = true;
                 }
                 return Prompt.END_OF_CONVERSATION;
@@ -155,7 +155,6 @@ public class DropboxUploader implements Uploader {
                             plugin.saveConfig();
 
                             DriveBackup.reloadLocalConfig();
-                            Scheduler.startBackupThread();
                         }
                     } else {
                         MessageUtil.sendMessage(initiator, "Failed to link your Dropbox account, please try again");
@@ -179,6 +178,8 @@ public class DropboxUploader implements Uploader {
             dis.readFully(content);
 
             MediaType OCTET_STREAM = MediaType.parse("application/octet-stream");
+            MediaType JSON = MediaType.parse("application/json; charset=utf-8");
+
             RequestBody requestBody = RequestBody.create(content, OCTET_STREAM);
             String destination = ConfigParser.getConfig().backupStorage.remoteDirectory;
 
@@ -203,7 +204,6 @@ public class DropboxUploader implements Uploader {
             
             TimeUnit.SECONDS.sleep(5);
 
-            MediaType JSON = MediaType.parse("application/json; charset=utf-8");
             JSONObject deleteJson = new JSONObject();
             deleteJson.put("path", "/" + destination + "/" + testFile.getName());
             RequestBody deleteRequestBody = RequestBody.create(deleteJson.toString(), JSON);
@@ -221,6 +221,8 @@ public class DropboxUploader implements Uploader {
             if (statusCode != 200) {
                 setErrorOccurred(true);
             }
+        } catch (UnknownHostException exception) {
+            MessageUtil.sendMessageToPlayersWithPermission("Failed to upload test file to Dropbox, check your network connection", "drivebackup.linkAccounts", true);
         } catch (Exception e) {
             MessageUtil.sendConsoleException(e);
             setErrorOccurred(true);
@@ -237,7 +239,6 @@ public class DropboxUploader implements Uploader {
     public void uploadFile(final java.io.File file, final String type) {
         String destination = ConfigParser.getConfig().backupStorage.remoteDirectory;
         int fileSize = (int) file.length();
-        int fileSizeInMB =  fileSize / (1024*1024);
         MediaType OCTET_STREAM = MediaType.parse("application/octet-stream");
 
         try (DataInputStream dis = new DataInputStream(new FileInputStream(file))) {
@@ -350,9 +351,12 @@ public class DropboxUploader implements Uploader {
 
                 deleteFiles(type);
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-            MessageUtil.sendConsoleException(e);
+        } catch (UnknownHostException exception) {
+            MessageUtil.sendMessageToPlayersWithPermission("Failed to upload backup to Dropbox, check your network connection", "drivebackup.linkAccounts", true);
+            setErrorOccurred(true);
+        } catch (Exception exception) {
+            exception.printStackTrace();
+            MessageUtil.sendConsoleException(exception);
             setErrorOccurred(true);
         }
     }
@@ -393,8 +397,7 @@ public class DropboxUploader implements Uploader {
         response.close();
 
         if (files.length() > fileLimit) {
-            MessageUtil.sendConsoleMessage(
-                "There are " + files.length() + " file(s) which exceeds the limit of " + fileLimit + ", deleting");
+            MessageUtil.sendConsoleMessage("There are " + files.length() + " file(s) which exceeds the limit of " + fileLimit + ", deleting");
             while (files.length() > fileLimit) {
                 JSONObject deleteJson = new JSONObject();
                 deleteJson.put("path", "/" + destination + "/" + type + "/" + files.getJSONObject(0).get("name"));
