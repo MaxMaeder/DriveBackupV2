@@ -49,7 +49,7 @@ public class BackupScheduling {
             try {
                 rawDays = (List<String>) rawScheduleEntry.get("days");
             } catch (Exception e) {
-                logger.log("Days list invalid, skipping schedule entry index " + entryIndex);
+                logger.log("Days list invalid, skipping schedule entry " + entryIndex);
                 continue;
             }
 
@@ -84,7 +84,7 @@ public class BackupScheduling {
             }
 
             if (days.size() == 0) {
-                logger.log("Day of week list empty, skipping schedule entry index " + entryIndex);
+                logger.log("Day of week list empty, skipping schedule entry " + entryIndex);
                 continue;
             }
 
@@ -92,12 +92,12 @@ public class BackupScheduling {
             try {
                 time = SchedulerUtil.parseTime((String) rawScheduleEntry.get("time"));
             } catch (Exception e) {
-                logger.log("Time invalid, skipping schedule entry");
+                logger.log("Time invalid, skipping schedule entry " + entryIndex);
                 continue;
             }
 
             schedule.add(new BackupScheduling.BackupScheduleEntry(
-                (DayOfWeek[]) days.toArray(),
+                days.toArray(new DayOfWeek[0]),
                 time
                 ));
         }

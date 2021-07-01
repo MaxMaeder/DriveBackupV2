@@ -6,10 +6,10 @@
 # Now available online at: https://github.com/MaxMaeder/DriveBackupV2/wiki
 
 delay: 60
-backup-thread-priority: 0
+backup-thread-priority: 1
 keep-count: 20
 local-keep-count: 0
-zip-compression: -1
+zip-compression: 1
 backups-require-players: true
 disable-saving-during-backups: true
 
