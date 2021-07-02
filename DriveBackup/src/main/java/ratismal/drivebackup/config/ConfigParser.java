@@ -83,9 +83,9 @@ public class ConfigParser {
     public void reload(List<CommandSender> initiators) {
         Logger logger = message -> {
             for (CommandSender initiator : initiators) {
-                MessageUtil.sendMessage(initiator, message);
+                new MessageUtil(message).to(initiator).toConsole(false).send();
             }
-            MessageUtil.sendConsoleMessage(message);
+            new MessageUtil(message).toConsole(true).send();
         };
 
         parsedConfig = new Config(

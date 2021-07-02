@@ -2,7 +2,9 @@ package ratismal.drivebackup.util;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -10,6 +12,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import ratismal.drivebackup.config.ConfigParser;
 import ratismal.drivebackup.config.configSections.Messages;
@@ -17,118 +20,89 @@ import ratismal.drivebackup.plugin.DriveBackup;
 
 public class MessageUtil {
 
+    private Set<CommandSender> recipients = new HashSet<CommandSender>();
+    private List<Component> message = new ArrayList<Component>();
+    private Boolean sendToConsole = true;
+
+    public MessageUtil() {
+    }
+
+    public MessageUtil(String text) {
+        message.add(Component.text(text, NamedTextColor.DARK_AQUA));
+    }
+
+    public MessageUtil(TextComponent component) {
+        message.add(component);
+    }
+
     /**
-     * Sends the specified message to all logged in players and the console
-     * @param message the message to send
+     * Adds a player to the list of recipients
+     * @param player the player to be added to the recipients
+     * @return the calling MessageUtil's instance
      */
-    public static void sendMessageToAllPlayers(String message) {
-        Bukkit.getConsoleSender().sendMessage(prefixMessage(message));
+    public MessageUtil to(CommandSender player) {
+        recipients.add(player);
+        return this;
+    }
+
+    /**
+     * Adds a list of players to the list of recipients
+     * @param players the list of players to be added to the recipients
+     * @return the calling MessageUtil's instance
+     */
+    public MessageUtil to(List<CommandSender> players) {
+        for (CommandSender player : players) {
+          recipients.add(player);
+        }
+        return this;
+    }
+
+    public MessageUtil toPerm(String permission) {
+        for (Player player : Bukkit.getServer().getOnlinePlayers()) {
+          if (player.hasPermission("drivebackup.linkAccounts") && !recipients.contains(player)) {
+              recipients.add(player);
+          }
+        }
+        return this;
+    }
+
+    public MessageUtil toConsole(Boolean value) {
+        sendToConsole = value;
+        return this;
+    }
+
+    /**
+     * Adds all online players to the list of recipients
+     * @return the calling MessageUtil's instance
+     */
+    public MessageUtil all() {
+        for (Player p : Bukkit.getOnlinePlayers()) {
+          recipients.add(p);
+        }
+        return this;
+    }
+
+    /**
+     * Sends the message to the recipients
+     */
+    public void send() {
+        TextComponent.Builder builtComponent = Component.text();
+        for (Component component : message) {
+            builtComponent.append(component);
+        }
+        String messageString = translateMessageColors(prefixMessage(builtComponent.content()));
+
+        if (sendToConsole) Bukkit.getConsoleSender().sendMessage(messageString);
 
         if (!ConfigParser.getConfig().messages.sendInChat) return;
 
-        message = translateMessageColors(message);
-
-        for (Player p : Bukkit.getOnlinePlayers()) {
-            p.sendMessage(prefixMessage(message));
-        }
-    }
-
-    /**
-     * Sends the specified message to all logged in players with the spacified permission
-     * @param message the message to send
-     * @param permission the permission
-     * @param sendToConsole whether to send the message to the server console as well
-     */
-    public static void sendMessageToPlayersWithPermission(String message, String permission, boolean sendToConsole) {
-        sendMessageToPlayersWithPermission(message, permission, Collections.emptyList(), sendToConsole);
-    }
-
-    /**
-     * Sends the specified message to all logged in players with the spacified permission and to players in the specified list
-     * @param message the message to send
-     * @param permission the permission
-     * @param additionalPlayers additional players to send the message to
-     * @param sendToConsole whether to send the message to the server console as well
-     */
-    public static void sendMessageToPlayersWithPermission(String message, String permission, List<CommandSender> additionalPlayers, boolean sendToConsole) {
-        ArrayList<CommandSender> players = new ArrayList<>();
-        players.addAll(additionalPlayers);
-
-        for (Player player : Bukkit.getServer().getOnlinePlayers()) {
-            if (player.hasPermission("drivebackup.linkAccounts") && !players.contains(player)) {
-                players.add(player);
-            }
-        }
-
-        for (CommandSender player : players) {
+        for (CommandSender player : recipients) {
             if (player == null) {
                 continue;
             }
-
-            sendMessage(player, message);
+                
+            player.sendMessage(messageString);
         }
-
-        if (sendToConsole) sendConsoleMessage(message);
-    }
-
-    /**
-     * Sends the specified message to all logged in players with the spacified permission
-     * @param message the message to send
-     * @param permission the permission
-     */
-    public static void sendMessageToPlayersWithPermission(Component message, String permission) {
-        sendMessageToPlayersWithPermission(message, permission, Collections.emptyList());
-    }
-
-    /**
-     * Sends the specified message to all logged in players with the spacified permission and to players in the specified list
-     * @param message the message to send
-     * @param permission the permission
-     * @param additionalPlayers additional players to send the message to
-     */
-    public static void sendMessageToPlayersWithPermission(Component message, String permission, List<CommandSender> additionalPlayers) {
-        ArrayList<CommandSender> players = new ArrayList<>();
-        players.addAll(additionalPlayers);
-
-        for (Player player : Bukkit.getServer().getOnlinePlayers()) {
-            if (player.hasPermission(permission) && !players.contains(player)) {
-                players.add(player);
-            }
-        }
-
-        for (CommandSender player : players) {
-            if (player == null) {
-                continue;
-            }
-
-            sendMessage(player, message);
-        }
-    }
-
-    /**
-     * Sends the specified message to the specified player
-     * @param player the player to send the message to
-     * @param message the message to send
-     */
-    public static void sendMessage(CommandSender player, String message) {
-        player.sendMessage(prefixMessage(message));
-    }
-
-    /**
-     * Sends the specified message to the specified player
-     * @param player the player to send the message to
-     * @param message the message to send
-     */
-    public static void sendMessage(CommandSender player, Component message) {
-        DriveBackup.adventure.sender(player).sendMessage(prefixMessage(message));
-    }
-
-    /**
-     * Sends the specified message to the server console
-     * @param message the message to send
-     */
-    public static void sendConsoleMessage(String message) {
-        Bukkit.getConsoleSender().sendMessage(prefixMessage(message));
     }
 
     /**
@@ -156,29 +130,7 @@ public class MessageUtil {
             messages = Messages.defaultConfig();
         }
 
-        return translateMessageColors(messages.prefix + messages.defaultColor) + message;
-    }
-
-    /**
-     * Prefixes the specified message with the plugin name
-     * @param message the message to prefix
-     * @return the prefixed message
-     */
-    private static Component prefixMessage(Component message) {
-        return Component.text()
-            .append(
-                Component.text("[")
-                .color(NamedTextColor.GOLD)
-            )
-            .append(
-                Component.text("DriveBackupV2")
-                .color(NamedTextColor.DARK_RED)
-            )
-            .append(
-                Component.text("] "))
-                .color(NamedTextColor.GOLD)
-            .append(message)
-            .build();
+        return messages.prefix + messages.defaultColor + message;
     }
 
     /**

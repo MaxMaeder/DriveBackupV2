@@ -17,31 +17,30 @@ public class HttpLogger implements Interceptor {
     Request request = chain.request();
 
     long t1 = System.nanoTime();
-    MessageUtil.sendConsoleMessage(
-        String.format("Sending request %s on %s%n%s", request.url(), chain.connection(), request.headers()));
+    new MessageUtil(String.format("Sending request %s on %s%n%s", request.url(), chain.connection(), request.headers())).toConsole(true).send();
 
     Response response = chain.proceed(request);
 
     long t2 = System.nanoTime();
-    MessageUtil.sendConsoleMessage(String.format("Received response for %s in %.1fms%n%s", response.request().url(), (t2 - t1) / 1e6d, response.headers()));
+    new MessageUtil(String.format("Received response for %s in %.1fms%n%s", response.request().url(), (t2 - t1) / 1e6d, response.headers())).toConsole(true).send();
 
     try {
       if (request.body().contentType().equals(jsonMediaType)) {
         final Buffer requestBody = new Buffer();
         request.body().writeTo(requestBody);
-        MessageUtil.sendConsoleMessage("req: " + requestBody.readUtf8());
+        new MessageUtil("req: " + requestBody.readUtf8()).toConsole(true).send();
       } else {
-        MessageUtil.sendConsoleMessage("req: not JSON");
+        new MessageUtil("req: not JSON").toConsole(true).send();
       }
     } catch (Exception exception) {
-      MessageUtil.sendConsoleMessage("req: none");
+      new MessageUtil("req: none").toConsole(true).send();
     }
 
     ResponseBody responseBody = response.body();
     String responseBodyString = responseBody.string();
     MediaType responseBodyContentType = responseBody.contentType();
     responseBody.close();
-    MessageUtil.sendConsoleMessage("res: " + responseBodyString);
+    new MessageUtil("res: " + responseBodyString).toConsole(true).send();
 
     return response.newBuilder().body(ResponseBody.create(responseBodyString, responseBodyContentType)).build();
   }
