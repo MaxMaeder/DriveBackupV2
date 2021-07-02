@@ -44,7 +44,7 @@ public class CommandHandler implements CommandExecutor {
      */
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (!(sender instanceof Player || sender instanceof ConsoleCommandSender || sender instanceof RemoteConsoleCommandSender)) {
-            MessageUtil.sendMessage(sender, "DriveBackupV2 only supports commands sent in-game and via the console");
+            new MessageUtil("DriveBackupV2 only supports commands sent in-game and via the console").to(sender).toConsole(false).send();
             return true;
         }
         if (!command.getName().equalsIgnoreCase(CHAT_KEYWORD)) {
@@ -66,17 +66,17 @@ public class CommandHandler implements CommandExecutor {
                 if (!Permissions.hasPerm(sender, Permissions.RELOAD_CONFIG)) break;
 
                 DriveBackup.reloadLocalConfig();
-                MessageUtil.sendMessage(sender, "Config reloaded!");
+                new MessageUtil("Config reloaded!").to(sender).toConsole(false).send();
 
                 break;
             case "debug":
                 if (!Permissions.hasPerm(sender, Permissions.RELOAD_CONFIG)) break;
 
-                MessageUtil.sendMessage(sender, "Generating Debug Log");
+                new MessageUtil("Generating Debug Log").to(sender).toConsole(false).send();
 
                 DebugCollector debugInfo = new DebugCollector(this.plugin);
                 String publishedUrl = debugInfo.publish(this.plugin);
-                MessageUtil.sendMessage(sender, "Debug URL: " + publishedUrl);
+                new MessageUtil("Debug URL: " + publishedUrl).to(sender).toConsole(false).send();
 
                 break;
             case "linkaccount":
@@ -95,7 +95,7 @@ public class CommandHandler implements CommandExecutor {
                         try {
                             OneDriveUploader.authenticateUser(plugin, sender);
                         } catch (Exception e) {
-                            MessageUtil.sendMessage(sender, "Failed to link your OneDrive account");
+                            new MessageUtil("Failed to link your OneDrive account").to(sender).toConsole(false).send();
                         
                             MessageUtil.sendConsoleException(e);
                         }
@@ -104,7 +104,7 @@ public class CommandHandler implements CommandExecutor {
                         try {
                             DropboxUploader.authenticateUser(plugin, sender);
                         } catch (Exception e) {
-                            MessageUtil.sendMessage(sender, "Failed to link your Dropbox account");
+                            new MessageUtil("Failed to link your Dropbox account").to(sender).toConsole(false).send();
 
                             MessageUtil.sendConsoleException(e);
                         }
@@ -117,20 +117,20 @@ public class CommandHandler implements CommandExecutor {
             case "status":
                 if (!Permissions.hasPerm(sender, Permissions.GET_BACKUP_STATUS)) break;
                 
-                MessageUtil.sendMessage(sender, UploadThread.getBackupStatus());
+                new MessageUtil(UploadThread.getBackupStatus()).to(sender).toConsole(false).send();
 
                 break;
             case "nextbackup":
                 if (!Permissions.hasPerm(sender, Permissions.GET_NEXT_BACKUP)) break;
 
-                MessageUtil.sendMessage(sender, UploadThread.getNextAutoBackup());
+                new MessageUtil(UploadThread.getNextAutoBackup()).to(sender).toConsole(false).send();
                 
 
                 break;
             case "backup":
                 if (!Permissions.hasPerm(sender, Permissions.BACKUP)) break;
 
-                MessageUtil.sendMessage(sender, "Forcing a backup");
+                new MessageUtil("Forcing a backup").to(sender).toConsole(false).send();
 
                 Runnable uploadThread = new UploadThread(sender);
                 new Thread(uploadThread).start();

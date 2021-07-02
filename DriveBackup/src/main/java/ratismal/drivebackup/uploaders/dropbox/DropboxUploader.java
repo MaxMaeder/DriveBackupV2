@@ -27,6 +27,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -76,14 +77,14 @@ public class DropboxUploader implements Uploader {
         Boolean[] errorOccured = {false};
         final String authorizeUrl = "https://www.dropbox.com/oauth2/authorize?token_access_type=offline&response_type=code&client_id="+APP_KEY;
 
-        MessageUtil.sendMessage(initiator,
-            Component.text()
-                .append(Component.text("To link your Dropbox account, go to ").color(NamedTextColor.DARK_AQUA))
-                .append(Component.text(authorizeUrl).color(NamedTextColor.GOLD)
-                    .hoverEvent(HoverEvent.showText(Component.text("Go to URL")))
-                    .clickEvent(ClickEvent.openUrl(authorizeUrl)))
-                .append(Component.text(" and paste the code here:").color(NamedTextColor.DARK_AQUA))
-                .build());
+        new MessageUtil(
+            Component.text("To link your Dropbox account, go to ")
+                .color(NamedTextColor.DARK_AQUA)
+            .append(Component.text(authorizeUrl).color(NamedTextColor.GOLD)
+                .hoverEvent(HoverEvent.showText(Component.text("Go to URL")))
+                .clickEvent(ClickEvent.openUrl(authorizeUrl)))
+            .append(Component.text(" and paste the code here:").color(NamedTextColor.DARK_AQUA))
+        ).to(initiator).toConsole(false).send();
 
         final Prompt getToken = new StringPrompt() {
 
@@ -147,20 +148,20 @@ public class DropboxUploader implements Uploader {
             .addConversationAbandonedListener((ConversationAbandonedEvent abandonedEvent) -> {
                 if (abandonedEvent.gracefulExit()) {
                     if (!errorOccured[0]) {
-                        MessageUtil.sendMessage(initiator, "Your Dropbox account is linked!");
+                        new MessageUtil("Your Dropbox account is linked!").to(initiator).toConsole(false).send();
 
                         if (!plugin.getConfig().getBoolean("dropbox.enabled")) {
-                            MessageUtil.sendMessage(initiator, "Automatically enabled Dropbox backups");
+                            new MessageUtil("Automatically enabled Dropbox backups").to(initiator).toConsole(false).send();
                             plugin.getConfig().set("dropbox.enabled", true);
                             plugin.saveConfig();
 
                             DriveBackup.reloadLocalConfig();
                         }
                     } else {
-                        MessageUtil.sendMessage(initiator, "Failed to link your Dropbox account, please try again");
+                        new MessageUtil("Failed to link your Dropbox account, please try again").to(initiator).toConsole(false).send();
                     }
                 } else {
-                    MessageUtil.sendMessage(initiator, "Abandoned Dropbox account linking");
+                    new MessageUtil("Abandoned Dropbox account linking").to(initiator).toConsole(false).send();
                 }
             });
 
@@ -222,7 +223,7 @@ public class DropboxUploader implements Uploader {
                 setErrorOccurred(true);
             }
         } catch (UnknownHostException exception) {
-            MessageUtil.sendMessageToPlayersWithPermission("Failed to upload test file to Dropbox, check your network connection", "drivebackup.linkAccounts", true);
+            new MessageUtil("Failed to upload test file to Dropbox, check your network connection").toPerm("drivebackup.linkAccounts").send();
         } catch (Exception e) {
             MessageUtil.sendConsoleException(e);
             setErrorOccurred(true);
@@ -352,7 +353,7 @@ public class DropboxUploader implements Uploader {
                 deleteFiles(type);
             }
         } catch (UnknownHostException exception) {
-            MessageUtil.sendMessageToPlayersWithPermission("Failed to upload backup to Dropbox, check your network connection", "drivebackup.linkAccounts", true);
+            new MessageUtil("Failed to upload backup to Dropbox, check your network connection").toPerm("drivebackup.linkAccounts").send();
             setErrorOccurred(true);
         } catch (Exception exception) {
             exception.printStackTrace();
@@ -397,7 +398,7 @@ public class DropboxUploader implements Uploader {
         response.close();
 
         if (files.length() > fileLimit) {
-            MessageUtil.sendConsoleMessage("There are " + files.length() + " file(s) which exceeds the limit of " + fileLimit + ", deleting");
+            new MessageUtil("There are " + files.length() + " file(s) which exceeds the limit of " + fileLimit + ", deleting").toConsole(true).send();
             while (files.length() > fileLimit) {
                 JSONObject deleteJson = new JSONObject();
                 deleteJson.put("path", "/" + destination + "/" + type + "/" + files.getJSONObject(0).get("name"));
@@ -478,7 +479,7 @@ public class DropboxUploader implements Uploader {
      * 
      * @return a Component explaining how to set up this uploader
      */
-    public Component getSetupInstructions() {
+    public TextComponent getSetupInstructions() {
         return Component.text()
             .append(Component.text("Failed to backup to Dropbox, please run ").color(NamedTextColor.DARK_AQUA))
             .append(Component.text("/drivebackup linkaccount dropbox").color(NamedTextColor.GOLD)

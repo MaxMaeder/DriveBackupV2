@@ -145,7 +145,7 @@ public class SFTPUploader {
             
             sftpClient.rm(testFile.getName());
         } catch (UnknownHostException exception) {
-            MessageUtil.sendMessageToPlayersWithPermission("Failed to upload test file to SFTP, check your network connection", "drivebackup.linkAccounts", true);
+            new MessageUtil("Failed to upload test file to SFTP, check your network connection").toPerm("drivebackup.linkAccounts").send();
         } catch (Exception e) {
             MessageUtil.sendConsoleException(e);
         }
@@ -223,7 +223,7 @@ public class SFTPUploader {
         TreeMap<Date, RemoteResourceInfo> files = getZipFiles();
 
         if (files.size() > fileLimit) {
-            MessageUtil.sendConsoleMessage("There are " + files.size() + " file(s) which exceeds the limit of " + fileLimit + ", deleting");
+            new MessageUtil("There are " + files.size() + " file(s) which exceeds the limit of " + fileLimit + ", deleting").toConsole(true).send();
 
             while (files.size() > fileLimit) {
                 sftpClient.rm(files.firstEntry().getValue().getName());

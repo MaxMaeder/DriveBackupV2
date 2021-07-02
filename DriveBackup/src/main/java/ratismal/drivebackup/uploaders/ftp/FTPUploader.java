@@ -7,6 +7,7 @@ import org.apache.commons.net.ftp.FTPSClient;
 import org.bukkit.ChatColor;
 
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
 import ratismal.drivebackup.uploaders.Uploader;
 import ratismal.drivebackup.config.ConfigParser;
 import ratismal.drivebackup.config.ConfigParser.Config;
@@ -163,7 +164,7 @@ public class FTPUploader implements Uploader {
                 ftpClient.deleteFile(testFile.getName());
             }
         } catch (UnknownHostException exception) {
-            MessageUtil.sendMessageToPlayersWithPermission("Failed to upload test file to FTP, check your network connection", "drivebackup.linkAccounts", true);
+            new MessageUtil("Failed to upload test file to FTP, check your network connection").toPerm("drivebackup.linkAccounts").send();
         } catch (Exception e) {
             MessageUtil.sendConsoleException(e);
             setErrorOccurred(true);
@@ -196,7 +197,7 @@ public class FTPUploader implements Uploader {
 
             ftpClient.disconnect();
         } catch (UnknownHostException exception) {
-            MessageUtil.sendMessageToPlayersWithPermission("Failed to upload backup to FTP, check your network connection", "drivebackup.linkAccounts", true);
+            new MessageUtil("Failed to upload backup to FTP, check your network connection").toPerm("drivebackup.linkAccounts").send();
             setErrorOccurred(true);
         } catch (Exception e) {
             MessageUtil.sendConsoleException(e);
@@ -289,7 +290,7 @@ public class FTPUploader implements Uploader {
      * Gets the setup instructions for this uploaders
      * @return a Component explaining how to set up this uploader
      */
-    public Component getSetupInstructions()
+    public TextComponent getSetupInstructions()
     {
         return Component.text("Failed to backup to the (S)FTP server, please check the server credentials in the " + ChatColor.GOLD + "config.yml");
     }
@@ -309,7 +310,7 @@ public class FTPUploader implements Uploader {
         TreeMap<Date, FTPFile> files = getZipFiles();
 
         if (files.size() > fileLimit) {
-            MessageUtil.sendConsoleMessage("There are " + files.size() + " file(s) which exceeds the limit of " + fileLimit + ", deleting");
+            new MessageUtil("There are " + files.size() + " file(s) which exceeds the limit of " + fileLimit + ", deleting").toConsole(true).send();
             while (files.size() > fileLimit) {
                 ftpClient.deleteFile(files.firstEntry().getValue().getName());
                 files.remove(files.firstKey());

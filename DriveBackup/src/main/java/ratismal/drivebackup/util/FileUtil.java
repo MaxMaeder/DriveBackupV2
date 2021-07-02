@@ -106,12 +106,12 @@ public class FileUtil {
             int blacklistedFiles = blacklistEntry.getBlacklistedFiles();
 
             if (blacklistedFiles > 0) {
-                MessageUtil.sendConsoleMessage("Didn't include " + blacklistedFiles + " file(s) in the backup, as they are blacklisted by \"" + globPattern + "\"");
+                new MessageUtil("Didn't include " + blacklistedFiles + " file(s) in the backup, as they are blacklisted by \"" + globPattern + "\"").toConsole(true).send();
             }
         }
 
         if (backupFiles > 0) {
-            MessageUtil.sendConsoleMessage("Didn't include " + backupFiles + " file(s) in the backup, as they are in the folder used for backups");
+            new MessageUtil("Didn't include " + backupFiles + " file(s) in the backup, as they are in the folder used for backups").toConsole(true).send();
         }
 
         zipIt(type, path.getPath() + "/" + fileName);
@@ -134,7 +134,7 @@ public class FileUtil {
                 getNewestBackup(type, formatter);
 
                 if (backupList.size() > localKeepCount) {
-                    MessageUtil.sendConsoleMessage("There are " + backupList.size() + " file(s) which exceeds the local limit of " + localKeepCount + ", deleting oldest");
+                    new MessageUtil("There are " + backupList.size() + " file(s) which exceeds the local limit of " + localKeepCount + ", deleting oldest").toConsole(true).send();
                 }
                 
 
@@ -143,14 +143,14 @@ public class FileUtil {
                     long dateOfFile = backupList.descendingMap().lastKey();
 
                     if (!fileToDelete.delete()) {
-                        MessageUtil.sendConsoleMessage("Failed to delete local backup \"" + fileToDelete.getName() + "\"");
+                        new MessageUtil("Failed to delete local backup \"" + fileToDelete.getName() + "\"").toConsole(true).send();
                     }
                     
                     backupList.remove(dateOfFile);
                 }
             } catch (Exception e) {
                 MessageUtil.sendConsoleException(e);
-                MessageUtil.sendConsoleMessage("Local backup deletion failed");
+                new MessageUtil("Local backup deletion failed").toConsole(true).send();
             }
         }
     }
@@ -185,7 +185,7 @@ public class FileUtil {
                         zipOutputStream.write(buffer, 0, len);
                     }
                 } catch (Exception e) {
-                    MessageUtil.sendConsoleMessage("Failed to include \"" + new File(inputFolderPath, file).getPath() + "\" in the backup, is it locked?");
+                    new MessageUtil("Failed to include \"" + new File(inputFolderPath, file).getPath() + "\" in the backup, is it locked?").toConsole(true).send();
                 }
 
                 zipOutputStream.closeEntry();

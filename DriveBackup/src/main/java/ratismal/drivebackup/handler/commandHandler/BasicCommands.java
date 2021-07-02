@@ -111,8 +111,6 @@ public class BasicCommands {
      * @param player the player to send the message to
      */
     public static void sendNoPerms(CommandSender player) {
-        String noPerms = intl("no-perm");
-        noPerms = MessageUtil.translateMessageColors(noPerms);
-        MessageUtil.sendMessage(player, noPerms);
+        new MessageUtil(intl("no-perm")).to(player).toConsole(false).send();
     }
 }

@@ -12,6 +12,7 @@ import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.model.*;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -109,28 +110,26 @@ public class GoogleDriveUploader implements Uploader {
             final String deviceCode = parsedResponse.getString("device_code");
             long responseCheckDelay = SchedulerUtil.sToTicks(parsedResponse.getLong("interval"));
 
-            MessageUtil.sendMessage(initiator, Component.text()
-                    .append(
-                        Component.text("To link your Google Drive account, go to ")
-                        .color(NamedTextColor.DARK_AQUA)
-                    )
-                    .append(
-                        Component.text(verificationUrl)
-                        .color(NamedTextColor.GOLD)
-                        .hoverEvent(HoverEvent.showText(Component.text("Go to URL")))
-                        .clickEvent(ClickEvent.openUrl(verificationUrl))
-                    )
-                    .append(
-                        Component.text(" and enter code ")
-                        .color(NamedTextColor.DARK_AQUA)
-                    )
-                    .append(
-                        Component.text(userCode)
-                        .color(NamedTextColor.GOLD)
-                        .hoverEvent(HoverEvent.showText(Component.text("Copy code")))
-                        .clickEvent(ClickEvent.copyToClipboard(userCode))
-                    )
-                    .build());
+            new MessageUtil(
+                Component.text("To link your Google Drive account, go to ")
+                    .color(NamedTextColor.DARK_AQUA)
+                .append(
+                    Component.text(verificationUrl)
+                    .color(NamedTextColor.GOLD)
+                    .hoverEvent(HoverEvent.showText(Component.text("Go to URL")))
+                    .clickEvent(ClickEvent.openUrl(verificationUrl))
+                )
+                .append(
+                    Component.text(" and enter code ")
+                    .color(NamedTextColor.DARK_AQUA)
+                )
+                .append(
+                    Component.text(userCode)
+                    .color(NamedTextColor.GOLD)
+                    .hoverEvent(HoverEvent.showText(Component.text("Copy code")))
+                    .clickEvent(ClickEvent.copyToClipboard(userCode))
+                )
+            ).to(initiator).toConsole(false).send();
 
             final int[] task = new int[]{-1};
             task[0] = plugin.getServer().getScheduler().scheduleSyncRepeatingTask(plugin, new Runnable() {
@@ -155,7 +154,7 @@ public class GoogleDriveUploader implements Uploader {
                         parsedResponse = new JSONObject(response.body().string());
                         response.close();
                     } catch (Exception exception) {
-                        MessageUtil.sendMessage(initiator, "Failed to link your Google Drive account, please try again");
+                        new MessageUtil("Failed to link your Google Drive account, please try again").to(initiator).toConsole(false).send();
 
                         Bukkit.getScheduler().cancelTask(task[0]);
                         return;
@@ -170,15 +169,15 @@ public class GoogleDriveUploader implements Uploader {
                             file.write(jsonObject.toString());
                             file.close();
                         } catch (IOException e) {
-                            MessageUtil.sendMessage(initiator, "Failed to link your Google Drive account, please try again");
+                            new MessageUtil("Failed to link your Google Drive account, please try again").to(initiator).toConsole(false).send();
                             
                             Bukkit.getScheduler().cancelTask(task[0]);
                         }
                         
-                        MessageUtil.sendMessage(initiator, "Your Google Drive account is linked!");
+                        new MessageUtil("Your Google Drive account is linked!").to(initiator).toConsole(false).send();
                         
                         if (!plugin.getConfig().getBoolean("googledrive.enabled")) {
-                            MessageUtil.sendMessage(initiator, "Automatically enabled Google Drive backups");
+                            new MessageUtil("Automatically enabled Google Drive backups").to(initiator).toConsole(false).send();
                             plugin.getConfig().set("googledrive.enabled", true);
                             plugin.saveConfig();
                             
@@ -188,9 +187,9 @@ public class GoogleDriveUploader implements Uploader {
                         Bukkit.getScheduler().cancelTask(task[0]);
                     } else if (!parsedResponse.getString("error").equals("authorization_pending")) {
                         if (parsedResponse.getString("error").equals("expired_token")) {
-                            MessageUtil.sendMessage(initiator, "The Google Drive account linking process timed out, please try again");
+                            new MessageUtil("The Google Drive account linking process timed out, please try again").to(initiator).toConsole(false).send();
                         } else {
-                            MessageUtil.sendMessage(initiator, "Failed to link your Google Drive account, please try again");
+                            new MessageUtil("Failed to link your Google Drive account, please try again").to(initiator).toConsole(false).send();
                         }
                         
                         Bukkit.getScheduler().cancelTask(task[0]);
@@ -198,10 +197,10 @@ public class GoogleDriveUploader implements Uploader {
                 }
             }, responseCheckDelay, responseCheckDelay);
         } catch (UnknownHostException exception) {
-            MessageUtil.sendMessageToPlayersWithPermission("Failed to link your Google Drive account,, check your network connection", "drivebackup.linkAccounts", true);
+            new MessageUtil("Failed to link your Google Drive account,, check your network connection").toPerm("drivebackup.linkAccounts").send();
             
         } catch (Exception e) {
-            MessageUtil.sendMessage(initiator, "Failed to link your Google Drive account");
+            new MessageUtil("Failed to link your Google Drive account").to(initiator).toConsole(false).send();
         
             MessageUtil.sendConsoleException(e);
         }
@@ -311,7 +310,7 @@ public class GoogleDriveUploader implements Uploader {
                 
             service.files().delete(fileId).execute();
         } catch (UnknownHostException exception) {
-            MessageUtil.sendMessageToPlayersWithPermission("Failed to upload test file to Google Drive, check your network connection", "drivebackup.linkAccounts", true);
+            new MessageUtil("Failed to upload test file to Google Drive, check your network connection").toPerm("drivebackup.linkAccounts").send();
         } catch (Exception e) {
             MessageUtil.sendConsoleException(e);
             setErrorOccurred(true);
@@ -345,7 +344,7 @@ public class GoogleDriveUploader implements Uploader {
                         folder = createFolder(typeFolder, folder);
                     }
                 } catch (Exception exception) {
-                    MessageUtil.sendConsoleMessage("Failed to create folder(s) in Google Drive, these folders MUST NOT exist before the plugin creates them.");
+                    new MessageUtil("Failed to create folder(s) in Google Drive, these folders MUST NOT exist before the plugin creates them.").toConsole(true).send();
 
                     throw exception;
                 }
@@ -366,7 +365,7 @@ public class GoogleDriveUploader implements Uploader {
 
             deleteFiles(folder);
         } catch (UnknownHostException exception) {
-            MessageUtil.sendMessageToPlayersWithPermission("Failed to upload backup to Google Drive, check your network connection", "drivebackup.linkAccounts", true);
+            new MessageUtil("Failed to upload backup to Google Drive, check your network connection").toPerm("drivebackup.linkAccounts").send();
             setErrorOccurred(true);
         } catch(Exception error) {
             MessageUtil.sendConsoleException(error);
@@ -402,7 +401,7 @@ public class GoogleDriveUploader implements Uploader {
      * Gets the setup instructions for this uploaders
      * @return a Component explaining how to set up this uploader
      */
-    public Component getSetupInstructions()
+    public TextComponent getSetupInstructions()
     {
         return Component.text()
                     .append(
@@ -565,7 +564,7 @@ public class GoogleDriveUploader implements Uploader {
 
         List<ChildReference> queriedFilesfromDrive = getFiles(folder);
         if (queriedFilesfromDrive.size() > fileLimit) {
-            MessageUtil.sendConsoleMessage("There are " + queriedFilesfromDrive.size() + " file(s) which exceeds the limit of " + fileLimit + ", deleting");
+            new MessageUtil("There are " + queriedFilesfromDrive.size() + " file(s) which exceeds the limit of " + fileLimit + ", deleting").toConsole(true).send();
 
             for (Iterator<ChildReference> iterator = queriedFilesfromDrive.iterator(); iterator.hasNext(); ) {
                 if (queriedFilesfromDrive.size() == fileLimit) {
