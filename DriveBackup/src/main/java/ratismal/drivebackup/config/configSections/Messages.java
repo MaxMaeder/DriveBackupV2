@@ -31,16 +31,4 @@ public class Messages {
             defaultColor
         );
     }
-
-    public static Messages defaultConfig() {
-        boolean sendInChat = true;
-        String prefix = "&6[&4DriveBackupV2&6] ";
-        String defaultColor = "&3";
-
-        return new Messages(
-            sendInChat,
-            prefix,
-            defaultColor
-        );
-    }
 }
