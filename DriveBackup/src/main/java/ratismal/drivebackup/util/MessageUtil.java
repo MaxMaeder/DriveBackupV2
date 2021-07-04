@@ -10,12 +10,10 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import ratismal.drivebackup.config.ConfigParser;
 import ratismal.drivebackup.config.ConfigParser.Config;
 import ratismal.drivebackup.plugin.DriveBackup;
@@ -89,9 +87,8 @@ public class MessageUtil {
      */
     public void send() {
         Component builtComponent = prefixMessage(Component.join(Component.text(" "), message));
-        String consoleString = translateMessageColors(LegacyComponentSerializer.legacyAmpersand().serialize(builtComponent));
 
-        if (sendToConsole) Bukkit.getConsoleSender().sendMessage(consoleString);
+        if (sendToConsole) DriveBackup.adventure.console().sendMessage(builtComponent);
 
         Config config = (Config) ObjectUtils.defaultIfNull(ConfigParser.getConfig(), ConfigParser.defaultConfig());
         if (!config.messages.sendInChat) return;
@@ -123,16 +120,10 @@ public class MessageUtil {
      * @param message the message to prefix
      * @return the prefixed message
      */
-    private static String prefixMessage(String message) {
-        Config config = (Config) ObjectUtils.defaultIfNull(ConfigParser.getConfig(), ConfigParser.defaultConfig());
-
-        return config.messages.prefix + config.messages.defaultColor + message;
-    }
-
     private static Component prefixMessage(Component message) {
         Config config = (Config) ObjectUtils.defaultIfNull(ConfigParser.getConfig(), ConfigParser.defaultConfig());
 
-        return Component.text(config.messages.prefix).append(message);
+        return Component.text(translateMessageColors(config.messages.prefix)).append(message);
     }
 
     /**
@@ -143,11 +134,4 @@ public class MessageUtil {
     public static String translateMessageColors(String message) {
         return ChatColor.translateAlternateColorCodes('&', message);
     }
-
-    public static void openBook(ItemStack book, Player[] players) {
-        for (Player player : players) {
-            player.openBook(book);
-        }
-    }
-
 }
