@@ -1,27 +1,29 @@
 package ratismal.drivebackup.util;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.lang.ObjectUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import ratismal.drivebackup.config.ConfigParser;
-import ratismal.drivebackup.config.configSections.Messages;
+import ratismal.drivebackup.config.ConfigParser.Config;
 import ratismal.drivebackup.plugin.DriveBackup;
 
 public class MessageUtil {
 
     private Set<CommandSender> recipients = new HashSet<CommandSender>();
-    private List<Component> message = new ArrayList<Component>();
+    private List<TextComponent> message = new ArrayList<TextComponent>();
     private Boolean sendToConsole = true;
 
     public MessageUtil() {
@@ -86,22 +88,20 @@ public class MessageUtil {
      * Sends the message to the recipients
      */
     public void send() {
-        TextComponent.Builder builtComponent = Component.text();
-        for (Component component : message) {
-            builtComponent.append(component);
-        }
-        String messageString = translateMessageColors(prefixMessage(builtComponent.content()));
+        Component builtComponent = prefixMessage(Component.join(Component.text(" "), message));
+        String consoleString = translateMessageColors(LegacyComponentSerializer.legacyAmpersand().serialize(builtComponent));
 
-        if (sendToConsole) Bukkit.getConsoleSender().sendMessage(messageString);
+        if (sendToConsole) Bukkit.getConsoleSender().sendMessage(consoleString);
 
-        if (!ConfigParser.getConfig().messages.sendInChat) return;
+        Config config = (Config) ObjectUtils.defaultIfNull(ConfigParser.getConfig(), ConfigParser.defaultConfig());
+        if (!config.messages.sendInChat) return;
 
         for (CommandSender player : recipients) {
             if (player == null) {
                 continue;
             }
-                
-            player.sendMessage(messageString);
+
+            DriveBackup.adventure.sender(player).sendMessage(builtComponent);
         }
     }
 
@@ -112,7 +112,8 @@ public class MessageUtil {
      * @param exception Exception to send the stack trace of
      */
     public static void sendConsoleException(Exception exception) {
-    	if (ConfigParser.getConfig().advanced.suppressErrors) {
+        Config config = (Config) ObjectUtils.defaultIfNull(ConfigParser.getConfig(), ConfigParser.defaultConfig());
+    	if (!config.advanced.suppressErrors) {
     		exception.printStackTrace();
     	}
     }
@@ -123,14 +124,15 @@ public class MessageUtil {
      * @return the prefixed message
      */
     private static String prefixMessage(String message) {
-        Messages messages;
-        try {
-            messages = ConfigParser.getConfig().messages;
-        } catch (Exception exception) {
-            messages = Messages.defaultConfig();
-        }
+        Config config = (Config) ObjectUtils.defaultIfNull(ConfigParser.getConfig(), ConfigParser.defaultConfig());
 
-        return messages.prefix + messages.defaultColor + message;
+        return config.messages.prefix + config.messages.defaultColor + message;
+    }
+
+    private static Component prefixMessage(Component message) {
+        Config config = (Config) ObjectUtils.defaultIfNull(ConfigParser.getConfig(), ConfigParser.defaultConfig());
+
+        return Component.text(config.messages.prefix).append(message);
     }
 
     /**
@@ -140,6 +142,12 @@ public class MessageUtil {
      */
     public static String translateMessageColors(String message) {
         return ChatColor.translateAlternateColorCodes('&', message);
+    }
+
+    public static void openBook(ItemStack book, Player[] players) {
+        for (Player player : players) {
+            player.openBook(book);
+        }
     }
 
 }
