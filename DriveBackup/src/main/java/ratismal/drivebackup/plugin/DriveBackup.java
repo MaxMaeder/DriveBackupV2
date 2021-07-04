@@ -37,6 +37,8 @@ public class DriveBackup extends JavaPlugin {
         saveDefaultConfig();
         getConfig().options().copyDefaults(true);
 
+        DriveBackup.adventure = BukkitAudiences.create(plugin);
+
         config = new ConfigParser(getConfig());
         config.reload(Permissions.getPlayersWithPerm(Permissions.RELOAD_CONFIG));
 
@@ -46,8 +48,6 @@ public class DriveBackup extends JavaPlugin {
 
         getCommand(CommandHandler.CHAT_KEYWORD).setTabCompleter(new CommandTabComplete(plugin));
         getCommand(CommandHandler.CHAT_KEYWORD).setExecutor(new CommandHandler(plugin));
-        
-        DriveBackup.adventure = BukkitAudiences.create(plugin);
 
         PluginManager pm = getServer().getPluginManager();
         pm.registerEvents(new PlayerListener(), plugin);
