@@ -87,12 +87,10 @@ public class Scheduler {
                 scheduleMessage.append(" every ");
 
                 for (int i = 0; i < entry.days.length; i++) {
-                    if (i != 0) {
-                        if (i == entry.days.length - 1) {
-                            scheduleMessage.append(" and ");
-                        } else {
-                            scheduleMessage.append(", ");
-                        }
+                    if (i == entry.days.length - 1) {
+                        scheduleMessage.append(" and ");
+                    } else if (i != 0) {
+                        scheduleMessage.append(", ");
                     }
 
                     String dayName = entry.days[i].getDisplayName(TextStyle.FULL, config.advanced.dateLanguage);
