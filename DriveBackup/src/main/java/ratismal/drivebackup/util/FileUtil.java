@@ -52,7 +52,7 @@ public class FileUtil {
                     backupList.put(date.toEpochSecond(), file);
                 } catch (Exception e) {
                     backupList.put(0L, file);
-                    MessageUtil.sendConsoleMessage("Unable to parse date format of stored backup \"" + dateString + "\", this can be due to it being updated in the config.yml");
+                    MessageUtil.sendConsoleMessage("Unable to parse date format of stored backup \"" + dateString + "\", this can be due to the date format being updated in the config.yml");
                     MessageUtil.sendConsoleMessage("Backup will be deleted first");
                 }
             }
@@ -187,7 +187,11 @@ public class FileUtil {
                         zipOutputStream.write(buffer, 0, len);
                     }
                 } catch (Exception e) {
-                    MessageUtil.sendConsoleMessage("Failed to include \"" + new File(inputFolderPath, file).getPath() + "\" in the backup, is it locked?");
+                    String filePath = new File(inputFolderPath, file).getPath();
+
+                    if (!filePath.endsWith(".lock")) { // Don't send warning for .lock files, they will always be locked
+                        MessageUtil.sendConsoleMessage("Failed to include \"" + filePath + "\" in the backup, is it locked?");
+                    }
                 }
 
                 zipOutputStream.closeEntry();
