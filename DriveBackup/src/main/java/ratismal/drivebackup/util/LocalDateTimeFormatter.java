@@ -8,6 +8,8 @@ import java.util.regex.Pattern;
 import ratismal.drivebackup.config.ConfigParser;
 
 public class LocalDateTimeFormatter {
+    private static Pattern VALID_FORMAT = Pattern.compile("^[\\w\\-. ]+$");
+
     private final DateTimeFormatter formatter;
 
     private LocalDateTimeFormatter(DateTimeFormatter formatter) {
@@ -15,6 +17,8 @@ public class LocalDateTimeFormatter {
     }
 
     public static LocalDateTimeFormatter ofPattern(String pattern) throws IllegalArgumentException {
+        verifyPattern(pattern);
+
         StringBuilder finalPatternBuilder = new StringBuilder(pattern);
 
         // Escape non date format characters, if user specified %FORMAT in the pattern
@@ -39,5 +43,11 @@ public class LocalDateTimeFormatter {
 
     private DateTimeFormatter getFormatter() {
         return formatter.withLocale(ConfigParser.getConfig().advanced.dateLanguage);
+    }
+
+    private static void verifyPattern(String pattern) throws IllegalArgumentException {
+        if (!VALID_FORMAT.matcher(pattern).find()) {
+            throw new IllegalArgumentException("Format pattern contains illegal characters");
+        }
     }
 }
