@@ -112,6 +112,7 @@ public class BackupList {
                 formatter = LocalDateTimeFormatter.ofPattern((String) rawListEntry.get("format"));
             } catch (Exception e) {
                 logger.log("Format invalid, skipping backup list entry " + entryIndex);
+                if (e instanceof IllegalArgumentException) e.getMessage();
                 continue;
             }
 
