@@ -357,8 +357,8 @@ public class OneDriveUploader implements Uploader {
                         List<String> nextExpectedRanges = (List<String>) (Object) parsedResponse.getJSONArray("nextExpectedRanges").toList();
 
                         setRanges(nextExpectedRanges.toArray(new String[nextExpectedRanges.size()]));
-                    } catch (NullPointerException e) {
-                        MessageUtil.sendConsoleException(e);
+                    } catch (Exception e) {
+                        isComplete = true;
                     } 
                 } else {
                     isComplete = true;
