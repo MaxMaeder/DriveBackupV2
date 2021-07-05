@@ -51,7 +51,9 @@ public class FileUtil {
                     ZonedDateTime date = formatter.parse(dateString);
                     backupList.put(date.toEpochSecond(), file);
                 } catch (Exception e) {
-                    MessageUtil.sendConsoleException(e);
+                    backupList.put(0L, file);
+                    MessageUtil.sendConsoleMessage("Unable to parse date format of stored backup \"" + dateString + "\", this can be due to it being updated in the config.yml");
+                    MessageUtil.sendConsoleMessage("Backup will be deleted first");
                 }
             }
         }
