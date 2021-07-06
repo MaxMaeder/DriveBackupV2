@@ -155,6 +155,7 @@ public class ExternalBackups {
                 formatter = LocalDateTimeFormatter.ofPattern((String) rawListEntry.get("format"));
             } catch (Exception e) {
                 logger.log("Format invalid, skipping external backup entry " + entryIndex);
+                if (e instanceof IllegalArgumentException) e.getMessage();
                 continue;
             }
 
