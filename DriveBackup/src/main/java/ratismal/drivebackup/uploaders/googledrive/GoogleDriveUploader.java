@@ -23,6 +23,7 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 import ratismal.drivebackup.uploaders.Uploader;
 import ratismal.drivebackup.config.ConfigParser;
+import ratismal.drivebackup.handler.commandHandler.BasicCommands;
 import ratismal.drivebackup.plugin.DriveBackup;
 import ratismal.drivebackup.util.MessageUtil;
 import ratismal.drivebackup.util.SchedulerUtil;
@@ -183,6 +184,8 @@ public class GoogleDriveUploader implements Uploader {
                             
                             DriveBackup.reloadLocalConfig();
                         }
+
+                        BasicCommands.sendBriefBackupList(initiator);
                         
                         Bukkit.getScheduler().cancelTask(task[0]);
                     } else if (!parsedResponse.getString("error").equals("authorization_pending")) {

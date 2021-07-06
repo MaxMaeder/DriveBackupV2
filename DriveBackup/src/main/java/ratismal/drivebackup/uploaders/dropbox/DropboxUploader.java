@@ -4,6 +4,7 @@ import ratismal.drivebackup.util.MessageUtil;
 import ratismal.drivebackup.uploaders.Uploader;
 import ratismal.drivebackup.config.ConfigParser;
 import ratismal.drivebackup.config.ConfigParser.Config;
+import ratismal.drivebackup.handler.commandHandler.BasicCommands;
 import ratismal.drivebackup.plugin.DriveBackup;
 
 import java.io.BufferedReader;
@@ -157,6 +158,8 @@ public class DropboxUploader implements Uploader {
 
                             DriveBackup.reloadLocalConfig();
                         }
+
+                        BasicCommands.sendBriefBackupList(initiator);
                     } else {
                         MessageUtil.Builder().text("Failed to link your Dropbox account, please try again").to(initiator).toConsole(false).send();
                     }
