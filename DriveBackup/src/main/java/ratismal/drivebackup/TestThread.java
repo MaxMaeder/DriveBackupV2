@@ -85,7 +85,7 @@ public class TestThread implements Runnable {
                 if (config.backupMethods.googleDrive.enabled) {
                     uploadMethod = new GoogleDriveUploader();
                 } else {
-                    MessageUtil.Builder().text("Google Drive backups are disabled, you can enable them in the " + ChatColor.GOLD + "config.yml").to(initiator).toConsole(false).send();
+                    MessageUtil.Builder().text("Google Drive backups are disabled, you can enable them in the ").emText("config.yml").to(initiator).toConsole(false).send();
                     return;
                 }
                 break;
@@ -93,7 +93,7 @@ public class TestThread implements Runnable {
                 if (config.backupMethods.oneDrive.enabled) {
                     uploadMethod = new OneDriveUploader();
                 } else {
-                    MessageUtil.Builder().text("OneDrive backups are disabled, you can enable them in the " + ChatColor.GOLD + "config.yml").to(initiator).toConsole(false).send();
+                    MessageUtil.Builder().text("OneDrive backups are disabled, you can enable them in the ").emText("config.yml").to(initiator).toConsole(false).send();
                     return;
                 }
                 break;
@@ -101,7 +101,7 @@ public class TestThread implements Runnable {
                 if (config.backupMethods.dropbox.enabled) {
                     uploadMethod = new DropboxUploader();
                 } else {
-                    MessageUtil.Builder().text("Dropbox backups are disabled, you can enable them in the " + ChatColor.GOLD + "config.yml").to(initiator).toConsole(false).send();
+                    MessageUtil.Builder().text("Dropbox backups are disabled, you can enable them in the ").emText("config.yml").to(initiator).toConsole(false).send();
                     return;
                 }
                 break;
@@ -109,7 +109,7 @@ public class TestThread implements Runnable {
                 if (config.backupMethods.ftp.enabled) {
                     uploadMethod = new FTPUploader();
                 } else {
-                    MessageUtil.Builder().text("(S)FTP backups are disabled, you can enable them in the " + ChatColor.GOLD + "config.yml").to(initiator).toConsole(false).send();
+                    MessageUtil.Builder().text("(S)FTP backups are disabled, you can enable them in the ").emText("config.yml").to(initiator).toConsole(false).send();
                     return;
                 }
                 break;
@@ -140,7 +140,7 @@ public class TestThread implements Runnable {
         uploadMethod.test(testFile);
 
         if (uploadMethod.isErrorWhileUploading()) {
-            MessageUtil.Builder().text("The " + uploadMethod.getName() + " test was unsuccessful, please check the " + ChatColor.GOLD + "config.yml").to(initiator).toConsole(false).send();
+            MessageUtil.Builder().text("The " + uploadMethod.getName() + " test was unsuccessful, please check the ").emText("config.yml").to(initiator).toConsole(false).send();
         } else {
             MessageUtil.Builder().text("The " + uploadMethod.getName() + " test was successful").to(initiator).toConsole(false).send();
         }
