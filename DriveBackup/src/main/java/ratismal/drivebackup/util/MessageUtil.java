@@ -12,7 +12,6 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import ratismal.drivebackup.config.ConfigParser;
 import ratismal.drivebackup.config.ConfigParser.Config;
@@ -21,7 +20,7 @@ import ratismal.drivebackup.plugin.DriveBackup;
 public class MessageUtil {
 
     private Set<CommandSender> recipients = new HashSet<CommandSender>();
-    private List<TextComponent> message = new ArrayList<TextComponent>();
+    private List<Component> message = new ArrayList<Component>();
     private Boolean sendToConsole = true;
 
     public static MessageUtil Builder() {
@@ -41,7 +40,7 @@ public class MessageUtil {
         return this;
     }
 
-    public MessageUtil text(TextComponent component) {
+    public MessageUtil text(Component component) {
         message.add(component);
         return this;
     }
