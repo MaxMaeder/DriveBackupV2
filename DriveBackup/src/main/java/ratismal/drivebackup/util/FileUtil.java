@@ -52,8 +52,8 @@ public class FileUtil {
                     backupList.put(date.toEpochSecond(), file);
                 } catch (Exception e) {
                     backupList.put(0L, file);
-                    MessageUtil.sendConsoleMessage("Unable to parse date format of stored backup \"" + dateString + "\", this can be due to the date format being updated in the config.yml");
-                    MessageUtil.sendConsoleMessage("Backup will be deleted first");
+                    MessageUtil.Builder().text("Unable to parse date format of stored backup \"" + dateString + "\", this can be due to the date format being updated in the config.yml").send();
+                    MessageUtil.Builder().text("Backup will be deleted first").send();
                 }
             }
         }

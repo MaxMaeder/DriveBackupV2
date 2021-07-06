@@ -162,7 +162,7 @@ public class BasicCommands {
             }
         }
 
-        MessageUtil.sendMessage(player, locationMessage.build());
+        MessageUtil.Builder().text(locationMessage.build()).toConsole(false).to(player).send();
 
         Component helpMessage = Component.text()
             .append(
@@ -175,7 +175,7 @@ public class BasicCommands {
                 .clickEvent(ClickEvent.openUrl("https://bit.ly/3xoHRAs")))
             .build();
 
-        MessageUtil.sendMessage(player, helpMessage);
+        MessageUtil.Builder().text(helpMessage).toConsole(false).to(player).send();
     }
 
     /**
