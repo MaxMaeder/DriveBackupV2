@@ -8,7 +8,8 @@ import java.util.regex.Pattern;
 import ratismal.drivebackup.config.ConfigParser;
 
 public class LocalDateTimeFormatter {
-    private static Pattern VALID_FORMAT = Pattern.compile("^[\\w\\-. ]+$");
+    private static final String FORMAT_KEYWORD = "%FORMAT";
+    private static final Pattern VALID_FORMAT = Pattern.compile("^[\\w\\-.'% ]+$");
 
     private final DateTimeFormatter formatter;
 
@@ -22,9 +23,9 @@ public class LocalDateTimeFormatter {
         StringBuilder finalPatternBuilder = new StringBuilder(pattern);
 
         // Escape non date format characters, if user specified %FORMAT in the pattern
-        if (finalPatternBuilder.indexOf("%FORMAT") != -1) {
+        if (pattern.contains(FORMAT_KEYWORD)) {
             finalPatternBuilder.insert(0, "'");
-            finalPatternBuilder.insert(finalPatternBuilder.length(), "'");
+            finalPatternBuilder.append("'");
         }
 
         String finalPattern = finalPatternBuilder.toString();
@@ -46,8 +47,22 @@ public class LocalDateTimeFormatter {
     }
 
     private static void verifyPattern(String pattern) throws IllegalArgumentException {
+        boolean isInvalid = false;
+
         if (!VALID_FORMAT.matcher(pattern).find()) {
-            throw new IllegalArgumentException("Format pattern contains illegal characters");
+            isInvalid = true;
         }
+
+        if (pattern.contains(FORMAT_KEYWORD)) {
+            if (pattern.contains("'")) {
+                isInvalid = true;
+            }
+        } else {
+            if (pattern.contains("%")) {
+                isInvalid = true;
+            }
+        }
+
+        if (isInvalid) throw new IllegalArgumentException("Format pattern contains illegal characters");
     }
 }
