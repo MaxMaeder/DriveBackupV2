@@ -36,6 +36,11 @@ public class MessageUtil {
         return this;
     }
 
+    public MessageUtil emText(String text) {
+        message.add(Component.text(text, NamedTextColor.GOLD));
+        return this;
+    }
+
     public MessageUtil text(TextComponent component) {
         message.add(component);
         return this;

@@ -191,7 +191,7 @@ public class UploadThread implements Runnable {
         backupStatus = BackupStatus.NOT_RUNNING;
             
         if (config.backupStorage.localKeepCount != 0) {
-            MessageUtil.Builder().text(ChatColor.GOLD + "Local " + ChatColor.DARK_AQUA + "backup complete").toPerm("drivebackup.linkAccounts").to(initiator).toConsole(false).send();
+            MessageUtil.Builder().emText("Local ").text("backup complete").toPerm("drivebackup.linkAccounts").to(initiator).toConsole(false).send();
         }
 
         for(int i = 0; i < uploaders.size(); i++) {
@@ -200,7 +200,7 @@ public class UploadThread implements Runnable {
                 MessageUtil.Builder().text(uploaders.get(i).getSetupInstructions()).toPerm("drivebackup.linkAccounts").to(initiator).send();
                 errorOccurred = true;
             } else {
-                MessageUtil.Builder().text("Backup to " + ChatColor.GOLD + uploaders.get(i).getName() + ChatColor.DARK_AQUA + " complete").toPerm("drivebackup.linkAccounts").to(initiator).toConsole(false).send();
+                MessageUtil.Builder().text("Backup to ").emText(uploaders.get(i).getName()).text(" complete").toPerm("drivebackup.linkAccounts").to(initiator).toConsole(false).send();
             }
         }
 
@@ -242,7 +242,7 @@ public class UploadThread implements Runnable {
                 FileUtil.makeBackup(type, formatter, blackList);
             } catch (IllegalArgumentException exception) {
                 MessageUtil.Builder().text("Failed to create a backup, path to folder to backup is absolute, expected a relative path").toPerm("drivebackup.linkAccounts").to(initiator).send();
-                MessageUtil.Builder().text("An absolute path can overwrite sensitive files, see the " + ChatColor.GOLD + "config.yml " + ChatColor.DARK_AQUA + "for more information").toPerm("drivebackup.linkAccounts").to(initiator).send();
+                MessageUtil.Builder().text("An absolute path can overwrite sensitive files, see the ").emText("config.yml ").text("for more information").toPerm("drivebackup.linkAccounts").to(initiator).send();
 
                 backupStatus = BackupStatus.NOT_RUNNING;
 
@@ -372,9 +372,9 @@ public class UploadThread implements Runnable {
         backupList.add(backup);
 
         if (ftpUploader.isErrorWhileUploading()) {
-            MessageUtil.Builder().text("Failed to include files from a (S)FTP server (" + getSocketAddress(externalBackup) + ") in the backup, please check the server credentials in the " + ChatColor.GOLD + "config.yml").toPerm("drivebackup.linkAccounts").to(initiator).toConsole(false).send();
+            MessageUtil.Builder().text("Failed to include files from a (S)FTP server (" + getSocketAddress(externalBackup) + ") in the backup, please check the server credentials in the ").emText("config.yml").toPerm("drivebackup.linkAccounts").to(initiator).toConsole(false).send();
         } else {
-            MessageUtil.Builder().text("Files from a " + ChatColor.GOLD + "(S)FTP server (" + getSocketAddress(externalBackup) + ") " + ChatColor.DARK_AQUA + "were successfully included in the backup").toPerm("drivebackup.linkAccounts").to(initiator).toConsole(false).send();
+            MessageUtil.Builder().text("Files from a ").emText("(S)FTP server (" + getSocketAddress(externalBackup) + ") ").text("were successfully included in the backup").toPerm("drivebackup.linkAccounts").to(initiator).toConsole(false).send();
         }
     }
 
@@ -409,9 +409,9 @@ public class UploadThread implements Runnable {
         backupList.add(backup);
 
         if (mysqlUploader.isErrorWhileUploading()) {
-            MessageUtil.Builder().text("Failed to include databases from a MySQL server (" + getSocketAddress(externalBackup) + ") in the backup, please check the server credentials in the " + ChatColor.GOLD + "config.yml").toPerm("drivebackup.linkAccounts").to(initiator).toConsole(false).send();
+            MessageUtil.Builder().text("Failed to include databases from a MySQL server (" + getSocketAddress(externalBackup) + ") in the backup, please check the server credentials in the ").emText("config.yml").toPerm("drivebackup.linkAccounts").to(initiator).toConsole(false).send();
         } else {
-            MessageUtil.Builder().text("Databases from a " + ChatColor.GOLD + "MySQL server (" + getSocketAddress(externalBackup) + ") " + ChatColor.DARK_AQUA + "were successfully included in the backup").toPerm("drivebackup.linkAccounts").to(initiator).toConsole(false).send();
+            MessageUtil.Builder().text("Databases from a ").emText("MySQL server (" + getSocketAddress(externalBackup) + ") ").text("were successfully included in the backup").toPerm("drivebackup.linkAccounts").to(initiator).toConsole(false).send();
         }
     }
 
