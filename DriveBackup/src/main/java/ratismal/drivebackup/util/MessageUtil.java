@@ -57,6 +57,11 @@ public class MessageUtil {
         return this;
     }
 
+    /**
+     * Adds all online players with the specified permissions to the recipients
+     * @param permission the specified permission to be added to the recipients
+     * @return the calling MessageUtil's instance
+     */
     public MessageUtil toPerm(String permission) {
         for (Player player : Bukkit.getServer().getOnlinePlayers()) {
           if (player.hasPermission("drivebackup.linkAccounts") && !recipients.contains(player)) {
@@ -66,7 +71,12 @@ public class MessageUtil {
         return this;
     }
 
-    public MessageUtil toConsole(Boolean value) {
+    /**
+     * Set whether or not if the message should be sent to console
+     * @param value boolean
+     * @return the calling MessageUtil's instance
+     */
+    public MessageUtil toConsole(boolean value) {
         sendToConsole = value;
         return this;
     }
