@@ -122,38 +122,44 @@ public class BasicCommands {
         Config config = ConfigParser.getConfig();
 
         Builder locationMessage = Component.text();
-        List<String> backupLocation = new ArrayList<>();
+        List<String> backupLocations = new ArrayList<>();
 
         for (BackupListEntry entry : config.backupList.list) {
-            backupLocation.add(entry.location.toString());
+            backupLocations.add(entry.location.toString());
         }
 
         if (config.externalBackups.sources.length > 0) {
-            backupLocation.add("some external backups");
+            backupLocations.add("some external backups");
         }
 
         locationMessage.append(
             Component.text("DriveBackupV2 will currently back up ")
             .color(NamedTextColor.DARK_AQUA));
 
-        for (int i = 0; i < backupLocation.size(); i++) {
-
-            String linkWord = null;
-            if (i == backupLocation.size() - 1) {
-                linkWord = " and ";
-            } else if (i != 0) {
-                linkWord = ", ";
-            }
-
-            if (linkWord != null) {
-                locationMessage.append(
-                    Component.text(linkWord)
-                    .color(NamedTextColor.DARK_AQUA));
-            }
-
+        if (backupLocations.size() == 0) {
             locationMessage.append(
-                Component.text(backupLocation.get(i))
-                .color(NamedTextColor.GOLD));
+                Component.text("nothing")
+                .color(NamedTextColor.DARK_AQUA));
+        } else {
+            for (int i = 0; i < backupLocations.size(); i++) {
+    
+                String linkWord = null;
+                if (i == backupLocations.size() - 1) {
+                    linkWord = " and ";
+                } else if (i != 0) {
+                    linkWord = ", ";
+                }
+    
+                if (linkWord != null) {
+                    locationMessage.append(
+                        Component.text(linkWord)
+                        .color(NamedTextColor.DARK_AQUA));
+                }
+    
+                locationMessage.append(
+                    Component.text(backupLocations.get(i))
+                    .color(NamedTextColor.GOLD));
+            }
         }
 
         MessageUtil.sendMessage(player, locationMessage.build());
