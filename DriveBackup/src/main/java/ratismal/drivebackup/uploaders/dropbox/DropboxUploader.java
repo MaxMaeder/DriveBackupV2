@@ -77,7 +77,7 @@ public class DropboxUploader implements Uploader {
         Boolean[] errorOccured = {false};
         final String authorizeUrl = "https://www.dropbox.com/oauth2/authorize?token_access_type=offline&response_type=code&client_id="+APP_KEY;
 
-        new MessageUtil(
+        MessageUtil.Builder().text(
             Component.text("To link your Dropbox account, go to ")
                 .color(NamedTextColor.DARK_AQUA)
             .append(Component.text(authorizeUrl).color(NamedTextColor.GOLD)
@@ -148,20 +148,20 @@ public class DropboxUploader implements Uploader {
             .addConversationAbandonedListener((ConversationAbandonedEvent abandonedEvent) -> {
                 if (abandonedEvent.gracefulExit()) {
                     if (!errorOccured[0]) {
-                        new MessageUtil("Your Dropbox account is linked!").to(initiator).toConsole(false).send();
+                        MessageUtil.Builder().text("Your Dropbox account is linked!").to(initiator).toConsole(false).send();
 
                         if (!plugin.getConfig().getBoolean("dropbox.enabled")) {
-                            new MessageUtil("Automatically enabled Dropbox backups").to(initiator).toConsole(false).send();
+                            MessageUtil.Builder().text("Automatically enabled Dropbox backups").to(initiator).toConsole(false).send();
                             plugin.getConfig().set("dropbox.enabled", true);
                             plugin.saveConfig();
 
                             DriveBackup.reloadLocalConfig();
                         }
                     } else {
-                        new MessageUtil("Failed to link your Dropbox account, please try again").to(initiator).toConsole(false).send();
+                        MessageUtil.Builder().text("Failed to link your Dropbox account, please try again").to(initiator).toConsole(false).send();
                     }
                 } else {
-                    new MessageUtil("Abandoned Dropbox account linking").to(initiator).toConsole(false).send();
+                    MessageUtil.Builder().text("Abandoned Dropbox account linking").to(initiator).toConsole(false).send();
                 }
             });
 
@@ -223,7 +223,7 @@ public class DropboxUploader implements Uploader {
                 setErrorOccurred(true);
             }
         } catch (UnknownHostException exception) {
-            new MessageUtil("Failed to upload test file to Dropbox, check your network connection").toPerm("drivebackup.linkAccounts").send();
+            MessageUtil.Builder().text("Failed to upload test file to Dropbox, check your network connection").toPerm("drivebackup.linkAccounts").send();
         } catch (Exception e) {
             MessageUtil.sendConsoleException(e);
             setErrorOccurred(true);
@@ -353,7 +353,7 @@ public class DropboxUploader implements Uploader {
                 deleteFiles(type);
             }
         } catch (UnknownHostException exception) {
-            new MessageUtil("Failed to upload backup to Dropbox, check your network connection").toPerm("drivebackup.linkAccounts").send();
+            MessageUtil.Builder().text("Failed to upload backup to Dropbox, check your network connection").toPerm("drivebackup.linkAccounts").send();
             setErrorOccurred(true);
         } catch (Exception exception) {
             exception.printStackTrace();
@@ -398,7 +398,7 @@ public class DropboxUploader implements Uploader {
         response.close();
 
         if (files.length() > fileLimit) {
-            new MessageUtil("There are " + files.length() + " file(s) which exceeds the limit of " + fileLimit + ", deleting").toConsole(true).send();
+            MessageUtil.Builder().text("There are " + files.length() + " file(s) which exceeds the limit of " + fileLimit + ", deleting").toConsole(true).send();
             while (files.length() > fileLimit) {
                 JSONObject deleteJson = new JSONObject();
                 deleteJson.put("path", "/" + destination + "/" + type + "/" + files.getJSONObject(0).get("name"));

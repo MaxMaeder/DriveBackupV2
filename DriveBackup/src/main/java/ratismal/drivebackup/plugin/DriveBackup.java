@@ -62,7 +62,7 @@ public class DriveBackup extends JavaPlugin {
      * What to do when plugin is disabled
      */
     public void onDisable() {
-        new MessageUtil("Stopping plugin!").toConsole(true).send();
+        MessageUtil.Builder().text("Stopping plugin!").toConsole(true).send();
     }
 
     /**
