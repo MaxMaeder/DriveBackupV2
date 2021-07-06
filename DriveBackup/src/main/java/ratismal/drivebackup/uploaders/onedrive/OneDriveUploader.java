@@ -102,7 +102,7 @@ public class OneDriveUploader implements Uploader {
         final String deviceCode = parsedResponse.getString("device_code");
         long responseCheckDelay = SchedulerUtil.sToTicks(parsedResponse.getLong("interval"));
 
-        new MessageUtil(
+        MessageUtil.Builder().text(
             Component.text("To link your OneDrive account, go to ")
                 .color(NamedTextColor.DARK_AQUA)
             .append(
@@ -144,7 +144,7 @@ public class OneDriveUploader implements Uploader {
                     Response response = httpClient.newCall(request).execute();
                     parsedResponse = new JSONObject(response.body().string());
                 } catch (Exception exception) {
-                    new MessageUtil("Failed to link your OneDrive account, please try again").to(initiator).toConsole(false).send();
+                    MessageUtil.Builder().text("Failed to link your OneDrive account, please try again").to(initiator).toConsole(false).send();
 
                     Bukkit.getScheduler().cancelTask(task[0]);
                     return;
@@ -159,15 +159,15 @@ public class OneDriveUploader implements Uploader {
                         file.write(jsonObject.toString());
                         file.close();
                     } catch (IOException e) {
-                        new MessageUtil("Failed to link your OneDrive account, please try again").to(initiator).toConsole(false).send();
+                        MessageUtil.Builder().text("Failed to link your OneDrive account, please try again").to(initiator).toConsole(false).send();
                                     
                         Bukkit.getScheduler().cancelTask(task[0]);
                     }
                     
-                    new MessageUtil("Your OneDrive account is linked!").to(initiator).toConsole(false).send();
+                    MessageUtil.Builder().text("Your OneDrive account is linked!").to(initiator).toConsole(false).send();
                     
                     if (!plugin.getConfig().getBoolean("onedrive.enabled")) {
-                        new MessageUtil("Automatically enabled OneDrive backups").to(initiator).toConsole(false).send();
+                        MessageUtil.Builder().text("Automatically enabled OneDrive backups").to(initiator).toConsole(false).send();
                         plugin.getConfig().set("onedrive.enabled", true);
                         plugin.saveConfig();
                         
@@ -177,9 +177,9 @@ public class OneDriveUploader implements Uploader {
                     Bukkit.getScheduler().cancelTask(task[0]);
                 } else if (!parsedResponse.getString("error").equals("authorization_pending")) {
                     if (parsedResponse.getString("error").equals("expired_token")) {
-                        new MessageUtil("The OneDrive account linking process timed out, please try again").to(initiator).toConsole(false).send();
+                        MessageUtil.Builder().text("The OneDrive account linking process timed out, please try again").to(initiator).toConsole(false).send();
                     } else {
-                        new MessageUtil("Failed to link your OneDrive account, please try again").to(initiator).toConsole(false).send();
+                        MessageUtil.Builder().text("Failed to link your OneDrive account, please try again").to(initiator).toConsole(false).send();
                     }
                     
                     Bukkit.getScheduler().cancelTask(task[0]);
@@ -285,7 +285,7 @@ public class OneDriveUploader implements Uploader {
                 setErrorOccurred(true);
             }
         } catch (UnknownHostException exception) {
-            new MessageUtil("Failed to upload test file to OneDrive, check your network connection").toPerm("drivebackup.linkAccounts").send();
+            MessageUtil.Builder().text("Failed to upload test file to OneDrive, check your network connection").toPerm("drivebackup.linkAccounts").send();
         } catch (Exception exception) {
             MessageUtil.sendConsoleException(exception);
             setErrorOccurred(true);
@@ -368,7 +368,7 @@ public class OneDriveUploader implements Uploader {
 
             deleteFiles(folder);
         } catch (UnknownHostException exception) {
-            new MessageUtil("Failed to upload backup to OneDrive, check your network connection").toPerm("drivebackup.linkAccounts").send();
+            MessageUtil.Builder().text("Failed to upload backup to OneDrive, check your network connection").toPerm("drivebackup.linkAccounts").send();
             setErrorOccurred(true);
         } catch(Exception error) {
             MessageUtil.sendConsoleException(error);
@@ -601,7 +601,7 @@ public class OneDriveUploader implements Uploader {
         }
 
         if(fileLimit < availableFileIDs.size()){
-            new MessageUtil("There are " + availableFileIDs.size() + " file(s) which exceeds the limit of " + fileLimit + ", deleting").toConsole(true).send();
+            MessageUtil.Builder().text("There are " + availableFileIDs.size() + " file(s) which exceeds the limit of " + fileLimit + ", deleting").toConsole(true).send();
         }
 
         for (Iterator<String> iterator = availableFileIDs.listIterator(); iterator.hasNext(); ) {

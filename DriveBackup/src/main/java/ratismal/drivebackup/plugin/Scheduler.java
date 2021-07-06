@@ -99,12 +99,12 @@ public class Scheduler {
                     scheduleMessage.append(dayName);
                 }
 
-                new MessageUtil(scheduleMessage.toString()).toConsole(true).send();
+                MessageUtil.Builder().text(scheduleMessage.toString()).toConsole(true).send();
             }
         } else if (config.backupStorage.delay != -1) {
             SchedulerUtil.cancelTasks(backupTasks);
 
-            new MessageUtil("Scheduling a backup to run every " + config.backupStorage.delay + " minutes").toConsole(true).send();
+            MessageUtil.Builder().text("Scheduling a backup to run every " + config.backupStorage.delay + " minutes").toConsole(true).send();
 
             long interval = SchedulerUtil.sToTicks(config.backupStorage.delay * 60);
 

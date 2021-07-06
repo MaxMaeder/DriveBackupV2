@@ -24,15 +24,21 @@ public class MessageUtil {
     private List<TextComponent> message = new ArrayList<TextComponent>();
     private Boolean sendToConsole = true;
 
+    public static MessageUtil Builder() {
+        return new MessageUtil();
+    }
+
     public MessageUtil() {
     }
 
-    public MessageUtil(String text) {
+    public MessageUtil text(String text) {
         message.add(Component.text(text, NamedTextColor.DARK_AQUA));
+        return this;
     }
 
-    public MessageUtil(TextComponent component) {
+    public MessageUtil text(TextComponent component) {
         message.add(component);
+        return this;
     }
 
     /**

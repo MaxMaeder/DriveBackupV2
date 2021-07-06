@@ -164,7 +164,7 @@ public class FTPUploader implements Uploader {
                 ftpClient.deleteFile(testFile.getName());
             }
         } catch (UnknownHostException exception) {
-            new MessageUtil("Failed to upload test file to FTP, check your network connection").toPerm("drivebackup.linkAccounts").send();
+            MessageUtil.Builder().text("Failed to upload test file to FTP, check your network connection").toPerm("drivebackup.linkAccounts").send();
         } catch (Exception e) {
             MessageUtil.sendConsoleException(e);
             setErrorOccurred(true);
@@ -197,7 +197,7 @@ public class FTPUploader implements Uploader {
 
             ftpClient.disconnect();
         } catch (UnknownHostException exception) {
-            new MessageUtil("Failed to upload backup to FTP, check your network connection").toPerm("drivebackup.linkAccounts").send();
+            MessageUtil.Builder().text("Failed to upload backup to FTP, check your network connection").toPerm("drivebackup.linkAccounts").send();
             setErrorOccurred(true);
         } catch (Exception e) {
             MessageUtil.sendConsoleException(e);
@@ -310,7 +310,7 @@ public class FTPUploader implements Uploader {
         TreeMap<Date, FTPFile> files = getZipFiles();
 
         if (files.size() > fileLimit) {
-            new MessageUtil("There are " + files.size() + " file(s) which exceeds the limit of " + fileLimit + ", deleting").toConsole(true).send();
+            MessageUtil.Builder().text("There are " + files.size() + " file(s) which exceeds the limit of " + fileLimit + ", deleting").toConsole(true).send();
             while (files.size() > fileLimit) {
                 ftpClient.deleteFile(files.firstEntry().getValue().getName());
                 files.remove(files.firstKey());

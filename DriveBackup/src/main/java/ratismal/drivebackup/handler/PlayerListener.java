@@ -25,13 +25,13 @@ public class PlayerListener implements Listener {
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
         if (!autoBackupsActive) {
-            new MessageUtil("Enabling automatic backups").toConsole(true).send();
+            MessageUtil.Builder().text("Enabling automatic backups").toConsole(true).send();
             autoBackupsActive = true;
         }
 
         if (UpdateChecker.isUpdateAvailable() && event.getPlayer().hasPermission("drivebackup.linkAccounts")) {
 
-            new MessageUtil(
+            MessageUtil.Builder().text(
                 Component.text("An update is available, get it here: ")
                     .color(NamedTextColor.DARK_AQUA)
                 .append(

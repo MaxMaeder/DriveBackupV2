@@ -43,25 +43,25 @@ public class UpdateChecker {
                     public void run() {
                         if (ConfigParser.getConfig().advanced.updateCheckEnabled) {
                             try {
-                                new MessageUtil("Checking for updates...").toConsole(true).send();
+                                MessageUtil.Builder().text("Checking for updates...").toConsole(true).send();
 
                                 currentVersion = checker.getCurrent();
                                 latestVersion = checker.getLatest();
 
                                 if (latestVersion > currentVersion) {
-                                    new MessageUtil("Version 1." + latestVersion + " has been released." + " You are currently running version 1." + currentVersion).toConsole(true).send();
-                                    new MessageUtil("Update at: http://dev.bukkit.org/bukkit-plugins/drivebackupv2/").toConsole(true).send();
+                                    MessageUtil.Builder().text("Version 1." + latestVersion + " has been released." + " You are currently running version 1." + currentVersion).toConsole(true).send();
+                                    MessageUtil.Builder().text("Update at: http://dev.bukkit.org/bukkit-plugins/drivebackupv2/").toConsole(true).send();
                                 } else if (currentVersion > latestVersion) {
-                                    new MessageUtil("You are running an unsupported release!").toConsole(true).send();
-                                    new MessageUtil("The recommended release is 1." + latestVersion + ", and you are running 1." + currentVersion).toConsole(true).send();
-                                    new MessageUtil("If the plugin has just recently updated, please ignore this message").toConsole(true).send();
+                                    MessageUtil.Builder().text("You are running an unsupported release!").toConsole(true).send();
+                                    MessageUtil.Builder().text("The recommended release is 1." + latestVersion + ", and you are running 1." + currentVersion).toConsole(true).send();
+                                    MessageUtil.Builder().text("If the plugin has just recently updated, please ignore this message").toConsole(true).send();
                                 } else {
-                                    new MessageUtil("Hooray! You are running the latest release!").toConsole(true).send();
+                                    MessageUtil.Builder().text("Hooray! You are running the latest release!").toConsole(true).send();
                                 }
                             } catch (UnknownHostException exception) {
-                                new MessageUtil("There was an issue attempting to check for the latest DriveBackupV2 release, check your network connection").toPerm("drivebackup.linkAccounts").send();
+                                MessageUtil.Builder().text("There was an issue attempting to check for the latest DriveBackupV2 release, check your network connection").toPerm("drivebackup.linkAccounts").send();
                             } catch (Exception exception) {
-                                new MessageUtil("There was an issue attempting to check for the latest DriveBackupV2 release").toConsole(true).send();
+                                MessageUtil.Builder().text("There was an issue attempting to check for the latest DriveBackupV2 release").toConsole(true).send();
                                 MessageUtil.sendConsoleException(exception);
                             }
                         }

@@ -111,6 +111,6 @@ public class BasicCommands {
      * @param player the player to send the message to
      */
     public static void sendNoPerms(CommandSender player) {
-        new MessageUtil(intl("no-perm")).to(player).toConsole(false).send();
+        MessageUtil.Builder().text(intl("no-perm")).to(player).toConsole(false).send();
     }
 }

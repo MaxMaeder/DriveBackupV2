@@ -44,7 +44,7 @@ public class TestThread implements Runnable {
          */
 
         if (args.length < 2) {
-            new MessageUtil("Please specify a backup method to test").to(initiator).toConsole(false).send();
+            MessageUtil.Builder().text("Please specify a backup method to test").to(initiator).toConsole(false).send();
 
             return;
         }
@@ -66,7 +66,7 @@ public class TestThread implements Runnable {
         try {
             testUploadMethod(testFileName, testFileSize, args[1]);
         } catch (Exception exception) {
-            new MessageUtil(args[1] + " isn't a valid backup method").to(initiator).toConsole(false).send();
+            MessageUtil.Builder().text(args[1] + " isn't a valid backup method").to(initiator).toConsole(false).send();
         }
     }
 
@@ -85,7 +85,7 @@ public class TestThread implements Runnable {
                 if (config.backupMethods.googleDrive.enabled) {
                     uploadMethod = new GoogleDriveUploader();
                 } else {
-                    new MessageUtil("Google Drive backups are disabled, you can enable them in the " + ChatColor.GOLD + "config.yml").to(initiator).toConsole(false).send();
+                    MessageUtil.Builder().text("Google Drive backups are disabled, you can enable them in the " + ChatColor.GOLD + "config.yml").to(initiator).toConsole(false).send();
                     return;
                 }
                 break;
@@ -93,7 +93,7 @@ public class TestThread implements Runnable {
                 if (config.backupMethods.oneDrive.enabled) {
                     uploadMethod = new OneDriveUploader();
                 } else {
-                    new MessageUtil("OneDrive backups are disabled, you can enable them in the " + ChatColor.GOLD + "config.yml").to(initiator).toConsole(false).send();
+                    MessageUtil.Builder().text("OneDrive backups are disabled, you can enable them in the " + ChatColor.GOLD + "config.yml").to(initiator).toConsole(false).send();
                     return;
                 }
                 break;
@@ -101,7 +101,7 @@ public class TestThread implements Runnable {
                 if (config.backupMethods.dropbox.enabled) {
                     uploadMethod = new DropboxUploader();
                 } else {
-                    new MessageUtil("Dropbox backups are disabled, you can enable them in the " + ChatColor.GOLD + "config.yml").to(initiator).toConsole(false).send();
+                    MessageUtil.Builder().text("Dropbox backups are disabled, you can enable them in the " + ChatColor.GOLD + "config.yml").to(initiator).toConsole(false).send();
                     return;
                 }
                 break;
@@ -109,7 +109,7 @@ public class TestThread implements Runnable {
                 if (config.backupMethods.ftp.enabled) {
                     uploadMethod = new FTPUploader();
                 } else {
-                    new MessageUtil("(S)FTP backups are disabled, you can enable them in the " + ChatColor.GOLD + "config.yml").to(initiator).toConsole(false).send();
+                    MessageUtil.Builder().text("(S)FTP backups are disabled, you can enable them in the " + ChatColor.GOLD + "config.yml").to(initiator).toConsole(false).send();
                     return;
                 }
                 break;
@@ -117,7 +117,7 @@ public class TestThread implements Runnable {
                 throw new Exception(method + " isn't a valid backup method");
         }
 
-        new MessageUtil("Beginning the test on " + uploadMethod.getName()).to(initiator).toConsole(false).send();
+        MessageUtil.Builder().text("Beginning the test on " + uploadMethod.getName()).to(initiator).toConsole(false).send();
 
         String localTestFilePath = config.backupStorage.localDirectory + File.separator + testFileName;
         new File(config.backupStorage.localDirectory).mkdirs();
@@ -131,7 +131,7 @@ public class TestThread implements Runnable {
             fos.write(randomBytes);
             fos.flush();
         } catch (Exception exception) {
-            new MessageUtil("Test file creation failed, please try again").to(initiator).toConsole(false).send();
+            MessageUtil.Builder().text("Test file creation failed, please try again").to(initiator).toConsole(false).send();
             MessageUtil.sendConsoleException(exception);
         }
 
@@ -140,9 +140,9 @@ public class TestThread implements Runnable {
         uploadMethod.test(testFile);
 
         if (uploadMethod.isErrorWhileUploading()) {
-            new MessageUtil("The " + uploadMethod.getName() + " test was unsuccessful, please check the " + ChatColor.GOLD + "config.yml").to(initiator).toConsole(false).send();
+            MessageUtil.Builder().text("The " + uploadMethod.getName() + " test was unsuccessful, please check the " + ChatColor.GOLD + "config.yml").to(initiator).toConsole(false).send();
         } else {
-            new MessageUtil("The " + uploadMethod.getName() + " test was successful").to(initiator).toConsole(false).send();
+            MessageUtil.Builder().text("The " + uploadMethod.getName() + " test was successful").to(initiator).toConsole(false).send();
         }
         
         testFile.delete();
