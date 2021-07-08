@@ -36,6 +36,6 @@ public class Version {
     }
 
     public String toString() {
-        return major + " " + minor + " " + patch;
+        return major + "." + minor + "." + patch;
     }
 }
