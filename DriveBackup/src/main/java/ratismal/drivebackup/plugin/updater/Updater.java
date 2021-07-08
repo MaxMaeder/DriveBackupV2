@@ -28,7 +28,7 @@ public class Updater {
     /**
      * Initialize the updater.
      *
-     * @param plugin      The plugin that is checking for an update.
+     * @param plugin The plugin that is checking for an update.
      */
     public Updater(DriveBackup plugin, File file) {
         this.plugin = plugin;
@@ -37,7 +37,7 @@ public class Updater {
     }
 
     /**
-     * Download a file and save it to the plugins folder.
+     * Download the latest plugin jar and save it to the plugins folder.
      */
     private void downloadFile() throws FileNotFoundException, UnknownHostException, IOException  {
         String randomFilename = RandomStringUtils.randomAlphabetic(5) + ".jar";
