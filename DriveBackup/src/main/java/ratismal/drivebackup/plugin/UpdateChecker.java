@@ -12,6 +12,7 @@ import okhttp3.Response;
 import ratismal.drivebackup.config.ConfigParser;
 import ratismal.drivebackup.util.MessageUtil;
 import ratismal.drivebackup.util.SchedulerUtil;
+import ratismal.drivebackup.util.Version;
 
 public class UpdateChecker {
     private static final int BUKKIT_PROJECT_ID = 383461;
@@ -26,8 +27,8 @@ public class UpdateChecker {
      */
     private static final OkHttpClient httpClient = new OkHttpClient();
 
-    private static double currentVersion;
-    private static double latestVersion;
+    private static Version currentVersion;
+    private static Version latestVersion;
 
     public static void updateCheck() {
         DriveBackup plugin = DriveBackup.getInstance();
@@ -48,12 +49,12 @@ public class UpdateChecker {
                                 currentVersion = checker.getCurrent();
                                 latestVersion = checker.getLatest();
 
-                                if (latestVersion > currentVersion) {
-                                    MessageUtil.sendConsoleMessage("Version 1." + latestVersion + " has been released." + " You are currently running version 1." + currentVersion);
+                                if (latestVersion.isAfter(currentVersion)) {
+                                    MessageUtil.sendConsoleMessage("Version " + latestVersion.toString() + " has been released." + " You are currently running version " + currentVersion.toString());
                                     MessageUtil.sendConsoleMessage("Update at: http://dev.bukkit.org/bukkit-plugins/drivebackupv2/");
-                                } else if (currentVersion > latestVersion) {
+                                } else if (currentVersion.isAfter(latestVersion)) {
                                     MessageUtil.sendConsoleMessage("You are running an unsupported release!");
-                                    MessageUtil.sendConsoleMessage("The recommended release is 1." + latestVersion + ", and you are running 1." + currentVersion);
+                                    MessageUtil.sendConsoleMessage("The recommended release is " + latestVersion.toString() + ", and you are running " + currentVersion.toString());
                                     MessageUtil.sendConsoleMessage("If the plugin has just recently updated, please ignore this message");
                                 } else {
                                     MessageUtil.sendConsoleMessage("Hooray! You are running the latest release!");
@@ -76,7 +77,7 @@ public class UpdateChecker {
      * @return whether an update is available
      */
     public static boolean isUpdateAvailable() {
-        return latestVersion > currentVersion;
+        return latestVersion.isAfter(currentVersion);
     } 
 
     private DriveBackup plugin;
@@ -85,12 +86,12 @@ public class UpdateChecker {
         this.plugin = plugin;
     };
 
-    public double getCurrent() throws NumberFormatException {
+    public Version getCurrent() throws Exception {
         String versionTitle = plugin.getDescription().getVersion().split("-")[0];
-        return Double.valueOf(versionTitle.replaceFirst("\\.", ""));
+        return Version.parse(versionTitle);
     }
 
-    public double getLatest() throws IOException, NumberFormatException, UnknownHostException {
+    public Version getLatest() throws Exception {
         Request request = new Request.Builder()
             .url("https://api.curseforge.com/servermods/files?projectids=" + BUKKIT_PROJECT_ID)
             .post(RequestBody.create("", null)) // Send empty request body
@@ -105,6 +106,6 @@ public class UpdateChecker {
         }
 
         String versionTitle = pluginVersions.getJSONObject(pluginVersions.length() - 1).getString("name").replace("DriveBackupV2-", "").trim();
-        return Double.valueOf(versionTitle.replaceFirst("\\.", "").trim());
+        return Version.parse(versionTitle);
     }
 }
