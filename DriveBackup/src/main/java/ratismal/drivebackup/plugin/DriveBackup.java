@@ -39,7 +39,6 @@ public class DriveBackup extends JavaPlugin {
         plugin = this;
 
         saveDefaultConfig();
-        getConfig().options().copyDefaults(true);
 
         config = new ConfigParser(getConfig());
         config.reload(Permissions.getPlayersWithPerm(Permissions.RELOAD_CONFIG));

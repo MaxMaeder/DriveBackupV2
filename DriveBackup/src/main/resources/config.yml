@@ -17,7 +17,7 @@ scheduled-backups: false
 backup-schedule-list:
 
 backup-list:
-- path: "world"
+- glob: "world*"
   format: "Backup-world-%FORMAT.zip"
   create: true
 - path: "plugins"
