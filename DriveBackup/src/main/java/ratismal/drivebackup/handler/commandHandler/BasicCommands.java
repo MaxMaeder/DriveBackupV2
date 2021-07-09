@@ -5,14 +5,21 @@ import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent.Builder;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
+import ratismal.drivebackup.config.ConfigParser;
+import ratismal.drivebackup.config.ConfigParser.Config;
+import ratismal.drivebackup.config.configSections.BackupList.BackupListEntry;
 import ratismal.drivebackup.plugin.DriveBackup;
 import ratismal.drivebackup.plugin.updater.UpdateChecker;
 import ratismal.drivebackup.util.MessageUtil;
 
 import static ratismal.drivebackup.config.Localization.intl;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class BasicCommands {
     /**
@@ -104,6 +111,71 @@ public class BasicCommands {
             Component.text(" - " + description)
             .color(NamedTextColor.DARK_AQUA)
         ).build();
+    }
+
+    /**
+     * Sends the configured list of backup locations to the specified player, and
+     * a link to learn how to change them
+     * @param player the player to send the message to
+     */
+    public static void sendBriefBackupList(CommandSender player) {
+        Config config = ConfigParser.getConfig();
+
+        Builder locationMessage = Component.text();
+        List<String> backupLocations = new ArrayList<>();
+
+        for (BackupListEntry entry : config.backupList.list) {
+            backupLocations.add(entry.location.toString());
+        }
+
+        if (config.externalBackups.sources.length > 0) {
+            backupLocations.add("some external backups");
+        }
+
+        locationMessage.append(
+            Component.text("DriveBackupV2 will currently back up ")
+            .color(NamedTextColor.DARK_AQUA));
+
+        if (backupLocations.size() == 0) {
+            locationMessage.append(
+                Component.text("nothing")
+                .color(NamedTextColor.DARK_AQUA));
+        } else {
+            for (int i = 0; i < backupLocations.size(); i++) {
+    
+                String linkWord = null;
+                if (i == backupLocations.size() - 1) {
+                    linkWord = " and ";
+                } else if (i != 0) {
+                    linkWord = ", ";
+                }
+    
+                if (linkWord != null) {
+                    locationMessage.append(
+                        Component.text(linkWord)
+                        .color(NamedTextColor.DARK_AQUA));
+                }
+    
+                locationMessage.append(
+                    Component.text(backupLocations.get(i))
+                    .color(NamedTextColor.GOLD));
+            }
+        }
+
+        MessageUtil.sendMessage(player, locationMessage.build());
+
+        Component helpMessage = Component.text()
+            .append(
+                Component.text("Want to back up something else? See ")
+                .color(NamedTextColor.DARK_AQUA))
+            .append(
+                Component.text("https://bit.ly/3xoHRAs")
+                .color(NamedTextColor.GOLD)
+                .hoverEvent(HoverEvent.showText(Component.text("Go to URL")))
+                .clickEvent(ClickEvent.openUrl("https://bit.ly/3xoHRAs")))
+            .build();
+
+        MessageUtil.sendMessage(player, helpMessage);
     }
 
     /**
