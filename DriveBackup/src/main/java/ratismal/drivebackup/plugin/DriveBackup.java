@@ -1,10 +1,14 @@
 package ratismal.drivebackup.plugin;
 
+import java.util.List;
+
+import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import net.kyori.adventure.platform.bukkit.BukkitAudiences;
+import ratismal.drivebackup.config.ConfigMigrator;
 import ratismal.drivebackup.config.ConfigParser;
 import ratismal.drivebackup.config.Localization;
 import ratismal.drivebackup.config.Permissions;
@@ -64,6 +68,10 @@ public class DriveBackup extends JavaPlugin {
         MessageUtil.sendConsoleMessage("Stopping plugin!");
     }
 
+    public void saveIntlConfig() {
+        localizationConfig.saveConfig();
+    }
+
     /**
      * Gets an instance of the plugin
      *
@@ -79,12 +87,18 @@ public class DriveBackup extends JavaPlugin {
     public static void reloadLocalConfig() {
         Scheduler.stopBackupThread();
 
+        List<CommandSender> players = Permissions.getPlayersWithPerm(Permissions.RELOAD_CONFIG);
+        
         getInstance().reloadConfig();
         FileConfiguration configFile = getInstance().getConfig();
-        config.reload(configFile, Permissions.getPlayersWithPerm(Permissions.RELOAD_CONFIG));
-
+        
         localizationConfig.reloadConfig();
         FileConfiguration localizationFile = localizationConfig.getConfig();
+
+        ConfigMigrator configMigrator = new ConfigMigrator(configFile, localizationFile, players);
+        configMigrator.migrate();
+
+        config.reload(configFile, players);
         localization.reload(localizationFile);
 
         Scheduler.startBackupThread();

@@ -40,7 +40,7 @@ public class Advanced {
         
         ZoneOffset dateTimezone;
         try {
-            dateTimezone = ZoneOffset.of(config.getString("advanced.date-format-timezone"));
+            dateTimezone = ZoneOffset.of(config.getString("advanced.date-timezone"));
         } catch(Exception e) {
             logger.log("Date format timezone not valid, using UTC");
             dateTimezone = ZoneOffset.of("Z"); //Fallback to UTC
