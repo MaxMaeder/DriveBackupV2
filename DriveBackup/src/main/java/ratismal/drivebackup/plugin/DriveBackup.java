@@ -15,6 +15,8 @@ import ratismal.drivebackup.config.Permissions;
 import ratismal.drivebackup.handler.CommandTabComplete;
 import ratismal.drivebackup.handler.PlayerListener;
 import ratismal.drivebackup.handler.commandHandler.CommandHandler;
+import ratismal.drivebackup.plugin.updater.UpdateChecker;
+import ratismal.drivebackup.plugin.updater.Updater;
 import ratismal.drivebackup.util.CustomConfig;
 import ratismal.drivebackup.util.MessageUtil;
 
@@ -26,6 +28,8 @@ public class DriveBackup extends JavaPlugin {
 
     private static CustomConfig localizationConfig;
     private static Localization localization;
+
+    public static Updater updater;
 
     /**
      * Global instance of Adventure audience
@@ -58,6 +62,8 @@ public class DriveBackup extends JavaPlugin {
         Scheduler.startBackupThread();
 
         BstatsMetrics.initMetrics();
+
+        updater = new Updater(plugin, this.getFile());
         UpdateChecker.updateCheck();
     }
 

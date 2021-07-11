@@ -1,6 +1,5 @@
-package ratismal.drivebackup.plugin;
+package ratismal.drivebackup.plugin.updater;
 
-import java.io.IOException;
 import java.net.UnknownHostException;
 
 import org.json.JSONArray;
@@ -10,6 +9,7 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 import ratismal.drivebackup.config.ConfigParser;
+import ratismal.drivebackup.plugin.DriveBackup;
 import ratismal.drivebackup.util.MessageUtil;
 import ratismal.drivebackup.util.SchedulerUtil;
 import ratismal.drivebackup.util.Version;
@@ -29,6 +29,7 @@ public class UpdateChecker {
 
     private static Version currentVersion;
     private static Version latestVersion;
+    private static String latestDownloadUrl;
 
     public static void updateCheck() {
         DriveBackup plugin = DriveBackup.getInstance();
@@ -78,7 +79,11 @@ public class UpdateChecker {
      */
     public static boolean isUpdateAvailable() {
         return latestVersion.isAfter(currentVersion);
-    } 
+    }
+
+    public static String getLatestDownloadUrl() {
+        return latestDownloadUrl;
+    }
 
     private DriveBackup plugin;
 
@@ -106,6 +111,7 @@ public class UpdateChecker {
         }
 
         String versionTitle = pluginVersions.getJSONObject(pluginVersions.length() - 1).getString("name").replace("DriveBackupV2-", "").trim();
+        latestDownloadUrl = pluginVersions.getJSONObject(pluginVersions.length() - 1).getString("downloadUrl");
         return Version.parse(versionTitle);
     }
 }
