@@ -143,6 +143,11 @@ public class CommandHandler implements CommandExecutor {
                 new Thread(testThread).start();
                     
                 break;
+            case "update":
+                if (!Permissions.hasPerm(sender, Permissions.BACKUP)) break;
+
+                DriveBackup.updater.runUpdater(sender);
+                break;
             default:
                 BasicCommands.sendHelp(sender);
                 break;

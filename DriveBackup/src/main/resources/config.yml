@@ -17,7 +17,7 @@ scheduled-backups: false
 backup-schedule-list:
 
 backup-list:
-- path: "world"
+- glob: "world*"
   format: "Backup-world-%FORMAT.zip"
   create: true
 - path: "plugins"
@@ -58,5 +58,5 @@ advanced:
   update-check: true
   suppress-errors: false
   date-language: "en"
-  date-format-timezone: "-00:00"
+  date-timezone: "-00:00"
   ftp-file-separator: "/"

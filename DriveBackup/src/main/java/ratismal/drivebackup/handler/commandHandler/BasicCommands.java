@@ -13,7 +13,7 @@ import ratismal.drivebackup.config.ConfigParser;
 import ratismal.drivebackup.config.ConfigParser.Config;
 import ratismal.drivebackup.config.configSections.BackupList.BackupListEntry;
 import ratismal.drivebackup.plugin.DriveBackup;
-import ratismal.drivebackup.plugin.UpdateChecker;
+import ratismal.drivebackup.plugin.updater.UpdateChecker;
 import ratismal.drivebackup.util.MessageUtil;
 
 import static ratismal.drivebackup.config.Localization.intl;
@@ -89,6 +89,10 @@ public class BasicCommands {
         DriveBackup.adventure.sender(player).sendMessage(genCommandHelpMessage("/drivebackup status", "Gets the status of the running backup"));
         DriveBackup.adventure.sender(player).sendMessage(genCommandHelpMessage("/drivebackup backup", "Manually initiates a backup"));
         DriveBackup.adventure.sender(player).sendMessage(genCommandHelpMessage("/drivebackup test ftp", "Tests the connection to the (S)FTP server"));
+        DriveBackup.adventure.sender(player).sendMessage(genCommandHelpMessage("/drivebackup test googledrive", "Tests the connection to Google Drive"));
+        DriveBackup.adventure.sender(player).sendMessage(genCommandHelpMessage("/drivebackup test onedrive", "Tests the connection to OneDrive"));
+        DriveBackup.adventure.sender(player).sendMessage(genCommandHelpMessage("/drivebackup test dropbox", "Tests the connection to Dropbox"));
+        DriveBackup.adventure.sender(player).sendMessage(genCommandHelpMessage("/drivebackup update", "Updates the plugin if there is a newer version"));
     }
 
     /**
