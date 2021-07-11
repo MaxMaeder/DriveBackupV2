@@ -52,6 +52,7 @@ public class CommandTabComplete implements TabCompleter {
                 if (player.hasPermission("drivebackup.getNextBackup")) commandList.add("nextbackup");
                 if (player.hasPermission("drivebackup.backup")) commandList.add("backup");
                 if (player.hasPermission("drivebackup.backup")) commandList.add("test");
+                if (player.hasPermission("drivebackup.backup")) commandList.add("update");
                     
                 return commandList;
             } else if (args[0].equalsIgnoreCase("linkaccount") && args.length == 2) {

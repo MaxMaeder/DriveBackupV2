@@ -1,16 +1,22 @@
 package ratismal.drivebackup.plugin;
 
+import java.util.List;
+
+import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import net.kyori.adventure.platform.bukkit.BukkitAudiences;
+import ratismal.drivebackup.config.ConfigMigrator;
 import ratismal.drivebackup.config.ConfigParser;
 import ratismal.drivebackup.config.Localization;
 import ratismal.drivebackup.config.Permissions;
 import ratismal.drivebackup.handler.CommandTabComplete;
 import ratismal.drivebackup.handler.PlayerListener;
 import ratismal.drivebackup.handler.commandHandler.CommandHandler;
+import ratismal.drivebackup.plugin.updater.UpdateChecker;
+import ratismal.drivebackup.plugin.updater.Updater;
 import ratismal.drivebackup.util.CustomConfig;
 import ratismal.drivebackup.util.MessageUtil;
 
@@ -22,6 +28,8 @@ public class DriveBackup extends JavaPlugin {
 
     private static CustomConfig localizationConfig;
     private static Localization localization;
+
+    public static Updater updater;
 
     /**
      * Global instance of Adventure audience
@@ -35,7 +43,6 @@ public class DriveBackup extends JavaPlugin {
         plugin = this;
 
         saveDefaultConfig();
-        getConfig().options().copyDefaults(true);
 
         DriveBackup.adventure = BukkitAudiences.create(plugin);
 
@@ -55,6 +62,8 @@ public class DriveBackup extends JavaPlugin {
         Scheduler.startBackupThread();
 
         BstatsMetrics.initMetrics();
+
+        updater = new Updater(plugin, this.getFile());
         UpdateChecker.updateCheck();
     }
 
@@ -63,6 +72,10 @@ public class DriveBackup extends JavaPlugin {
      */
     public void onDisable() {
         MessageUtil.Builder().text("Stopping plugin!").toConsole(true).send();
+    }
+
+    public void saveIntlConfig() {
+        localizationConfig.saveConfig();
     }
 
     /**
@@ -80,12 +93,18 @@ public class DriveBackup extends JavaPlugin {
     public static void reloadLocalConfig() {
         Scheduler.stopBackupThread();
 
+        List<CommandSender> players = Permissions.getPlayersWithPerm(Permissions.RELOAD_CONFIG);
+        
         getInstance().reloadConfig();
         FileConfiguration configFile = getInstance().getConfig();
-        config.reload(configFile, Permissions.getPlayersWithPerm(Permissions.RELOAD_CONFIG));
-
+        
         localizationConfig.reloadConfig();
         FileConfiguration localizationFile = localizationConfig.getConfig();
+
+        ConfigMigrator configMigrator = new ConfigMigrator(configFile, localizationFile, players);
+        configMigrator.migrate();
+
+        config.reload(configFile, players);
         localization.reload(localizationFile);
 
         Scheduler.startBackupThread();
