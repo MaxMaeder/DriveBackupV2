@@ -59,18 +59,18 @@ public class Updater {
         if (UpdateChecker.isUpdateAvailable()) {
             if (UpdateChecker.getLatestDownloadUrl() != null) {
                 try {
-                    MessageUtil.sendMessage(initiator, "Attempting to download the latest version of DriveBackupV2");
+                    MessageUtil.Builder().text("Attempting to download the latest version of DriveBackupV2").to(initiator).toConsole(false).send();
                     this.downloadFile();
-                    MessageUtil.sendMessageToPlayersWithPermission("Successfully updated plugin! Please restart your server in order for changes to take effect", Permissions.BACKUP, Collections.singletonList(initiator), false);
+                    MessageUtil.Builder().text("Successfully updated plugin! Please restart your server in order for changes to take effect").toPerm(Permissions.BACKUP).to(initiator).send();
                 } catch (Exception exception) {
-                    MessageUtil.sendMessage(initiator, "Plugin update failed, see console for more info");
+                    MessageUtil.Builder().text("Plugin update failed, see console for more info").to(initiator).toConsole(false).send();
                     MessageUtil.sendConsoleException(exception);
                 }
             } else {
-                MessageUtil.sendMessage(initiator, "Unable to fetch latest version of DriveBackupV2");
+                MessageUtil.Builder().text("Unable to fetch latest version of DriveBackupV2").to(initiator).toConsole(false).send();
             }
         } else {
-            MessageUtil.sendMessage(initiator, "You are using the latest version of DriveBackupV2!");
+            MessageUtil.Builder().text("You are using the latest version of DriveBackupV2!").to(initiator).toConsole(false).send();
         }
     }
 }
