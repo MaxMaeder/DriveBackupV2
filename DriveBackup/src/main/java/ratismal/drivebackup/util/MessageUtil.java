@@ -13,6 +13,7 @@ import org.bukkit.entity.Player;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.minimessage.MiniMessage;
 import ratismal.drivebackup.config.ConfigParser;
 import ratismal.drivebackup.config.ConfigParser.Config;
 import ratismal.drivebackup.plugin.DriveBackup;
@@ -32,6 +33,17 @@ public class MessageUtil {
 
     public MessageUtil text(String text) {
         message.add(Component.text(text, NamedTextColor.DARK_AQUA));
+        return this;
+    }
+
+    /**
+     * Parses & adds MiniMessage formatted text to the message
+     * @param input the MiniMessage text
+     * @param placeholders MiniMessage placeholders
+     * @return the calling MessageUtil's instance
+     */
+    public MessageUtil mmText(String text, String... placeholders) {
+        message.add(MiniMessage.get().parse(text, placeholders));
         return this;
     }
 
