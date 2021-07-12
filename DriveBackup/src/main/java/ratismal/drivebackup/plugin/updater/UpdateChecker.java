@@ -1,6 +1,5 @@
-package ratismal.drivebackup.plugin;
+package ratismal.drivebackup.plugin.updater;
 
-import java.io.IOException;
 import java.net.UnknownHostException;
 
 import org.json.JSONArray;
@@ -10,6 +9,7 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 import ratismal.drivebackup.config.ConfigParser;
+import ratismal.drivebackup.plugin.DriveBackup;
 import ratismal.drivebackup.util.MessageUtil;
 import ratismal.drivebackup.util.SchedulerUtil;
 import ratismal.drivebackup.util.Version;
@@ -29,6 +29,7 @@ public class UpdateChecker {
 
     private static Version currentVersion;
     private static Version latestVersion;
+    private static String latestDownloadUrl;
 
     public static void updateCheck() {
         DriveBackup plugin = DriveBackup.getInstance();
@@ -44,25 +45,25 @@ public class UpdateChecker {
                     public void run() {
                         if (ConfigParser.getConfig().advanced.updateCheckEnabled) {
                             try {
-                                MessageUtil.sendConsoleMessage("Checking for updates...");
+                                MessageUtil.Builder().text("Checking for updates...").toConsole(true).send();
 
                                 currentVersion = checker.getCurrent();
                                 latestVersion = checker.getLatest();
 
                                 if (latestVersion.isAfter(currentVersion)) {
-                                    MessageUtil.sendConsoleMessage("Version " + latestVersion.toString() + " has been released." + " You are currently running version " + currentVersion.toString());
-                                    MessageUtil.sendConsoleMessage("Update at: http://dev.bukkit.org/bukkit-plugins/drivebackupv2/");
+                                    MessageUtil.Builder().text("Version " + latestVersion.toString() + " has been released." + " You are currently running version " + currentVersion.toString()).toConsole(true).send();
+                                    MessageUtil.Builder().text("Update at: http://dev.bukkit.org/bukkit-plugins/drivebackupv2/").toConsole(true).send();
                                 } else if (currentVersion.isAfter(latestVersion)) {
-                                    MessageUtil.sendConsoleMessage("You are running an unsupported release!");
-                                    MessageUtil.sendConsoleMessage("The recommended release is " + latestVersion.toString() + ", and you are running " + currentVersion.toString());
-                                    MessageUtil.sendConsoleMessage("If the plugin has just recently updated, please ignore this message");
+                                    MessageUtil.Builder().text("You are running an unsupported release!").toConsole(true).send();
+                                    MessageUtil.Builder().text("The recommended release is " + latestVersion.toString() + ", and you are running " + currentVersion.toString()).toConsole(true).send();
+                                    MessageUtil.Builder().text("If the plugin has just recently updated, please ignore this message").toConsole(true).send();
                                 } else {
-                                    MessageUtil.sendConsoleMessage("Hooray! You are running the latest release!");
+                                    MessageUtil.Builder().text("Hooray! You are running the latest release!").toConsole(true).send();
                                 }
                             } catch (UnknownHostException exception) {
-                                MessageUtil.sendMessageToPlayersWithPermission("There was an issue attempting to check for the latest DriveBackupV2 release, check your network connection", "drivebackup.linkAccounts", true);
+                                MessageUtil.Builder().text("There was an issue attempting to check for the latest DriveBackupV2 release, check your network connection").toPerm("drivebackup.linkAccounts").send();
                             } catch (Exception exception) {
-                                MessageUtil.sendConsoleMessage("There was an issue attempting to check for the latest DriveBackupV2 release");
+                                MessageUtil.Builder().text("There was an issue attempting to check for the latest DriveBackupV2 release").toConsole(true).send();
                                 MessageUtil.sendConsoleException(exception);
                             }
                         }
@@ -78,7 +79,11 @@ public class UpdateChecker {
      */
     public static boolean isUpdateAvailable() {
         return latestVersion.isAfter(currentVersion);
-    } 
+    }
+
+    public static String getLatestDownloadUrl() {
+        return latestDownloadUrl;
+    }
 
     private DriveBackup plugin;
 
@@ -106,6 +111,7 @@ public class UpdateChecker {
         }
 
         String versionTitle = pluginVersions.getJSONObject(pluginVersions.length() - 1).getString("name").replace("DriveBackupV2-", "").trim();
+        latestDownloadUrl = pluginVersions.getJSONObject(pluginVersions.length() - 1).getString("downloadUrl");
         return Version.parse(versionTitle);
     }
 }

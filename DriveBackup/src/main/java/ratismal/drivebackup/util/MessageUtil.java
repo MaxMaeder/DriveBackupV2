@@ -1,9 +1,11 @@
 package ratismal.drivebackup.util;
 
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
+import org.apache.commons.lang.ObjectUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
@@ -12,123 +14,112 @@ import org.bukkit.entity.Player;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import ratismal.drivebackup.config.ConfigParser;
-import ratismal.drivebackup.config.configSections.Messages;
+import ratismal.drivebackup.config.ConfigParser.Config;
 import ratismal.drivebackup.plugin.DriveBackup;
 
 public class MessageUtil {
 
+    private Set<CommandSender> recipients = new HashSet<CommandSender>();
+    private List<Component> message = new ArrayList<Component>();
+    private Boolean sendToConsole = true;
+
+    public static MessageUtil Builder() {
+        return new MessageUtil();
+    }
+
+    public MessageUtil() {
+    }
+
+    public MessageUtil text(String text) {
+        message.add(Component.text(text, NamedTextColor.DARK_AQUA));
+        return this;
+    }
+
+    public MessageUtil emText(String text) {
+        message.add(Component.text(text, NamedTextColor.GOLD));
+        return this;
+    }
+
+    public MessageUtil text(Component component) {
+        message.add(component);
+        return this;
+    }
+
     /**
-     * Sends the specified message to all logged in players and the console
-     * @param message the message to send
+     * Adds a player to the list of recipients
+     * @param player the player to be added to the recipients
+     * @return the calling MessageUtil's instance
      */
-    public static void sendMessageToAllPlayers(String message) {
-        Bukkit.getConsoleSender().sendMessage(prefixMessage(message));
+    public MessageUtil to(CommandSender player) {
+        recipients.add(player);
+        return this;
+    }
 
-        if (!ConfigParser.getConfig().messages.sendInChat) return;
+    /**
+     * Adds a list of players to the list of recipients
+     * @param players the list of players to be added to the recipients
+     * @return the calling MessageUtil's instance
+     */
+    public MessageUtil to(List<CommandSender> players) {
+        for (CommandSender player : players) {
+          recipients.add(player);
+        }
+        return this;
+    }
 
-        message = translateMessageColors(message);
+    /**
+     * Adds all online players with the specified permissions to the recipients
+     * @param permission the specified permission to be added to the recipients
+     * @return the calling MessageUtil's instance
+     */
+    public MessageUtil toPerm(String permission) {
+        for (Player player : Bukkit.getServer().getOnlinePlayers()) {
+          if (player.hasPermission("drivebackup.linkAccounts") && !recipients.contains(player)) {
+              recipients.add(player);
+          }
+        }
+        return this;
+    }
 
+    /**
+     * Set whether or not if the message should be sent to console
+     * @param value boolean
+     * @return the calling MessageUtil's instance
+     */
+    public MessageUtil toConsole(boolean value) {
+        sendToConsole = value;
+        return this;
+    }
+
+    /**
+     * Adds all online players to the list of recipients
+     * @return the calling MessageUtil's instance
+     */
+    public MessageUtil all() {
         for (Player p : Bukkit.getOnlinePlayers()) {
-            p.sendMessage(prefixMessage(message));
+          recipients.add(p);
         }
+        return this;
     }
 
     /**
-     * Sends the specified message to all logged in players with the spacified permission
-     * @param message the message to send
-     * @param permission the permission
-     * @param sendToConsole whether to send the message to the server console as well
+     * Sends the message to the recipients
      */
-    public static void sendMessageToPlayersWithPermission(String message, String permission, boolean sendToConsole) {
-        sendMessageToPlayersWithPermission(message, permission, Collections.emptyList(), sendToConsole);
-    }
+    public void send() {
+        Component builtComponent = prefixMessage(Component.join(Component.text(" "), message));
 
-    /**
-     * Sends the specified message to all logged in players with the spacified permission and to players in the specified list
-     * @param message the message to send
-     * @param permission the permission
-     * @param additionalPlayers additional players to send the message to
-     * @param sendToConsole whether to send the message to the server console as well
-     */
-    public static void sendMessageToPlayersWithPermission(String message, String permission, List<CommandSender> additionalPlayers, boolean sendToConsole) {
-        ArrayList<CommandSender> players = new ArrayList<>();
-        players.addAll(additionalPlayers);
+        if (sendToConsole) DriveBackup.adventure.console().sendMessage(builtComponent);
 
-        for (Player player : Bukkit.getServer().getOnlinePlayers()) {
-            if (player.hasPermission("drivebackup.linkAccounts") && !players.contains(player)) {
-                players.add(player);
-            }
-        }
+        Config config = (Config) ObjectUtils.defaultIfNull(ConfigParser.getConfig(), ConfigParser.defaultConfig());
+        if (!config.messages.sendInChat) return;
 
-        for (CommandSender player : players) {
+        for (CommandSender player : recipients) {
             if (player == null) {
                 continue;
             }
 
-            sendMessage(player, message);
+            DriveBackup.adventure.sender(player).sendMessage(builtComponent);
         }
-
-        if (sendToConsole) sendConsoleMessage(message);
-    }
-
-    /**
-     * Sends the specified message to all logged in players with the spacified permission
-     * @param message the message to send
-     * @param permission the permission
-     */
-    public static void sendMessageToPlayersWithPermission(Component message, String permission) {
-        sendMessageToPlayersWithPermission(message, permission, Collections.emptyList());
-    }
-
-    /**
-     * Sends the specified message to all logged in players with the spacified permission and to players in the specified list
-     * @param message the message to send
-     * @param permission the permission
-     * @param additionalPlayers additional players to send the message to
-     */
-    public static void sendMessageToPlayersWithPermission(Component message, String permission, List<CommandSender> additionalPlayers) {
-        ArrayList<CommandSender> players = new ArrayList<>();
-        players.addAll(additionalPlayers);
-
-        for (Player player : Bukkit.getServer().getOnlinePlayers()) {
-            if (player.hasPermission(permission) && !players.contains(player)) {
-                players.add(player);
-            }
-        }
-
-        for (CommandSender player : players) {
-            if (player == null) {
-                continue;
-            }
-
-            sendMessage(player, message);
-        }
-    }
-
-    /**
-     * Sends the specified message to the specified player
-     * @param player the player to send the message to
-     * @param message the message to send
-     */
-    public static void sendMessage(CommandSender player, String message) {
-        player.sendMessage(prefixMessage(message));
-    }
-
-    /**
-     * Sends the specified message to the specified player
-     * @param player the player to send the message to
-     * @param message the message to send
-     */
-    public static void sendMessage(CommandSender player, Component message) {
-        DriveBackup.adventure.sender(player).sendMessage(prefixMessage(message));
-    }
-
-    /**
-     * Sends the specified message to the server console
-     * @param message the message to send
-     */
-    public static void sendConsoleMessage(String message) {
-        Bukkit.getConsoleSender().sendMessage(prefixMessage(message));
     }
 
     /**
@@ -138,7 +129,8 @@ public class MessageUtil {
      * @param exception Exception to send the stack trace of
      */
     public static void sendConsoleException(Exception exception) {
-    	if (ConfigParser.getConfig().advanced.suppressErrors) {
+        Config config = (Config) ObjectUtils.defaultIfNull(ConfigParser.getConfig(), ConfigParser.defaultConfig());
+    	if (!config.advanced.suppressErrors) {
     		exception.printStackTrace();
     	}
     }
@@ -148,37 +140,10 @@ public class MessageUtil {
      * @param message the message to prefix
      * @return the prefixed message
      */
-    private static String prefixMessage(String message) {
-        Messages messages;
-        try {
-            messages = ConfigParser.getConfig().messages;
-        } catch (Exception exception) {
-            messages = Messages.defaultConfig();
-        }
-
-        return translateMessageColors(messages.prefix + messages.defaultColor) + message;
-    }
-
-    /**
-     * Prefixes the specified message with the plugin name
-     * @param message the message to prefix
-     * @return the prefixed message
-     */
     private static Component prefixMessage(Component message) {
-        return Component.text()
-            .append(
-                Component.text("[")
-                .color(NamedTextColor.GOLD)
-            )
-            .append(
-                Component.text("DriveBackupV2")
-                .color(NamedTextColor.DARK_RED)
-            )
-            .append(
-                Component.text("] "))
-                .color(NamedTextColor.GOLD)
-            .append(message)
-            .build();
+        Config config = (Config) ObjectUtils.defaultIfNull(ConfigParser.getConfig(), ConfigParser.defaultConfig());
+
+        return Component.text(translateMessageColors(config.messages.prefix)).append(message);
     }
 
     /**
@@ -189,5 +154,4 @@ public class MessageUtil {
     public static String translateMessageColors(String message) {
         return ChatColor.translateAlternateColorCodes('&', message);
     }
-
 }

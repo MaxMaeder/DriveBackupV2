@@ -13,6 +13,7 @@ import ratismal.drivebackup.config.configSections.BackupScheduling;
 import ratismal.drivebackup.config.configSections.BackupStorage;
 import ratismal.drivebackup.config.configSections.ExternalBackups;
 import ratismal.drivebackup.config.configSections.Messages;
+import ratismal.drivebackup.plugin.DriveBackup;
 import ratismal.drivebackup.util.MessageUtil;
 
 public class ConfigParser {
@@ -85,12 +86,27 @@ public class ConfigParser {
     public void reload(List<CommandSender> initiators) {
         Logger logger = message -> {
             for (CommandSender initiator : initiators) {
-                MessageUtil.sendMessage(initiator, message);
+                MessageUtil.Builder().text(message).to(initiator).toConsole(false).send();
             }
-            MessageUtil.sendConsoleMessage(message);
+            MessageUtil.Builder().text(message).toConsole(true).send();
         };
 
         parsedConfig = new Config(
+            BackupStorage.parse(config, logger),
+            BackupScheduling.parse(config, logger),
+            BackupList.parse(config, logger),
+            ExternalBackups.parse(config, logger),
+            BackupMethods.parse(config, logger),
+            Messages.parse(config, logger),
+            Advanced.parse(config, logger)
+        );
+    }
+
+    public static Config defaultConfig() {
+        FileConfiguration config = DriveBackup.getInstance().getConfig();
+        Logger logger = message -> {};
+
+        return new Config(
             BackupStorage.parse(config, logger),
             BackupScheduling.parse(config, logger),
             BackupList.parse(config, logger),

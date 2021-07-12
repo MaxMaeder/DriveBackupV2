@@ -25,10 +25,7 @@ public class ConfigMigrator {
 
     public void migrate() {
         Logger logger = message -> {
-            for (CommandSender initiator : initiators) {
-                MessageUtil.sendMessage(initiator, message);
-            }
-            MessageUtil.sendConsoleMessage(message);
+            MessageUtil.Builder().text(message).to(initiators).toConsole(true).send();
         };
 
         if (config.contains("version") && config.getInt("version") >= Config.VERSION) {

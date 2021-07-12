@@ -8,7 +8,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
-import ratismal.drivebackup.plugin.UpdateChecker;
+import ratismal.drivebackup.plugin.updater.UpdateChecker;
 import ratismal.drivebackup.util.MessageUtil;
 
 /**
@@ -25,23 +25,22 @@ public class PlayerListener implements Listener {
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
         if (!autoBackupsActive) {
-            MessageUtil.sendConsoleMessage("Enabling automatic backups");
+            MessageUtil.Builder().text("Enabling automatic backups").toConsole(true).send();
             autoBackupsActive = true;
         }
 
         if (UpdateChecker.isUpdateAvailable() && event.getPlayer().hasPermission("drivebackup.linkAccounts")) {
 
-            MessageUtil.sendMessage(event.getPlayer(), Component.text()
-                .append(
-                    Component.text("An update is available, get it here: ")
+            MessageUtil.Builder().text(
+                Component.text("An update is available, get it here: ")
                     .color(NamedTextColor.DARK_AQUA)
-                )
                 .append(
                     Component.text("http://bit.ly/2M14uVD")
                     .color(NamedTextColor.GOLD)
                     .hoverEvent(HoverEvent.showText(Component.text("Go to URL")))
                     .clickEvent(ClickEvent.openUrl("http://bit.ly/2M14uVD"))
-                ).build());
+                )
+            ).to(event.getPlayer()).toConsole(false).send();
         }
     }
 

@@ -36,12 +36,12 @@ public class DriveBackupApi {
 
                 if (!future.get(10, TimeUnit.SECONDS)) {
                     shouldStartBackup = false;
-                    MessageUtil.sendConsoleMessage("Not starting a backup due to a beforeBackupStart() Callable returning false");
+                    MessageUtil.Builder().text("Not starting a backup due to a beforeBackupStart() Callable returning false").toConsole(true).send();
 
                     break;
                 }
             } catch (Exception exception) {
-                MessageUtil.sendConsoleMessage("Failed to execute a beforeBackupStart() Callable, ignoring");
+                MessageUtil.Builder().text("Failed to execute a beforeBackupStart() Callable, ignoring").toConsole(true).send();
                 MessageUtil.sendConsoleException(exception);
             }
         }
