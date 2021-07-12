@@ -18,9 +18,9 @@ public class BstatsMetrics {
                 BstatsMetrics metrics = new BstatsMetrics(DriveBackup.getInstance());
                 metrics.updateMetrics();
 
-                MessageUtil.sendConsoleMessage("Metrics started");
+                MessageUtil.Builder().text("Metrics started").toConsole(true).send();
             } catch (IOException e) {
-                MessageUtil.sendConsoleMessage("Metrics failed to start");
+                MessageUtil.Builder().text("Metrics failed to start").toConsole(true).send();
             }
         }
     }

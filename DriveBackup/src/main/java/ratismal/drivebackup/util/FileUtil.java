@@ -52,8 +52,8 @@ public class FileUtil {
                     backupList.put(date.toEpochSecond(), file);
                 } catch (Exception e) {
                     backupList.put(0L, file);
-                    MessageUtil.sendConsoleMessage("Unable to parse date format of stored backup \"" + dateString + "\", this can be due to the date format being updated in the config.yml");
-                    MessageUtil.sendConsoleMessage("Backup will be deleted first");
+                    MessageUtil.Builder().text("Unable to parse date format of stored backup \"" + dateString + "\", this can be due to the date format being updated in the config.yml").send();
+                    MessageUtil.Builder().text("Backup will be deleted first").send();
                 }
             }
         }
@@ -108,12 +108,12 @@ public class FileUtil {
             int blacklistedFiles = blacklistEntry.getBlacklistedFiles();
 
             if (blacklistedFiles > 0) {
-                MessageUtil.sendConsoleMessage("Didn't include " + blacklistedFiles + " file(s) in the backup, as they are blacklisted by \"" + globPattern + "\"");
+                MessageUtil.Builder().text("Didn't include " + blacklistedFiles + " file(s) in the backup, as they are blacklisted by \"" + globPattern + "\"").toConsole(true).send();
             }
         }
 
         if (backupFiles > 0) {
-            MessageUtil.sendConsoleMessage("Didn't include " + backupFiles + " file(s) in the backup, as they are in the folder used for backups");
+            MessageUtil.Builder().text("Didn't include " + backupFiles + " file(s) in the backup, as they are in the folder used for backups").toConsole(true).send();
         }
 
         zipIt(type, path.getPath() + "/" + fileName);
@@ -136,7 +136,7 @@ public class FileUtil {
                 getNewestBackup(type, formatter);
 
                 if (backupList.size() > localKeepCount) {
-                    MessageUtil.sendConsoleMessage("There are " + backupList.size() + " file(s) which exceeds the local limit of " + localKeepCount + ", deleting oldest");
+                    MessageUtil.Builder().text("There are " + backupList.size() + " file(s) which exceeds the local limit of " + localKeepCount + ", deleting oldest").toConsole(true).send();
                 }
                 
 
@@ -145,14 +145,14 @@ public class FileUtil {
                     long dateOfFile = backupList.descendingMap().lastKey();
 
                     if (!fileToDelete.delete()) {
-                        MessageUtil.sendConsoleMessage("Failed to delete local backup \"" + fileToDelete.getName() + "\"");
+                        MessageUtil.Builder().text("Failed to delete local backup \"" + fileToDelete.getName() + "\"").toConsole(true).send();
                     }
                     
                     backupList.remove(dateOfFile);
                 }
             } catch (Exception e) {
                 MessageUtil.sendConsoleException(e);
-                MessageUtil.sendConsoleMessage("Local backup deletion failed");
+                MessageUtil.Builder().text("Local backup deletion failed").toConsole(true).send();
             }
         }
     }
@@ -190,7 +190,7 @@ public class FileUtil {
                     String filePath = new File(inputFolderPath, file).getPath();
 
                     if (!filePath.endsWith(".lock")) { // Don't send warning for .lock files, they will always be locked
-                        MessageUtil.sendConsoleMessage("Failed to include \"" + filePath + "\" in the backup, is it locked?");
+                        MessageUtil.Builder().text("Failed to include \"" + filePath + "\" in the backup, is it locked?").toConsole(true).send();
                     }
                 }
 

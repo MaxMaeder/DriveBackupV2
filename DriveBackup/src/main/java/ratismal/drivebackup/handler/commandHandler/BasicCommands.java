@@ -13,7 +13,7 @@ import ratismal.drivebackup.config.ConfigParser;
 import ratismal.drivebackup.config.ConfigParser.Config;
 import ratismal.drivebackup.config.configSections.BackupList.BackupListEntry;
 import ratismal.drivebackup.plugin.DriveBackup;
-import ratismal.drivebackup.plugin.UpdateChecker;
+import ratismal.drivebackup.plugin.updater.UpdateChecker;
 import ratismal.drivebackup.util.MessageUtil;
 
 import static ratismal.drivebackup.config.Localization.intl;
@@ -89,6 +89,10 @@ public class BasicCommands {
         DriveBackup.adventure.sender(player).sendMessage(genCommandHelpMessage("/drivebackup status", "Gets the status of the running backup"));
         DriveBackup.adventure.sender(player).sendMessage(genCommandHelpMessage("/drivebackup backup", "Manually initiates a backup"));
         DriveBackup.adventure.sender(player).sendMessage(genCommandHelpMessage("/drivebackup test ftp", "Tests the connection to the (S)FTP server"));
+        DriveBackup.adventure.sender(player).sendMessage(genCommandHelpMessage("/drivebackup test googledrive", "Tests the connection to Google Drive"));
+        DriveBackup.adventure.sender(player).sendMessage(genCommandHelpMessage("/drivebackup test onedrive", "Tests the connection to OneDrive"));
+        DriveBackup.adventure.sender(player).sendMessage(genCommandHelpMessage("/drivebackup test dropbox", "Tests the connection to Dropbox"));
+        DriveBackup.adventure.sender(player).sendMessage(genCommandHelpMessage("/drivebackup update", "Updates the plugin if there is a newer version"));
     }
 
     /**
@@ -162,7 +166,7 @@ public class BasicCommands {
             }
         }
 
-        MessageUtil.sendMessage(player, locationMessage.build());
+        MessageUtil.Builder().text(locationMessage.build()).toConsole(false).to(player).send();
 
         Component helpMessage = Component.text()
             .append(
@@ -175,7 +179,7 @@ public class BasicCommands {
                 .clickEvent(ClickEvent.openUrl("https://bit.ly/3xoHRAs")))
             .build();
 
-        MessageUtil.sendMessage(player, helpMessage);
+        MessageUtil.Builder().text(helpMessage).toConsole(false).to(player).send();
     }
 
     /**
@@ -183,8 +187,6 @@ public class BasicCommands {
      * @param player the player to send the message to
      */
     public static void sendNoPerms(CommandSender player) {
-        String noPerms = intl("no-perm");
-        noPerms = MessageUtil.translateMessageColors(noPerms);
-        MessageUtil.sendMessage(player, noPerms);
+        MessageUtil.Builder().text(intl("no-perm")).to(player).toConsole(false).send();
     }
 }

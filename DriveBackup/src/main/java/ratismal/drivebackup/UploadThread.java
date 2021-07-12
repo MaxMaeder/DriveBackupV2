@@ -104,8 +104,8 @@ public class UploadThread implements Runnable {
         Config config = ConfigParser.getConfig();
 
         if (initiator != null && backupStatus != BackupStatus.NOT_RUNNING) {
-            MessageUtil.sendMessage(initiator, "A backup is already running");
-            MessageUtil.sendMessage(initiator, getBackupStatus());
+            MessageUtil.Builder().text("A backup is already running").to(initiator).toConsole(false).send();
+            MessageUtil.Builder().text(getBackupStatus()).to(initiator).toConsole(false).send();
 
             return;
         }
@@ -121,7 +121,7 @@ public class UploadThread implements Runnable {
         }
 
         if (config.backupStorage.backupsRequirePlayers && !PlayerListener.isAutoBackupsActive() && initiator == null) {
-            MessageUtil.sendConsoleMessage("Skipping backup due to inactivity");
+            MessageUtil.Builder().text("Skipping backup due to inactivity").toConsole(true).send();
 
             return;
         }
@@ -135,14 +135,14 @@ public class UploadThread implements Runnable {
             config.backupStorage.localKeepCount == 0
             ) {
 
-            MessageUtil.sendMessageToPlayersWithPermission("No backup method is enabled", "drivebackup.linkAccounts", Collections.singletonList(initiator), true);
+            MessageUtil.Builder().text("No backup method is enabled").toPerm("drivebackup.linkAccounts").to(initiator).send();
 
             return;
         }
 
         ServerUtil.setAutoSave(false);
 
-        MessageUtil.sendMessageToAllPlayers(intl("backup-start"));
+        MessageUtil.Builder().text(intl("backup-start")).all().send();
 
 
         ArrayList<Uploader> uploaders = new ArrayList<Uploader>();
@@ -191,27 +191,27 @@ public class UploadThread implements Runnable {
         backupStatus = BackupStatus.NOT_RUNNING;
             
         if (config.backupStorage.localKeepCount != 0) {
-            MessageUtil.sendMessageToPlayersWithPermission(ChatColor.GOLD + "Local " + ChatColor.DARK_AQUA + "backup complete", "drivebackup.linkAccounts", Collections.singletonList(initiator), false);
+            MessageUtil.Builder().emText("Local ").text("backup complete").toPerm("drivebackup.linkAccounts").to(initiator).toConsole(false).send();
         }
 
         for(int i = 0; i < uploaders.size(); i++) {
             uploaders.get(i).close();
             if (uploaders.get(i).isErrorWhileUploading()) {
-                MessageUtil.sendMessageToPlayersWithPermission(uploaders.get(i).getSetupInstructions(), "drivebackup.linkAccounts", Collections.singletonList(initiator));
+                MessageUtil.Builder().text(uploaders.get(i).getSetupInstructions()).toPerm("drivebackup.linkAccounts").to(initiator).send();
                 errorOccurred = true;
             } else {
-                MessageUtil.sendMessageToPlayersWithPermission("Backup to " + ChatColor.GOLD + uploaders.get(i).getName() + ChatColor.DARK_AQUA + " complete", "drivebackup.linkAccounts", Collections.singletonList(initiator), false);
+                MessageUtil.Builder().text("Backup to ").emText(uploaders.get(i).getName()).text(" complete").toPerm("drivebackup.linkAccounts").to(initiator).toConsole(false).send();
             }
         }
 
         if (initiator != null) {
-            MessageUtil.sendMessageToAllPlayers(intl("backup-complete"));
+            MessageUtil.Builder().text(intl("backup-complete")).to(initiator).send();
         } else {
-            MessageUtil.sendMessageToAllPlayers(intl("backup-complete") + " " + getNextAutoBackup());
+            MessageUtil.Builder().text(intl("backup-complete") + " " + getNextAutoBackup()).all().send();
         }
 
         if (config.backupStorage.backupsRequirePlayers && Bukkit.getOnlinePlayers().size() == 0 && PlayerListener.isAutoBackupsActive()) {
-            MessageUtil.sendConsoleMessage("Disabling automatic backups due to inactivity");
+            MessageUtil.Builder().text("Disabling automatic backups due to inactivity").toConsole(true).send();
             PlayerListener.setAutoBackupsActive(false);
         }
 
@@ -234,15 +234,15 @@ public class UploadThread implements Runnable {
      * @return True if any error occurred
      */
     private Boolean doSingleBackup(String type, LocalDateTimeFormatter  formatter, boolean create, List<String> blackList, List<Uploader> uploaders) {
-        MessageUtil.sendConsoleMessage("Doing backups for \"" + type + "\"");
+        MessageUtil.Builder().text("Doing backups for \"" + type + "\"").toConsole(true).send();
         if (create) {
             backupStatus = BackupStatus.COMPRESSING;
 
             try {
                 FileUtil.makeBackup(type, formatter, blackList);
             } catch (IllegalArgumentException exception) {
-                MessageUtil.sendMessageToPlayersWithPermission("Failed to create a backup, path to folder to backup is absolute, expected a relative path", "drivebackup.linkAccounts", Collections.singletonList(initiator), true);
-                MessageUtil.sendMessageToPlayersWithPermission("An absolute path can overwrite sensitive files, see the " + ChatColor.GOLD + "config.yml " + ChatColor.DARK_AQUA + "for more information", "drivebackup.linkAccounts", Collections.singletonList(initiator), true);
+                MessageUtil.Builder().text("Failed to create a backup, path to folder to backup is absolute, expected a relative path").toPerm("drivebackup.linkAccounts").to(initiator).send();
+                MessageUtil.Builder().text("An absolute path can overwrite sensitive files, see the ").emText("config.yml ").text("for more information").toPerm("drivebackup.linkAccounts").to(initiator).send();
 
                 backupStatus = BackupStatus.NOT_RUNNING;
 
@@ -251,7 +251,7 @@ public class UploadThread implements Runnable {
                 return true;
             } catch (Exception exception) {
                 MessageUtil.sendConsoleException(exception);
-                MessageUtil.sendMessageToPlayersWithPermission("Failed to create a backup", "drivebackup.linkAccounts", Collections.singletonList(initiator), true);
+                MessageUtil.Builder().text("Failed to create a backup").toPerm("drivebackup.linkAccounts").to(initiator).send();
 
                 backupStatus = BackupStatus.NOT_RUNNING;
 
@@ -273,14 +273,14 @@ public class UploadThread implements Runnable {
 
 
             for(int i = 0; i < uploaders.size(); i++) {
-                MessageUtil.sendConsoleMessage("Uploading file to " + uploaders.get(i).getName());
+                MessageUtil.Builder().text("Uploading file to " + uploaders.get(i).getName()).toConsole(true).send();
                 timer.start();
                 uploaders.get(i).uploadFile(file, type);
                 timer.end();
                 if(!uploaders.get(i).isErrorWhileUploading()) {
-                    MessageUtil.sendConsoleMessage(timer.getUploadTimeMessage(file));
+                    MessageUtil.Builder().text(timer.getUploadTimeMessage(file)).toConsole(true).send();
                 } else {
-                    MessageUtil.sendConsoleMessage("Upload failed");
+                    MessageUtil.Builder().text("Upload failed").toConsole(true).send();
                 }
             }
 
@@ -296,7 +296,7 @@ public class UploadThread implements Runnable {
      * @param externalBackup the external backup settings
      */
     private void makeExternalFileBackup(ExternalFTPSource externalBackup) {
-        MessageUtil.sendConsoleMessage("Downloading files from a (S)FTP server (" + getSocketAddress(externalBackup) + ") to include in backup");
+        MessageUtil.Builder().text("Downloading files from a (S)FTP server (" + getSocketAddress(externalBackup) + ") to include in backup").toConsole(true).send();
 
         FTPUploader ftpUploader = new FTPUploader(
                 externalBackup.hostname, 
@@ -356,7 +356,7 @@ public class UploadThread implements Runnable {
                 int blacklistedFiles = blacklistEntry.getBlacklistedFiles();
     
                 if (blacklistedFiles > 0) {
-                    MessageUtil.sendConsoleMessage("Didn't include " + blacklistedFiles + " file(s) in the backup from the external (S)FTP server, as they are blacklisted by \"" + globPattern + "\"");
+                    MessageUtil.Builder().text("Didn't include " + blacklistedFiles + " file(s) in the backup from the external (S)FTP server, as they are blacklisted by \"" + globPattern + "\"").toConsole(true).send();
                 }
             }
         }
@@ -372,9 +372,9 @@ public class UploadThread implements Runnable {
         backupList.add(backup);
 
         if (ftpUploader.isErrorWhileUploading()) {
-            MessageUtil.sendMessageToPlayersWithPermission("Failed to include files from a (S)FTP server (" + getSocketAddress(externalBackup) + ") in the backup, please check the server credentials in the " + ChatColor.GOLD + "config.yml", "drivebackup.linkAccounts", Collections.singletonList(initiator), false);
+            MessageUtil.Builder().text("Failed to include files from a (S)FTP server (" + getSocketAddress(externalBackup) + ") in the backup, please check the server credentials in the ").emText("config.yml").toPerm("drivebackup.linkAccounts").to(initiator).toConsole(false).send();
         } else {
-            MessageUtil.sendMessageToPlayersWithPermission("Files from a " + ChatColor.GOLD + "(S)FTP server (" + getSocketAddress(externalBackup) + ") " + ChatColor.DARK_AQUA + "were successfully included in the backup", "drivebackup.linkAccounts", Collections.singletonList(initiator), false);
+            MessageUtil.Builder().text("Files from a ").emText("(S)FTP server (" + getSocketAddress(externalBackup) + ") ").text("were successfully included in the backup").toPerm("drivebackup.linkAccounts").to(initiator).toConsole(false).send();
         }
     }
 
@@ -383,7 +383,7 @@ public class UploadThread implements Runnable {
      * @param externalBackup the external backup settings
      */
     private void makeExternalDatabaseBackup(ExternalMySQLSource externalBackup) {
-        MessageUtil.sendConsoleMessage("Downloading databases from a MySQL server (" + getSocketAddress(externalBackup) + ") to include in backup");
+        MessageUtil.Builder().text("Downloading databases from a MySQL server (" + getSocketAddress(externalBackup) + ") to include in backup").toConsole(true).send();
 
         MySQLUploader mysqlUploader = new MySQLUploader(
                 externalBackup.hostname, 
@@ -394,7 +394,7 @@ public class UploadThread implements Runnable {
 
         for (MySQLDatabaseBackup database : externalBackup.databaseList) {
             for (String blacklistEntry : database.blacklist) {
-                MessageUtil.sendConsoleMessage("Didn't include table \"" + blacklistEntry + "\" in the backup, as it is blacklisted");
+                MessageUtil.Builder().text("Didn't include table \"" + blacklistEntry + "\" in the backup, as it is blacklisted").toConsole(true).send();
             }
 
             mysqlUploader.downloadDatabase(database.name, getTempFolderName(externalBackup), Arrays.asList(database.blacklist));
@@ -409,9 +409,9 @@ public class UploadThread implements Runnable {
         backupList.add(backup);
 
         if (mysqlUploader.isErrorWhileUploading()) {
-            MessageUtil.sendMessageToPlayersWithPermission("Failed to include databases from a MySQL server (" + getSocketAddress(externalBackup) + ") in the backup, please check the server credentials in the " + ChatColor.GOLD + "config.yml", "drivebackup.linkAccounts", Collections.singletonList(initiator), false);
+            MessageUtil.Builder().text("Failed to include databases from a MySQL server (" + getSocketAddress(externalBackup) + ") in the backup, please check the server credentials in the ").emText("config.yml").toPerm("drivebackup.linkAccounts").to(initiator).toConsole(false).send();
         } else {
-            MessageUtil.sendMessageToPlayersWithPermission("Databases from a " + ChatColor.GOLD + "MySQL server (" + getSocketAddress(externalBackup) + ") " + ChatColor.DARK_AQUA + "were successfully included in the backup", "drivebackup.linkAccounts", Collections.singletonList(initiator), false);
+            MessageUtil.Builder().text("Databases from a ").emText("MySQL server (" + getSocketAddress(externalBackup) + ") ").text("were successfully included in the backup").toPerm("drivebackup.linkAccounts").to(initiator).toConsole(false).send();
         }
     }
 

@@ -15,6 +15,8 @@ import ratismal.drivebackup.config.Permissions;
 import ratismal.drivebackup.handler.CommandTabComplete;
 import ratismal.drivebackup.handler.PlayerListener;
 import ratismal.drivebackup.handler.commandHandler.CommandHandler;
+import ratismal.drivebackup.plugin.updater.UpdateChecker;
+import ratismal.drivebackup.plugin.updater.Updater;
 import ratismal.drivebackup.util.CustomConfig;
 import ratismal.drivebackup.util.MessageUtil;
 
@@ -26,6 +28,8 @@ public class DriveBackup extends JavaPlugin {
 
     private static CustomConfig localizationConfig;
     private static Localization localization;
+
+    public static Updater updater;
 
     /**
      * Global instance of Adventure audience
@@ -40,6 +44,8 @@ public class DriveBackup extends JavaPlugin {
 
         saveDefaultConfig();
 
+        DriveBackup.adventure = BukkitAudiences.create(plugin);
+
         config = new ConfigParser(getConfig());
         config.reload(Permissions.getPlayersWithPerm(Permissions.RELOAD_CONFIG));
 
@@ -49,8 +55,6 @@ public class DriveBackup extends JavaPlugin {
 
         getCommand(CommandHandler.CHAT_KEYWORD).setTabCompleter(new CommandTabComplete(plugin));
         getCommand(CommandHandler.CHAT_KEYWORD).setExecutor(new CommandHandler(plugin));
-        
-        DriveBackup.adventure = BukkitAudiences.create(plugin);
 
         PluginManager pm = getServer().getPluginManager();
         pm.registerEvents(new PlayerListener(), plugin);
@@ -58,6 +62,8 @@ public class DriveBackup extends JavaPlugin {
         Scheduler.startBackupThread();
 
         BstatsMetrics.initMetrics();
+
+        updater = new Updater(plugin, this.getFile());
         UpdateChecker.updateCheck();
     }
 
@@ -65,7 +71,7 @@ public class DriveBackup extends JavaPlugin {
      * What to do when plugin is disabled
      */
     public void onDisable() {
-        MessageUtil.sendConsoleMessage("Stopping plugin!");
+        MessageUtil.Builder().text("Stopping plugin!").toConsole(true).send();
     }
 
     public void saveIntlConfig() {
