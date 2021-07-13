@@ -7,6 +7,8 @@ import org.bukkit.configuration.file.FileConfiguration;
 import ratismal.drivebackup.config.ConfigParser;
 import ratismal.drivebackup.config.ConfigParser.Logger;
 
+import static ratismal.drivebackup.config.Localization.intl;
+
 public class BackupMethods {
     public static class BackupMethod {
         public final boolean enabled;
@@ -103,7 +105,7 @@ public class BackupMethods {
             try {
                 publicKey = ConfigParser.verifyPath(config.getString("ftp.sftp-public-key"));
             } catch (Exception e) {
-                logger.log("Path to public key invalid for FTP backup method, leaving blank");
+                logger.log(intl("ftp-method-pubic-key-invalid"));
             }
         }
 
@@ -112,7 +114,7 @@ public class BackupMethods {
             try {
                 baseDir = ConfigParser.verifyPath(config.getString("ftp.base-dir"));
             } catch (Exception e) {
-                logger.log("Passphrase invalid for FTP backup method, leaving blank");
+                logger.log(intl("ftp-method-passphrase-invalid"));
             }
         }
 

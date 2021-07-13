@@ -36,6 +36,11 @@ public class MessageUtil {
         return this;
     }
 
+    public MessageUtil emText(String text) {
+        message.add(Component.text(text, NamedTextColor.GOLD));
+        return this;
+    }
+
     /**
      * Parses & adds MiniMessage formatted text to the message
      * @param input the MiniMessage text
@@ -43,12 +48,7 @@ public class MessageUtil {
      * @return the calling MessageUtil's instance
      */
     public MessageUtil mmText(String text, String... placeholders) {
-        message.add(MiniMessage.get().parse(text, placeholders));
-        return this;
-    }
-
-    public MessageUtil emText(String text) {
-        message.add(Component.text(text, NamedTextColor.GOLD));
+        message.add(MiniMessage.get().parse("<dark_aqua>" + text, placeholders));
         return this;
     }
 

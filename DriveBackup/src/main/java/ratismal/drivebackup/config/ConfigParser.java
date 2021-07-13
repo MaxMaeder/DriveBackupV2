@@ -18,7 +18,7 @@ import ratismal.drivebackup.util.MessageUtil;
 
 public class ConfigParser {
     public interface Logger {
-        public void log(String message);
+        public void log(String input, String... placeholders);
     }
 
     public static class Config {
@@ -84,11 +84,8 @@ public class ConfigParser {
      * Reloads the plugin's {@code config.yml}
      */
     public void reload(List<CommandSender> initiators) {
-        Logger logger = message -> {
-            for (CommandSender initiator : initiators) {
-                MessageUtil.Builder().text(message).to(initiator).toConsole(false).send();
-            }
-            MessageUtil.Builder().text(message).toConsole(true).send();
+        Logger logger = (input, placeholders) -> {
+            MessageUtil.Builder().mmText(input, placeholders).to(initiators).send();
         };
 
         parsedConfig = new Config(
@@ -104,7 +101,7 @@ public class ConfigParser {
 
     public static Config defaultConfig() {
         FileConfiguration config = DriveBackup.getInstance().getConfig();
-        Logger logger = message -> {};
+        Logger logger = (input, placeholders) -> {};
 
         return new Config(
             BackupStorage.parse(config, logger),

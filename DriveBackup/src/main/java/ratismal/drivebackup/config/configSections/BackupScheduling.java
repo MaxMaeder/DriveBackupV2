@@ -14,6 +14,8 @@ import org.bukkit.configuration.file.FileConfiguration;
 import ratismal.drivebackup.config.ConfigParser.Logger;
 import ratismal.drivebackup.util.SchedulerUtil;
 
+import static ratismal.drivebackup.config.Localization.intl;
+
 public class BackupScheduling {
     public static class BackupScheduleEntry {
         public final DayOfWeek[] days;
@@ -43,13 +45,13 @@ public class BackupScheduling {
         List<Map<?, ?>> rawSchedule = config.getMapList("backup-schedule-list");
         List<BackupScheduleEntry> schedule = new ArrayList<>();
         for (Map<?, ?> rawScheduleEntry : rawSchedule) {
-            int entryIndex = rawSchedule.indexOf(rawScheduleEntry) + 1;
+            String entryIndex = String.valueOf(rawSchedule.indexOf(rawScheduleEntry) + 1);
             
             List<String> rawDays;
             try {
                 rawDays = (List<String>) rawScheduleEntry.get("days");
             } catch (Exception e) {
-                logger.log("Days list invalid, skipping schedule entry " + entryIndex);
+                logger.log(intl("backup-schedule-days-invalid"), "entry", entryIndex);
                 continue;
             }
 
@@ -79,12 +81,12 @@ public class BackupScheduling {
                         days.add(DayOfWeek.valueOf(rawDay.toUpperCase(Locale.ROOT)));
                     }
                 } catch (Exception e) {
-                    logger.log("Day of week invalid, skipping day of week \"" + rawDay + "\"");
+                    logger.log(intl("backup-schedule-day-invalid"));
                 }
             }
 
             if (days.size() == 0) {
-                logger.log("Day of week list empty, skipping schedule entry " + entryIndex);
+                logger.log(intl("backup-schedule-day-empty"), "entry", entryIndex);
                 continue;
             }
 
@@ -92,7 +94,7 @@ public class BackupScheduling {
             try {
                 time = SchedulerUtil.parseTime((String) rawScheduleEntry.get("time"));
             } catch (Exception e) {
-                logger.log("Time invalid, skipping schedule entry " + entryIndex);
+                logger.log(intl("backup-schedule-time-invalid"), "entry", entryIndex);
                 continue;
             }
 
@@ -103,11 +105,9 @@ public class BackupScheduling {
         }
 
         if (rawSchedule.size() == 0 && enabled) {
-            logger.log("Backup schedule empty, disabling schedule-based backups");
+            logger.log(intl("backup-schedule-empty"));
             enabled = false;
         }
-
-
 
         return new BackupScheduling(
             enabled, 

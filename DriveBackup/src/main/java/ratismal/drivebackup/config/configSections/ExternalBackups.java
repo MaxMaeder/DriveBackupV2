@@ -13,6 +13,8 @@ import ratismal.drivebackup.config.ConfigParser.Logger;
 import ratismal.drivebackup.config.configSections.ExternalBackups.ExternalFTPSource.ExternalBackupListEntry;
 import ratismal.drivebackup.util.LocalDateTimeFormatter;
 
+import static ratismal.drivebackup.config.Localization.intl;
+
 public class ExternalBackups {
     public static class ExternalBackupSource {
         public final String hostname;
@@ -115,19 +117,20 @@ public class ExternalBackups {
         List<Map<?, ?>> rawList = config.getMapList("external-backup-list");
         ArrayList<ExternalBackupSource> list = new ArrayList<>();
         for (Map<?, ?> rawListEntry : rawList) {
-            int entryIndex = rawList.indexOf(rawListEntry) + 1;
+            String entryIndex = String.valueOf(rawList.indexOf(rawListEntry) + 1);
+
+            String validTypes[] = {"ftpServer", "ftpsServer", "sftpServer", "mysqlDatabase"};
 
             String type;
             try {
                 type = (String) rawListEntry.get("type");
-            } catch (Exception e) {
-                logger.log("Backup type invalid, skipping external backup entry " + entryIndex);
-                continue;
-            }
 
-            String validTypes[] = {"ftpServer", "ftpsServer", "sftpServer", "mysqlDatabase"};
-            if (!Arrays.asList(validTypes).contains(type)) {
-                logger.log("Backup type invalid, skipping external backup entry " + entryIndex);
+                if (!Arrays.asList(validTypes).contains(type)) {
+                    throw new Exception();
+                }
+            } catch (Exception e) {
+                logger.log(intl("external-backup-type-invalid"), "entry", entryIndex);
+                continue;
             }
 
             String hostname;
@@ -136,17 +139,18 @@ public class ExternalBackups {
                 hostname = (String) rawListEntry.get("hostname");
                 port = (int) (Integer) rawListEntry.get("port");
             } catch (Exception e) {
-                logger.log("Hostname/port invalid, skipping external backup entry " + entryIndex);
+                logger.log(intl("external-backup-host-port-invalid"), "entry", entryIndex);
                 continue;
             }
 
+            // TODO: password optional, should be treated as such
             String username;
             String password;
             try {
                 username = (String) rawListEntry.get("username");
                 password = (String) rawListEntry.get("password");
             } catch (Exception e) {
-                logger.log("Username/password invalid, skipping external backup entry " + entryIndex);
+                logger.log(intl("external-backup-user-pass-invalid"), "entry", entryIndex);
                 continue;
             }
 
@@ -154,7 +158,7 @@ public class ExternalBackups {
             try {
                 formatter = LocalDateTimeFormatter.ofPattern((String) rawListEntry.get("format"));
             } catch (Exception e) {
-                logger.log("Format invalid, skipping external backup entry " + entryIndex);
+                logger.log(intl("external-backup-format-invalid"), "entry", entryIndex);
                 if (e instanceof IllegalArgumentException) e.getMessage();
                 continue;
             }
@@ -168,7 +172,7 @@ public class ExternalBackups {
                         try {
                             publicKey = ConfigParser.verifyPath((String) rawListEntry.get("sftp-public-key"));
                         } catch (Exception e) {
-                            logger.log("Path to public key invalid in external backup entry " + entryIndex + ", leaving blank");
+                            logger.log(intl("external-backup-public-key-invalid"), "entry", entryIndex);
                             if (e instanceof InvalidPathException) e.getMessage();
                         }
                     }
@@ -178,7 +182,7 @@ public class ExternalBackups {
                         try {
                             passphrase = (String) rawListEntry.get("passphrase");
                         } catch (Exception e) {
-                            logger.log("Passphrase invalid in external backup entry " + entryIndex + ", leaving blank");
+                            logger.log(intl("external-backup-passphrase-invalid"), "entry", entryIndex);
                         }
                     }
 
@@ -187,7 +191,7 @@ public class ExternalBackups {
                         try {
                             baseDirectory = ConfigParser.verifyPath((String) rawListEntry.get("base-dir"));
                         } catch (Exception e) {
-                            logger.log("Path to base directory key invalid in external backup entry " + entryIndex + ", leaving blank");
+                            logger.log(intl("external-backup-base-dir-invalid"), "entry", entryIndex);
                             if (e instanceof InvalidPathException) e.getMessage();
                         }
                     }
@@ -196,19 +200,19 @@ public class ExternalBackups {
                     try {
                         rawBackupList = (List<Map<?, ?>>) rawListEntry.get("backup-list");
                     } catch (Exception e) {
-                        logger.log("Backup list invalid, skipping external backup entry " + entryIndex);
+                        logger.log(intl("external-backup-list-invalid"), "entry", entryIndex);
                         continue;
                     }
 
                     ArrayList<ExternalBackupListEntry> backupList = new ArrayList<>();
                     for (Map<?, ?> rawBackupListEntry : rawBackupList) {
-                        int entryBackupIndex = rawBackupList.indexOf(rawBackupListEntry) + 1;
+                        String entryBackupIndex = String.valueOf(rawBackupList.indexOf(rawBackupListEntry) + 1);
 
                         String path;
                         try {
                             path = ConfigParser.verifyPath((String) rawBackupListEntry.get("path"));
                         } catch (Exception e) {
-                            logger.log("Path invalid, skipping external backup backup list entry " + entryBackupIndex);
+                            logger.log(intl("external-backup-list-path-invalid"), "entry-backup", entryBackupIndex);
                             if (e instanceof InvalidPathException) e.getMessage();
                             continue;
                         }
@@ -218,7 +222,7 @@ public class ExternalBackups {
                             try {
                                 blacklist = ((List<String>) rawBackupListEntry.get("blacklist")).toArray(new String[0]);
                             } catch (Exception e) {
-                                logger.log("Blacklist invalid in external backup backup list entry " + entryBackupIndex + ", leaving blank");
+                                logger.log(intl("external-backup-list-blacklist-invalid"), "entry-backup", entryBackupIndex);
                             }
                         }
 
@@ -245,9 +249,12 @@ public class ExternalBackups {
 
                     break;
                 case "mysqlDatabase":
+                    // TODO: Implement
+
                     try {
                         
                     } catch (Exception e) {
+                        // Temp
                         logger.log("External Backup entry " + entryIndex + " has an invalid configuration, skipping");
                         continue;
                     }

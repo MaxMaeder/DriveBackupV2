@@ -20,6 +20,8 @@ import ratismal.drivebackup.plugin.updater.Updater;
 import ratismal.drivebackup.util.CustomConfig;
 import ratismal.drivebackup.util.MessageUtil;
 
+import static ratismal.drivebackup.config.Localization.intl;
+
 public class DriveBackup extends JavaPlugin {
 
     private static DriveBackup plugin;
@@ -71,7 +73,7 @@ public class DriveBackup extends JavaPlugin {
      * What to do when plugin is disabled
      */
     public void onDisable() {
-        MessageUtil.Builder().text("Stopping plugin!").toConsole(true).send();
+        MessageUtil.Builder().mmText(intl("plugin-stop")).send();
     }
 
     public void saveIntlConfig() {
@@ -102,7 +104,7 @@ public class DriveBackup extends JavaPlugin {
         FileConfiguration localizationFile = localizationConfig.getConfig();
 
         ConfigMigrator configMigrator = new ConfigMigrator(configFile, localizationFile, players);
-        configMigrator.migrate();
+        //configMigrator.migrate();
 
         config.reload(configFile, players);
         localization.reload(localizationFile);

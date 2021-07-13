@@ -7,6 +7,8 @@ import org.bukkit.configuration.file.FileConfiguration;
 
 import ratismal.drivebackup.config.ConfigParser.Logger;
 
+import static ratismal.drivebackup.config.Localization.intl;
+
 public class BackupStorage {
     public final long delay;
     public final int threadPriority;
@@ -46,37 +48,37 @@ public class BackupStorage {
 
         long delay = config.getLong("delay");
         if (delay <= 5) {
-            logger.log("Inputted backup delay invalid, using default");
+            logger.log(intl("invalid-backup-delay"));
             delay = defaultConfig.getLong("delay");
         }
 
         int threadPriority = config.getInt("backup-thread-priority");
         if (threadPriority < Thread.MIN_PRIORITY) {
-            logger.log("Inputted thread priority less than minimum, using minimum");
+            logger.log(intl("thread-priority-too-low"));
             threadPriority = Thread.MIN_PRIORITY;
         } else if (threadPriority > Thread.MAX_PRIORITY) {
-            logger.log("Inputted thread priority more than maximum, using maximum");
+            logger.log(intl("thread-priority-too-high"));
             threadPriority = Thread.MAX_PRIORITY;
         }
 
         int keepCount = config.getInt("keep-count");
         if (keepCount < -1) {
-            logger.log("Keep count invalid, using default");
+            logger.log(intl("keep-count-invalid"));
             keepCount = defaultConfig.getInt("keep-count");
         }
 
         int localKeepCount = config.getInt("local-keep-count");
         if (localKeepCount < -1) {
-            logger.log("Inputted local keep count invalid, using default");
+            logger.log(intl("local-keep-count-invalid"));
             localKeepCount = defaultConfig.getInt("local-keep-count");
         }
 
         int zipCompression = config.getInt("zip-compression");
         if (zipCompression < Deflater.BEST_SPEED) {
-            logger.log("Inputted zip compression less than minimum, using minimum");
+            logger.log(intl("zip-compression-too-low"));
             zipCompression = Deflater.BEST_SPEED;
         } else if (zipCompression > Deflater.BEST_COMPRESSION) {
-            logger.log("Inputted zip compression more than maximum, using maximum");
+            logger.log(intl("zip-compression-too-high"));
             zipCompression = Deflater.BEST_COMPRESSION;
         }
 
