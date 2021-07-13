@@ -10,6 +10,8 @@ import ratismal.drivebackup.config.ConfigParser.Logger;
 import ratismal.drivebackup.plugin.DriveBackup;
 import ratismal.drivebackup.util.MessageUtil;
 
+import static ratismal.drivebackup.config.Localization.intl;
+
 public class ConfigMigrator {
     private static final String DEFAULT_TIMEZONE_STRING = "-00:00";
 
@@ -24,15 +26,15 @@ public class ConfigMigrator {
     }
 
     public void migrate() {
-        Logger logger = message -> {
-            MessageUtil.Builder().text(message).to(initiators).toConsole(true).send();
+        Logger logger = (input, placeholders) -> {
+            MessageUtil.Builder().mmText(input, placeholders).to(initiators).send();
         };
 
         if (config.contains("version") && config.getInt("version") >= Config.VERSION) {
             return;
         }
 
-        logger.log("Automatically migrating config to version " + Config.VERSION);
+        logger.log(intl("config-migrating"), "version", String.valueOf(Config.VERSION));
         config.set("version", 2);
 
         int backupThreadPriority = config.getInt("backup-thread-priority");

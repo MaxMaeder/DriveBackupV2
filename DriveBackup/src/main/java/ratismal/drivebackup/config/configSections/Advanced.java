@@ -7,6 +7,8 @@ import org.bukkit.configuration.file.FileConfiguration;
 
 import ratismal.drivebackup.config.ConfigParser.Logger;
 
+import static ratismal.drivebackup.config.Localization.intl;
+
 public class Advanced {
     public final boolean metricsEnabled;
     public final boolean updateCheckEnabled;
@@ -42,7 +44,7 @@ public class Advanced {
         try {
             dateTimezone = ZoneOffset.of(config.getString("advanced.date-timezone"));
         } catch(Exception e) {
-            logger.log("Date format timezone not valid, using UTC");
+            logger.log(intl("date-format-invalid"));
             dateTimezone = ZoneOffset.of("Z"); //Fallback to UTC
         }
 

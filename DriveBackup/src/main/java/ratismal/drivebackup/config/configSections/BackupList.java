@@ -14,6 +14,8 @@ import ratismal.drivebackup.config.configSections.BackupList.BackupListEntry.Bac
 import ratismal.drivebackup.util.FileUtil;
 import ratismal.drivebackup.util.LocalDateTimeFormatter;
 
+import static ratismal.drivebackup.config.Localization.intl;
+
 public class BackupList {
     public static class BackupListEntry {
         public interface BackupLocation {
@@ -85,25 +87,25 @@ public class BackupList {
         List<Map<?, ?>> rawList = config.getMapList("backup-list");
         ArrayList<BackupListEntry> list = new ArrayList<>();
         for (Map<?, ?> rawListEntry : rawList) {
-            int entryIndex = rawList.indexOf(rawListEntry) + 1;
+            String entryIndex = String.valueOf(rawList.indexOf(rawListEntry) + 1);
 
             BackupLocation location;
             if (rawListEntry.containsKey("glob")) {
                 try {
                     location = new BackupListEntry.GlobBackupLocation((String) rawListEntry.get("glob"));
                 } catch (Exception e) {
-                    logger.log("Glob invalid, skipping backup list entry " + entryIndex);
+                    logger.log(intl("backup-list-glob-invalid"), "entry", entryIndex);
                     continue;
                 }
             } else if (rawListEntry.containsKey("path")) {
                 try {
                     location = new BackupListEntry.PathBackupLocation((String) rawListEntry.get("path"));
                 } catch (Exception e) {
-                    logger.log("Path invalid, skipping backup list entry " + entryIndex);
+                    logger.log(intl("backup-list-path-invalid"), "entry", entryIndex);
                     continue;
                 }
             } else {
-                logger.log("No path or glob specified, skipping backup list entry " + entryIndex);
+                logger.log(intl("backup-list-no-dest-specified"), "entry", entryIndex);
                 continue;
             }
 
@@ -111,7 +113,7 @@ public class BackupList {
             try {
                 formatter = LocalDateTimeFormatter.ofPattern((String) rawListEntry.get("format"));
             } catch (Exception e) {
-                logger.log("Format invalid, skipping backup list entry " + entryIndex);
+                logger.log(intl("backup-list-format-invalid"), "entry", entryIndex);
                 if (e instanceof IllegalArgumentException) e.getMessage();
                 continue;
             }
@@ -128,7 +130,7 @@ public class BackupList {
                 try {
                     blacklist = ((List<String>) rawListEntry.get("blacklist")).toArray(new String[0]);
                 } catch (Exception e) {
-                    logger.log("Blacklist invalid in backup entry " + entryIndex + ", leaving blank");
+                    logger.log(intl("backup-list-blacklist-invalid"), "entry", entryIndex);
                 }
             }
             
