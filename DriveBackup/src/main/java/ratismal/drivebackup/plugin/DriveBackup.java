@@ -48,12 +48,12 @@ public class DriveBackup extends JavaPlugin {
 
         DriveBackup.adventure = BukkitAudiences.create(plugin);
 
-        config = new ConfigParser(getConfig());
-        config.reload(Permissions.getPlayersWithPerm(Permissions.RELOAD_CONFIG));
-
         localizationConfig = new CustomConfig("intl.yml");
         localizationConfig.saveDefaultConfig();
         localization = new Localization(localizationConfig.getConfig());
+
+        config = new ConfigParser(getConfig());
+        config.reload(Permissions.getPlayersWithPerm(Permissions.RELOAD_CONFIG));
 
         getCommand(CommandHandler.CHAT_KEYWORD).setTabCompleter(new CommandTabComplete(plugin));
         getCommand(CommandHandler.CHAT_KEYWORD).setExecutor(new CommandHandler(plugin));

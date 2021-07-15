@@ -3,9 +3,6 @@ package ratismal.drivebackup.handler.commandHandler;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
-import org.bukkit.command.ConsoleCommandSender;
-import org.bukkit.command.RemoteConsoleCommandSender;
-import org.bukkit.entity.Player;
 
 import ratismal.drivebackup.TestThread;
 import ratismal.drivebackup.UploadThread;
@@ -16,6 +13,8 @@ import ratismal.drivebackup.config.Permissions;
 import ratismal.drivebackup.handler.DebugCollector;
 import ratismal.drivebackup.plugin.DriveBackup;
 import ratismal.drivebackup.util.MessageUtil;
+
+import static ratismal.drivebackup.config.Localization.intl;
 
 /**
  * Created by Ratismal on 2016-01-20.
@@ -43,10 +42,6 @@ public class CommandHandler implements CommandExecutor {
      * @return whether the command was handled
      */
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (!(sender instanceof Player || sender instanceof ConsoleCommandSender || sender instanceof RemoteConsoleCommandSender)) {
-            MessageUtil.Builder().text("DriveBackupV2 only supports commands sent in-game and via the console").to(sender).toConsole(false).send();
-            return true;
-        }
         if (!command.getName().equalsIgnoreCase(CHAT_KEYWORD)) {
             return false;
         } 
@@ -66,17 +61,20 @@ public class CommandHandler implements CommandExecutor {
                 if (!Permissions.hasPerm(sender, Permissions.RELOAD_CONFIG)) break;
 
                 DriveBackup.reloadLocalConfig();
-                MessageUtil.Builder().text("Config reloaded!").to(sender).toConsole(false).send();
+                MessageUtil.Builder().mmText(intl("config-reloaded")).to(sender).send();
 
                 break;
             case "debug":
                 if (!Permissions.hasPerm(sender, Permissions.RELOAD_CONFIG)) break;
 
-                MessageUtil.Builder().text("Generating Debug Log").to(sender).toConsole(false).send();
+                MessageUtil.Builder().mmText(intl("debug-log-creating")).to(sender).toConsole(false).send();
 
                 DebugCollector debugInfo = new DebugCollector(this.plugin);
                 String publishedUrl = debugInfo.publish(this.plugin);
-                MessageUtil.Builder().text("Debug URL: " + publishedUrl).to(sender).toConsole(false).send();
+                MessageUtil.Builder()
+                    .mmText(intl("debug-log-created"), "url", publishedUrl)
+                    .to(sender).toConsole(false)
+                    .send();
 
                 break;
             case "linkaccount":
@@ -95,7 +93,7 @@ public class CommandHandler implements CommandExecutor {
                         try {
                             OneDriveUploader.authenticateUser(plugin, sender);
                         } catch (Exception e) {
-                            MessageUtil.Builder().text("Failed to link your OneDrive account").to(sender).toConsole(false).send();
+                            MessageUtil.Builder().mmText(intl("onedrive-failed-to-link")).to(sender).toConsole(false).send();
                         
                             MessageUtil.sendConsoleException(e);
                         }
@@ -104,7 +102,7 @@ public class CommandHandler implements CommandExecutor {
                         try {
                             DropboxUploader.authenticateUser(plugin, sender);
                         } catch (Exception e) {
-                            MessageUtil.Builder().text("Failed to link your Dropbox account").to(sender).toConsole(false).send();
+                            MessageUtil.Builder().mmText(intl("dropbox-failed-to-link")).to(sender).toConsole(false).send();
 
                             MessageUtil.sendConsoleException(e);
                         }
@@ -117,20 +115,20 @@ public class CommandHandler implements CommandExecutor {
             case "status":
                 if (!Permissions.hasPerm(sender, Permissions.GET_BACKUP_STATUS)) break;
                 
-                MessageUtil.Builder().text(UploadThread.getBackupStatus()).to(sender).toConsole(false).send();
+                MessageUtil.Builder().mmText(UploadThread.getBackupStatus()).to(sender).toConsole(false).send();
 
                 break;
             case "nextbackup":
                 if (!Permissions.hasPerm(sender, Permissions.GET_NEXT_BACKUP)) break;
 
-                MessageUtil.Builder().text(UploadThread.getNextAutoBackup()).to(sender).toConsole(false).send();
+                MessageUtil.Builder().mmText(UploadThread.getNextAutoBackup()).to(sender).toConsole(false).send();
                 
 
                 break;
             case "backup":
                 if (!Permissions.hasPerm(sender, Permissions.BACKUP)) break;
 
-                MessageUtil.Builder().text("Forcing a backup").to(sender).toConsole(false).send();
+                MessageUtil.Builder().mmText(intl("backup-forced")).to(sender).send();
 
                 Runnable uploadThread = new UploadThread(sender);
                 new Thread(uploadThread).start();

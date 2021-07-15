@@ -1,7 +1,6 @@
 package ratismal.drivebackup.handler.commandHandler;
 
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 
 import net.kyori.adventure.text.Component;
@@ -9,6 +8,8 @@ import net.kyori.adventure.text.TextComponent.Builder;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.kyori.adventure.text.minimessage.Template;
 import ratismal.drivebackup.config.ConfigParser;
 import ratismal.drivebackup.config.ConfigParser.Config;
 import ratismal.drivebackup.config.configSections.BackupList.BackupListEntry;
@@ -27,32 +28,12 @@ public class BasicCommands {
      * @param player the player to send the message to
      */
     public static void sendDocs(CommandSender player) {
-        player.sendMessage(ChatColor.GOLD + "|======" + ChatColor.DARK_RED + "DriveBackupV2" + ChatColor.GOLD + "======|");
-        player.sendMessage(ChatColor.DARK_AQUA + "Need help? Check out these helpful resources!");
-        DriveBackup.adventure.sender(player).sendMessage(Component.text()
-        .append(
-            Component.text("Wiki: ")
-            .color(NamedTextColor.DARK_AQUA)
-        )
-        .append(
-            Component.text("http://bit.ly/3dDdmwK")
-            .color(NamedTextColor.GOLD)
-            .hoverEvent(HoverEvent.showText(Component.text("Go to URL")))
-            .clickEvent(ClickEvent.openUrl("http://bit.ly/3dDdmwK"))
-        )
-        .build());
-        DriveBackup.adventure.sender(player).sendMessage(Component.text()
-        .append(
-            Component.text("Discord: ")
-            .color(NamedTextColor.DARK_AQUA)
-        )
-        .append(
-            Component.text("http://bit.ly/3f4VuuT")
-            .color(NamedTextColor.GOLD)
-            .hoverEvent(HoverEvent.showText(Component.text("Go to URL")))
-            .clickEvent(ClickEvent.openUrl("http://bit.ly/3f4VuuT"))
-        )
-        .build());
+        MessageUtil.Builder()
+            .addPrefix(false)
+            .mmText(intl("drivebackup-docs-command"), getHeader())
+            .to(player)
+            .toConsole(false)
+            .send();
     }
 
     /**
@@ -60,15 +41,25 @@ public class BasicCommands {
      * @param player the player to send the message to
      */
     public static void sendVersion(CommandSender player) {
-        player.sendMessage(ChatColor.GOLD + "|======" + ChatColor.DARK_RED + "DriveBackupV2" + ChatColor.GOLD + "======|");
-        player.sendMessage(ChatColor.DARK_AQUA + "Plugin version: " + ChatColor.GOLD + DriveBackup.getInstance().getDescription().getVersion());
-        player.sendMessage(ChatColor.DARK_AQUA + "Java version: " + ChatColor.GOLD + System.getProperty("java.version"));
-        player.sendMessage(ChatColor.DARK_AQUA + "Server software: " + ChatColor.GOLD + Bukkit.getName());
-        player.sendMessage(ChatColor.DARK_AQUA + "Server software version: " + ChatColor.GOLD + Bukkit.getVersion());
+        MessageUtil builder = MessageUtil.Builder()
+            .addPrefix(false)
+            .mmText(
+                intl("drivebackup-docs-command"), 
+                getHeader(),
+                Template.of("plugin-version", DriveBackup.getInstance().getDescription().getVersion()),
+                Template.of("java-version", System.getProperty("java.version")),
+                Template.of("server-software", Bukkit.getName()),
+                Template.of("server-version", Bukkit.getVersion())
+                );
 
         if (UpdateChecker.isUpdateAvailable()) {
-            player.sendMessage(ChatColor.GOLD + "Plugin update available!");
+            builder.mmText(intl("drivebackup-version-update"));
         }
+
+        builder
+            .to(player)
+            .toConsole(false)
+            .send();
     }
 
     /**
@@ -76,45 +67,12 @@ public class BasicCommands {
      * @param player the player to send the message to
      */
     public static void sendHelp(CommandSender player) {
-        player.sendMessage(ChatColor.GOLD + "|======" + ChatColor.DARK_RED + "DriveBackupV2" + ChatColor.GOLD + "======|");
-        DriveBackup.adventure.sender(player).sendMessage(genCommandHelpMessage("/drivebackup", "Displays this menu"));
-        DriveBackup.adventure.sender(player).sendMessage(genCommandHelpMessage("/drivebackup help", "Displays help resources"));
-        DriveBackup.adventure.sender(player).sendMessage(genCommandHelpMessage("/drivebackup v", "Displays the plugin version"));
-        DriveBackup.adventure.sender(player).sendMessage(genCommandHelpMessage("/drivebackup linkaccount googledrive", "Links your Google Drive account for backups"));
-        DriveBackup.adventure.sender(player).sendMessage(genCommandHelpMessage("/drivebackup linkaccount onedrive", "Links your OneDrive account for backups"));
-        DriveBackup.adventure.sender(player).sendMessage(genCommandHelpMessage("/drivebackup linkaccount dropbox", "Links your Dropbox account for backups"));
-        DriveBackup.adventure.sender(player).sendMessage(genCommandHelpMessage("/drivebackup reloadconfig", "Reloads the config.yml"));
-        DriveBackup.adventure.sender(player).sendMessage(genCommandHelpMessage("/drivebackup debug", "Generates a debug log"));
-        DriveBackup.adventure.sender(player).sendMessage(genCommandHelpMessage("/drivebackup nextbackup", "Gets the time/date of the next auto backup"));
-        DriveBackup.adventure.sender(player).sendMessage(genCommandHelpMessage("/drivebackup status", "Gets the status of the running backup"));
-        DriveBackup.adventure.sender(player).sendMessage(genCommandHelpMessage("/drivebackup backup", "Manually initiates a backup"));
-        DriveBackup.adventure.sender(player).sendMessage(genCommandHelpMessage("/drivebackup test ftp", "Tests the connection to the (S)FTP server"));
-        DriveBackup.adventure.sender(player).sendMessage(genCommandHelpMessage("/drivebackup test googledrive", "Tests the connection to Google Drive"));
-        DriveBackup.adventure.sender(player).sendMessage(genCommandHelpMessage("/drivebackup test onedrive", "Tests the connection to OneDrive"));
-        DriveBackup.adventure.sender(player).sendMessage(genCommandHelpMessage("/drivebackup test dropbox", "Tests the connection to Dropbox"));
-        DriveBackup.adventure.sender(player).sendMessage(genCommandHelpMessage("/drivebackup update", "Updates the plugin if there is a newer version"));
-    }
-
-    /**
-     * Generates a message describing what the specified command does using the specified description
-     * <p>
-     * The command in the generated message can be clicked on to be run
-     * @param command the command
-     * @param description what the command does
-     * @return the message
-     */
-    private static Component genCommandHelpMessage(String command, String description) {
-        return Component.text()
-        .append(
-            Component.text(command)
-            .color(NamedTextColor.GOLD)
-            .hoverEvent(HoverEvent.showText(Component.text("Run command")))
-            .clickEvent(ClickEvent.runCommand(command))
-        )
-        .append(
-            Component.text(" - " + description)
-            .color(NamedTextColor.DARK_AQUA)
-        ).build();
+        MessageUtil.Builder()
+            .addPrefix(false)
+            .mmText(intl("drivebackup-help-command"), getHeader())
+            .to(player)
+            .toConsole(false)
+            .send();
     }
 
     /**
@@ -182,8 +140,12 @@ public class BasicCommands {
         MessageUtil.Builder().text(helpMessage).toConsole(false).to(player).send();
     }
 
+    public static Template getHeader() {
+        return Template.of("header", MiniMessage.get().parse(intl("drivebackup-command-header")));
+    }
+
     /**
-     * Tells the specifed player they don't have permissions to run a command
+     * Tells the specified player they don't have permissions to run a command
      * @param player the player to send the message to
      */
     public static void sendNoPerms(CommandSender player) {

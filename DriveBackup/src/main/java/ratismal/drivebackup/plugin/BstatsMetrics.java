@@ -9,6 +9,8 @@ import ratismal.drivebackup.config.ConfigParser;
 import ratismal.drivebackup.config.ConfigParser.Config;
 import ratismal.drivebackup.util.MessageUtil;
 
+import static ratismal.drivebackup.config.Localization.intl;
+
 public class BstatsMetrics {
     public static final int METRICS_ID = 7537;
 
@@ -18,9 +20,9 @@ public class BstatsMetrics {
                 BstatsMetrics metrics = new BstatsMetrics(DriveBackup.getInstance());
                 metrics.updateMetrics();
 
-                MessageUtil.Builder().text("Metrics started").toConsole(true).send();
+                MessageUtil.Builder().mmText(intl("metrics-started")).toConsole(true).send();
             } catch (IOException e) {
-                MessageUtil.Builder().text("Metrics failed to start").toConsole(true).send();
+                MessageUtil.Builder().mmText(intl("metrics-error")).toConsole(true).send();
             }
         }
     }
