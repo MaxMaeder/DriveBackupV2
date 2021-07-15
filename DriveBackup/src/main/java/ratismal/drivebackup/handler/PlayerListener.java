@@ -11,6 +11,8 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import ratismal.drivebackup.plugin.updater.UpdateChecker;
 import ratismal.drivebackup.util.MessageUtil;
 
+import static ratismal.drivebackup.config.Localization.intl;
+
 /**
  * Created by Ratismal on 2016-03-04.
  */
@@ -25,22 +27,17 @@ public class PlayerListener implements Listener {
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
         if (!autoBackupsActive) {
-            MessageUtil.Builder().text("Enabling automatic backups").toConsole(true).send();
+            MessageUtil.Builder().mmText(intl("player-join-backup-enable")).send();
             autoBackupsActive = true;
         }
 
         if (UpdateChecker.isUpdateAvailable() && event.getPlayer().hasPermission("drivebackup.linkAccounts")) {
 
-            MessageUtil.Builder().text(
-                Component.text("An update is available, get it here: ")
-                    .color(NamedTextColor.DARK_AQUA)
-                .append(
-                    Component.text("http://bit.ly/2M14uVD")
-                    .color(NamedTextColor.GOLD)
-                    .hoverEvent(HoverEvent.showText(Component.text("Go to URL")))
-                    .clickEvent(ClickEvent.openUrl("http://bit.ly/2M14uVD"))
-                )
-            ).to(event.getPlayer()).toConsole(false).send();
+            MessageUtil.Builder()
+                .mmText(intl("player-join-update-available"))
+                .to(event.getPlayer())
+                .toConsole(false)
+                .send();
         }
     }
 

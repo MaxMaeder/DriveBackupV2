@@ -83,23 +83,27 @@ public class Scheduler {
                     .with(ChronoField.CLOCK_HOUR_OF_DAY, entry.time.get(ChronoField.CLOCK_HOUR_OF_DAY))
                     .with(ChronoField.MINUTE_OF_HOUR, entry.time.get(ChronoField.MINUTE_OF_HOUR));
 
-                StringBuilder scheduleMessage = new StringBuilder();
-                scheduleMessage.append("Scheduling a backup to run at ");
-                scheduleMessage.append(scheduleMessageTime.format(DateTimeFormatter.ofPattern("hh:mm a")));
-                scheduleMessage.append(" every ");
+                StringBuilder scheduleDays = new StringBuilder();
+                scheduleDays.append(" every ");
 
                 for (int i = 0; i < entry.days.length; i++) {
                     if (i == entry.days.length - 1) {
-                        scheduleMessage.append(" and ");
+                        scheduleDays.append(" and ");
                     } else if (i != 0) {
-                        scheduleMessage.append(", ");
+                        scheduleDays.append(", ");
                     }
 
                     String dayName = entry.days[i].getDisplayName(TextStyle.FULL, config.advanced.dateLanguage);
-                    scheduleMessage.append(dayName);
+                    scheduleDays.append(dayName);
                 }
 
-                MessageUtil.Builder().text(scheduleMessage.toString()).toConsole(true).send();
+                MessageUtil.Builder()
+                    .mmText(
+                        intl("backups-scheduled"), 
+                        "time", scheduleMessageTime.format(DateTimeFormatter.ofPattern("hh:mm a")), 
+                        "days", scheduleDays.toString())
+                    .toConsole(true)
+                    .send();
             }
         } else if (config.backupStorage.delay != -1) {
             SchedulerUtil.cancelTasks(backupTasks);
