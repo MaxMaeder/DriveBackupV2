@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.util.Random;
 
-import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 
 import ratismal.drivebackup.uploaders.Uploader;
