@@ -1,4 +1,7 @@
 plugin-stop: "Stopping plugin!"
+metrics-started: "Metrics started"
+metrics-error: "Metrics failed to start"
+config-reloaded: "Config reloaded!"
 date-format-invalid: "Date format timezone not valid, using UTC"
 backup-list-glob-invalid: "Glob invalid, skipping backup list entry <entry>"
 backup-list-path-invalid: "Path invalid, skipping backup list entry <entry>"
@@ -30,10 +33,48 @@ external-backup-list-invalid: "Backup list invalid, skipping external backup ent
 external-backup-list-path-invalid: "Path invalid, skipping external backup backup list entry <entry-backup>"
 external-backup-list-blacklist-invalid: "Blacklist invalid in external backup backup list entry <entry-backup>, leaving blank"
 config-migrating: "Automatically migrating config to version <version>"
+backups-scheduled: 
+backups-interval-scheduled: "Scheduling a backup to run every <delay> minutes"
 no-perm: "You don't have permission to do this!"
+backup-forced: "Forcing a backup"
 backup-start: "Creating backups, the server may lag for a little while..."
 backup-complete: "Backup complete,"
 next-backup: "the next backup is in %TIME minutes"
 next-schedule-backup: "the next backup is at %DATE"
 next-schedule-backup-format: "h:mm a EEE, MMM d O"
 auto-backups-disabled: "Automatic backups are disabled"
+debug-log-creating: "Generating Debug Log"
+debug-log-created: "Debug URL: <url>"
+onedrive-failed-to-link: "Failed to link your OneDrive account"
+dropbox-failed-to-link: "Failed to link your Dropbox account"
+drivebackup-command-header: "<gold>|====== <dark_red>DriveBackupV2 ======|"
+drivebackup-docs-command: |
+  <header>
+  Need help? Check out these helpful resources!
+  Wiki: <gold><click:open_link:http://bit.ly/3dDdmwK>http://bit.ly/3dDdmwK</click></gold>
+  Discord: <gold><click:open_link:http://bit.ly/3f4VuuT>http://bit.ly/3f4VuuT</click></gold>
+drivebackup-version-command: |
+  <header>
+  Plugin version: <gold><plugin-version></gold>
+  Java version: <gold><java-version></gold>
+  Server software: <gold><server-software></gold>
+  Server software version: <gold><server-version></gold>
+drivebackup-version-update: <gold>Plugin update available!
+drivebackup-help-command: |
+  <header>
+  <gold><click:run_command:/drivebackup>/drivebackup</click></gold> - Displays this menu
+  <gold><click:run_command:/drivebackup help>/drivebackup help</click></gold> - Displays help resources
+  <gold><click:run_command:/drivebackup v>/drivebackup v</click></gold> - Displays the plugin version
+  <gold><click:run_command:/drivebackup linkaccount googledrive>/drivebackup linkaccount googledrive</click></gold> - Links your Google Drive account for backups
+  <gold><click:run_command:/drivebackup linkaccount onedrive>/drivebackup linkaccount onedrive</click></gold> - Links your OneDrive account for backups
+  <gold><click:run_command:/drivebackup linkaccount dropbox>/drivebackup linkaccount dropbox</click></gold> - Links your Dropbox account for backups
+  <gold><click:run_command:/drivebackup reloadconfig>/drivebackup reloadconfig</click></gold> - Reloads the config.yml
+  <gold><click:run_command:/drivebackup debug>/drivebackup debug</click></gold> - Generates a debug log
+  <gold><click:run_command:/drivebackup nextbackup>/drivebackup nextbackup</click></gold> - Gets the time/date of the next auto backup
+  <gold><click:run_command:/drivebackup status>/drivebackup status</click></gold> - Gets the status of the running backup
+  <gold><click:run_command:/drivebackup backup>/drivebackup backup</click></gold> - Manually initiates a backup
+  <gold><click:run_command:/drivebackup test ftp>/drivebackup test ftp</click></gold> - Tests the connection to the (S)FTP server
+  <gold><click:run_command:/drivebackup test googledrive>/drivebackup test googledrive</click></gold> - Tests the connection to Google Drive
+  <gold><click:run_command:/drivebackup test onedrive>/drivebackup test onedrive</click></gold> - Tests the connection to OneDrive
+  <gold><click:run_command:/drivebackup test dropbox>/drivebackup test dropbox</click></gold> - Tests the connection to Dropbox
+  <gold><click:run_command:/drivebackup update>/drivebackup update</click></gold> - Updates the plugin if there is a newer version

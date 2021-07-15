@@ -20,6 +20,8 @@ import ratismal.drivebackup.config.configSections.BackupScheduling.BackupSchedul
 import ratismal.drivebackup.util.MessageUtil;
 import ratismal.drivebackup.util.SchedulerUtil;
 
+import static ratismal.drivebackup.config.Localization.intl;
+
 public class Scheduler {
     /**
      * List of the IDs of the scheduled backup tasks
@@ -102,7 +104,10 @@ public class Scheduler {
         } else if (config.backupStorage.delay != -1) {
             SchedulerUtil.cancelTasks(backupTasks);
 
-            MessageUtil.Builder().text("Scheduling a backup to run every " + config.backupStorage.delay + " minutes").toConsole(true).send();
+            MessageUtil.Builder()
+                .mmText(intl("backups-interval-scheduled"), "delay", String.valueOf(config.backupStorage.delay))
+                .toConsole(true)
+                .send();
 
             long interval = SchedulerUtil.sToTicks(config.backupStorage.delay * 60);
 

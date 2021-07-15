@@ -60,6 +60,6 @@ public class CustomConfig {
         }
         if (!configFile.exists()) {            
             instance.saveResource(configName, false);
-         }
+        }
     }
 }

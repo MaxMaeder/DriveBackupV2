@@ -14,15 +14,18 @@ import org.bukkit.entity.Player;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.kyori.adventure.text.minimessage.Template;
 import ratismal.drivebackup.config.ConfigParser;
 import ratismal.drivebackup.config.ConfigParser.Config;
 import ratismal.drivebackup.plugin.DriveBackup;
 
 public class MessageUtil {
 
-    private Set<CommandSender> recipients = new HashSet<CommandSender>();
+    private boolean addPrefix = true;
     private List<Component> message = new ArrayList<Component>();
+    private Set<CommandSender> recipients = new HashSet<CommandSender>();
     private Boolean sendToConsole = true;
+    
 
     public static MessageUtil Builder() {
         return new MessageUtil();
@@ -31,6 +34,11 @@ public class MessageUtil {
     public MessageUtil() {
     }
 
+    public MessageUtil addPrefix(boolean prefix) {
+        addPrefix = prefix;
+        return this;
+    }
+    
     public MessageUtil text(String text) {
         message.add(Component.text(text, NamedTextColor.DARK_AQUA));
         return this;
@@ -44,11 +52,32 @@ public class MessageUtil {
     /**
      * Parses & adds MiniMessage formatted text to the message
      * @param input the MiniMessage text
-     * @param placeholders MiniMessage placeholders
+     * @return the calling MessageUtil's instance
+     */
+    public MessageUtil mmText(String text) {
+        message.add(MiniMessage.get().parse("<dark_aqua>" + text));
+        return this;
+    }
+
+    /**
+     * Parses & adds MiniMessage formatted text to the message
+     * @param input the MiniMessage text
+     * @param placeholders optional MiniMessage placeholders
      * @return the calling MessageUtil's instance
      */
     public MessageUtil mmText(String text, String... placeholders) {
         message.add(MiniMessage.get().parse("<dark_aqua>" + text, placeholders));
+        return this;
+    }
+
+    /**
+     * Parses & adds MiniMessage formatted text to the message
+     * @param input the MiniMessage text
+     * @param templates optional {@code Template}
+     * @return the calling MessageUtil's instance
+     */
+    public MessageUtil mmText(String text, Template... templates) {
+        message.add(MiniMessage.get().parse("<dark_aqua>" + text, templates));
         return this;
     }
 
@@ -118,7 +147,10 @@ public class MessageUtil {
      * Sends the message to the recipients
      */
     public void send() {
-        Component builtComponent = prefixMessage(Component.join(Component.text(" "), message));
+        Component builtComponent = Component.join(Component.text(" "), message);
+        if (addPrefix) {
+            builtComponent = prefixMessage(builtComponent);
+        }
 
         if (sendToConsole) DriveBackup.adventure.console().sendMessage(builtComponent);
 
