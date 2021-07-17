@@ -39,8 +39,12 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
+import static ratismal.drivebackup.config.Localization.intl;
+
 public class DropboxUploader implements Uploader {
     private boolean errorOccurred;
+
+    public static final String UPLOADER_NAME = "Dropbox";
 
     /**
      * Global instance of the HTTP client
@@ -71,13 +75,13 @@ public class DropboxUploader implements Uploader {
      * 
      * @param plugin    a reference to the {@code DriveBackup} plugin
      * @param initiator user who initiated the authentication
-     * @throws Exception
      */
-    public static void authenticateUser(final DriveBackup plugin, final CommandSender initiator) throws Exception {
+    public static void authenticateUser(final DriveBackup plugin, final CommandSender initiator) {
 
         Boolean[] errorOccured = {false};
         final String authorizeUrl = "https://www.dropbox.com/oauth2/authorize?token_access_type=offline&response_type=code&client_id="+APP_KEY;
-
+        
+        // TODO: implement device code auth
         MessageUtil.Builder().text(
             Component.text("To link your Dropbox account, go to ")
                 .color(NamedTextColor.DARK_AQUA)

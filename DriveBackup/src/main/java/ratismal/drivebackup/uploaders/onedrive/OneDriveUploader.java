@@ -35,6 +35,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import static ratismal.drivebackup.config.Localization.intl;
+
 /**
  * Created by Redemption on 2/24/2016.
  */
@@ -44,6 +46,8 @@ public class OneDriveUploader implements Uploader {
     private long lastUploaded;
     private String accessToken;
     private String refreshToken;
+
+    public static final String UPLOADER_NAME = "OneDrive";
 
     /**
      * Global instance of the HTTP client
@@ -83,116 +87,115 @@ public class OneDriveUploader implements Uploader {
      * @param initiator user who initiated the authentication
      * @throws Exception
      */
-    public static void authenticateUser(final DriveBackup plugin, final CommandSender initiator) throws Exception {
-        RequestBody requestBody = new FormBody.Builder()
-            .add("client_id", CLIENT_ID)
-            .add("scope", "offline_access Files.ReadWrite")
-            .build();
+    public static void authenticateUser(final DriveBackup plugin, final CommandSender initiator) {
+        try {
+            RequestBody requestBody = new FormBody.Builder()
+                .add("client_id", CLIENT_ID)
+                .add("scope", "offline_access Files.ReadWrite")
+                .build();
 
-        Request request = new Request.Builder()
-            .url("https://login.microsoftonline.com/common/oauth2/v2.0/devicecode")
-            .post(requestBody)
-            .build();
+            Request request = new Request.Builder()
+                .url("https://login.microsoftonline.com/common/oauth2/v2.0/devicecode")
+                .post(requestBody)
+                .build();
 
-        Response response = httpClient.newCall(request).execute();
-        JSONObject parsedResponse = new JSONObject(response.body().string());
-        response.close();
+            Response response = httpClient.newCall(request).execute();
+            JSONObject parsedResponse = new JSONObject(response.body().string());
+            response.close();
 
-        String verificationUrl = parsedResponse.getString("verification_uri");
-        String userCode = parsedResponse.getString("user_code");
-        final String deviceCode = parsedResponse.getString("device_code");
-        long responseCheckDelay = SchedulerUtil.sToTicks(parsedResponse.getLong("interval"));
+            String verificationUrl = parsedResponse.getString("verification_uri");
+            String userCode = parsedResponse.getString("user_code");
+            final String deviceCode = parsedResponse.getString("device_code");
+            long responseCheckDelay = SchedulerUtil.sToTicks(parsedResponse.getLong("interval"));
 
-        MessageUtil.Builder().text(
-            Component.text("To link your OneDrive account, go to ")
-                .color(NamedTextColor.DARK_AQUA)
-            .append(
-                Component.text(verificationUrl)
-                .color(NamedTextColor.GOLD)
-                .hoverEvent(HoverEvent.showText(Component.text("Go to URL")))
-                .clickEvent(ClickEvent.openUrl(verificationUrl))
-            )
-            .append(
-                Component.text(" and enter code ")
-                .color(NamedTextColor.DARK_AQUA)
-            )
-            .append(
-                Component.text(userCode)
-                .color(NamedTextColor.GOLD)
-                .hoverEvent(HoverEvent.showText(Component.text("Copy code")))
-                .clickEvent(ClickEvent.copyToClipboard(userCode))
-            )
-        ).to(initiator).toConsole(false).send();
+            MessageUtil.Builder()
+            .mmText(
+                intl("link-account-code")
+                    .replace("link-url", verificationUrl)
+                    .replace("link-code", userCode), 
+                "provider", UPLOADER_NAME
+                )
+            .to(initiator)
+            .toConsole(false)
+            .send();
 
-        final int[] task = new int[]{-1};
-        task[0] = plugin.getServer().getScheduler().scheduleSyncRepeatingTask(plugin, new Runnable() {
-            @Override
-            public void run() {
+            final int[] task = new int[]{-1};
+            task[0] = plugin.getServer().getScheduler().scheduleSyncRepeatingTask(plugin, new Runnable() {
+                @Override
+                public void run() {
 
-                RequestBody requestBody = new FormBody.Builder()
-                    .add("client_id", CLIENT_ID)
-                    .add("grant_type", "urn:ietf:params:oauth:grant-type:device_code")
-                    .add("device_code", deviceCode)
-                    .build();
-    
-                Request request = new Request.Builder()
-                    .url("https://login.microsoftonline.com/common/oauth2/v2.0/token")
-                    .post(requestBody)
-                    .build();
+                    RequestBody requestBody = new FormBody.Builder()
+                        .add("client_id", CLIENT_ID)
+                        .add("grant_type", "urn:ietf:params:oauth:grant-type:device_code")
+                        .add("device_code", deviceCode)
+                        .build();
         
-                JSONObject parsedResponse = null;
-                try {
-                    Response response = httpClient.newCall(request).execute();
-                    parsedResponse = new JSONObject(response.body().string());
-                } catch (Exception exception) {
-                    MessageUtil.Builder().text("Failed to link your OneDrive account, please try again").to(initiator).toConsole(false).send();
-
-                    Bukkit.getScheduler().cancelTask(task[0]);
-                    return;
-                }
-        	
-                if (parsedResponse.has("refresh_token")) {
-                    JSONObject jsonObject = new JSONObject();
-                    jsonObject.put("refresh_token", parsedResponse.getString("refresh_token"));
-
+                    Request request = new Request.Builder()
+                        .url("https://login.microsoftonline.com/common/oauth2/v2.0/token")
+                        .post(requestBody)
+                        .build();
+            
+                    JSONObject parsedResponse = null;
                     try {
-                        FileWriter file = new FileWriter(CLIENT_JSON_PATH);
-                        file.write(jsonObject.toString());
-                        file.close();
-                    } catch (IOException e) {
+                        Response response = httpClient.newCall(request).execute();
+                        parsedResponse = new JSONObject(response.body().string());
+                    } catch (Exception exception) {
                         MessageUtil.Builder().text("Failed to link your OneDrive account, please try again").to(initiator).toConsole(false).send();
-                                    
+
+                        Bukkit.getScheduler().cancelTask(task[0]);
+                        return;
+                    }
+                
+                    if (parsedResponse.has("refresh_token")) {
+                        JSONObject jsonObject = new JSONObject();
+                        jsonObject.put("refresh_token", parsedResponse.getString("refresh_token"));
+
+                        try {
+                            FileWriter file = new FileWriter(CLIENT_JSON_PATH);
+                            file.write(jsonObject.toString());
+                            file.close();
+                        } catch (IOException e) {
+                            MessageUtil.Builder().text("Failed to link your OneDrive account, please try again").to(initiator).toConsole(false).send();
+                                        
+                            Bukkit.getScheduler().cancelTask(task[0]);
+                        }
+                        
+                        MessageUtil.Builder().text("Your OneDrive account is linked!").to(initiator).toConsole(false).send();
+                        
+                        if (!plugin.getConfig().getBoolean("onedrive.enabled")) {
+                            MessageUtil.Builder().text("Automatically enabled OneDrive backups").to(initiator).toConsole(false).send();
+                            plugin.getConfig().set("onedrive.enabled", true);
+                            plugin.saveConfig();
+                            
+                            DriveBackup.reloadLocalConfig();
+                        }
+
+                        BasicCommands.sendBriefBackupList(initiator);
+                        
+                        Bukkit.getScheduler().cancelTask(task[0]);
+                    } else if (!parsedResponse.getString("error").equals("authorization_pending")) {
+                        if (parsedResponse.getString("error").equals("expired_token")) {
+                            MessageUtil.Builder().text("The OneDrive account linking process timed out, please try again").to(initiator).toConsole(false).send();
+                        } else {
+                            MessageUtil.Builder().text("Failed to link your OneDrive account, please try again").to(initiator).toConsole(false).send();
+                        }
+                        
                         Bukkit.getScheduler().cancelTask(task[0]);
                     }
-                    
-                    MessageUtil.Builder().text("Your OneDrive account is linked!").to(initiator).toConsole(false).send();
-                    
-                    if (!plugin.getConfig().getBoolean("onedrive.enabled")) {
-                        MessageUtil.Builder().text("Automatically enabled OneDrive backups").to(initiator).toConsole(false).send();
-                        plugin.getConfig().set("onedrive.enabled", true);
-                        plugin.saveConfig();
-                        
-                        DriveBackup.reloadLocalConfig();
-                    }
 
-                    BasicCommands.sendBriefBackupList(initiator);
-                    
-                    Bukkit.getScheduler().cancelTask(task[0]);
-                } else if (!parsedResponse.getString("error").equals("authorization_pending")) {
-                    if (parsedResponse.getString("error").equals("expired_token")) {
-                        MessageUtil.Builder().text("The OneDrive account linking process timed out, please try again").to(initiator).toConsole(false).send();
-                    } else {
-                        MessageUtil.Builder().text("Failed to link your OneDrive account, please try again").to(initiator).toConsole(false).send();
+                    if (response != null) {
+                        response.close();
                     }
-                    
-                    Bukkit.getScheduler().cancelTask(task[0]);
                 }
-
-                if (response != null) {
-                    response.close();
-                }
-            }
-        }, responseCheckDelay, responseCheckDelay);
+            }, responseCheckDelay, responseCheckDelay);
+        } catch (UnknownHostException exception) {
+            MessageUtil.Builder().text("Failed to link your OneDrive account, check your network connection").toPerm("drivebackup.linkAccounts").send();
+            
+        } catch (Exception e) {
+            MessageUtil.Builder().text("Failed to link your OneDrive account").to(initiator).toConsole(false).send();
+        
+            MessageUtil.sendConsoleException(e);
+        }
     }
     
     /**
@@ -402,7 +405,7 @@ public class OneDriveUploader implements Uploader {
      */
     public String getName()
     {
-        return "OneDrive";
+        return UPLOADER_NAME;
     }
 
     /**

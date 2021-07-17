@@ -84,7 +84,6 @@ public class Scheduler {
                     .with(ChronoField.MINUTE_OF_HOUR, entry.time.get(ChronoField.MINUTE_OF_HOUR));
 
                 StringBuilder scheduleDays = new StringBuilder();
-                scheduleDays.append(" every ");
 
                 for (int i = 0; i < entry.days.length; i++) {
                     if (i == entry.days.length - 1) {

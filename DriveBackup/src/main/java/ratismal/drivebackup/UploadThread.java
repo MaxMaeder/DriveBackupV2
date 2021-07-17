@@ -103,7 +103,7 @@ public class UploadThread implements Runnable {
         Config config = ConfigParser.getConfig();
 
         if (initiator != null && backupStatus != BackupStatus.NOT_RUNNING) {
-            MessageUtil.Builder().text("A backup is already running").to(initiator).toConsole(false).send();
+            MessageUtil.Builder().mmText(intl("backup-already-running")).to(initiator).toConsole(false).send();
             MessageUtil.Builder().text(getBackupStatus()).to(initiator).toConsole(false).send();
 
             return;
@@ -120,7 +120,7 @@ public class UploadThread implements Runnable {
         }
 
         if (config.backupStorage.backupsRequirePlayers && !PlayerListener.isAutoBackupsActive() && initiator == null) {
-            MessageUtil.Builder().text("Skipping backup due to inactivity").toConsole(true).send();
+            MessageUtil.Builder().mmText(intl("backup-skipped-inactivity")).toConsole(true).send();
 
             return;
         }
@@ -130,11 +130,12 @@ public class UploadThread implements Runnable {
         if (
             !config.backupMethods.googleDrive.enabled && 
             !config.backupMethods.oneDrive.enabled && 
-            !config.backupMethods.dropbox.enabled && !config.backupMethods.ftp.enabled && 
+            !config.backupMethods.dropbox.enabled && 
+            !config.backupMethods.ftp.enabled && 
             config.backupStorage.localKeepCount == 0
             ) {
 
-            MessageUtil.Builder().text("No backup method is enabled").toPerm("drivebackup.linkAccounts").to(initiator).send();
+            MessageUtil.Builder().mmText(intl("backup-no-methods")).toPerm("drivebackup.linkAccounts").to(initiator).send();
 
             return;
         }
@@ -188,10 +189,6 @@ public class UploadThread implements Runnable {
         deleteFolder(new File("external-backups"));
 
         backupStatus = BackupStatus.NOT_RUNNING;
-            
-        if (config.backupStorage.localKeepCount != 0) {
-            MessageUtil.Builder().emText("Local ").text("backup complete").toPerm("drivebackup.linkAccounts").to(initiator).toConsole(false).send();
-        }
 
         for(int i = 0; i < uploaders.size(); i++) {
             uploaders.get(i).close();
@@ -199,7 +196,11 @@ public class UploadThread implements Runnable {
                 MessageUtil.Builder().text(uploaders.get(i).getSetupInstructions()).toPerm("drivebackup.linkAccounts").to(initiator).send();
                 errorOccurred = true;
             } else {
-                MessageUtil.Builder().text("Backup to ").emText(uploaders.get(i).getName()).text(" complete").toPerm("drivebackup.linkAccounts").to(initiator).toConsole(false).send();
+                MessageUtil.Builder()
+                    .mmText(intl("backup-method-complete"), "upload-method", uploaders.get(i).getName())
+                    .to(initiator)
+                    .toConsole(false)
+                    .send();
             }
         }
 
@@ -210,7 +211,7 @@ public class UploadThread implements Runnable {
         }
 
         if (config.backupStorage.backupsRequirePlayers && Bukkit.getOnlinePlayers().size() == 0 && PlayerListener.isAutoBackupsActive()) {
-            MessageUtil.Builder().text("Disabling automatic backups due to inactivity").toConsole(true).send();
+            MessageUtil.Builder().mmText(intl("backup-disabled-inactivity")).toConsole(true).send();
             PlayerListener.setAutoBackupsActive(false);
         }
 
@@ -229,19 +230,18 @@ public class UploadThread implements Runnable {
      * @param formatter Save format configuration
      * @param create Create the zip file or just upload it? ("True" / "False")
      * @param blackList configured blacklist (with globs)
-     * @param uploaders All servies to upload to
+     * @param uploaders All services to upload to
      * @return True if any error occurred
      */
     private Boolean doSingleBackup(String type, LocalDateTimeFormatter  formatter, boolean create, List<String> blackList, List<Uploader> uploaders) {
-        MessageUtil.Builder().text("Doing backups for \"" + type + "\"").toConsole(true).send();
+        MessageUtil.Builder().mmText(intl("backup-location-start"), "location", type).toConsole(true).send();
         if (create) {
             backupStatus = BackupStatus.COMPRESSING;
 
             try {
                 FileUtil.makeBackup(type, formatter, blackList);
             } catch (IllegalArgumentException exception) {
-                MessageUtil.Builder().text("Failed to create a backup, path to folder to backup is absolute, expected a relative path").toPerm("drivebackup.linkAccounts").to(initiator).send();
-                MessageUtil.Builder().text("An absolute path can overwrite sensitive files, see the ").emText("config.yml ").text("for more information").toPerm("drivebackup.linkAccounts").to(initiator).send();
+                MessageUtil.Builder().mmText(intl("backup-failed-absolute-path")).toPerm("drivebackup.linkAccounts").to(initiator).send();
 
                 backupStatus = BackupStatus.NOT_RUNNING;
 

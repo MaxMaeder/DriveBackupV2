@@ -90,22 +90,10 @@ public class CommandHandler implements CommandExecutor {
                         GoogleDriveUploader.authenticateUser(plugin, sender);
                         break;
                     case "onedrive":
-                        try {
-                            OneDriveUploader.authenticateUser(plugin, sender);
-                        } catch (Exception e) {
-                            MessageUtil.Builder().mmText(intl("onedrive-failed-to-link")).to(sender).toConsole(false).send();
-                        
-                            MessageUtil.sendConsoleException(e);
-                        }
+                        OneDriveUploader.authenticateUser(plugin, sender);
                         break;
                     case "dropbox":
-                        try {
-                            DropboxUploader.authenticateUser(plugin, sender);
-                        } catch (Exception e) {
-                            MessageUtil.Builder().mmText(intl("dropbox-failed-to-link")).to(sender).toConsole(false).send();
-
-                            MessageUtil.sendConsoleException(e);
-                        }
+                        DropboxUploader.authenticateUser(plugin, sender);
                         break;
                     default:
                         BasicCommands.sendHelp(sender);

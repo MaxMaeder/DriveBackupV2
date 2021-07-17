@@ -11,6 +11,7 @@ import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.model.*;
+
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.event.ClickEvent;
@@ -43,6 +44,8 @@ import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.json.JSONObject;
 
+import static ratismal.drivebackup.config.Localization.intl;
+
 /**
  * Created by Ratismal on 2016-01-20.
  */
@@ -50,6 +53,8 @@ import org.json.JSONObject;
 public class GoogleDriveUploader implements Uploader {
     private boolean errorOccurred;
     private String refreshToken;
+
+    public static final String UPLOADER_NAME = "Google Drive";
 
     /**
      * Global instance of the HTTP client
@@ -111,26 +116,16 @@ public class GoogleDriveUploader implements Uploader {
             final String deviceCode = parsedResponse.getString("device_code");
             long responseCheckDelay = SchedulerUtil.sToTicks(parsedResponse.getLong("interval"));
 
-            MessageUtil.Builder().text(
-                Component.text("To link your Google Drive account, go to ")
-                    .color(NamedTextColor.DARK_AQUA)
-                .append(
-                    Component.text(verificationUrl)
-                    .color(NamedTextColor.GOLD)
-                    .hoverEvent(HoverEvent.showText(Component.text("Go to URL")))
-                    .clickEvent(ClickEvent.openUrl(verificationUrl))
-                )
-                .append(
-                    Component.text(" and enter code ")
-                    .color(NamedTextColor.DARK_AQUA)
-                )
-                .append(
-                    Component.text(userCode)
-                    .color(NamedTextColor.GOLD)
-                    .hoverEvent(HoverEvent.showText(Component.text("Copy code")))
-                    .clickEvent(ClickEvent.copyToClipboard(userCode))
-                )
-            ).to(initiator).toConsole(false).send();
+            MessageUtil.Builder()
+                .mmText(
+                    intl("link-account-code")
+                        .replace("link-url", verificationUrl)
+                        .replace("link-code", userCode), 
+                    "provider", UPLOADER_NAME
+                    )
+                .to(initiator)
+                .toConsole(false)
+                .send();
 
             final int[] task = new int[]{-1};
             task[0] = plugin.getServer().getScheduler().scheduleSyncRepeatingTask(plugin, new Runnable() {
@@ -200,7 +195,7 @@ public class GoogleDriveUploader implements Uploader {
                 }
             }, responseCheckDelay, responseCheckDelay);
         } catch (UnknownHostException exception) {
-            MessageUtil.Builder().text("Failed to link your Google Drive account,, check your network connection").toPerm("drivebackup.linkAccounts").send();
+            MessageUtil.Builder().text("Failed to link your Google Drive account, check your network connection").toPerm("drivebackup.linkAccounts").send();
             
         } catch (Exception e) {
             MessageUtil.Builder().text("Failed to link your Google Drive account").to(initiator).toConsole(false).send();
@@ -397,7 +392,7 @@ public class GoogleDriveUploader implements Uploader {
      */
     public String getName()
     {
-        return "Google Drive";
+        return UPLOADER_NAME;
     }
 
     /**

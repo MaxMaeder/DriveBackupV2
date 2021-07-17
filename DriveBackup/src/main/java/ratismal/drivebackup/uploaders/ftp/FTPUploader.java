@@ -29,6 +29,8 @@ import com.google.api.client.util.Strings;
  */
 
 public class FTPUploader implements Uploader {
+    public static final String UPLOADER_NAME = "(S)FTP";
+
     private FTPClient ftpClient;
     private SFTPUploader sftpClient;
 
