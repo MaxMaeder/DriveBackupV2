@@ -14,13 +14,10 @@ import ratismal.drivebackup.config.configSections.BackupStorage;
 import ratismal.drivebackup.config.configSections.ExternalBackups;
 import ratismal.drivebackup.config.configSections.Messages;
 import ratismal.drivebackup.plugin.DriveBackup;
+import ratismal.drivebackup.util.Logger;
 import ratismal.drivebackup.util.MessageUtil;
 
 public class ConfigParser {
-    public interface Logger {
-        public void log(String input, String... placeholders);
-    }
-
     public static class Config {
         public static final int VERSION = 2;
 

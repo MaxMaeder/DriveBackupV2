@@ -9,7 +9,7 @@ import java.util.Map;
 import org.bukkit.configuration.file.FileConfiguration;
 
 import ratismal.drivebackup.config.ConfigParser;
-import ratismal.drivebackup.config.ConfigParser.Logger;
+import ratismal.drivebackup.util.Logger;
 import ratismal.drivebackup.config.configSections.ExternalBackups.ExternalFTPSource.ExternalBackupListEntry;
 import ratismal.drivebackup.util.LocalDateTimeFormatter;
 

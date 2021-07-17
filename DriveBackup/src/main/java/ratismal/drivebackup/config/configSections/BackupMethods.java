@@ -5,7 +5,7 @@ import com.google.api.client.util.Strings;
 import org.bukkit.configuration.file.FileConfiguration;
 
 import ratismal.drivebackup.config.ConfigParser;
-import ratismal.drivebackup.config.ConfigParser.Logger;
+import ratismal.drivebackup.util.Logger;
 
 import static ratismal.drivebackup.config.Localization.intl;
 

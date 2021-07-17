@@ -6,7 +6,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 
 import ratismal.drivebackup.config.ConfigParser.Config;
-import ratismal.drivebackup.config.ConfigParser.Logger;
+import ratismal.drivebackup.util.Logger;
 import ratismal.drivebackup.plugin.DriveBackup;
 import ratismal.drivebackup.util.MessageUtil;
 

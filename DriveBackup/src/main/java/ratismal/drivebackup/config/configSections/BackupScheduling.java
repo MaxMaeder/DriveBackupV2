@@ -11,7 +11,7 @@ import java.util.Set;
 
 import org.bukkit.configuration.file.FileConfiguration;
 
-import ratismal.drivebackup.config.ConfigParser.Logger;
+import ratismal.drivebackup.util.Logger;
 import ratismal.drivebackup.util.SchedulerUtil;
 
 import static ratismal.drivebackup.config.Localization.intl;

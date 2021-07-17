@@ -37,7 +37,9 @@ backups-scheduled: "Scheduling a backup to run at <time> every <days>"
 backups-interval-scheduled: "Scheduling a backup to run every <delay> minutes"
 no-perm: "You don't have permission to do this!"
 backup-forced: "Forcing a backup"
-backup-already-running: "A backup is already running"
+backup-already-running: |
+  A backup is already running
+  {backup-status}
 backup-skipped-inactivity: "Skipping backup due to inactivity"
 backup-no-methods: "No backup method is enabled"
 backup-start: "Creating backups, the server may lag for a little while..."
@@ -64,7 +66,7 @@ player-join-backup-enable: "Enabling automatic backups"
 player-join-update-available: "An update is available, get it here: <gold><click:open_link:http://bit.ly/2M14uVD>http://bit.ly/2M14uVD</click></gold>"
 debug-log-creating: "Generating Debug Log"
 debug-log-created: "Debug URL: <url>"
-link-account-code: "To link your <provider> account, go to <gold><click:open_url:link-url>link-url</click></gold> and enter <gold><click:copy_to_clipboard:link-code>link-code</click></gold>""
+link-account-code: "To link your <provider> account, go to <gold><click:open_url:link-url>link-url</click></gold> and enter <gold><click:copy_to_clipboard:link-code>link-code</click></gold>"
 link-account-failed: "Failed to link your <provider> account"
 drivebackup-command-header: "<gold>|====== <dark_red>DriveBackupV2 ======|"
 drivebackup-docs-command: |
