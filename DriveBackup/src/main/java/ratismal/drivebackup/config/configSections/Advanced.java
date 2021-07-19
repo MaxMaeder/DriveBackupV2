@@ -5,7 +5,7 @@ import java.util.Locale;
 
 import org.bukkit.configuration.file.FileConfiguration;
 
-import ratismal.drivebackup.config.ConfigParser.Logger;
+import ratismal.drivebackup.util.Logger;
 
 import static ratismal.drivebackup.config.Localization.intl;
 

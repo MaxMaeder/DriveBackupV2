@@ -2,7 +2,7 @@ package ratismal.drivebackup.config.configSections;
 
 import org.bukkit.configuration.file.FileConfiguration;
 
-import ratismal.drivebackup.config.ConfigParser.Logger;
+import ratismal.drivebackup.util.Logger;
 
 public class Messages {
     public final boolean sendInChat;

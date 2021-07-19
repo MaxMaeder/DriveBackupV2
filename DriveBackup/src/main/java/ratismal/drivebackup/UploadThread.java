@@ -10,6 +10,7 @@ import ratismal.drivebackup.uploaders.googledrive.GoogleDriveUploader;
 import ratismal.drivebackup.uploaders.onedrive.OneDriveUploader;
 import ratismal.drivebackup.uploaders.mysql.MySQLUploader;
 import ratismal.drivebackup.config.ConfigParser;
+import ratismal.drivebackup.config.Permissions;
 import ratismal.drivebackup.config.ConfigParser.Config;
 import ratismal.drivebackup.config.configSections.BackupList.BackupListEntry;
 import ratismal.drivebackup.config.configSections.BackupList.BackupListEntry.PathBackupLocation;
@@ -43,8 +44,7 @@ import static ratismal.drivebackup.config.Localization.intl;
 
 public class UploadThread implements Runnable {
     private CommandSender initiator;
-
-    private static LocalDateTime nextIntervalBackupTime = null;
+    private Logger logger;
 
     /**
      * The current status of the backup thread
@@ -71,6 +71,8 @@ public class UploadThread implements Runnable {
      */
     private static List<BackupListEntry> backupList;
 
+    private static LocalDateTime nextIntervalBackupTime = null;
+
     /**
      * The {@code BackupStatus} of the backup thread
      */
@@ -93,6 +95,12 @@ public class UploadThread implements Runnable {
      */
     public UploadThread(CommandSender initiator) {
         this.initiator = initiator;
+        
+        logger = (input, placeholders) -> {
+            MessageUtil builder = MessageUtil.Builder().mmText(input, placeholders);
+            if (initiator != null) builder.to(initiator);
+            builder.toPerm(Permissions.BACKUP).send();
+        };
     }
 
     /**
@@ -103,8 +111,11 @@ public class UploadThread implements Runnable {
         Config config = ConfigParser.getConfig();
 
         if (initiator != null && backupStatus != BackupStatus.NOT_RUNNING) {
-            MessageUtil.Builder().mmText(intl("backup-already-running")).to(initiator).toConsole(false).send();
-            MessageUtil.Builder().text(getBackupStatus()).to(initiator).toConsole(false).send();
+            MessageUtil.Builder()
+                .mmText(intl("backup-already-running"), "backup-status", getBackupStatus())
+                .to(initiator)
+                .toConsole(false)
+                .send();
 
             return;
         }
@@ -120,7 +131,7 @@ public class UploadThread implements Runnable {
         }
 
         if (config.backupStorage.backupsRequirePlayers && !PlayerListener.isAutoBackupsActive() && initiator == null) {
-            MessageUtil.Builder().mmText(intl("backup-skipped-inactivity")).toConsole(true).send();
+            logger.log(intl("backup-skipped-inactivity"));
 
             return;
         }
@@ -135,7 +146,7 @@ public class UploadThread implements Runnable {
             config.backupStorage.localKeepCount == 0
             ) {
 
-            MessageUtil.Builder().mmText(intl("backup-no-methods")).toPerm("drivebackup.linkAccounts").to(initiator).send();
+            logger.log(intl("backup-no-methods"));
 
             return;
         }
@@ -193,7 +204,7 @@ public class UploadThread implements Runnable {
         for(int i = 0; i < uploaders.size(); i++) {
             uploaders.get(i).close();
             if (uploaders.get(i).isErrorWhileUploading()) {
-                MessageUtil.Builder().text(uploaders.get(i).getSetupInstructions()).toPerm("drivebackup.linkAccounts").to(initiator).send();
+                logger.log(uploaders.get(i).getSetupInstructions());
                 errorOccurred = true;
             } else {
                 MessageUtil.Builder()
