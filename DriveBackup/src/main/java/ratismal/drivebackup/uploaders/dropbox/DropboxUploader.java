@@ -1,6 +1,7 @@
 package ratismal.drivebackup.uploaders.dropbox;
 
 import ratismal.drivebackup.util.MessageUtil;
+import ratismal.drivebackup.util.SchedulerUtil;
 import ratismal.drivebackup.uploaders.Uploader;
 import ratismal.drivebackup.config.ConfigParser;
 import ratismal.drivebackup.config.ConfigParser.Config;
@@ -16,14 +17,8 @@ import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.concurrent.TimeUnit;
 
+import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
-import org.bukkit.conversations.Conversable;
-import org.bukkit.conversations.Conversation;
-import org.bukkit.conversations.ConversationAbandonedEvent;
-import org.bukkit.conversations.ConversationContext;
-import org.bukkit.conversations.ConversationFactory;
-import org.bukkit.conversations.Prompt;
-import org.bukkit.conversations.StringPrompt;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -77,52 +72,64 @@ public class DropboxUploader implements Uploader {
      * @param initiator user who initiated the authentication
      */
     public static void authenticateUser(final DriveBackup plugin, final CommandSender initiator) {
+        try {
+            RequestBody requestBody = new FormBody.Builder()
+                .add("type", "dropbox")
+                .build();
 
-        Boolean[] errorOccured = {false};
-        final String authorizeUrl = "https://www.dropbox.com/oauth2/authorize?token_access_type=offline&response_type=code&client_id="+APP_KEY;
-        
-        // TODO: implement device code auth
-        MessageUtil.Builder().text(
-            Component.text("To link your Dropbox account, go to ")
-                .color(NamedTextColor.DARK_AQUA)
-            .append(Component.text(authorizeUrl).color(NamedTextColor.GOLD)
-                .hoverEvent(HoverEvent.showText(Component.text("Go to URL")))
-                .clickEvent(ClickEvent.openUrl(authorizeUrl)))
-            .append(Component.text(" and paste the code here:").color(NamedTextColor.DARK_AQUA))
-        ).to(initiator).toConsole(false).send();
+            Request request = new Request.Builder()
+                .url("https://drivebackup.web.app/pin")
+                .post(requestBody)
+                .build();
 
-        final Prompt getToken = new StringPrompt() {
+            Response response = httpClient.newCall(request).execute();
+            JSONObject parsedResponse = new JSONObject(response.body().string());
+            response.close();
 
-            @Override
-            public String getPromptText(final ConversationContext context) {
-                return "";
-            }
+            String verificationUrl = "https://drivebackup.web.app/";
+            String userCode = parsedResponse.getString("user_code");
+            final String deviceCode = parsedResponse.getString("device_code");
+            long responseCheckDelay = SchedulerUtil.sToTicks(parsedResponse.getLong("interval"));
 
-            @Override
-            public Prompt acceptInput(final ConversationContext context, String input) {
-                try {
-                    input = input.trim();
+            MessageUtil.Builder()
+                .mmText(
+                    intl("link-account-code")
+                        .replace("link-url", verificationUrl)
+                        .replace("link-code", userCode)
+                        .replace("provider", UPLOADER_NAME)
+                    )
+                .to(initiator)
+                .toConsole(false)
+                .send();
 
+            final int[] task = new int[]{-1};
+            task[0] = plugin.getServer().getScheduler().scheduleSyncRepeatingTask(plugin, new Runnable() {
+                @Override
+                public void run() {
+                    
                     RequestBody requestBody = new FormBody.Builder()
-                        .add("code", input)
-                        .add("grant_type", "authorization_code")
-                        .add("client_id", APP_KEY)
-                        .add("client_secret", APP_SECRET).build();
-
+                        .add("device_code", deviceCode)
+                        .add("user_code", userCode)
+                        .build();
+            
                     Request request = new Request.Builder()
-                        .url("https://api.dropbox.com/oauth2/token")
+                        .url("https://drivebackup.web.app/token")
                         .post(requestBody)
                         .build();
-
+            
                     JSONObject parsedResponse = null;
                     try {
                         Response response = httpClient.newCall(request).execute();
                         parsedResponse = new JSONObject(response.body().string());
                         response.close();
                     } catch (Exception exception) {
-                        errorOccured[0] = true;
-                    }
+                        MessageUtil.Builder().text("Failed to link your Dropbox account, please try again").to(initiator).toConsole(false).send();
+                        MessageUtil.sendConsoleException(exception);
 
+                        Bukkit.getScheduler().cancelTask(task[0]);
+                        return;
+                    }
+                    
                     if (parsedResponse.has("refresh_token")) {
                         JSONObject jsonObject = new JSONObject();
                         jsonObject.put("refresh_token", parsedResponse.getString("refresh_token"));
@@ -131,49 +138,45 @@ public class DropboxUploader implements Uploader {
                             FileWriter file = new FileWriter(CLIENT_JSON_PATH);
                             file.write(jsonObject.toString());
                             file.close();
-                        } catch (IOException exception) {
-                            errorOccured[0] = true;
+                        } catch (IOException e) {
+                            MessageUtil.Builder().text("Failed to link your Dropbox account, please try again").to(initiator).toConsole(false).send();
+                            MessageUtil.sendConsoleException(e);
+                            
+                            Bukkit.getScheduler().cancelTask(task[0]);
                         }
-
-                    } else if (parsedResponse.has("error")) {
-                        errorOccured[0] = true;
-                    }
-
-                } catch (Exception exception) {
-                    errorOccured[0] = true;
-                }
-                return Prompt.END_OF_CONVERSATION;
-            }
-        };
-
-        final ConversationFactory factory = new ConversationFactory(plugin)
-            .withTimeout(60)
-            .withLocalEcho(false)
-            .withFirstPrompt(getToken)
-            .addConversationAbandonedListener((ConversationAbandonedEvent abandonedEvent) -> {
-                if (abandonedEvent.gracefulExit()) {
-                    if (!errorOccured[0]) {
+                        
                         MessageUtil.Builder().text("Your Dropbox account is linked!").to(initiator).toConsole(false).send();
-
+                        
                         if (!plugin.getConfig().getBoolean("dropbox.enabled")) {
                             MessageUtil.Builder().text("Automatically enabled Dropbox backups").to(initiator).toConsole(false).send();
                             plugin.getConfig().set("dropbox.enabled", true);
                             plugin.saveConfig();
-
+                            
                             DriveBackup.reloadLocalConfig();
                         }
 
                         BasicCommands.sendBriefBackupList(initiator);
-                    } else {
-                        MessageUtil.Builder().text("Failed to link your Dropbox account, please try again").to(initiator).toConsole(false).send();
+                        
+                        Bukkit.getScheduler().cancelTask(task[0]);
+                    } else if (!parsedResponse.getString("msg").equals("Code not authenticated")) {
+                        if (parsedResponse.getString("msg").equals("code_expired")) {
+                            MessageUtil.Builder().text("The Dropbox account linking process timed out, please try again").to(initiator).toConsole(false).send();
+                        } else {
+                            MessageUtil.Builder().text("Failed to link your Dropbox account, please try again" + parsedResponse.toString()).to(initiator).toConsole(false).send();
+                        }
+                        
+                        Bukkit.getScheduler().cancelTask(task[0]);
                     }
-                } else {
-                    MessageUtil.Builder().text("Abandoned Dropbox account linking").to(initiator).toConsole(false).send();
                 }
-            });
-
-        Conversation conversation = factory.buildConversation((Conversable) initiator);
-        conversation.begin();        
+            }, responseCheckDelay, responseCheckDelay);
+        } catch (UnknownHostException exception) {
+            MessageUtil.Builder().text("Failed to link your Google Drive account, check your network connection").toPerm("drivebackup.linkAccounts").send();
+            
+        } catch (Exception e) {
+            MessageUtil.Builder().text("Failed to link your Google Drive account").to(initiator).toConsole(false).send();
+        
+            MessageUtil.sendConsoleException(e);
+        }      
     }
 
     /**

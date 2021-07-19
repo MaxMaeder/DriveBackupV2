@@ -98,12 +98,11 @@ public class GoogleDriveUploader implements Uploader {
     public static void authenticateUser(final DriveBackup plugin, final CommandSender initiator) {
         try {
             RequestBody requestBody = new FormBody.Builder()
-                .add("client_id", CLIENT_ID)
-                .add("scope", "https://www.googleapis.com/auth/drive.file")
+                .add("type", "googledrive")
                 .build();
 
             Request request = new Request.Builder()
-                .url("https://oauth2.googleapis.com/device/code")
+                .url("https://drivebackup.web.app/pin")
                 .post(requestBody)
                 .build();
 
@@ -111,7 +110,7 @@ public class GoogleDriveUploader implements Uploader {
             JSONObject parsedResponse = new JSONObject(response.body().string());
             response.close();
 
-            String verificationUrl = parsedResponse.getString("verification_url");
+            String verificationUrl = "https://drivebackup.web.app/";
             String userCode = parsedResponse.getString("user_code");
             final String deviceCode = parsedResponse.getString("device_code");
             long responseCheckDelay = SchedulerUtil.sToTicks(parsedResponse.getLong("interval"));
@@ -120,8 +119,8 @@ public class GoogleDriveUploader implements Uploader {
                 .mmText(
                     intl("link-account-code")
                         .replace("link-url", verificationUrl)
-                        .replace("link-code", userCode), 
-                    "provider", UPLOADER_NAME
+                        .replace("link-code", userCode)
+                        .replace("provider", UPLOADER_NAME)
                     )
                 .to(initiator)
                 .toConsole(false)
@@ -133,14 +132,12 @@ public class GoogleDriveUploader implements Uploader {
                 public void run() {
                     
                     RequestBody requestBody = new FormBody.Builder()
-                        .add("client_id", CLIENT_ID)
-                        .add("client_secret", CLIENT_SECRET)
-                        .add("grant_type", "urn:ietf:params:oauth:grant-type:device_code")
                         .add("device_code", deviceCode)
+                        .add("user_code", userCode)
                         .build();
             
                     Request request = new Request.Builder()
-                        .url("https://oauth2.googleapis.com/token")
+                        .url("https://drivebackup.web.app/token")
                         .post(requestBody)
                         .build();
             
@@ -151,6 +148,7 @@ public class GoogleDriveUploader implements Uploader {
                         response.close();
                     } catch (Exception exception) {
                         MessageUtil.Builder().text("Failed to link your Google Drive account, please try again").to(initiator).toConsole(false).send();
+                        MessageUtil.sendConsoleException(exception);
 
                         Bukkit.getScheduler().cancelTask(task[0]);
                         return;
@@ -166,6 +164,7 @@ public class GoogleDriveUploader implements Uploader {
                             file.close();
                         } catch (IOException e) {
                             MessageUtil.Builder().text("Failed to link your Google Drive account, please try again").to(initiator).toConsole(false).send();
+                            MessageUtil.sendConsoleException(e);
                             
                             Bukkit.getScheduler().cancelTask(task[0]);
                         }
@@ -183,11 +182,11 @@ public class GoogleDriveUploader implements Uploader {
                         BasicCommands.sendBriefBackupList(initiator);
                         
                         Bukkit.getScheduler().cancelTask(task[0]);
-                    } else if (!parsedResponse.getString("error").equals("authorization_pending")) {
-                        if (parsedResponse.getString("error").equals("expired_token")) {
+                    } else if (!parsedResponse.getString("msg").equals("Code not authenticated")) {
+                        if (parsedResponse.getString("msg").equals("code_expired")) {
                             MessageUtil.Builder().text("The Google Drive account linking process timed out, please try again").to(initiator).toConsole(false).send();
                         } else {
-                            MessageUtil.Builder().text("Failed to link your Google Drive account, please try again").to(initiator).toConsole(false).send();
+                            MessageUtil.Builder().text("Failed to link your Google Drive account, please try again" + parsedResponse.toString()).to(initiator).toConsole(false).send();
                         }
                         
                         Bukkit.getScheduler().cancelTask(task[0]);
