@@ -34,6 +34,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 
+import com.avaje.ebeaninternal.server.cluster.mcast.Message;
 import com.google.api.client.util.Strings;
 
 import static ratismal.drivebackup.config.Localization.intl;
@@ -204,7 +205,9 @@ public class UploadThread implements Runnable {
         for(int i = 0; i < uploaders.size(); i++) {
             uploaders.get(i).close();
             if (uploaders.get(i).isErrorWhileUploading()) {
-                logger.log(uploaders.get(i).getSetupInstructions());
+                MessageUtil builder = MessageUtil.Builder().text(uploaders.get(i).getSetupInstructions());
+                if (initiator != null) builder.to(initiator);
+                builder.toPerm(Permissions.BACKUP).send();
                 errorOccurred = true;
             } else {
                 MessageUtil.Builder()
