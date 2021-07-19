@@ -1,0 +1,62 @@
+const { db } = require('../app.js');
+var express = require('express');
+var fetch = require('node-fetch');
+var router = express.Router();
+
+router.post('/', async function(req, res, next) {
+  if (req.body.device_code === undefined || req.body.user_code === undefined) return res.send({success: false, msg: "missing_params"});
+  
+  var docRef = await db.collection('pins').doc(req.body.user_code).get();
+  var doc = docRef.data();
+
+  if (!docRef.exists || req.body.device_code != doc.device_code) return res.send({success: false, msg: "incorrect_device_code"});
+
+  if (doc.auth_code === undefined) return res.send({success: false, msg: "code_not_authenticated"})
+  
+  if (doc.type === "googledrive") {
+    fetch('https://oauth2.googleapis.com/token', {
+      method: 'POST',
+      body: JSON.stringify({
+        client_id: process.env.GOOGLE_ID,
+        client_secret: process.env.GOOGLE_SECRET,
+        code: doc.auth_code,
+        grant_type: 'authorization_code',
+        redirect_uri: 'https://drivebackup.web.app/callback'
+      })
+    })
+    .then(res => res.json())
+    .then(json => {
+      if (json.refresh_token != null) {
+        res.send({success: true, refresh_token: json.refresh_token});
+      } else {
+        res.send({success: false, msg: JSON.stringify(json)});
+      }
+    });
+  } else if (doc.type === "dropbox") {
+    fetch('https://api.dropbox.com/oauth2/token', {
+      method: 'POST',
+      body: new URLSearchParams({
+        'client_id': process.env.DROPBOX_ID,
+        'client_secret': process.env.DROPBOX_SECRET,
+        'code': doc.auth_code,
+        'grant_type': 'authorization_code',
+        'redirect_uri': 'https://drivebackup.web.app/callback'
+      })
+    })
+    .then(res => res.json())
+    .then(json => {
+      if (json.refresh_token != null) {
+        res.send({success: true, refresh_token: json.refresh_token});
+      } else {
+        res.send({success: false, msg: JSON.stringify(json)});
+      }
+    });
+  } else {
+    res.send({
+      success: false,
+      msg: "how_is_this_working"
+    });
+  }
+});
+
+module.exports = router;

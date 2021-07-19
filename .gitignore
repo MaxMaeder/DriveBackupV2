@@ -10,3 +10,4 @@ src/com/*
 *.iml
 lib/*
 dependency-reduced-pom.xml
+node_modules
