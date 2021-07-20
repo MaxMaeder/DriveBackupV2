@@ -40,6 +40,20 @@ html, body {
   margin: 0 auto;
 }
 
+.more-info {
+  margin-top: 20px;
+}
+
+.more-info img {
+  max-width: 50px;
+  max-height: 50px;
+  margin: 10px;
+}
+
+.privacy-policy {
+  color: #212529;
+}
+
 .top-right {
   position: absolute;
   right: 0;
