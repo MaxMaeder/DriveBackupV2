@@ -69,6 +69,11 @@ public class UploadThread implements Runnable {
     }
 
     /**
+     * List of {@code Uploaders} to upload the backups to
+     */
+    private ArrayList<Uploader> uploaders;
+
+    /**
      * The list of items to be backed up by the backup thread
      */
     private static List<BackupListEntry> backupList;
@@ -165,7 +170,7 @@ public class UploadThread implements Runnable {
         MessageUtil.Builder().text(intl("backup-start")).all().send();
 
 
-        ArrayList<Uploader> uploaders = new ArrayList<Uploader>();
+        uploaders = new ArrayList<Uploader>();
 
         if (config.backupMethods.googleDrive.enabled) {
             uploaders.add(new GoogleDriveUploader());
@@ -180,7 +185,7 @@ public class UploadThread implements Runnable {
             uploaders.add(new FTPUploader());
         }
 
-        ensureMethodsLinked(uploaders);
+        ensureMethodsLinked();
 
         backupList = Arrays.asList(config.backupList.list);
 
@@ -196,13 +201,7 @@ public class UploadThread implements Runnable {
         backupBackingUp = 0;
         for (BackupListEntry set : backupList) {
             for(Path folder : set.location.getPaths()) {
-                Boolean err = doSingleBackup(folder.toString(), set.formatter, set.create, Arrays.asList(set.blacklist), uploaders);
-                if(err) { // an error occurred
-                    backupStatus = BackupStatus.NOT_RUNNING;
-                    errorOccurred = true;
-                    ServerUtil.setAutoSave(true);
-                    return;
-                }
+                doSingleBackup(folder.toString(), set.formatter, set.create, Arrays.asList(set.blacklist), uploaders);
             }
 
             backupBackingUp++;
@@ -248,7 +247,7 @@ public class UploadThread implements Runnable {
         }
     }
 
-    private void ensureMethodsLinked(List<Uploader> uploaders) {
+    private void ensureMethodsLinked() {
         for (Uploader uploader : uploaders) {
             AuthenticationProvider provider = uploader.getAuthProvider();
             if (provider == null) continue;
@@ -258,7 +257,7 @@ public class UploadThread implements Runnable {
                     intl("backup-method-not-linked")
                         .replace(
                             "link-command", 
-                            "/drivebackup linkaccount" + provider.getId().replace("-", "")), 
+                            "/drivebackup linkaccount " + provider.getId().replace("-", "")), 
                     "backup-method", 
                     provider.getName());
 
@@ -269,68 +268,64 @@ public class UploadThread implements Runnable {
 
     /**
      * Backs up a single folder
-     * @param type Path to the folder
+     * @param location Path to the folder
      * @param formatter Save format configuration
      * @param create Create the zip file or just upload it? ("True" / "False")
      * @param blackList configured blacklist (with globs)
      * @param uploaders All services to upload to
      * @return True if any error occurred
      */
-    private Boolean doSingleBackup(String type, LocalDateTimeFormatter formatter, boolean create, List<String> blackList, List<Uploader> uploaders) {
-        MessageUtil.Builder().mmText(intl("backup-location-start"), "location", type).toConsole(true).send();
+    private void doSingleBackup(String location, LocalDateTimeFormatter formatter, boolean create, List<String> blackList, List<Uploader> uploaders) {
+        MessageUtil.Builder().mmText(intl("backup-location-start"), "location", location).toConsole(true).send();
         if (create) {
             backupStatus = BackupStatus.COMPRESSING;
 
             try {
-                FileUtil.makeBackup(type, formatter, blackList);
+                FileUtil.makeBackup(location, formatter, blackList);
             } catch (IllegalArgumentException exception) {
-                MessageUtil.Builder().mmText(intl("backup-failed-absolute-path")).toPerm("drivebackup.linkAccounts").to(initiator).send();
+                logger.log(intl("backup-failed-absolute-path"));
 
-                backupStatus = BackupStatus.NOT_RUNNING;
-
-                ServerUtil.setAutoSave(true);
-
-                return true;
+                return;
             } catch (Exception exception) {
-                MessageUtil.sendConsoleException(exception);
-                MessageUtil.Builder().text("Failed to create a backup").toPerm("drivebackup.linkAccounts").to(initiator).send();
+                logger.log(intl("backup-local-failed"));
 
-                backupStatus = BackupStatus.NOT_RUNNING;
-
-                ServerUtil.setAutoSave(true);
-
-                return true;
+                return;
             }
         }
 
         try {
             backupStatus = BackupStatus.UPLOADING;
 
-            if (FileUtil.isBaseFolder(type)) {
-                type = "root";
+            if (FileUtil.isBaseFolder(location)) {
+                location = "root";
             }
 
-            File file = FileUtil.getNewestBackup(type, formatter);
-            ratismal.drivebackup.util.Timer timer = new Timer();
+            File file = FileUtil.getNewestBackup(location, formatter);
+            Timer timer = new Timer();
 
+            for (Uploader uploader : uploaders) {
+                logger.log(
+                    intl("backup-uploading-to-method"),
+                    "backup-method",
+                    uploader.getName());
 
-            for(int i = 0; i < uploaders.size(); i++) {
-                MessageUtil.Builder().text("Uploading file to " + uploaders.get(i).getName()).toConsole(true).send();
                 timer.start();
-                uploaders.get(i).uploadFile(file, type);
+                uploader.uploadFile(file, location);
                 timer.end();
-                if(!uploaders.get(i).isErrorWhileUploading()) {
-                    MessageUtil.Builder().text(timer.getUploadTimeMessage(file)).toConsole(true).send();
+
+                if (!uploader.isErrorWhileUploading()) {
+                    logger.log(timer.getUploadTimeMessage(file));
                 } else {
-                    MessageUtil.Builder().text("Upload failed").toConsole(true).send();
+                    logger.log(intl("backup-failed-to-upload-to-method"));
                 }
             }
 
-            FileUtil.deleteFiles(type, formatter);
+            FileUtil.deleteFiles(location, formatter);
         } catch (Exception e) {
+
+            logger.log(intl("backup-failed-to-upload-to-method"));
             MessageUtil.sendConsoleException(e);
         }
-        return false;
     }
 
     /**

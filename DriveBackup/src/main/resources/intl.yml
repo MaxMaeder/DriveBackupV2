@@ -45,14 +45,20 @@ backup-skipped-inactivity: "Skipping backup due to inactivity"
 backup-no-methods: "No backup method is enabled"
 backup-start: "Creating backups, the server may lag for a little while..."
 backup-location-start: "Doing backups for \"<location>\""
-backup-local-complete: "<gold>Local</gold> backup complete"
+backup-failed-absolute-path: |
+  Failed to create a backup, path to folder to backup is absolute, expected a relative path
+  An absolute path can overwrite sensitive files, see the docs for more information
+  Skipping backup location
+backup-local-failed: |
+  Failed to create local backup
+  Even if local-keep-count is set to zero, the plugin needs to temporarily create a local backup
+  Skipping backup location
+backup-uploading-to-method: "Uploading file to <backup-method>"
+backup-failed-to-upload-to-method: "Failed to upload"
 backup-method-not-linked: |
   Skipping backup to <backup-method>, account not yet linked
   To link your account, run <gold><click:run_command:link-command>link-command</click></gold>
 backup-method-complete: "Backup to <gold><backup-method></gold> complete"
-backup-failed-absolute-path: |
-  Failed to create a backup, path to folder to backup is absolute, expected a relative path
-  An absolute path can overwrite sensitive files, see the docs for more information
 backup-complete: "Backup complete,"
 backup-disabled-inactivity: ""
 next-backup: "the next backup is in %TIME minutes"
