@@ -34,5 +34,5 @@ jobs:
       uses: google-github-actions/deploy-cloudrun@main
       with:
         service: authenticator
-        image: gcr.io/drivebackup-276620/authenticator:$GITHUB_SHA
+        image: gcr.io/drivebackup-276620/authenticator:${{ GITHUB_SHA }}
         credentials: ${{ secrets.GCP_SA_KEY }}
