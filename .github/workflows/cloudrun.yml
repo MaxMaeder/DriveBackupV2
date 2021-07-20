@@ -1,6 +1,7 @@
 name: DriveBackupV2 Authenticator
 
 on:
+  workflow_dispatch:
   push:
     paths:
       - 'Authenticator/**'
