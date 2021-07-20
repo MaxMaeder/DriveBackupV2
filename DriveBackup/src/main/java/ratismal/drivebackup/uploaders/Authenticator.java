@@ -200,7 +200,7 @@ public class Authenticator {
 
     public static boolean hasRefreshToken(AuthenticationProvider provider) {
         // what am i doing with my life
-        return !getRefreshToken(provider).equals("");
+        return !getRefreshToken(provider).isEmpty();
     }
 
     private static String processCredentialJsonFile(AuthenticationProvider provider) throws IOException {
