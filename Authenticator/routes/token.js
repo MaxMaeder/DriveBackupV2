@@ -6,7 +6,7 @@ var router = express.Router();
 router.post('/', async function(req, res, next) {
   if (req.body.device_code === undefined || req.body.user_code === undefined) return res.send({success: false, msg: "missing_params"});
   
-  var docRef = await db.collection('pins').doc(req.body.user_code).get();
+  var docRef = await db.collection('pins').doc(req.body.user_code.toUpperCase()).get();
   var doc = docRef.data();
 
   if (!docRef.exists || req.body.device_code != doc.device_code) return res.send({success: false, msg: "incorrect_device_code"});
