@@ -6,22 +6,32 @@
 
     <title>DriveBackupV2 Authenticator</title>
     
-    <link rel="stylesheet" href="css/bootstrap.min.css"/>
-    <link rel="stylesheet" href="css/style.css"/>
+    <link rel="stylesheet" href="/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="/css/style.css"/>
   </head>
 
-  <body class="text-center">
-    <form id="form-code" class="form-code">
-      <img class="mb-4" src="logo.png" alt="" width="128" height="128">
-      <div id="errorAlert" class="alert alert-danger" style="display:none" role="alert">An error occurred!</div>
-      <h1 class="h3 mb-3 font-weight-normal">Please enter your code</h1>
-      <input type="text" id="codeInput" class="form-control" placeholder="Code" required>
-      <br/>
-      <button id="nextButton" class="btn btn-lg btn-primary btn-block" type="submit">
-        <span id="spinner" class="spinner-border spinner-border-sm" style="display:none" role="status" aria-hidden="true"></span>
-        Next
-      </button>
-    </form>
+  <body>
+    <div class="top-right">
+      <a href="https://patreon.com/DriveBackupV2"><img src="/images/patreon.png"/></a>
+      <a href="https://github.com/MaxMaeder/DriveBackupV2"><img src="/images/github.png"/></a>
+      <a href="https://discord.gg/VdCAUtm"><img src="/images/discord.jpg"/></a>
+    </div>
+    <div class="content">
+      <form id="form-code" class="text-center form-code">
+        <img class="mb-4" src="/images/logo.png" alt="" width="128" height="128">
+        <div id="errorAlert" class="alert alert-danger" style="display:none" role="alert">An error occurred!</div>
+        <h1 class="h3 mb-3 font-weight-normal">Please enter your code</h1>
+        <input type="text" id="codeInput" class="form-control" placeholder="Code" required>
+        <br/>
+        <button id="nextButton" class="btn btn-lg btn-primary btn-block" type="submit">
+          <span id="spinner" class="spinner-border spinner-border-sm" style="display:none" role="status" aria-hidden="true"></span>
+          Next
+        </button>
+      </form>
+    </div>
+    <nav class="bottom-right">
+      <a href="/privacy-policy">Privacy Policy</a>
+    </nav>
   </body>
   <script type="text/javascript" src="js/main.js"></script>
 </html>
