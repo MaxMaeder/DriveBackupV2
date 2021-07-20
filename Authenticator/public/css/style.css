@@ -13,6 +13,8 @@ html, body {
   align-items: center;
   -webkit-box-pack: center;
   justify-content: center;
+  flex-direction: column;
+  -ms-flex-direction: column;
   padding-top: 40px;
   padding-bottom: 40px;
   background-color: #f5f5f5;
@@ -41,16 +43,18 @@ html, body {
 }
 
 .more-info {
-  margin-top: 20px;
+  text-align: center;
+  margin-top: 40px;
 }
 
 .more-info img {
-  max-width: 50px;
-  max-height: 50px;
-  margin: 10px;
+  max-width: 40px;
+  max-height: 40px;
+  margin: 8px 8px 0 8px;
 }
 
 .privacy-policy {
+  display: block;
   color: #212529;
 }
 
