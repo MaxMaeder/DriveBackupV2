@@ -51,6 +51,11 @@ html, body {
   max-width: 40px;
   max-height: 40px;
   margin: 8px 8px 0 8px;
+  transition: opacity 0.25s;
+}
+
+.more-info img:hover {
+  opacity: .9;
 }
 
 .privacy-policy {
