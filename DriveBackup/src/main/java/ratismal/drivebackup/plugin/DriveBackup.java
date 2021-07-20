@@ -44,12 +44,18 @@ public class DriveBackup extends JavaPlugin {
     public void onEnable() {
         plugin = this;
 
-        saveDefaultConfig();
-
         DriveBackup.adventure = BukkitAudiences.create(plugin);
+
+        List<CommandSender> configPlayers = Permissions.getPlayersWithPerm(Permissions.RELOAD_CONFIG);
+
+        saveDefaultConfig();
 
         localizationConfig = new CustomConfig("intl.yml");
         localizationConfig.saveDefaultConfig();
+
+        ConfigMigrator configMigrator = new ConfigMigrator(getConfig(), localizationConfig.getConfig(), configPlayers);
+        configMigrator.migrate();
+
         localization = new Localization(localizationConfig.getConfig());
 
         config = new ConfigParser(getConfig());
@@ -102,9 +108,6 @@ public class DriveBackup extends JavaPlugin {
         
         localizationConfig.reloadConfig();
         FileConfiguration localizationFile = localizationConfig.getConfig();
-
-        ConfigMigrator configMigrator = new ConfigMigrator(configFile, localizationFile, players);
-        //configMigrator.migrate();
 
         config.reload(configFile, players);
         localization.reload(localizationFile);

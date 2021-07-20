@@ -48,10 +48,10 @@ public class ConfigMigrator {
         }
 
         if (!config.getString("schedule-timezone").equals(DEFAULT_TIMEZONE_STRING)) {
-            migrate("schedule-timezone", "date-timezone");
+            migrate("schedule-timezone", "advanced.date-timezone");
             config.set("backup-format-timezone", null);
         } else {
-            migrate("backup-format-timezone", "date-timezone");
+            migrate("backup-format-timezone", "advanced.date-timezone");
             config.set("schedule-timezone", null);
         }
 
