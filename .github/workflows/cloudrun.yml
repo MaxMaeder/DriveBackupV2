@@ -1,6 +1,7 @@
 name: DriveBackupV2 Authenticator
 
 on:
+  workflow_dispatch:
   push:
     paths:
       - 'Authenticator/**'
@@ -8,6 +9,9 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./Authenticator
 
     steps:
     - name: Checkout
@@ -16,7 +20,7 @@ jobs:
     - name: Set up Cloud SDK
       uses: google-github-actions/setup-gcloud@master
       with:
-        project_id: ${{ secrets.GCP_PROJECT_ID }}
+        project_id: drivebackup-276620
         service_account_key: ${{ secrets.GCP_SA_KEY }}
         export_default_credentials: true
 
@@ -24,11 +28,11 @@ jobs:
       run: |-
         gcloud builds submit \
           --quiet \
-          --tag "gcr.io/${{ secrets.GCP_PROJECT_ID }}/authenticator:$GITHUB_SHA"
+          --tag "gcr.io/drivebackup-276620/authenticator:$GITHUB_SHA"
     
     - name: Deploy to Cloud Run
       uses: google-github-actions/deploy-cloudrun@main
       with:
         service: authenticator
-        image: gcr.io/drivebackup-276620/authenticator
+        image: gcr.io/drivebackup-276620/authenticator:${{ github.sha }}
         credentials: ${{ secrets.GCP_SA_KEY }}
