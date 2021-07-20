@@ -28,7 +28,7 @@ jobs:
       run: |-
         gcloud builds submit \
           --quiet \
-          --tag "gcr.io/${{ secrets.GCP_PROJECT_ID }}/authenticator:$GITHUB_SHA"
+          --tag "gcr.io/drivebackup-276620/authenticator:$GITHUB_SHA"
     
     - name: Deploy to Cloud Run
       uses: google-github-actions/deploy-cloudrun@main
