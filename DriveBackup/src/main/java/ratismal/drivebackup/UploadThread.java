@@ -88,6 +88,12 @@ public class UploadThread implements Runnable {
      * Creates an instance of the {@code UploadThread} object
      */
     public UploadThread() {
+        logger = (input, placeholders) -> {
+            MessageUtil.Builder().mmText(input, placeholders)
+                .to(initiator)
+                .toPerm(Permissions.BACKUP)
+                .send();
+        };
     }
 
     /**
@@ -98,9 +104,10 @@ public class UploadThread implements Runnable {
         this.initiator = initiator;
         
         logger = (input, placeholders) -> {
-            MessageUtil builder = MessageUtil.Builder().mmText(input, placeholders);
-            if (initiator != null) builder.to(initiator);
-            builder.toPerm(Permissions.BACKUP).send();
+            MessageUtil.Builder().mmText(input, placeholders)
+                .to(initiator)
+                .toPerm(Permissions.BACKUP)
+                .send();
         };
     }
 
