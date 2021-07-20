@@ -256,6 +256,10 @@ public class GoogleDriveUploader implements Uploader {
         return UPLOADER_NAME;
     }
 
+    public AuthenticationProvider getAuthProvider() {
+        return AuthenticationProvider.GOOGLE_DRIVE;
+    }
+
     /**
      * Gets the setup instructions for this uploaders
      * @return a Component explaining how to set up this uploader

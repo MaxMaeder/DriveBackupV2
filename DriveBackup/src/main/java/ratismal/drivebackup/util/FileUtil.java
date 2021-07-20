@@ -279,4 +279,19 @@ public class FileUtil {
     public static boolean isBaseFolder(String folderPath) throws Exception {
         return new File(folderPath).getPath().equals(".");
     }
+
+    /**
+     * Deletes the specified folder
+     * @param folder the folder to be deleted
+     * @return whether deleting the folder was successful
+     */
+    public static boolean deleteFolder(File folder) {
+        File[] files = folder.listFiles();
+        if (files != null) {
+            for (File file : files) {
+                deleteFolder(file);
+            }
+        }
+        return folder.delete();
+    }
 }

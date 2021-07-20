@@ -257,17 +257,20 @@ public class OneDriveUploader implements Uploader {
     /**
     * closes any remaining connectionsretrieveNewAccessToken
     */
-   public void close() {
-       return; // nothing needs to be done
-   }
+    public void close() {
+        return; // nothing needs to be done
+    }
 
     /**
      * Gets the name of this upload service
      * @return name of upload service
      */
-    public String getName()
-    {
+    public String getName(){
         return UPLOADER_NAME;
+    }
+
+    public AuthenticationProvider getAuthProvider() {
+        return AuthenticationProvider.ONEDRIVE;
     }
 
     /**

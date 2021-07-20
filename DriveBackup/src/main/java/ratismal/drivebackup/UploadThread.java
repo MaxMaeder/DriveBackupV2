@@ -3,7 +3,9 @@ package ratismal.drivebackup;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 
+import ratismal.drivebackup.uploaders.Authenticator;
 import ratismal.drivebackup.uploaders.Uploader;
+import ratismal.drivebackup.uploaders.Authenticator.AuthenticationProvider;
 import ratismal.drivebackup.uploaders.dropbox.DropboxUploader;
 import ratismal.drivebackup.uploaders.ftp.FTPUploader;
 import ratismal.drivebackup.uploaders.googledrive.GoogleDriveUploader;
@@ -34,7 +36,6 @@ import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 
-import com.avaje.ebeaninternal.server.cluster.mcast.Message;
 import com.google.api.client.util.Strings;
 
 import static ratismal.drivebackup.config.Localization.intl;
@@ -179,6 +180,8 @@ public class UploadThread implements Runnable {
             uploaders.add(new FTPUploader());
         }
 
+        ensureMethodsLinked(uploaders);
+
         backupList = Arrays.asList(config.backupList.list);
 
         List<ExternalBackupSource> externalBackupList = Arrays.asList(config.externalBackups.sources);
@@ -205,7 +208,7 @@ public class UploadThread implements Runnable {
             backupBackingUp++;
         }
 
-        deleteFolder(new File("external-backups"));
+        FileUtil.deleteFolder(new File("external-backups"));
 
         backupStatus = BackupStatus.NOT_RUNNING;
 
@@ -245,6 +248,25 @@ public class UploadThread implements Runnable {
         }
     }
 
+    private void ensureMethodsLinked(List<Uploader> uploaders) {
+        for (Uploader uploader : uploaders) {
+            AuthenticationProvider provider = uploader.getAuthProvider();
+            if (provider == null) continue;
+
+            if (!Authenticator.hasRefreshToken(provider)) {
+                logger.log(
+                    intl("backup-method-not-linked")
+                        .replace(
+                            "link-command", 
+                            "/drivebackup linkaccount" + provider.getId().replace("-", "")), 
+                    "backup-method", 
+                    provider.getName());
+
+                uploaders.remove(uploader);
+            }
+        }
+    }
+
     /**
      * Backs up a single folder
      * @param type Path to the folder
@@ -254,7 +276,7 @@ public class UploadThread implements Runnable {
      * @param uploaders All services to upload to
      * @return True if any error occurred
      */
-    private Boolean doSingleBackup(String type, LocalDateTimeFormatter  formatter, boolean create, List<String> blackList, List<Uploader> uploaders) {
+    private Boolean doSingleBackup(String type, LocalDateTimeFormatter formatter, boolean create, List<String> blackList, List<Uploader> uploaders) {
         MessageUtil.Builder().mmText(intl("backup-location-start"), "location", type).toConsole(true).send();
         if (create) {
             backupStatus = BackupStatus.COMPRESSING;
@@ -522,20 +544,5 @@ public class UploadThread implements Runnable {
         } else {
             return "mysql-" + getSocketAddress(externalBackup);
         }
-    }
-
-    /**
-     * Deletes the specified folder
-     * @param folder the folder to be deleted
-     * @return whether deleting the folder was successful
-     */
-    private static boolean deleteFolder(File folder) {
-        File[] files = folder.listFiles();
-        if (files != null) {
-            for (File file : files) {
-                deleteFolder(file);
-            }
-        }
-        return folder.delete();
     }
 }

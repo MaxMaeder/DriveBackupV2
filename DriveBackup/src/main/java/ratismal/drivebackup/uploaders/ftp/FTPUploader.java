@@ -9,6 +9,7 @@ import org.bukkit.ChatColor;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import ratismal.drivebackup.uploaders.Uploader;
+import ratismal.drivebackup.uploaders.Authenticator.AuthenticationProvider;
 import ratismal.drivebackup.config.ConfigParser;
 import ratismal.drivebackup.config.ConfigParser.Config;
 import ratismal.drivebackup.config.configSections.BackupMethods.FTPBackupMethod;
@@ -286,6 +287,10 @@ public class FTPUploader implements Uploader {
     public String getName()
     {
         return "(S)FTP";
+    }
+
+    public AuthenticationProvider getAuthProvider() {
+        return null;
     }
 
     /**

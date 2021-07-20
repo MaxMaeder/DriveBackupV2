@@ -1,6 +1,7 @@
 plugin-stop: "Stopping plugin!"
 metrics-started: "Metrics started"
 metrics-error: "Metrics failed to start"
+config-loaded: "Config loaded!"
 config-reloaded: "Config reloaded!"
 date-format-invalid: "Date format timezone not valid, using UTC"
 backup-list-glob-invalid: "Glob invalid, skipping backup list entry <entry>"
@@ -45,6 +46,9 @@ backup-no-methods: "No backup method is enabled"
 backup-start: "Creating backups, the server may lag for a little while..."
 backup-location-start: "Doing backups for \"<location>\""
 backup-local-complete: "<gold>Local</gold> backup complete"
+backup-method-not-linked: |
+  Skipping backup to <backup-method>, account not yet linked
+  To link your account, run <gold><click:run_command:link-command>link-command</click></gold>
 backup-method-complete: "Backup to <gold><backup-method></gold> complete"
 backup-failed-absolute-path: |
   Failed to create a backup, path to folder to backup is absolute, expected a relative path

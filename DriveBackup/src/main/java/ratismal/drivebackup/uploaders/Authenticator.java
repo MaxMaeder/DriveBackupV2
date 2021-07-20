@@ -181,17 +181,26 @@ public class Authenticator {
         }
     }
 
-    public static String getRefreshToken(AuthenticationProvider provider) throws Exception {
-        String clientJSON = processCredentialJsonFile(provider);
-        JSONObject clientJsonObject = new JSONObject(clientJSON);
+    public static String getRefreshToken(AuthenticationProvider provider) {
+        try {
+            String clientJSON = processCredentialJsonFile(provider);
+            JSONObject clientJsonObject = new JSONObject(clientJSON);
+    
+            String readRefreshToken = (String) clientJsonObject.get("refresh_token");
+    
+            if (readRefreshToken == null || readRefreshToken.isEmpty()) {
+                throw new Exception();
+            }
 
-        String readRefreshToken = (String) clientJsonObject.get("refresh_token");
-
-        if (readRefreshToken != null && !readRefreshToken.isEmpty()) {
             return readRefreshToken;
-        } else {
+        } catch (Exception e) {
             return "";
-        }   
+        }
+    }
+
+    public static boolean hasRefreshToken(AuthenticationProvider provider) {
+        // what am i doing with my life
+        return !getRefreshToken(provider).equals("");
     }
 
     private static String processCredentialJsonFile(AuthenticationProvider provider) throws IOException {

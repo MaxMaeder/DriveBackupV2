@@ -61,6 +61,11 @@ public class DriveBackup extends JavaPlugin {
         config = new ConfigParser(getConfig());
         config.reload(Permissions.getPlayersWithPerm(Permissions.RELOAD_CONFIG));
 
+        MessageUtil.Builder()
+            .to(configPlayers)
+            .mmText(intl("config-loaded"))
+            .send();
+
         getCommand(CommandHandler.CHAT_KEYWORD).setTabCompleter(new CommandTabComplete(plugin));
         getCommand(CommandHandler.CHAT_KEYWORD).setExecutor(new CommandHandler(plugin));
 

@@ -356,6 +356,10 @@ public class DropboxUploader implements Uploader {
         return "Dropbox";
     }
 
+    public AuthenticationProvider getAuthProvider() {
+        return AuthenticationProvider.DROPBOX;
+    }
+
     /**
      * Gets the setup instructions for this uploaders
      * 
