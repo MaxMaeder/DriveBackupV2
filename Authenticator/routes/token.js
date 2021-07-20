@@ -51,6 +51,25 @@ router.post('/', async function(req, res, next) {
         res.send({success: false, msg: JSON.stringify(json)});
       }
     });
+  } else if (doc.type === "onedrive") {
+    fetch('https://login.microsoftonline.com/common/oauth2/v2.0/token', {
+      method: 'POST',
+      body: new URLSearchParams({
+        'client_id': process.env.ONEDRIVE_ID,
+        // 'client_secret': process.env.ONEDRIVE_SECRET,
+        'code': doc.auth_code,
+        'grant_type': 'authorization_code',
+        'redirect_uri': 'https://drivebackup.web.app/callback'
+      })
+    })
+    .then(res => res.json())
+    .then(json => {
+      if (json.refresh_token != null) {
+        res.send({success: true, refresh_token: json.refresh_token});
+      } else {
+        res.send({success: false, msg: JSON.stringify(json)});
+      }
+    });
   } else {
     res.send({
       success: false,
