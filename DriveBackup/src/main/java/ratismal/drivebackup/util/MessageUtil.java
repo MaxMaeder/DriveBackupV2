@@ -152,7 +152,7 @@ public class MessageUtil {
             builtComponent = prefixMessage(builtComponent);
         }
 
-        if (sendToConsole) DriveBackup.adventure.console().sendMessage(builtComponent);
+        if (sendToConsole) recipients.add(Bukkit.getConsoleSender());
 
         Config config = (Config) ObjectUtils.defaultIfNull(ConfigParser.getConfig(), ConfigParser.defaultConfig());
         if (!config.messages.sendInChat) return;
