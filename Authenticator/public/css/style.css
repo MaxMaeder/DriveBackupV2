@@ -31,7 +31,7 @@ html, body {
   border-radius: 15px;
 }
 
-.form-code:not(:placeholder-shown) {
+#codeInput:not(:placeholder-shown) {
   text-transform: uppercase;
 }
 
