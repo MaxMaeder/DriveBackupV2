@@ -18,7 +18,9 @@ import org.bukkit.command.CommandSender;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import ratismal.drivebackup.uploaders.Authenticator;
 import ratismal.drivebackup.uploaders.Uploader;
+import ratismal.drivebackup.uploaders.Authenticator.AuthenticationProvider;
 import ratismal.drivebackup.config.ConfigParser;
 import ratismal.drivebackup.handler.commandHandler.BasicCommands;
 import ratismal.drivebackup.plugin.DriveBackup;
@@ -71,139 +73,16 @@ public class OneDriveUploader implements Uploader {
     private RandomAccessFile raf;
 
     /**
-     * Location of the authenticated user's stored OneDrive refresh token
-     */
-    private static final String CLIENT_JSON_PATH = DriveBackup.getInstance().getDataFolder().getAbsolutePath()
-        + "/OneDriveCredential.json";
-
-    /**
      * OneDrive API credentials
      */
     private static final String CLIENT_ID = "***REMOVED***";
-
-    /**
-     * Attempt to authenticate a user with OneDrive using the OAuth 2.0 device authorization grant flow
-     * @param plugin a reference to the {@code DriveBackup} plugin
-     * @param initiator user who initiated the authentication
-     * @throws Exception
-     */
-    public static void authenticateUser(final DriveBackup plugin, final CommandSender initiator) {
-        try {
-            RequestBody requestBody = new FormBody.Builder()
-                .add("client_id", CLIENT_ID)
-                .add("scope", "offline_access Files.ReadWrite")
-                .build();
-
-            Request request = new Request.Builder()
-                .url("https://login.microsoftonline.com/common/oauth2/v2.0/devicecode")
-                .post(requestBody)
-                .build();
-
-            Response response = httpClient.newCall(request).execute();
-            JSONObject parsedResponse = new JSONObject(response.body().string());
-            response.close();
-
-            String verificationUrl = parsedResponse.getString("verification_uri");
-            String userCode = parsedResponse.getString("user_code");
-            final String deviceCode = parsedResponse.getString("device_code");
-            long responseCheckDelay = SchedulerUtil.sToTicks(parsedResponse.getLong("interval"));
-
-            MessageUtil.Builder()
-            .mmText(
-                intl("link-account-code")
-                    .replace("link-url", verificationUrl)
-                    .replace("link-code", userCode), 
-                "provider", UPLOADER_NAME
-                )
-            .to(initiator)
-            .toConsole(false)
-            .send();
-
-            final int[] task = new int[]{-1};
-            task[0] = plugin.getServer().getScheduler().scheduleSyncRepeatingTask(plugin, new Runnable() {
-                @Override
-                public void run() {
-
-                    RequestBody requestBody = new FormBody.Builder()
-                        .add("client_id", CLIENT_ID)
-                        .add("grant_type", "urn:ietf:params:oauth:grant-type:device_code")
-                        .add("device_code", deviceCode)
-                        .build();
-        
-                    Request request = new Request.Builder()
-                        .url("https://login.microsoftonline.com/common/oauth2/v2.0/token")
-                        .post(requestBody)
-                        .build();
-            
-                    JSONObject parsedResponse = null;
-                    try {
-                        Response response = httpClient.newCall(request).execute();
-                        parsedResponse = new JSONObject(response.body().string());
-                    } catch (Exception exception) {
-                        MessageUtil.Builder().text("Failed to link your OneDrive account, please try again").to(initiator).toConsole(false).send();
-
-                        Bukkit.getScheduler().cancelTask(task[0]);
-                        return;
-                    }
-                
-                    if (parsedResponse.has("refresh_token")) {
-                        JSONObject jsonObject = new JSONObject();
-                        jsonObject.put("refresh_token", parsedResponse.getString("refresh_token"));
-
-                        try {
-                            FileWriter file = new FileWriter(CLIENT_JSON_PATH);
-                            file.write(jsonObject.toString());
-                            file.close();
-                        } catch (IOException e) {
-                            MessageUtil.Builder().text("Failed to link your OneDrive account, please try again").to(initiator).toConsole(false).send();
-                                        
-                            Bukkit.getScheduler().cancelTask(task[0]);
-                        }
-                        
-                        MessageUtil.Builder().text("Your OneDrive account is linked!").to(initiator).toConsole(false).send();
-                        
-                        if (!plugin.getConfig().getBoolean("onedrive.enabled")) {
-                            MessageUtil.Builder().text("Automatically enabled OneDrive backups").to(initiator).toConsole(false).send();
-                            plugin.getConfig().set("onedrive.enabled", true);
-                            plugin.saveConfig();
-                            
-                            DriveBackup.reloadLocalConfig();
-                        }
-
-                        BasicCommands.sendBriefBackupList(initiator);
-                        
-                        Bukkit.getScheduler().cancelTask(task[0]);
-                    } else if (!parsedResponse.getString("error").equals("authorization_pending")) {
-                        if (parsedResponse.getString("error").equals("expired_token")) {
-                            MessageUtil.Builder().text("The OneDrive account linking process timed out, please try again").to(initiator).toConsole(false).send();
-                        } else {
-                            MessageUtil.Builder().text("Failed to link your OneDrive account, please try again").to(initiator).toConsole(false).send();
-                        }
-                        
-                        Bukkit.getScheduler().cancelTask(task[0]);
-                    }
-
-                    if (response != null) {
-                        response.close();
-                    }
-                }
-            }, responseCheckDelay, responseCheckDelay);
-        } catch (UnknownHostException exception) {
-            MessageUtil.Builder().text("Failed to link your OneDrive account, check your network connection").toPerm("drivebackup.linkAccounts").send();
-            
-        } catch (Exception e) {
-            MessageUtil.Builder().text("Failed to link your OneDrive account").to(initiator).toConsole(false).send();
-        
-            MessageUtil.sendConsoleException(e);
-        }
-    }
     
     /**
      * Creates an instance of the {@code OneDriveUploader} object
      */
     public OneDriveUploader() {
         try {
-            setRefreshTokenFromStoredValue();
+            refreshToken = Authenticator.getRefreshToken(AuthenticationProvider.ONEDRIVE);
             retrieveNewAccessToken();
             setRanges(new String[0]);
         } catch (Exception e) {
@@ -213,30 +92,13 @@ public class OneDriveUploader implements Uploader {
     }
 
     /**
-     * Sets the authenticated user's stored OneDrive refresh token from the stored value
-     * @throws Exception
-     */
-    private void setRefreshTokenFromStoredValue() throws Exception {
-        String clientJSON = processCredentialJsonFile();
-        JSONObject clientJsonObject = new JSONObject(clientJSON);
-
-        String readRefreshToken = (String) clientJsonObject.get("refresh_token");
-
-        if (readRefreshToken != null && !readRefreshToken.isEmpty()) {
-            setRefreshToken(readRefreshToken);
-        } else {
-            setRefreshToken("");
-        }   
-    }
-
-    /**
      * Gets a new OneDrive access token for the authenticated user
      */
     private void retrieveNewAccessToken() throws Exception {
         RequestBody requestBody = new FormBody.Builder()
             .add("client_id", CLIENT_ID)
             .add("scope", "offline_access Files.ReadWrite")
-            .add("refresh_token", returnRefreshToken())
+            .add("refresh_token", refreshToken)
             .add("grant_type", "refresh_token")
             .add("redirect_uri", "https://login.microsoftonline.com/common/oauth2/nativeclient")
             .build();
@@ -250,7 +112,7 @@ public class OneDriveUploader implements Uploader {
         JSONObject parsedResponse = new JSONObject(response.body().string());
         response.close();
 
-        setAccessToken(parsedResponse.getString("access_token"));
+        accessToken = parsedResponse.getString("access_token");
     }
 
     /**
@@ -262,7 +124,7 @@ public class OneDriveUploader implements Uploader {
             String destination = ConfigParser.getConfig().backupStorage.remoteDirectory;
             
             Request request = new Request.Builder()
-                .addHeader("Authorization", "Bearer " + returnAccessToken())
+                .addHeader("Authorization", "Bearer " + accessToken)
                 .url("https://graph.microsoft.com/v1.0/me/drive/root:/" + destination + "/" + testFile.getName() + ":/content")
                 .put(RequestBody.create(testFile, MediaType.parse("plain/txt")))
                 .build();
@@ -278,7 +140,7 @@ public class OneDriveUploader implements Uploader {
             TimeUnit.SECONDS.sleep(5);
                 
             request = new Request.Builder()
-                .addHeader("Authorization", "Bearer " + returnAccessToken())
+                .addHeader("Authorization", "Bearer " + accessToken)
                 .url("https://graph.microsoft.com/v1.0/me/drive/root:/" + destination + "/" + testFile.getName() + ":/")
                 .delete()
                 .build();
@@ -328,7 +190,7 @@ public class OneDriveUploader implements Uploader {
             }
 
             Request request = new Request.Builder()
-                .addHeader("Authorization", "Bearer " + returnAccessToken())
+                .addHeader("Authorization", "Bearer " + accessToken)
                 .url("https://graph.microsoft.com/v1.0/me/drive/root:/" + folder.getPath() + "/" + file.getName() + ":/createUploadSession")
                 .post(RequestBody.create("{}", jsonMediaType))
                 .build();
@@ -443,7 +305,7 @@ public class OneDriveUploader implements Uploader {
         }
 
         Request request = new Request.Builder()
-            .addHeader("Authorization", "Bearer " + returnAccessToken())
+            .addHeader("Authorization", "Bearer " + accessToken)
             .url("https://graph.microsoft.com/v1.0/me/drive/root:/" + parent.getPath())
             .build();
 
@@ -461,7 +323,7 @@ public class OneDriveUploader implements Uploader {
             "}", jsonMediaType);
 
         request = new Request.Builder()
-            .addHeader("Authorization", "Bearer " + returnAccessToken())
+            .addHeader("Authorization", "Bearer " + accessToken)
             .url("https://graph.microsoft.com/v1.0/me/drive/items/" + parentId + "/children")
             .post(requestBody)
             .build();
@@ -497,7 +359,7 @@ public class OneDriveUploader implements Uploader {
             "}", jsonMediaType);
 
         Request request = new Request.Builder()
-            .addHeader("Authorization", "Bearer " + returnAccessToken())
+            .addHeader("Authorization", "Bearer " + accessToken)
             .url("https://graph.microsoft.com/v1.0/me/drive/root/children")
             .post(requestBody)
             .build();
@@ -522,7 +384,7 @@ public class OneDriveUploader implements Uploader {
     private File getFolder(String name, File parent) {
         try {
             Request request = new Request.Builder()
-                .addHeader("Authorization", "Bearer " + returnAccessToken())
+                .addHeader("Authorization", "Bearer " + accessToken)
                 .url("https://graph.microsoft.com/v1.0/me/drive/root:/" + parent.getPath() + ":/children")
                 .build();
 
@@ -553,7 +415,7 @@ public class OneDriveUploader implements Uploader {
     private File getFolder(String name) {
         try {
             Request request = new Request.Builder()
-                .addHeader("Authorization", "Bearer " + returnAccessToken())
+                .addHeader("Authorization", "Bearer " + accessToken)
                 .url("https://graph.microsoft.com/v1.0/me/drive/root/children")
                 .build();
 
@@ -591,7 +453,7 @@ public class OneDriveUploader implements Uploader {
         }
 
         Request request = new Request.Builder()
-            .addHeader("Authorization", "Bearer " + returnAccessToken())
+            .addHeader("Authorization", "Bearer " + accessToken)
             .url("https://graph.microsoft.com/v1.0/me/drive/root:/" + parent.getPath() + ":/children?sort_by=createdDateTime")
             .build();
 
@@ -614,7 +476,7 @@ public class OneDriveUploader implements Uploader {
             String fileIDValue = iterator.next();
             if (fileLimit < availableFileIDs.size()) {
                 request = new Request.Builder()
-                    .addHeader("Authorization", "Bearer " + returnAccessToken())
+                    .addHeader("Authorization", "Bearer " + accessToken)
                     .url("https://graph.microsoft.com/v1.0/me/drive/items/" + fileIDValue)
                     .delete()
                     .build();
@@ -765,29 +627,6 @@ public class OneDriveUploader implements Uploader {
     }
 
     /**
-     * Gets the authenticated user's stored OneDrive credentials
-     * <p>
-     * The refresh token is stored in {@code /OneDriveCredential.json}
-     * @return the credentials as a {@code String}
-     * @throws IOException
-     */
-    private static String processCredentialJsonFile() throws IOException {
-        BufferedReader br = new BufferedReader(new FileReader(CLIENT_JSON_PATH));
-        StringBuilder sb = new StringBuilder();
-        String line = br.readLine();
-
-        while (line != null) {
-            sb.append(line);
-            line = br.readLine();
-        }
-
-        String result = sb.toString();
-        br.close();
-
-        return result;
-    }
-
-    /**
      * Formats the specified number of bytes as a readable file size
      * @param size the number of bytes
      * @return a {@code String} containing the readable file size
@@ -821,37 +660,5 @@ public class OneDriveUploader implements Uploader {
      */
     private long getLastUploaded() {
         return lastUploaded;
-    }
-
-    /**
-     * Sets the access token of the authenticated user
-     * @param accessTokenValue the access token
-     */
-    private void setAccessToken(String accessTokenValue) {
-        this.accessToken = accessTokenValue;
-    }
-
-    /**
-     * Sets the refresh token of the authenticated user
-     * @param refreshTokenValue the refresh token
-     */
-    private void setRefreshToken(String refreshTokenValue) {
-        this.refreshToken = refreshTokenValue;
-    }
-
-    /**
-     * Gets the access token of the authenticated user
-     * @return the access token
-     */
-    private String returnAccessToken() {
-        return this.accessToken;
-    }
-
-    /**
-     * Gets the refresh token of the authenticated user
-     * @return the refresh token
-     */
-    private String returnRefreshToken() {
-        return this.refreshToken;
     }
 }

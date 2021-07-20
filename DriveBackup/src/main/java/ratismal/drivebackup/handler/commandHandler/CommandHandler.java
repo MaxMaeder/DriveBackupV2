@@ -6,8 +6,9 @@ import org.bukkit.command.CommandSender;
 
 import ratismal.drivebackup.TestThread;
 import ratismal.drivebackup.UploadThread;
+import ratismal.drivebackup.uploaders.Authenticator;
+import ratismal.drivebackup.uploaders.Authenticator.AuthenticationProvider;
 import ratismal.drivebackup.uploaders.dropbox.DropboxUploader;
-import ratismal.drivebackup.uploaders.googledrive.GoogleDriveUploader;
 import ratismal.drivebackup.uploaders.onedrive.OneDriveUploader;
 import ratismal.drivebackup.config.Permissions;
 import ratismal.drivebackup.handler.DebugCollector;
@@ -87,13 +88,13 @@ public class CommandHandler implements CommandExecutor {
 
                 switch (args[1].toLowerCase()) {
                     case "googledrive":
-                        GoogleDriveUploader.authenticateUser(plugin, sender);
+                        Authenticator.authenticateUser(AuthenticationProvider.GOOGLE_DRIVE, sender);
                         break;
                     case "onedrive":
-                        OneDriveUploader.authenticateUser(plugin, sender);
+                        Authenticator.authenticateUser(AuthenticationProvider.ONEDRIVE, sender);
                         break;
                     case "dropbox":
-                        DropboxUploader.authenticateUser(plugin, sender);
+                    Authenticator.authenticateUser(AuthenticationProvider.DROPBOX, sender);
                         break;
                     default:
                         BasicCommands.sendHelp(sender);

@@ -22,15 +22,12 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 import ratismal.drivebackup.uploaders.Uploader;
+import ratismal.drivebackup.uploaders.Authenticator;
+import ratismal.drivebackup.uploaders.Authenticator.AuthenticationProvider;
 import ratismal.drivebackup.config.ConfigParser;
-import ratismal.drivebackup.handler.commandHandler.BasicCommands;
 import ratismal.drivebackup.plugin.DriveBackup;
 import ratismal.drivebackup.util.MessageUtil;
-import ratismal.drivebackup.util.SchedulerUtil;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
@@ -39,8 +36,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import org.bukkit.Bukkit;
-import org.bukkit.command.CommandSender;
 import org.json.JSONObject;
 
 import static ratismal.drivebackup.config.Localization.intl;
@@ -87,127 +82,13 @@ public class GoogleDriveUploader implements Uploader {
      */
     private Drive service;
 
-    /**
-     * Attempt to authenticate a user with Google Drive using the OAuth 2.0 device
-     * authorization grant flow
-     * 
-     * @param plugin    a reference to the {@code DriveBackup} plugin
-     * @param initiator user who initiated the authentication
-     */
-    public static void authenticateUser(final DriveBackup plugin, final CommandSender initiator) {
-        try {
-            RequestBody requestBody = new FormBody.Builder()
-                .add("type", "googledrive")
-                .build();
-
-            Request request = new Request.Builder()
-                .url("https://drivebackup.web.app/pin")
-                .post(requestBody)
-                .build();
-
-            Response response = httpClient.newCall(request).execute();
-            JSONObject parsedResponse = new JSONObject(response.body().string());
-            response.close();
-
-            String verificationUrl = "https://drivebackup.web.app/";
-            String userCode = parsedResponse.getString("user_code");
-            final String deviceCode = parsedResponse.getString("device_code");
-            long responseCheckDelay = SchedulerUtil.sToTicks(parsedResponse.getLong("interval"));
-
-            MessageUtil.Builder()
-                .mmText(
-                    intl("link-account-code")
-                        .replace("link-url", verificationUrl)
-                        .replace("link-code", userCode)
-                        .replace("provider", UPLOADER_NAME)
-                    )
-                .to(initiator)
-                .toConsole(false)
-                .send();
-
-            final int[] task = new int[]{-1};
-            task[0] = plugin.getServer().getScheduler().scheduleSyncRepeatingTask(plugin, new Runnable() {
-                @Override
-                public void run() {
-                    
-                    RequestBody requestBody = new FormBody.Builder()
-                        .add("device_code", deviceCode)
-                        .add("user_code", userCode)
-                        .build();
-            
-                    Request request = new Request.Builder()
-                        .url("https://drivebackup.web.app/token")
-                        .post(requestBody)
-                        .build();
-            
-                    JSONObject parsedResponse = null;
-                    try {
-                        Response response = httpClient.newCall(request).execute();
-                        parsedResponse = new JSONObject(response.body().string());
-                        response.close();
-                    } catch (Exception exception) {
-                        MessageUtil.Builder().text("Failed to link your Google Drive account, please try again").to(initiator).toConsole(false).send();
-                        MessageUtil.sendConsoleException(exception);
-
-                        Bukkit.getScheduler().cancelTask(task[0]);
-                        return;
-                    }
-                    
-                    if (parsedResponse.has("refresh_token")) {
-                        JSONObject jsonObject = new JSONObject();
-                        jsonObject.put("refresh_token", parsedResponse.getString("refresh_token"));
-
-                        try {
-                            FileWriter file = new FileWriter(CLIENT_JSON_PATH);
-                            file.write(jsonObject.toString());
-                            file.close();
-                        } catch (IOException e) {
-                            MessageUtil.Builder().text("Failed to link your Google Drive account, please try again").to(initiator).toConsole(false).send();
-                            MessageUtil.sendConsoleException(e);
-                            
-                            Bukkit.getScheduler().cancelTask(task[0]);
-                        }
-                        
-                        MessageUtil.Builder().text("Your Google Drive account is linked!").to(initiator).toConsole(false).send();
-                        
-                        if (!plugin.getConfig().getBoolean("googledrive.enabled")) {
-                            MessageUtil.Builder().text("Automatically enabled Google Drive backups").to(initiator).toConsole(false).send();
-                            plugin.getConfig().set("googledrive.enabled", true);
-                            plugin.saveConfig();
-                            
-                            DriveBackup.reloadLocalConfig();
-                        }
-
-                        BasicCommands.sendBriefBackupList(initiator);
-                        
-                        Bukkit.getScheduler().cancelTask(task[0]);
-                    } else if (!parsedResponse.getString("msg").equals("Code not authenticated")) {
-                        if (parsedResponse.getString("msg").equals("code_expired")) {
-                            MessageUtil.Builder().text("The Google Drive account linking process timed out, please try again").to(initiator).toConsole(false).send();
-                        } else {
-                            MessageUtil.Builder().text("Failed to link your Google Drive account, please try again" + parsedResponse.toString()).to(initiator).toConsole(false).send();
-                        }
-                        
-                        Bukkit.getScheduler().cancelTask(task[0]);
-                    }
-                }
-            }, responseCheckDelay, responseCheckDelay);
-        } catch (UnknownHostException exception) {
-            MessageUtil.Builder().text("Failed to link your Google Drive account, check your network connection").toPerm("drivebackup.linkAccounts").send();
-            
-        } catch (Exception e) {
-            MessageUtil.Builder().text("Failed to link your Google Drive account").to(initiator).toConsole(false).send();
-        
-            MessageUtil.sendConsoleException(e);
-        }
-    }
 
     /**
      * Creates an instance of the {@code GoogleDriveUploader} object
      */
     public GoogleDriveUploader() {
         try {
-            setRefreshTokenFromStoredValue();
+            refreshToken = Authenticator.getRefreshToken(AuthenticationProvider.GOOGLE_DRIVE);
             retrieveNewAccessToken();
         } catch (Exception e) {
             MessageUtil.sendConsoleException(e);
@@ -216,31 +97,13 @@ public class GoogleDriveUploader implements Uploader {
     }
 
     /**
-     * Sets the authenticated user's stored Google Drive refresh token from the stored value
-     * @throws Exception
-     */
-    private void setRefreshTokenFromStoredValue() throws Exception {
-        String clientJSON = processCredentialJsonFile();
-        JSONObject clientJsonObject = new JSONObject(clientJSON);
-
-        String readRefreshToken = (String) clientJsonObject.get("refresh_token");
-
-        if (readRefreshToken != null && !readRefreshToken.isEmpty()) {
-            setRefreshToken(readRefreshToken);
-        } else {
-            setRefreshToken("");
-        }   
-    }
-
-
-    /**
      * Gets a new Google Drive access token for the authenticated user
      */
     private void retrieveNewAccessToken() throws Exception {
         RequestBody requestBody = new FormBody.Builder()
             .add("client_id", CLIENT_ID)
             .add("client_secret", CLIENT_SECRET)
-            .add("refresh_token", returnRefreshToken())
+            .add("refresh_token", refreshToken)
             .add("grant_type", "refresh_token")
             .build();
 
@@ -573,29 +436,6 @@ public class GoogleDriveUploader implements Uploader {
             }
         }
     }
-    
-    /**
-     * Gets the authenticated user's stored Google Drive credentials
-     * <p>
-     * The refresh token is stored in {@code /GoogleDriveCredential.json}
-     * @return the credentials as a {@code String}
-     * @throws IOException
-     */
-    private static String processCredentialJsonFile() throws IOException {
-        BufferedReader br = new BufferedReader(new FileReader(CLIENT_JSON_PATH));
-        StringBuilder sb = new StringBuilder();
-        String line = br.readLine();
-
-        while (line != null) {
-            sb.append(line);
-            line = br.readLine();
-        }
-        
-        String result = sb.toString();
-        br.close(); 
-
-        return result;
-    }
 
     /**
      * Sets whether an error occurred while accessing the authenticated user's Google Drive
@@ -603,21 +443,5 @@ public class GoogleDriveUploader implements Uploader {
      */
     private void setErrorOccurred(boolean errorOccurredValue) {
         this.errorOccurred = errorOccurredValue;
-    }
-
-    /**
-     * Sets the refresh token of the authenticated user
-     * @param refreshTokenValue the refresh token
-     */
-    private void setRefreshToken(String refreshTokenValue) {
-        this.refreshToken = refreshTokenValue;
-    }
-
-    /**
-     * Gets the refresh token of the authenticated user
-     * @return the refresh token
-     */
-    private String returnRefreshToken() {
-        return this.refreshToken;
     }
 }

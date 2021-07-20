@@ -1,24 +1,17 @@
 package ratismal.drivebackup.uploaders.dropbox;
 
 import ratismal.drivebackup.util.MessageUtil;
-import ratismal.drivebackup.util.SchedulerUtil;
+import ratismal.drivebackup.uploaders.Authenticator;
 import ratismal.drivebackup.uploaders.Uploader;
+import ratismal.drivebackup.uploaders.Authenticator.AuthenticationProvider;
 import ratismal.drivebackup.config.ConfigParser;
 import ratismal.drivebackup.config.ConfigParser.Config;
-import ratismal.drivebackup.handler.commandHandler.BasicCommands;
-import ratismal.drivebackup.plugin.DriveBackup;
 
-import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.FileInputStream;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.concurrent.TimeUnit;
 
-import org.bukkit.Bukkit;
-import org.bukkit.command.CommandSender;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -47,12 +40,6 @@ public class DropboxUploader implements Uploader {
     private static final OkHttpClient httpClient = new OkHttpClient();
 
     /**
-     * Location of the authenticated user's stored Dropbox refresh token
-     */
-    private static final String CLIENT_JSON_PATH = DriveBackup.getInstance().getDataFolder().getAbsolutePath()
-        + "/DropboxCredential.json";
-
-    /**
      * Global Dropbox tokens
      */
     private String accessToken;
@@ -63,121 +50,6 @@ public class DropboxUploader implements Uploader {
      */
     private static final String APP_KEY = "***REMOVED***";
     private static final String APP_SECRET = "***REMOVED***";
-
-    /**
-     * Attempt to authenticate a user with Dropbox using the OAuth 2.0 device
-     * authorization grant flow
-     * 
-     * @param plugin    a reference to the {@code DriveBackup} plugin
-     * @param initiator user who initiated the authentication
-     */
-    public static void authenticateUser(final DriveBackup plugin, final CommandSender initiator) {
-        try {
-            RequestBody requestBody = new FormBody.Builder()
-                .add("type", "dropbox")
-                .build();
-
-            Request request = new Request.Builder()
-                .url("https://drivebackup.web.app/pin")
-                .post(requestBody)
-                .build();
-
-            Response response = httpClient.newCall(request).execute();
-            JSONObject parsedResponse = new JSONObject(response.body().string());
-            response.close();
-
-            String verificationUrl = "https://drivebackup.web.app/";
-            String userCode = parsedResponse.getString("user_code");
-            final String deviceCode = parsedResponse.getString("device_code");
-            long responseCheckDelay = SchedulerUtil.sToTicks(parsedResponse.getLong("interval"));
-
-            MessageUtil.Builder()
-                .mmText(
-                    intl("link-account-code")
-                        .replace("link-url", verificationUrl)
-                        .replace("link-code", userCode)
-                        .replace("provider", UPLOADER_NAME)
-                    )
-                .to(initiator)
-                .toConsole(false)
-                .send();
-
-            final int[] task = new int[]{-1};
-            task[0] = plugin.getServer().getScheduler().scheduleSyncRepeatingTask(plugin, new Runnable() {
-                @Override
-                public void run() {
-                    
-                    RequestBody requestBody = new FormBody.Builder()
-                        .add("device_code", deviceCode)
-                        .add("user_code", userCode)
-                        .build();
-            
-                    Request request = new Request.Builder()
-                        .url("https://drivebackup.web.app/token")
-                        .post(requestBody)
-                        .build();
-            
-                    JSONObject parsedResponse = null;
-                    try {
-                        Response response = httpClient.newCall(request).execute();
-                        parsedResponse = new JSONObject(response.body().string());
-                        response.close();
-                    } catch (Exception exception) {
-                        MessageUtil.Builder().text("Failed to link your Dropbox account, please try again").to(initiator).toConsole(false).send();
-                        MessageUtil.sendConsoleException(exception);
-
-                        Bukkit.getScheduler().cancelTask(task[0]);
-                        return;
-                    }
-                    
-                    if (parsedResponse.has("refresh_token")) {
-                        JSONObject jsonObject = new JSONObject();
-                        jsonObject.put("refresh_token", parsedResponse.getString("refresh_token"));
-
-                        try {
-                            FileWriter file = new FileWriter(CLIENT_JSON_PATH);
-                            file.write(jsonObject.toString());
-                            file.close();
-                        } catch (IOException e) {
-                            MessageUtil.Builder().text("Failed to link your Dropbox account, please try again").to(initiator).toConsole(false).send();
-                            MessageUtil.sendConsoleException(e);
-                            
-                            Bukkit.getScheduler().cancelTask(task[0]);
-                        }
-                        
-                        MessageUtil.Builder().text("Your Dropbox account is linked!").to(initiator).toConsole(false).send();
-                        
-                        if (!plugin.getConfig().getBoolean("dropbox.enabled")) {
-                            MessageUtil.Builder().text("Automatically enabled Dropbox backups").to(initiator).toConsole(false).send();
-                            plugin.getConfig().set("dropbox.enabled", true);
-                            plugin.saveConfig();
-                            
-                            DriveBackup.reloadLocalConfig();
-                        }
-
-                        BasicCommands.sendBriefBackupList(initiator);
-                        
-                        Bukkit.getScheduler().cancelTask(task[0]);
-                    } else if (!parsedResponse.getString("msg").equals("Code not authenticated")) {
-                        if (parsedResponse.getString("msg").equals("code_expired")) {
-                            MessageUtil.Builder().text("The Dropbox account linking process timed out, please try again").to(initiator).toConsole(false).send();
-                        } else {
-                            MessageUtil.Builder().text("Failed to link your Dropbox account, please try again" + parsedResponse.toString()).to(initiator).toConsole(false).send();
-                        }
-                        
-                        Bukkit.getScheduler().cancelTask(task[0]);
-                    }
-                }
-            }, responseCheckDelay, responseCheckDelay);
-        } catch (UnknownHostException exception) {
-            MessageUtil.Builder().text("Failed to link your Google Drive account, check your network connection").toPerm("drivebackup.linkAccounts").send();
-            
-        } catch (Exception e) {
-            MessageUtil.Builder().text("Failed to link your Google Drive account").to(initiator).toConsole(false).send();
-        
-            MessageUtil.sendConsoleException(e);
-        }      
-    }
 
     /**
      * Tests the Dropbox account by uploading a small file
@@ -199,7 +71,7 @@ public class DropboxUploader implements Uploader {
             String dropbox_arg = dropbox_json.toString();
 
             Request request = new Request.Builder()
-                .addHeader("Authorization", "Bearer " + returnAccessToken())
+                .addHeader("Authorization", "Bearer " + accessToken)
                 .addHeader("Dropbox-API-Arg", dropbox_arg)
                 .url("https://content.dropboxapi.com/2/files/upload")
                 .post(requestBody)
@@ -220,7 +92,7 @@ public class DropboxUploader implements Uploader {
             RequestBody deleteRequestBody = RequestBody.create(deleteJson.toString(), JSON);
 
             request = new Request.Builder()
-                .addHeader("Authorization", "Bearer " + returnAccessToken())
+                .addHeader("Authorization", "Bearer " + accessToken)
                 .url("https://api.dropboxapi.com/2/files/delete_v2")
                 .post(deleteRequestBody)
                 .build();
@@ -270,7 +142,7 @@ public class DropboxUploader implements Uploader {
                         RequestBody requestBody = RequestBody.create(buff, OCTET_STREAM);
 
                         Request request = new Request.Builder()
-                            .addHeader("Authorization", "Bearer " + returnAccessToken())
+                            .addHeader("Authorization", "Bearer " + accessToken)
                             .post(requestBody)
                             .url("https://content.dropboxapi.com/2/files/upload_session/start")
                             .build();
@@ -297,7 +169,7 @@ public class DropboxUploader implements Uploader {
 
                         Request request = new Request.Builder()
                             .addHeader("Dropbox-API-Arg", dropbox_arg)
-                            .addHeader("Authorization", "Bearer " + returnAccessToken())
+                            .addHeader("Authorization", "Bearer " + accessToken)
                             .post(requestBody)
                             .url("https://content.dropboxapi.com/2/files/upload_session/append_v2")                                    .build();
 
@@ -328,7 +200,7 @@ public class DropboxUploader implements Uploader {
 
                     Request request = new Request.Builder()
                         .addHeader("Dropbox-API-Arg", dropbox_arg)
-                        .addHeader("Authorization", "Bearer " + returnAccessToken())
+                        .addHeader("Authorization", "Bearer " + accessToken)
                         .post(requestBody)
                         .url("https://content.dropboxapi.com/2/files/upload_session/finish")
                         .build();
@@ -351,7 +223,7 @@ public class DropboxUploader implements Uploader {
                 String dropbox_arg = dropbox_json.toString();
 
                 Request request = new Request.Builder()
-                    .addHeader("Authorization", "Bearer " + returnAccessToken())
+                    .addHeader("Authorization", "Bearer " + accessToken)
                     .addHeader("Dropbox-API-Arg", dropbox_arg)
                     .url("https://content.dropboxapi.com/2/files/upload")
                     .post(requestBody)
@@ -397,7 +269,7 @@ public class DropboxUploader implements Uploader {
         RequestBody requestBody = RequestBody.create(json.toString(), JSON);
         
         Request request = new Request.Builder()
-            .addHeader("Authorization", "Bearer " + returnAccessToken())
+            .addHeader("Authorization", "Bearer " + accessToken)
             .url("https://api.dropboxapi.com/2/files/list_folder")
             .post(requestBody)
             .build();
@@ -415,7 +287,7 @@ public class DropboxUploader implements Uploader {
                 RequestBody deleteRequestBody = RequestBody.create(deleteJson.toString(), JSON);
 
                 Request deleteRequest = new Request.Builder()
-                    .addHeader("Authorization", "Bearer " + returnAccessToken())
+                    .addHeader("Authorization", "Bearer " + accessToken)
                     .url("https://api.dropboxapi.com/2/files/delete_v2")
                     .post(deleteRequestBody)
                     .build();
@@ -433,7 +305,7 @@ public class DropboxUploader implements Uploader {
      */
     public DropboxUploader() {
         try {
-            setRefreshTokenFromStoredValue();
+            refreshToken = Authenticator.getRefreshToken(AuthenticationProvider.DROPBOX);
             retrieveNewAccessToken();
         } catch (final Exception e) {
             MessageUtil.sendConsoleException(e);
@@ -448,7 +320,7 @@ public class DropboxUploader implements Uploader {
         RequestBody requestBody = new FormBody.Builder()
             .add("client_id", APP_KEY)
             .add("client_secret", APP_SECRET)
-            .add("refresh_token", returnRefreshToken())
+            .add("refresh_token", refreshToken)
             .add("grant_type", "refresh_token")
             .build();
 
@@ -461,7 +333,7 @@ public class DropboxUploader implements Uploader {
         JSONObject parsedResponse = new JSONObject(response.body().string());
         response.close();
 
-        setAccessToken(parsedResponse.getString("access_token"));
+        accessToken = parsedResponse.getString("access_token");
     }
 
     public boolean isErrorWhileUploading() {
@@ -499,30 +371,6 @@ public class DropboxUploader implements Uploader {
     }
 
     /**
-     * Gets the authenticated user's stored Dropbox credentials
-     * <p>
-     * The refresh token is stored in {@code /DropboxCredential.json}
-     * 
-     * @return the credentials as a {@code String}
-     * @throws IOException
-     */
-    private static String processCredentialJsonFile() throws IOException {
-        BufferedReader br = new BufferedReader(new FileReader(CLIENT_JSON_PATH));
-        StringBuilder sb = new StringBuilder();
-        String line = br.readLine();
-
-        while (line != null) {
-            sb.append(line);
-            line = br.readLine();
-        }
-
-        String result = sb.toString();
-        br.close();
-
-        return result;
-    }
-
-    /**
      * Sets whether an error occurred while accessing the authenticated user's
      * Dropbox
      * 
@@ -530,60 +378,5 @@ public class DropboxUploader implements Uploader {
      */
     private void setErrorOccurred(final boolean errorOccurredValue) {
         this.errorOccurred = errorOccurredValue;
-    }
-
-    /**
-     * Sets the authenticated user's stored Dropbox refresh token from the stored
-     * value
-     * 
-     * @throws Exception
-     */
-    private void setRefreshTokenFromStoredValue() throws Exception {
-        String clientJSON = processCredentialJsonFile();
-        JSONObject clientJsonObject = new JSONObject(clientJSON);
-
-        String readRefreshToken = (String) clientJsonObject.get("refresh_token");
-
-        if (readRefreshToken != null && !readRefreshToken.isEmpty()) {
-            setRefreshToken(readRefreshToken);
-        } else {
-            setRefreshToken("");
-        }
-    }
-
-    /**
-     * Sets the access token of the authenticated user
-     * 
-     * @param accessTokenValue the access token
-     */
-    private void setAccessToken(String accessTokenValue) {
-        this.accessToken = accessTokenValue;
-    }
-
-    /**
-     * Sets the refresh token of the authenticated user
-     * 
-     * @param refreshTokenValue the refresh token
-     */
-    private void setRefreshToken(String refreshTokenValue) {
-        this.refreshToken = refreshTokenValue;
-    }
-
-    /**
-     * Gets the access token of the authenticated user
-     * 
-     * @return the access token
-     */
-    private String returnAccessToken() {
-        return this.accessToken;
-    }
-
-    /**
-     * Gets the refresh token of the authenticated user
-     * 
-     * @return the refresh token
-     */
-    private String returnRefreshToken() {
-        return this.refreshToken;
     }
 }
