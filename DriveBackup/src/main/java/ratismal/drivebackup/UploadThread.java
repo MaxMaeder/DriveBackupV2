@@ -506,7 +506,6 @@ public class UploadThread implements Runnable {
      */
     public static String getNextAutoBackup() {
         Config config = ConfigParser.getConfig();
-        String nextBackupMessage = "";
 
         if (config.backupScheduling.enabled) {
             long now = ZonedDateTime.now(config.advanced.dateTimezone).toEpochSecond();
@@ -520,14 +519,12 @@ public class UploadThread implements Runnable {
             });
 
             DateTimeFormatter backupDateFormatter = DateTimeFormatter.ofPattern(intl("next-schedule-backup-format"), config.advanced.dateLanguage);
-            nextBackupMessage = intl("next-schedule-backup").replaceAll("%DATE", nextBackupDate.format(backupDateFormatter));
+            return intl("next-schedule-backup").replaceAll("%DATE", nextBackupDate.format(backupDateFormatter));
         } else if (config.backupStorage.delay != -1) {
-            nextBackupMessage = intl("next-backup").replaceAll("%TIME", String.valueOf(LocalDateTime.now().until(nextIntervalBackupTime, ChronoUnit.MINUTES)));
+            return intl("next-backup").replaceAll("%TIME", String.valueOf(LocalDateTime.now().until(nextIntervalBackupTime, ChronoUnit.MINUTES)));
         } else {
-            nextBackupMessage = intl("auto-backups-disabled");
+            return intl("auto-backups-disabled");
         }
-
-        return nextBackupMessage;
     }
 
     /**
