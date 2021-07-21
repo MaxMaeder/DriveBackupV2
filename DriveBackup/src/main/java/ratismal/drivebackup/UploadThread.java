@@ -3,6 +3,8 @@ package ratismal.drivebackup;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.minimessage.MiniMessage;
 import ratismal.drivebackup.uploaders.Authenticator;
 import ratismal.drivebackup.uploaders.Uploader;
 import ratismal.drivebackup.uploaders.Authenticator.AuthenticationProvider;
@@ -276,7 +278,8 @@ public class UploadThread implements Runnable {
      * @return True if any error occurred
      */
     private void doSingleBackup(String location, LocalDateTimeFormatter formatter, boolean create, List<String> blackList, List<Uploader> uploaders) {
-        MessageUtil.Builder().mmText(intl("backup-location-start"), "location", location).toConsole(true).send();
+        logger.log(intl("backup-location-start"), "location", location);
+
         if (create) {
             backupStatus = BackupStatus.COMPRESSING;
 
@@ -305,7 +308,7 @@ public class UploadThread implements Runnable {
 
             for (Uploader uploader : uploaders) {
                 logger.log(
-                    intl("backup-uploading-to-method"),
+                    intl("backup-method-uploading"),
                     "backup-method",
                     uploader.getName());
 
@@ -316,14 +319,14 @@ public class UploadThread implements Runnable {
                 if (!uploader.isErrorWhileUploading()) {
                     logger.log(timer.getUploadTimeMessage(file));
                 } else {
-                    logger.log(intl("backup-failed-to-upload-to-method"));
+                    logger.log(intl("backup-method-upload-failed"));
                 }
             }
 
             FileUtil.deleteFiles(location, formatter);
         } catch (Exception e) {
 
-            logger.log(intl("backup-failed-to-upload-to-method"));
+            logger.log(intl("backup-method-upload-failed"));
             MessageUtil.sendConsoleException(e);
         }
     }
@@ -333,7 +336,9 @@ public class UploadThread implements Runnable {
      * @param externalBackup the external backup settings
      */
     private void makeExternalFileBackup(ExternalFTPSource externalBackup) {
-        MessageUtil.Builder().text("Downloading files from a (S)FTP server (" + getSocketAddress(externalBackup) + ") to include in backup").toConsole(true).send();
+        logger.log(
+            intl("external-ftp-backup-start"), 
+            "socked-addr", getSocketAddress(externalBackup));
 
         FTPUploader ftpUploader = new FTPUploader(
                 externalBackup.hostname, 
@@ -393,7 +398,10 @@ public class UploadThread implements Runnable {
                 int blacklistedFiles = blacklistEntry.getBlacklistedFiles();
     
                 if (blacklistedFiles > 0) {
-                    MessageUtil.Builder().text("Didn't include " + blacklistedFiles + " file(s) in the backup from the external (S)FTP server, as they are blacklisted by \"" + globPattern + "\"").toConsole(true).send();
+                    logger.log(
+                        intl("external-ftp-backup-blacklisted"), 
+                        "blacklisted-files", String.valueOf(blacklistedFiles),
+                        "glob-pattern", globPattern);
                 }
             }
         }
@@ -401,7 +409,7 @@ public class UploadThread implements Runnable {
         ftpUploader.close();
 
         BackupListEntry backup = new BackupListEntry(
-            new PathBackupLocation("external-backups" + File.separator + getTempFolderName(externalBackup)),
+            new PathBackupLocation("external-backups" + "/" + getTempFolderName(externalBackup)),
             externalBackup.format,
             true,
             new String[0]
@@ -409,9 +417,13 @@ public class UploadThread implements Runnable {
         backupList.add(backup);
 
         if (ftpUploader.isErrorWhileUploading()) {
-            MessageUtil.Builder().text("Failed to include files from a (S)FTP server (" + getSocketAddress(externalBackup) + ") in the backup, please check the server credentials in the ").emText("config.yml").toPerm("drivebackup.linkAccounts").to(initiator).toConsole(false).send();
+            logger.log(
+                intl("external-ftp-backup-failed"),
+                "socked-addr", getSocketAddress(externalBackup));
         } else {
-            MessageUtil.Builder().text("Files from a ").emText("(S)FTP server (" + getSocketAddress(externalBackup) + ") ").text("were successfully included in the backup").toPerm("drivebackup.linkAccounts").to(initiator).toConsole(false).send();
+            logger.log(
+                intl("external-ftp-backup-complete"),
+                "socked-addr", getSocketAddress(externalBackup));
         }
     }
 
@@ -420,7 +432,9 @@ public class UploadThread implements Runnable {
      * @param externalBackup the external backup settings
      */
     private void makeExternalDatabaseBackup(ExternalMySQLSource externalBackup) {
-        MessageUtil.Builder().text("Downloading databases from a MySQL server (" + getSocketAddress(externalBackup) + ") to include in backup").toConsole(true).send();
+        logger.log(
+            intl("external-mysql-backup-start"), 
+            "socked-addr", getSocketAddress(externalBackup));
 
         MySQLUploader mysqlUploader = new MySQLUploader(
                 externalBackup.hostname, 
@@ -431,14 +445,16 @@ public class UploadThread implements Runnable {
 
         for (MySQLDatabaseBackup database : externalBackup.databaseList) {
             for (String blacklistEntry : database.blacklist) {
-                MessageUtil.Builder().text("Didn't include table \"" + blacklistEntry + "\" in the backup, as it is blacklisted").toConsole(true).send();
+                logger.log(
+                    intl("external-mysql-backup-blacklisted"), 
+                    "blacklist-entry", blacklistEntry);
             }
 
             mysqlUploader.downloadDatabase(database.name, getTempFolderName(externalBackup), Arrays.asList(database.blacklist));
         }
 
         BackupListEntry backup = new BackupListEntry(
-            new PathBackupLocation("external-backups" + File.separator + getTempFolderName(externalBackup)),
+            new PathBackupLocation("external-backups" + "/" + getTempFolderName(externalBackup)),
             externalBackup.format,
             true,
             new String[0]
@@ -446,9 +462,13 @@ public class UploadThread implements Runnable {
         backupList.add(backup);
 
         if (mysqlUploader.isErrorWhileUploading()) {
-            MessageUtil.Builder().text("Failed to include databases from a MySQL server (" + getSocketAddress(externalBackup) + ") in the backup, please check the server credentials in the ").emText("config.yml").toPerm("drivebackup.linkAccounts").to(initiator).toConsole(false).send();
+            logger.log(
+                intl("external-mysql-backup-failed"), 
+                "socket-addr", getSocketAddress(externalBackup));
         } else {
-            MessageUtil.Builder().text("Databases from a ").emText("MySQL server (" + getSocketAddress(externalBackup) + ") ").text("were successfully included in the backup").toPerm("drivebackup.linkAccounts").to(initiator).toConsole(false).send();
+            logger.log(
+                intl("external-mysql-backup-complete"),
+                "socked-addr", getSocketAddress(externalBackup));
         }
     }
 
@@ -458,28 +478,26 @@ public class UploadThread implements Runnable {
      */
     public static String getBackupStatus() {
         Config config = ConfigParser.getConfig();
-        StringBuilder backupStatusMessage = new StringBuilder();
 
-        if (backupStatus == BackupStatus.NOT_RUNNING) {
-            backupStatusMessage.append("No backups are running");
-
-            return backupStatusMessage.toString();
-        }
-
+        String message;
         switch (backupStatus) {
-            case COMPRESSING: backupStatusMessage.append("Compressing ");
+            case COMPRESSING:
+                message = intl("backup-status-compressing");
                 break;
-            case UPLOADING: backupStatusMessage.append("Uploading ");
+            case UPLOADING:
+                message = intl("backup-status-uploading");
                 break;
             default:
+                return intl("backup-status-not-running");
         }
 
         BackupListEntry[] backupList = config.backupList.list;
         String backupSetName = backupList[backupBackingUp].location.toString();
 
-        backupStatusMessage.append("backup set \"" + backupSetName + "\", set " + (backupBackingUp + 1) + " of " + backupList.length);
-
-        return backupStatusMessage.toString();
+        return message
+            .replace("<set-name>", backupSetName)
+            .replace("<set-num>", String.valueOf(backupBackingUp + 1))
+            .replace("<total-sets>", String.valueOf(backupList.length));
     }
 
     /**
