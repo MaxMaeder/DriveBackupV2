@@ -35,11 +35,13 @@ html, body {
   text-transform: uppercase;
 }
 
-.privacy-policy {
+.info-links {
   width: 100%;
   max-width: 750px;
   padding: 15px;
   margin: 0 auto;
+  display: block;
+  color: #212529;
 }
 
 .more-info {
@@ -58,9 +60,4 @@ html, body {
 
 .more-info img:hover {
   opacity: .9;
-}
-
-.privacy-policy {
-  display: block;
-  color: #212529;
 }
