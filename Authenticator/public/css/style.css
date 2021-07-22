@@ -35,7 +35,6 @@ html, body {
   text-transform: uppercase;
 }
 
-
 .more-info {
   position: absolute;
   bottom: 0;
@@ -56,7 +55,7 @@ html, body {
 
 .info-links {
   display: block;
-  
+  margin-top: 10px;
 }
 
 .info-links a {
@@ -68,5 +67,4 @@ html, body {
   max-width: 750px;
   padding: 15px;
   margin: 0 auto;
-
 }

@@ -34,6 +34,10 @@ app.get('/privacy-policy', function(req, res) {
   res.sendFile(__dirname + '/views/privacy-policy.html');
 });
 
+app.get('/about', function(req, res) {
+  res.sendFile(__dirname + '/views/about.html');
+});
+
 app.get('/:user_code', async function (req, res) {
   var docRef = await db.collection('pins').doc(req.params.user_code).get();
   
