@@ -2,6 +2,10 @@ html, body {
   height: 100%;
 }
 
+ul {
+  text-align: left;
+}
+
 .content {
   height: 100%;
   display: -ms-flexbox;
