@@ -68,3 +68,7 @@ html, body {
   padding: 15px;
   margin: 0 auto;
 }
+
+.text-content img {
+  border-radius: 7.5px;
+}
