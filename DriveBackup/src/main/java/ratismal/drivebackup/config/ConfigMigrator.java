@@ -47,12 +47,17 @@ public class ConfigMigrator {
             config.set("zip-compression", 1);
         }
 
-        if (!config.getString("schedule-timezone").equals(DEFAULT_TIMEZONE_STRING)) {
+        if (config.getString("schedule-timezone") != null && !config.getString("schedule-timezone").equals(DEFAULT_TIMEZONE_STRING)) {
             migrate("schedule-timezone", "advanced.date-timezone");
             config.set("backup-format-timezone", null);
         } else {
             migrate("backup-format-timezone", "advanced.date-timezone");
             config.set("schedule-timezone", null);
+        }
+
+        String googleDriveSharedDriveId = config.getString("googledrive.shared-drive-id");
+        if (googleDriveSharedDriveId == null) {
+            config.set("googledrive.shared-drive-id", "");
         }
 
         migrate("advanced.message-prefix", "messages.prefix");
