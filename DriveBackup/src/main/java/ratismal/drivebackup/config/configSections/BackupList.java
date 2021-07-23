@@ -7,6 +7,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import org.bukkit.Bukkit;
+import org.bukkit.World;
 import org.bukkit.configuration.file.FileConfiguration;
 
 import ratismal.drivebackup.util.Logger;
@@ -52,6 +54,26 @@ public class BackupList {
 
             public String toString() {
                 return glob;
+            }
+        }
+
+        public static class WorldsBackupLocation implements BackupLocation {
+            private final List<Path> paths;
+
+            public WorldsBackupLocation() {
+                paths = new ArrayList<Path>();
+
+                for (World world : Bukkit.getWorlds()) {
+                    paths.add(world.getWorldFolder().toPath());
+                }
+            }
+
+            public List<Path> getPaths() {
+                return paths;
+            }
+
+            public String toString() {
+                return "worlds"; // maybe something more descriptive?
             }
         }
 
@@ -102,6 +124,22 @@ public class BackupList {
                     location = new BackupListEntry.PathBackupLocation((String) rawListEntry.get("path"));
                 } catch (Exception e) {
                     logger.log(intl("backup-list-path-invalid"), "entry", entryIndex);
+                    continue;
+                }
+            } else if (rawListEntry.containsKey("type")) {
+                try {
+                    switch ((String) rawListEntry.get("type")) {
+                        case "worlds":
+                            location = new BackupListEntry.WorldsBackupLocation();
+                            break;
+                        case "config":
+                            location = new BackupListEntry.GlobBackupLocation("**/config.yml");
+                            break;
+                        default:
+                            throw new IllegalArgumentException();
+                    }
+                } catch (Exception exception) {
+                    logger.log(intl("backup-list-type-invalid"), "entry", entryIndex);
                     continue;
                 }
             } else {
