@@ -43,6 +43,7 @@ backup-already-running: |
   {backup-status}
 backup-skipped-inactivity: "Skipping backup due to inactivity"
 backup-no-methods: "No backup method is enabled"
+file-backup-message: "File uploaded in <length> seconds (<speed>KB/s)"
 backup-start: "Creating backups, the server may lag for a little while..."
 external-ftp-backup-start: "Downloading files from a (S)FTP server (<socket-addr>) to include in backup"
 external-ftp-backup-blacklisted: "Didn't include <blacklisted-files> file(s) in the backup from the external (S)FTP server, as they are blacklisted by \"<glob-pattern>\""
@@ -62,6 +63,7 @@ backup-local-failed: |
   Even if local-keep-count is set to zero, the plugin needs to temporarily create a local backup
   Skipping backup location
 backup-method-uploading: "Uploading file to <backup-method>"
+backup-method-limit-reached: "There are <file-count> file(s) for the current backup location in <backup-method> which exceeds the limit of <file-limit>, deleting"
 backup-method-upload-failed: "Failed to upload"
 backup-method-not-linked: |
   Skipping backup to <backup-method>, account not yet linked
@@ -70,8 +72,8 @@ backup-method-complete: "Backup to <gold><backup-method></gold> complete"
 backup-complete: "Backup complete,"
 backup-disabled-inactivity: "Disabling automatic backups due to inactivity"
 backup-status-not-running: "No backups are running"
-backup-status-compressing: "Compressing backup set \"<set-name>\", set <set-num> of <total-sets>"
-backup-status-uploading: "Uploading backup set \"<set-name>\", set <set-num> of <total-sets>"
+backup-status-compressing: "Compressing backup set \"<set-name>\", set <set-num> of <set-count>"
+backup-status-uploading: "Uploading backup set \"<set-name>\", set <set-num> of <set-count>"
 next-backup: "the next backup is in %TIME minutes"
 next-schedule-backup: "the next backup is at %DATE"
 next-schedule-backup-format: "h:mm a EEE, MMM d O"
@@ -89,6 +91,7 @@ debug-log-creating: "Generating Debug Log"
 debug-log-created: "Debug URL: <url>"
 link-account-code: "To link your <provider> account, go to <gold><click:open_url:link-url>link-url</click></gold> and enter <gold><click:copy_to_clipboard:link-code>link-code</click></gold>"
 link-account-failed: "Failed to link your <provider> account"
+connection-error: "Failed to connect to <domain>, check your network connection and server firewall"
 drivebackup-command-header: "<gold>|====== <dark_red>DriveBackupV2 ======|"
 drivebackup-docs-command: |
   <header>

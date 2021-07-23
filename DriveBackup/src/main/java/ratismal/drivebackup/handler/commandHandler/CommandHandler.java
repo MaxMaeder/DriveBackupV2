@@ -8,8 +8,6 @@ import ratismal.drivebackup.TestThread;
 import ratismal.drivebackup.UploadThread;
 import ratismal.drivebackup.uploaders.Authenticator;
 import ratismal.drivebackup.uploaders.Authenticator.AuthenticationProvider;
-import ratismal.drivebackup.uploaders.dropbox.DropboxUploader;
-import ratismal.drivebackup.uploaders.onedrive.OneDriveUploader;
 import ratismal.drivebackup.config.Permissions;
 import ratismal.drivebackup.handler.DebugCollector;
 import ratismal.drivebackup.plugin.DriveBackup;
@@ -94,7 +92,7 @@ public class CommandHandler implements CommandExecutor {
                         Authenticator.authenticateUser(AuthenticationProvider.ONEDRIVE, sender);
                         break;
                     case "dropbox":
-                    Authenticator.authenticateUser(AuthenticationProvider.DROPBOX, sender);
+                        Authenticator.authenticateUser(AuthenticationProvider.DROPBOX, sender);
                         break;
                     default:
                         BasicCommands.sendHelp(sender);

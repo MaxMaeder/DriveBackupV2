@@ -24,12 +24,14 @@ import okhttp3.Response;
 import ratismal.drivebackup.uploaders.Uploader;
 import ratismal.drivebackup.uploaders.Authenticator;
 import ratismal.drivebackup.uploaders.Authenticator.AuthenticationProvider;
+import ratismal.drivebackup.UploadThread.UploadLogger;
 import ratismal.drivebackup.config.ConfigParser;
 import ratismal.drivebackup.plugin.DriveBackup;
+import ratismal.drivebackup.util.Logger;
 import ratismal.drivebackup.util.MessageUtil;
+import ratismal.drivebackup.util.NetUtil;
 
 import java.io.IOException;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -45,6 +47,7 @@ import static ratismal.drivebackup.config.Localization.intl;
  */
 
 public class GoogleDriveUploader implements Uploader {
+    private UploadLogger logger;
     private boolean errorOccurred;
     private String refreshToken;
 
@@ -86,7 +89,9 @@ public class GoogleDriveUploader implements Uploader {
     /**
      * Creates an instance of the {@code GoogleDriveUploader} object
      */
-    public GoogleDriveUploader() {
+    public GoogleDriveUploader(UploadLogger logger) {
+        this.logger = logger;
+
         try {
             refreshToken = Authenticator.getRefreshToken(AuthenticationProvider.GOOGLE_DRIVE);
             retrieveNewAccessToken();
@@ -168,10 +173,9 @@ public class GoogleDriveUploader implements Uploader {
             TimeUnit.SECONDS.sleep(5);
                 
             service.files().delete(fileId).execute();
-        } catch (UnknownHostException exception) {
-            MessageUtil.Builder().text("Failed to upload test file to Google Drive, check your network connection").toPerm("drivebackup.linkAccounts").send();
-        } catch (Exception e) {
-            MessageUtil.sendConsoleException(e);
+        } catch (Exception exception) {
+            NetUtil.catchException(exception, "www.googleapis.com", logger);
+            MessageUtil.sendConsoleException(exception);
             setErrorOccurred(true);
         }
     }
@@ -203,7 +207,7 @@ public class GoogleDriveUploader implements Uploader {
                         folder = createFolder(typeFolder, folder);
                     }
                 } catch (Exception exception) {
-                    MessageUtil.Builder().text("Failed to create folder(s) in Google Drive, these folders MUST NOT exist before the plugin creates them.").toConsole(true).send();
+                    logger.log("Failed to create folder(s) in Google Drive, these folders MUST NOT exist before the plugin creates them.");
 
                     throw exception;
                 }
@@ -223,11 +227,9 @@ public class GoogleDriveUploader implements Uploader {
             service.files().insert(fileMetadata, fileContent).execute();
 
             deleteFiles(folder);
-        } catch (UnknownHostException exception) {
-            MessageUtil.Builder().text("Failed to upload backup to Google Drive, check your network connection").toPerm("drivebackup.linkAccounts").send();
-            setErrorOccurred(true);
-        } catch(Exception error) {
-            MessageUtil.sendConsoleException(error);
+        } catch (Exception exception) {
+            NetUtil.catchException(exception, "www.googleapis.com", logger);
+            MessageUtil.sendConsoleException(exception);
             setErrorOccurred(true);
         }
     }
@@ -425,12 +427,16 @@ public class GoogleDriveUploader implements Uploader {
             return;
         }
 
-        List<ChildReference> queriedFilesfromDrive = getFiles(folder);
-        if (queriedFilesfromDrive.size() > fileLimit) {
-            MessageUtil.Builder().text("There are " + queriedFilesfromDrive.size() + " file(s) which exceeds the limit of " + fileLimit + ", deleting").toConsole(true).send();
+        List<ChildReference> files = getFiles(folder);
+        if (files.size() > fileLimit) {
+            logger.info(
+                intl("backup-method-limit-reached"), 
+                "file-count", String.valueOf(files.size()),
+                "backup-method", getName(),
+                "file-limit", String.valueOf(fileLimit));
 
-            for (Iterator<ChildReference> iterator = queriedFilesfromDrive.iterator(); iterator.hasNext(); ) {
-                if (queriedFilesfromDrive.size() == fileLimit) {
+            for (Iterator<ChildReference> iterator = files.iterator(); iterator.hasNext(); ) {
+                if (files.size() == fileLimit) {
                     break;
                 }
                 ChildReference file = iterator.next();
