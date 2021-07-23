@@ -12,23 +12,18 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
-import org.bukkit.Bukkit;
-
-import org.bukkit.command.CommandSender;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 import ratismal.drivebackup.uploaders.Authenticator;
 import ratismal.drivebackup.uploaders.Uploader;
 import ratismal.drivebackup.uploaders.Authenticator.AuthenticationProvider;
+import ratismal.drivebackup.UploadThread.UploadLogger;
 import ratismal.drivebackup.config.ConfigParser;
-import ratismal.drivebackup.handler.commandHandler.BasicCommands;
-import ratismal.drivebackup.plugin.DriveBackup;
 import ratismal.drivebackup.util.MessageUtil;
-import ratismal.drivebackup.util.SchedulerUtil;
+import ratismal.drivebackup.util.NetUtil;
 
 import java.io.*;
-import java.net.UnknownHostException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -43,6 +38,8 @@ import static ratismal.drivebackup.config.Localization.intl;
  * Created by Redemption on 2/24/2016.
  */
 public class OneDriveUploader implements Uploader {
+    private UploadLogger logger;
+
     private boolean errorOccurred;
     private long totalUploaded;
     private long lastUploaded;
@@ -80,7 +77,9 @@ public class OneDriveUploader implements Uploader {
     /**
      * Creates an instance of the {@code OneDriveUploader} object
      */
-    public OneDriveUploader() {
+    public OneDriveUploader(UploadLogger logger) {
+        this.logger = logger;
+
         try {
             refreshToken = Authenticator.getRefreshToken(AuthenticationProvider.ONEDRIVE);
             retrieveNewAccessToken();
@@ -152,9 +151,8 @@ public class OneDriveUploader implements Uploader {
             if (statusCode != 204) {
                 setErrorOccurred(true);
             }
-        } catch (UnknownHostException exception) {
-            MessageUtil.Builder().text("Failed to upload test file to OneDrive, check your network connection").toPerm("drivebackup.linkAccounts").send();
         } catch (Exception exception) {
+            NetUtil.catchException(exception, "graph.microsoft.com", logger);
             MessageUtil.sendConsoleException(exception);
             setErrorOccurred(true);
         }
@@ -235,11 +233,9 @@ public class OneDriveUploader implements Uploader {
             }
 
             deleteFiles(folder);
-        } catch (UnknownHostException exception) {
-            MessageUtil.Builder().text("Failed to upload backup to OneDrive, check your network connection").toPerm("drivebackup.linkAccounts").send();
-            setErrorOccurred(true);
-        } catch(Exception error) {
-            MessageUtil.sendConsoleException(error);
+        } catch (Exception exception) {
+            NetUtil.catchException(exception, "graph.microsoft.com", logger);
+            MessageUtil.sendConsoleException(exception);
             setErrorOccurred(true);
         }
 
@@ -464,20 +460,24 @@ public class OneDriveUploader implements Uploader {
         JSONObject parsedResponse = new JSONObject(response.body().string());
         response.close();
 
-        ArrayList<String> availableFileIDs = new ArrayList<>();
+        ArrayList<String> fileIDs = new ArrayList<>();
 
         JSONArray jsonArray = parsedResponse.getJSONArray("value");
         for (int i = 0; i < jsonArray.length(); i++) {
-            availableFileIDs.add(jsonArray.getJSONObject(i).getString("id"));
+            fileIDs.add(jsonArray.getJSONObject(i).getString("id"));
         }
 
-        if(fileLimit < availableFileIDs.size()){
-            MessageUtil.Builder().text("There are " + availableFileIDs.size() + " file(s) which exceeds the limit of " + fileLimit + ", deleting").toConsole(true).send();
+        if(fileLimit < fileIDs.size()){
+            logger.info(
+                intl("backup-method-limit-reached"), 
+                "file-count", String.valueOf(fileIDs.size()),
+                "backup-method", getName(),
+                "file-limit", String.valueOf(fileLimit));
         }
 
-        for (Iterator<String> iterator = availableFileIDs.listIterator(); iterator.hasNext(); ) {
+        for (Iterator<String> iterator = fileIDs.listIterator(); iterator.hasNext(); ) {
             String fileIDValue = iterator.next();
-            if (fileLimit < availableFileIDs.size()) {
+            if (fileLimit < fileIDs.size()) {
                 request = new Request.Builder()
                     .addHeader("Authorization", "Bearer " + accessToken)
                     .url("https://graph.microsoft.com/v1.0/me/drive/items/" + fileIDValue)
@@ -489,7 +489,7 @@ public class OneDriveUploader implements Uploader {
                 iterator.remove();
             }
 
-            if (availableFileIDs.size() <= fileLimit){
+            if (fileIDs.size() <= fileLimit){
                 break;
             }
         }

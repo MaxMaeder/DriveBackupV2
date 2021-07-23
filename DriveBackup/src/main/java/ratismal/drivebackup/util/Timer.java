@@ -6,6 +6,8 @@ import java.text.DecimalFormatSymbols;
 import java.util.Locale;
 import java.util.Date;
 
+import static ratismal.drivebackup.config.Localization.intl;
+
 /**
  * Created by Ratismal on 2016-03-30.
  */
@@ -51,7 +53,9 @@ public class Timer {
         double length = difference / 1000;
         double speed = (file.length() / 1024) / length;
         
-        return "File uploaded in " + df.format(length) + " seconds (" + df.format(speed) + "KB/s)";
+        return intl("file-backup-message")
+            .replace("<length>", df.format(length))
+            .replace("<speed>", df.format(speed));
     }
 
     /**

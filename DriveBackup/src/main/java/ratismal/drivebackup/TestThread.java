@@ -11,14 +11,16 @@ import ratismal.drivebackup.uploaders.dropbox.DropboxUploader;
 import ratismal.drivebackup.uploaders.ftp.FTPUploader;
 import ratismal.drivebackup.uploaders.googledrive.GoogleDriveUploader;
 import ratismal.drivebackup.uploaders.onedrive.OneDriveUploader;
+import ratismal.drivebackup.UploadThread.UploadLogger;
 import ratismal.drivebackup.config.ConfigParser;
 import ratismal.drivebackup.config.ConfigParser.Config;
+import ratismal.drivebackup.util.Logger;
 import ratismal.drivebackup.util.MessageUtil;
 
 import static ratismal.drivebackup.config.Localization.intl;
 
 public class TestThread implements Runnable {
-    private CommandSender initiator;
+    private UploadLogger logger;
     private String[] args;
 
     /**
@@ -27,7 +29,25 @@ public class TestThread implements Runnable {
      * @param args any arguments that followed the command that initiated the test
      */
     public TestThread(CommandSender initiator, String[] args) {
-        this.initiator = initiator;
+        logger = new UploadLogger() {
+            @Override
+            public void log(String input, String... placeholders) {
+                MessageUtil.Builder()
+                    .mmText(input, placeholders)
+                    .to(initiator)
+                    .send();
+            }
+
+            @Override
+            public void initiatorError(String input, String... placeholders) {
+                MessageUtil.Builder()
+                    .mmText(input, placeholders)
+                    .to(initiator)
+                    .toConsole(false)
+                    .send();
+            }
+        };
+
         this.args = args;
     }
 
@@ -45,7 +65,7 @@ public class TestThread implements Runnable {
          */
 
         if (args.length < 2) {
-            MessageUtil.Builder().mmText(intl("test-method-not-specified")).to(initiator).toConsole(false).send();
+            logger.initiatorError(intl("test-method-not-specified"));
 
             return;
         }
@@ -67,11 +87,7 @@ public class TestThread implements Runnable {
         try {
             testUploadMethod(testFileName, testFileSize, args[1]);
         } catch (Exception exception) {
-            MessageUtil.Builder()
-                .mmText(intl("test-method-invalid"), "specified-method", args[1])
-                .to(initiator)
-                .toConsole(false)
-                .send();
+            logger.initiatorError(intl("test-method-invalid"));
         }
     }
 
@@ -88,25 +104,25 @@ public class TestThread implements Runnable {
         switch (method) {
             case "googledrive":
                 if (config.backupMethods.googleDrive.enabled) {
-                    uploadMethod = new GoogleDriveUploader();
+                    uploadMethod = new GoogleDriveUploader(logger);
                 } else {
-                    sendMethodDisabled(initiator, GoogleDriveUploader.UPLOADER_NAME);
+                    sendMethodDisabled(logger, GoogleDriveUploader.UPLOADER_NAME);
                     return;
                 }
                 break;
             case "onedrive":
                 if (config.backupMethods.oneDrive.enabled) {
-                    uploadMethod = new OneDriveUploader();
+                    uploadMethod = new OneDriveUploader(logger);
                 } else {
-                    sendMethodDisabled(initiator, OneDriveUploader.UPLOADER_NAME);
+                    sendMethodDisabled(logger, OneDriveUploader.UPLOADER_NAME);
                     return;
                 }
                 break;
             case "dropbox":
                 if (config.backupMethods.dropbox.enabled) {
-                    uploadMethod = new DropboxUploader();
+                    uploadMethod = new DropboxUploader(logger);
                 } else {
-                    sendMethodDisabled(initiator, DropboxUploader.UPLOADER_NAME);
+                    sendMethodDisabled(logger, DropboxUploader.UPLOADER_NAME);
                     return;
                 }
                 break;
@@ -114,7 +130,7 @@ public class TestThread implements Runnable {
                 if (config.backupMethods.ftp.enabled) {
                     uploadMethod = new FTPUploader();
                 } else {
-                    sendMethodDisabled(initiator, FTPUploader.UPLOADER_NAME);
+                    sendMethodDisabled(logger, FTPUploader.UPLOADER_NAME);
                     return;
                 }
                 break;
@@ -122,7 +138,9 @@ public class TestThread implements Runnable {
                 throw new Exception();
         }
 
-        MessageUtil.Builder().mmText(intl("test-method-begin"), "upload-method", uploadMethod.getName()).to(initiator).toConsole(false).send();
+        logger.log(
+            intl("test-method-begin"), 
+            "upload-method", uploadMethod.getName());
 
         String localTestFilePath = config.backupStorage.localDirectory + File.separator + testFileName;
         new File(config.backupStorage.localDirectory).mkdirs();
@@ -136,7 +154,7 @@ public class TestThread implements Runnable {
             fos.write(randomBytes);
             fos.flush();
         } catch (Exception exception) {
-            MessageUtil.Builder().mmText(intl("test-file-creation-failed")).to(initiator).toConsole(false).send();
+            logger.log(intl("test-file-creation-failed"));
             MessageUtil.sendConsoleException(exception);
         }
 
@@ -144,22 +162,22 @@ public class TestThread implements Runnable {
         
         uploadMethod.test(testFile);
 
-        // TODO: network catch?
-
         if (uploadMethod.isErrorWhileUploading()) {
-            MessageUtil.Builder().mmText(intl("test-method-failed"), "upload-method", uploadMethod.getName()).to(initiator).toConsole(false).send();
+            logger.log(
+                intl("test-method-failed"), 
+                "upload-method", uploadMethod.getName());
         } else {
-            MessageUtil.Builder().mmText(intl("test-method-successful"), "upload-method", uploadMethod.getName()).to(initiator).toConsole(false).send();
+            logger.log(
+                intl("test-method-successful"),
+                "upload-method", uploadMethod.getName());
         }
         
         testFile.delete();
     }
 
-    private void sendMethodDisabled(CommandSender initiator, String methodName) {
-        MessageUtil.Builder()
-            .mmText(intl("test-method-not-enabled"), "upload-method", methodName)
-            .to(initiator)
-            .toConsole(false)
-            .send();
+    private void sendMethodDisabled(UploadLogger logger, String methodName) {
+        logger.log(
+            intl("test-method-not-enabled"), 
+            "upload-method", methodName);
     }
 }

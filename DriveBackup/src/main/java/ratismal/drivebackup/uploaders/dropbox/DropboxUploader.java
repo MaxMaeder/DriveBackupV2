@@ -1,15 +1,16 @@
 package ratismal.drivebackup.uploaders.dropbox;
 
 import ratismal.drivebackup.util.MessageUtil;
+import ratismal.drivebackup.util.NetUtil;
 import ratismal.drivebackup.uploaders.Authenticator;
 import ratismal.drivebackup.uploaders.Uploader;
 import ratismal.drivebackup.uploaders.Authenticator.AuthenticationProvider;
+import ratismal.drivebackup.UploadThread.UploadLogger;
 import ratismal.drivebackup.config.ConfigParser;
 import ratismal.drivebackup.config.ConfigParser.Config;
 
 import java.io.DataInputStream;
 import java.io.FileInputStream;
-import java.net.UnknownHostException;
 import java.util.concurrent.TimeUnit;
 
 import org.json.JSONArray;
@@ -30,6 +31,7 @@ import okhttp3.Response;
 import static ratismal.drivebackup.config.Localization.intl;
 
 public class DropboxUploader implements Uploader {
+    private UploadLogger logger;
     private boolean errorOccurred;
 
     public static final String UPLOADER_NAME = "Dropbox";
@@ -104,10 +106,9 @@ public class DropboxUploader implements Uploader {
             if (statusCode != 200) {
                 setErrorOccurred(true);
             }
-        } catch (UnknownHostException exception) {
-            MessageUtil.Builder().text("Failed to upload test file to Dropbox, check your network connection").toPerm("drivebackup.linkAccounts").send();
-        } catch (Exception e) {
-            MessageUtil.sendConsoleException(e);
+        } catch (Exception exception) {
+            NetUtil.catchException(exception, "api.dropboxapi.com", logger);
+            MessageUtil.sendConsoleException(exception);
             setErrorOccurred(true);
         }
     }
@@ -171,7 +172,8 @@ public class DropboxUploader implements Uploader {
                             .addHeader("Dropbox-API-Arg", dropbox_arg)
                             .addHeader("Authorization", "Bearer " + accessToken)
                             .post(requestBody)
-                            .url("https://content.dropboxapi.com/2/files/upload_session/append_v2")                                    .build();
+                            .url("https://content.dropboxapi.com/2/files/upload_session/append_v2")
+                            .build();
 
                         Response response = httpClient.newCall(request).execute();
                         response.close();
@@ -234,11 +236,8 @@ public class DropboxUploader implements Uploader {
 
                 deleteFiles(type);
             }
-        } catch (UnknownHostException exception) {
-            MessageUtil.Builder().text("Failed to upload backup to Dropbox, check your network connection").toPerm("drivebackup.linkAccounts").send();
-            setErrorOccurred(true);
         } catch (Exception exception) {
-            exception.printStackTrace();
+            NetUtil.catchException(exception, "api.dropboxapi.com", logger);
             MessageUtil.sendConsoleException(exception);
             setErrorOccurred(true);
         }
@@ -280,7 +279,12 @@ public class DropboxUploader implements Uploader {
         response.close();
 
         if (files.length() > fileLimit) {
-            MessageUtil.Builder().text("There are " + files.length() + " file(s) which exceeds the limit of " + fileLimit + ", deleting").toConsole(true).send();
+            logger.info(
+                intl("backup-method-limit-reached"), 
+                "file-count", String.valueOf(files.length()),
+                "backup-method", getName(),
+                "file-limit", String.valueOf(fileLimit));
+
             while (files.length() > fileLimit) {
                 JSONObject deleteJson = new JSONObject();
                 deleteJson.put("path", "/" + destination + "/" + type + "/" + files.getJSONObject(0).get("name"));
@@ -303,7 +307,9 @@ public class DropboxUploader implements Uploader {
     /**
      * Creates an instance of the {@code DropboxUploader} object
      */
-    public DropboxUploader() {
+    public DropboxUploader(UploadLogger logger) {
+        this.logger = logger;
+
         try {
             refreshToken = Authenticator.getRefreshToken(AuthenticationProvider.DROPBOX);
             retrieveNewAccessToken();
