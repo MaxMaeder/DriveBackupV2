@@ -10,10 +10,12 @@ import ratismal.drivebackup.util.Logger;
 import ratismal.drivebackup.plugin.DriveBackup;
 import ratismal.drivebackup.util.MessageUtil;
 
-import static ratismal.drivebackup.config.Localization.intl;
-
 public class ConfigMigrator {
     private static final String DEFAULT_TIMEZONE_STRING = "-00:00";
+ 
+    // ConfigMigrator is called before localization is parsed, since ConfigMigrator may change the intl file
+    // Therefore, we just hardcode any messages
+    private static final String MIGRATING_MESSAGE = "Automatically migrating config to version <version>";
 
     FileConfiguration config;
     FileConfiguration localizationConfig;
@@ -30,12 +32,12 @@ public class ConfigMigrator {
             MessageUtil.Builder().mmText(input, placeholders).to(initiators).send();
         };
 
-        if (config.contains("version") && config.getInt("version") >= Config.VERSION) {
+        if (config.isSet("version") && config.getInt("version") >= Config.VERSION) {
             return;
         }
 
-        logger.log(intl("config-migrating"), "version", String.valueOf(Config.VERSION));
-        config.set("version", 2);
+        logger.log(MIGRATING_MESSAGE, "version", String.valueOf(Config.VERSION));
+        config.set("version", Config.VERSION);
 
         int backupThreadPriority = config.getInt("backup-thread-priority");
         if (backupThreadPriority < 1) {
@@ -46,6 +48,9 @@ public class ConfigMigrator {
         if (zipCompression < 1) {
             config.set("zip-compression", 1);
         }
+
+        migrate("dir", "local-save-directory");
+        migrate("destination", "remote-save-directory");
 
         if (!config.getString("schedule-timezone").equals(DEFAULT_TIMEZONE_STRING)) {
             migrate("schedule-timezone", "advanced.date-timezone");

@@ -5,6 +5,8 @@
 # DOCUMENTATION HAS MOVED
 # Now available online at: https://github.com/MaxMaeder/DriveBackupV2/wiki
 
+version: 2
+
 delay: 60
 backup-thread-priority: 1
 keep-count: 20
@@ -26,9 +28,8 @@ backup-list:
 
 external-backup-list:
 
-dir: "backups"
-
-destination: "backups"
+local-save-directory: "backups"
+remote-save-directory: "backups"
 
 googledrive:
   enabled: false

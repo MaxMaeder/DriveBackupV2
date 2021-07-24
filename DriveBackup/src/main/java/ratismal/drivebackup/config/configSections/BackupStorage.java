@@ -85,8 +85,8 @@ public class BackupStorage {
         boolean backupsRequirePlayers = config.getBoolean("backups-require-players");
         boolean disableSavingDuringBackups = config.getBoolean("disable-saving-during-backups");
 
-        String localDirectory = config.getString("dir");
-        String remoteDirectory = config.getString("destination");
+        String localDirectory = config.getString("local-save-directory");
+        String remoteDirectory = config.getString("remote-save-directory");
 
         return new BackupStorage(delay, threadPriority, keepCount, localKeepCount, zipCompression, backupsRequirePlayers, disableSavingDuringBackups, localDirectory, remoteDirectory);
     }
