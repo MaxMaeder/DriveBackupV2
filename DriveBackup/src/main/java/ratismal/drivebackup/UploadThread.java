@@ -198,13 +198,19 @@ public class UploadThread implements Runnable {
             return;
         }
 
+        List<ExternalBackupSource> externalBackupList = Arrays.asList(config.externalBackups.sources);
+        backupList = Arrays.asList(config.backupList.list);
+
+        if (externalBackupList.size() == 0 && backupList.size() == 0) {
+            logger.log(intl("backup-empty-list"));
+            return;
+        }
+
         ServerUtil.setAutoSave(false);
 
         logger.broadcast(intl("backup-start"));
 
-
         uploaders = new ArrayList<Uploader>();
-
         if (config.backupMethods.googleDrive.enabled) {
             uploaders.add(new GoogleDriveUploader(logger));
         }
@@ -220,9 +226,6 @@ public class UploadThread implements Runnable {
 
         ensureMethodsLinked();
 
-        backupList = Arrays.asList(config.backupList.list);
-
-        List<ExternalBackupSource> externalBackupList = Arrays.asList(config.externalBackups.sources);
         for (ExternalBackupSource externalBackup : externalBackupList) {
             if (externalBackup instanceof ExternalFTPSource) {
                 makeExternalFileBackup((ExternalFTPSource) externalBackup);
@@ -289,7 +292,7 @@ public class UploadThread implements Runnable {
                         .replace(
                             "link-command", 
                             "/drivebackup linkaccount " + provider.getId().replace("-", "")), 
-                    "backup-method", 
+                    "upload-method", 
                     provider.getName());
 
                 uploaders.remove(uploader);
@@ -338,7 +341,7 @@ public class UploadThread implements Runnable {
             for (Uploader uploader : uploaders) {
                 logger.info(
                     intl("backup-method-uploading"),
-                    "backup-method",
+                    "upload-method",
                     uploader.getName());
 
                 timer.start();

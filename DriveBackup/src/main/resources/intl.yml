@@ -43,6 +43,7 @@ backup-already-running: |
   {backup-status}
 backup-skipped-inactivity: "Skipping backup due to inactivity"
 backup-no-methods: "No backup method is enabled"
+backup-empty-list: "The backup list is empty"
 file-backup-message: "File uploaded in <length> seconds (<speed>KB/s)"
 backup-start: "Creating backups, the server may lag for a little while..."
 external-ftp-backup-start: "Downloading files from a (S)FTP server (<socket-addr>) to include in backup"
@@ -62,13 +63,13 @@ backup-local-failed: |
   Failed to create local backup
   Even if local-keep-count is set to zero, the plugin needs to temporarily create a local backup
   Skipping backup location
-backup-method-uploading: "Uploading file to <backup-method>"
-backup-method-limit-reached: "There are <file-count> file(s) for the current backup location in <backup-method> which exceeds the limit of <file-limit>, deleting"
+backup-method-uploading: "Uploading file to <upload-method>"
+backup-method-limit-reached: "There are <file-count> file(s) for the current backup location in <upload-method> which exceeds the limit of <file-limit>, deleting"
 backup-method-upload-failed: "Failed to upload"
 backup-method-not-linked: |
-  Skipping backup to <backup-method>, account not yet linked
+  Skipping backup to <upload-method>, account not yet linked
   To link your account, run <gold><click:run_command:link-command>link-command</click></gold>
-backup-method-complete: "Backup to <gold><backup-method></gold> complete"
+backup-method-complete: "Backup to <gold><upload-method></gold> complete"
 backup-complete: "Backup complete,"
 backup-disabled-inactivity: "Disabling automatic backups due to inactivity"
 backup-status-not-running: "No backups are running"

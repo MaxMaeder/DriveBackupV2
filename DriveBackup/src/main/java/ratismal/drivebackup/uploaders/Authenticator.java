@@ -134,6 +134,7 @@ public class Authenticator {
                             Bukkit.getScheduler().cancelTask(task[0]);
 
                         } else if (!parsedResponse.get("msg").equals("code_not_authenticated")){
+                            MessageUtil.Builder().text(parsedResponse.toString()).send();
                             throw new UploadException();
                         }
 
@@ -202,6 +203,10 @@ public class Authenticator {
         // what am i doing with my life
         return !getRefreshToken(provider).isEmpty();
     }
+
+    /*public static String getAccessToken(AuthenticationProvider provider) {
+
+    }*/
 
     private static String processCredentialJsonFile(AuthenticationProvider provider) throws IOException {
         BufferedReader br = new BufferedReader(new FileReader(provider.getCredStoreLocation()));

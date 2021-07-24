@@ -469,9 +469,9 @@ public class OneDriveUploader implements Uploader {
 
         if(fileLimit < fileIDs.size()){
             logger.info(
-                intl("backup-method-limit-reached"), 
+                intl("upload-method-limit-reached"), 
                 "file-count", String.valueOf(fileIDs.size()),
-                "backup-method", getName(),
+                "upload-method", getName(),
                 "file-limit", String.valueOf(fileLimit));
         }
 

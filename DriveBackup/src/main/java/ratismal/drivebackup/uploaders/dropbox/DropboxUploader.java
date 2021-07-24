@@ -280,9 +280,9 @@ public class DropboxUploader implements Uploader {
 
         if (files.length() > fileLimit) {
             logger.info(
-                intl("backup-method-limit-reached"), 
+                intl("upload-method-limit-reached"), 
                 "file-count", String.valueOf(files.length()),
-                "backup-method", getName(),
+                "upload-method", getName(),
                 "file-limit", String.valueOf(fileLimit));
 
             while (files.length() > fileLimit) {

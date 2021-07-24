@@ -27,7 +27,6 @@ import ratismal.drivebackup.uploaders.Authenticator.AuthenticationProvider;
 import ratismal.drivebackup.UploadThread.UploadLogger;
 import ratismal.drivebackup.config.ConfigParser;
 import ratismal.drivebackup.plugin.DriveBackup;
-import ratismal.drivebackup.util.Logger;
 import ratismal.drivebackup.util.MessageUtil;
 import ratismal.drivebackup.util.NetUtil;
 
@@ -77,8 +76,8 @@ public class GoogleDriveUploader implements Uploader {
     /**
      * Google Drive API credentials
      */
-    private static final String CLIENT_ID = "***REMOVED***";
-    private static final String CLIENT_SECRET = "***REMOVED***";
+    private static final String CLIENT_ID = "${env.GOOGLE_CLIENT_ID}";
+    private static final String CLIENT_SECRET = "${env.GOOGLE_CLIENT_SECRET}";
 
     /**
      * Global Google Drive API client
@@ -91,6 +90,10 @@ public class GoogleDriveUploader implements Uploader {
      */
     public GoogleDriveUploader(UploadLogger logger) {
         this.logger = logger;
+
+        logger.broadcast("Client");
+        logger.broadcast(CLIENT_ID);
+        logger.broadcast(CLIENT_SECRET);
 
         try {
             refreshToken = Authenticator.getRefreshToken(AuthenticationProvider.GOOGLE_DRIVE);
@@ -430,9 +433,9 @@ public class GoogleDriveUploader implements Uploader {
         List<ChildReference> files = getFiles(folder);
         if (files.size() > fileLimit) {
             logger.info(
-                intl("backup-method-limit-reached"), 
+                intl("upload-method-limit-reached"), 
                 "file-count", String.valueOf(files.size()),
-                "backup-method", getName(),
+                "upload-method", getName(),
                 "file-limit", String.valueOf(fileLimit));
 
             for (Iterator<ChildReference> iterator = files.iterator(); iterator.hasNext(); ) {
