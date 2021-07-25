@@ -27,6 +27,7 @@ import ratismal.drivebackup.uploaders.Authenticator.AuthenticationProvider;
 import ratismal.drivebackup.UploadThread.UploadLogger;
 import ratismal.drivebackup.config.ConfigParser;
 import ratismal.drivebackup.plugin.DriveBackup;
+import ratismal.drivebackup.util.Logger;
 import ratismal.drivebackup.util.MessageUtil;
 import ratismal.drivebackup.util.NetUtil;
 
@@ -37,6 +38,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import org.bukkit.command.CommandSender;
+import org.bukkit.conversations.*;
 import org.json.JSONObject;
 
 import static ratismal.drivebackup.config.Localization.intl;
@@ -66,12 +69,6 @@ public class GoogleDriveUploader implements Uploader {
      * Global instance of the JSON factory
      */
     private static final JsonFactory JSON_FACTORY = new JacksonFactory();
-
-    /**
-     * Location of the authenticated user's stored Google Drive refresh token
-     */
-    private static final String CLIENT_JSON_PATH = DriveBackup.getInstance().getDataFolder().getAbsolutePath()
-        + "/GoogleDriveCredential.json";
     
     /**
      * Google Drive API credentials
@@ -190,12 +187,13 @@ public class GoogleDriveUploader implements Uploader {
      */
     public void uploadFile(java.io.File file, String type) {
         try {
+            String sharedDriveId = ConfigParser.getConfig().backupMethods.googleDrive.sharedDriveId;
             String destination = ConfigParser.getConfig().backupStorage.remoteDirectory;
 
             ArrayList<String> typeFolders = new ArrayList<>();
             Collections.addAll(typeFolders, destination.split("/"));
             Collections.addAll(typeFolders, type.split("/"));
-            
+
             File folder = null;
 
             for (String typeFolder : typeFolders) {
@@ -204,7 +202,9 @@ public class GoogleDriveUploader implements Uploader {
                 }
 
                 try {
-                    if (folder == null) {
+                    if (folder == null && !sharedDriveId.isBlank()) {
+                        folder = createFolder(typeFolder, sharedDriveId);
+                    } else if (folder == null) {
                         folder = createFolder(typeFolder);
                     } else {
                         folder = createFolder(typeFolder, folder);
@@ -227,7 +227,7 @@ public class GoogleDriveUploader implements Uploader {
 
             FileContent fileContent = new FileContent("application/zip", file);
 
-            service.files().insert(fileMetadata, fileContent).execute();
+            service.files().insert(fileMetadata, fileContent).setSupportsAllDrives(true).execute();
 
             deleteFiles(folder);
         } catch (Exception exception) {
@@ -269,22 +269,97 @@ public class GoogleDriveUploader implements Uploader {
      * Gets the setup instructions for this uploaders
      * @return a Component explaining how to set up this uploader
      */
-    public TextComponent getSetupInstructions()
-    {
+    public TextComponent getSetupInstructions() {
         return Component.text()
-                    .append(
-                        Component.text("Failed to backup to Google Drive, please run ")
-                        .color(NamedTextColor.DARK_AQUA)
-                    )
-                    .append(
-                        Component.text("/drivebackup linkaccount googledrive")
-                        .color(NamedTextColor.GOLD)
-                        .hoverEvent(HoverEvent.showText(Component.text("Run command")))
-                        .clickEvent(ClickEvent.runCommand("/drivebackup linkaccount googledrive"))
-                    )
-                    .build();
+            .append(
+                Component.text("Failed to backup to Google Drive, please run ")
+                .color(NamedTextColor.DARK_AQUA)
+            )
+            .append(
+                Component.text("/drivebackup linkaccount googledrive")
+                .color(NamedTextColor.GOLD)
+                .hoverEvent(HoverEvent.showText(Component.text("Run command")))
+                .clickEvent(ClickEvent.runCommand("/drivebackup linkaccount googledrive"))
+            )
+            .build();
     }
 
+    /**
+     * Setup for authenticated user that has access to one or more shared drives.
+     * @param name the name of the team drive
+     * @return the ID of the team drive
+     * @throws Exception
+     */
+    public boolean setupSharedDrives(CommandSender initiator, AuthenticationProvider provider, Logger logger) throws Exception {
+        List<com.google.api.services.drive.model.Drive> drives = service.drives().list().execute().getItems();
+
+        if (drives.size() > 0) {
+            logger.log("You have access one or more Shared Drive, if you'd like to use one of them either select it or reply with it's number in the chat.");
+            MessageUtil.Builder()
+                .mmText("<bold>[1]</bold>")
+                .text(
+                    Component.text("My Drive").color(NamedTextColor.GOLD)
+                        .hoverEvent(HoverEvent.showText(Component.text("Select Drive")))
+                        .clickEvent(ClickEvent.runCommand("1"))
+                )
+                .to(initiator).toConsole(false).send();
+            int index = 2;
+            for (com.google.api.services.drive.model.Drive drive : drives) {
+                MessageUtil.Builder()
+                    .mmText("<bold>[" + index++ + "]</bold>")
+                    .text(
+                        Component.text(drive.getName()).color(NamedTextColor.GOLD)
+                            .hoverEvent(HoverEvent.showText(Component.text("Select Drive")))
+                            .clickEvent(ClickEvent.runCommand(drive.getId()))
+                    )
+                    .to(initiator).toConsole(false).send();
+            }
+            final Prompt driveId = new StringPrompt() {
+
+                @Override
+                public String getPromptText(final ConversationContext context) {
+                    return "";
+                }
+    
+                @Override
+                public Prompt acceptInput(final ConversationContext context, String input) {
+                    for (com.google.api.services.drive.model.Drive drive : drives) {
+                        if (input.equals(drive.getId())) {
+                            DriveBackup.getInstance().getConfig().set("googledrive.shared-drive-id", input);
+                            DriveBackup.getInstance().saveConfig();
+                            Authenticator.linkSuccess(initiator, provider, logger);
+                            return Prompt.END_OF_CONVERSATION;
+                        }
+                    }
+                    if (input.equals("1")) {
+                        DriveBackup.getInstance().getConfig().set("googledrive.shared-drive-id", "");
+                        DriveBackup.getInstance().saveConfig();
+                        Authenticator.linkSuccess(initiator, provider, logger);
+                        return Prompt.END_OF_CONVERSATION;
+                    } else if (input.matches("[0-9]+")) {
+                        DriveBackup.getInstance().getConfig().set("googledrive.shared-drive-id", drives.get(Integer.parseInt(input) - 2).getId());
+                        DriveBackup.getInstance().saveConfig();
+                        Authenticator.linkSuccess(initiator, provider, logger);
+                        return Prompt.END_OF_CONVERSATION;
+                    } else {
+                        // TODO handle this
+                        Authenticator.linkFail(provider, logger);
+                        return Prompt.END_OF_CONVERSATION;
+                    }
+                }
+            };
+    
+            final ConversationFactory factory = new ConversationFactory(DriveBackup.getInstance())
+                .withTimeout(60)
+                .withLocalEcho(false)
+                .withFirstPrompt(driveId);
+    
+            factory.buildConversation((Conversable) initiator).begin();
+            return true;
+        } else {
+            return false;
+        }
+    }
 
     /**
      * Creates a folder with the specified name in the specified parent folder in the authenticated user's Google Drive
@@ -309,7 +384,35 @@ public class GoogleDriveUploader implements Uploader {
         folder.setMimeType("application/vnd.google-apps.folder");
         folder.setParents(Collections.singletonList(parentReference));
 
-        folder = service.files().insert(folder).execute();
+        folder = service.files().insert(folder).setSupportsAllDrives(true).execute();
+
+        return folder;
+    }
+
+    /**
+     * Creates a folder with the specified name in the specified parent folder in the authenticated user's specified Shared Drive
+     * @param name the name of the folder
+     * @param parent the parent folder
+     * @return the created folder
+     * @throws Exception
+     */
+    private File createFolder(String name, String driveId) throws Exception {
+        File folder = null;
+
+        folder = getFolder(name, driveId);
+        if (folder != null) {
+            return folder;
+        }
+
+        ParentReference parentReference = new ParentReference();
+        parentReference.setId(driveId);
+
+        folder = new File();
+        folder.setTitle(name);
+        folder.setMimeType("application/vnd.google-apps.folder");
+        folder.setParents(Collections.singletonList(parentReference));
+
+        folder = service.files().insert(folder).setSupportsAllDrives(true).execute();
 
         return folder;
     }
@@ -343,10 +446,39 @@ public class GoogleDriveUploader implements Uploader {
      * @param parent the parent folder
      * @return the folder or {@code null}
      */
+    private File getFolder(String name, String driveId) {
+        try {
+            Drive.Files.List request = service.files().list()
+                .setDriveId(driveId)
+                .setSupportsAllDrives(true)
+                .setIncludeItemsFromAllDrives(true)
+                .setCorpora("drive")
+                .setQ("mimeType='application/vnd.google-apps.folder' and trashed=false");
+            FileList files = request.execute();
+            for (File folderfiles : files.getItems()) {
+                if (folderfiles.getTitle().equals(name)) {
+                    return folderfiles;
+                }
+            }
+            return null;
+        } catch (Exception e) {
+            MessageUtil.sendConsoleException(e);
+        }
+        return null;
+    }
+
+    /**
+     * Returns the folder in the specified parent folder of the authenticated user's Google Drive with the specified name
+     * @param name the name of the folder
+     * @param parent the parent folder
+     * @return the folder or {@code null}
+     */
     private File getFolder(String name, File parent) {
         try {
-            Drive.Files.List request = service.files().list().setQ(
-                    "mimeType='application/vnd.google-apps.folder' and trashed=false and '" + parent.getId() + "' in parents");
+            Drive.Files.List request = service.files().list()
+                .setSupportsAllDrives(true)
+                .setIncludeItemsFromAllDrives(true)
+                .setQ("mimeType='application/vnd.google-apps.folder' and trashed=false and '" + parent.getId() + "' in parents");
             FileList files = request.execute();
             for (File folderfiles : files.getItems()) {
                 if (folderfiles.getTitle().equals(name)) {
@@ -368,12 +500,12 @@ public class GoogleDriveUploader implements Uploader {
      */
     private File getFolder(String name) {
         try {
-            Drive.Files.List request = service.files().list().setQ(
-                    "mimeType='application/vnd.google-apps.folder' and trashed=false");
+            Drive.Files.List request = service.files().list()
+                .setSupportsAllDrives(true)
+                .setQ("mimeType='application/vnd.google-apps.folder' and trashed=false");
             FileList files = request.execute();
             for (File folderfiles : files.getItems()) {
                 if (folderfiles.getTitle().equals(name)) {
-
                     return folderfiles;
                 }
             }

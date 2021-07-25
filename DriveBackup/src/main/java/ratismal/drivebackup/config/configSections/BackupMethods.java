@@ -12,6 +12,7 @@ import static ratismal.drivebackup.config.Localization.intl;
 public class BackupMethods {
     public static class BackupMethod {
         public final boolean enabled;
+        public String sharedDriveId;
 
         public BackupMethod(boolean enabled) {
             this.enabled = enabled;
@@ -19,8 +20,9 @@ public class BackupMethods {
     }
 
     public static class GoogleDriveBackupMethod extends BackupMethod {
-        public GoogleDriveBackupMethod(boolean enabled) {
+        public GoogleDriveBackupMethod(boolean enabled, String sharedDriveId) {
             super(enabled);
+            this.sharedDriveId = sharedDriveId;
         }
     }
 
@@ -87,7 +89,8 @@ public class BackupMethods {
 
     public static BackupMethods parse(FileConfiguration config, Logger logger) {
         GoogleDriveBackupMethod googleDriveMethod = new GoogleDriveBackupMethod(
-            config.getBoolean("googledrive.enabled")
+            config.getBoolean("googledrive.enabled"),
+            config.getString("googledrive.shared-drive-id")
             );
 
         OneDriveBackupMethod oneDriveMethod = new OneDriveBackupMethod(

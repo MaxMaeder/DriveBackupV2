@@ -2,7 +2,7 @@ const { db } = require('../app.js');
 var express = require('express');
 var router = express.Router();
 
-router.get('/:user_code', async function(req, res, next) {
+router.get('/:user_code', async function(req, res) {
   var docRef = await db.collection('pins').doc(req.params.user_code).get();
   
   if (!docRef.exists) {
