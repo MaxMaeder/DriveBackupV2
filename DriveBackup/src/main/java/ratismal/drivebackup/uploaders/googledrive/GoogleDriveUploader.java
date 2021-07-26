@@ -202,7 +202,7 @@ public class GoogleDriveUploader implements Uploader {
                 }
 
                 try {
-                    if (folder == null && !sharedDriveId.isBlank()) {
+                    if (folder == null && !sharedDriveId.isEmpty()) {
                         folder = createFolder(typeFolder, sharedDriveId);
                     } else if (folder == null) {
                         folder = createFolder(typeFolder);
