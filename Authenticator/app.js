@@ -42,10 +42,7 @@ app.get('/:user_code', async function (req, res) {
   var docRef = await db.collection('pins').doc(req.params.user_code).get();
   
   if (!docRef.exists) {
-    res.send({
-      success: false,
-      msg: "code_not_valid"
-    });
+    res.send({ success: false, msg: "code_not_valid" });
   } else {
     res.redirect(docRef.data().verifyURL);
   }

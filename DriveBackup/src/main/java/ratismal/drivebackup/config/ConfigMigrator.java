@@ -60,6 +60,11 @@ public class ConfigMigrator {
             config.set("schedule-timezone", null);
         }
 
+        String googleDriveSharedDriveId = config.getString("googledrive.shared-drive-id");
+        if (googleDriveSharedDriveId == null) {
+            config.set("googledrive.shared-drive-id", "");
+        }
+
         migrate("advanced.message-prefix", "messages.prefix");
         migrate("advanced.default-message-color", "messages.default-color");
 

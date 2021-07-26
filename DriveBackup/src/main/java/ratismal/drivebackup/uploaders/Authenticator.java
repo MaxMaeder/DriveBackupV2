@@ -10,6 +10,7 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 import ratismal.drivebackup.handler.commandHandler.BasicCommands;
 import ratismal.drivebackup.plugin.DriveBackup;
+import ratismal.drivebackup.uploaders.googledrive.GoogleDriveUploader;
 import ratismal.drivebackup.util.Logger;
 import ratismal.drivebackup.util.MessageUtil;
 import ratismal.drivebackup.util.SchedulerUtil;
@@ -124,16 +125,16 @@ public class Authenticator {
 
                         if (parsedResponse.has("refresh_token")) {
                             saveRefreshToken(provider, (String) parsedResponse.get("refresh_token"));
-                            
-                            logger.log("Your " + provider.getName() + " account is linked!");
-                            
-                            enableBackupMethod(provider, logger);
 
-                            BasicCommands.sendBriefBackupList(initiator);
+                            if (provider.getId() == "googledrive") {
+                                new GoogleDriveUploader().setupSharedDrives(initiator, provider, logger);
+                            } else {
+                                Authenticator.linkSuccess(initiator, provider, logger);
+                            }
 
                             Bukkit.getScheduler().cancelTask(task[0]);
 
-                        } else if (!parsedResponse.get("msg").equals("code_not_authenticated")){
+                        } else if (!parsedResponse.get("msg").equals("code_not_authenticated")) {
                             MessageUtil.Builder().text(parsedResponse.toString()).send();
                             throw new UploadException();
                         }
@@ -144,8 +145,7 @@ public class Authenticator {
                         Bukkit.getScheduler().cancelTask(task[0]);
 
                     } catch (Exception exception) {
-                        logger.log("Failed to link your " + provider.getName() + " account, please try again");
-                        MessageUtil.sendConsoleException(exception);
+                        Authenticator.linkFail(provider, logger, exception);
 
                         Bukkit.getScheduler().cancelTask(task[0]);
                     }
@@ -154,11 +154,29 @@ public class Authenticator {
         } catch (UnknownHostException exception) {
             logger.log("Failed to link your " + provider.getName() + " account, check your network connection");
             
-        } catch (Exception e) {
-            logger.log("Failed to link your " + provider.getName() + " account");
-        
-            MessageUtil.sendConsoleException(e);
+        } catch (Exception exception) {
+            Authenticator.linkFail(provider, logger, exception);
         }
+    }
+
+    public static void linkSuccess(CommandSender initiator, AuthenticationProvider provider, Logger logger) {
+        logger.log("Your " + provider.getName() + " account is linked!");
+
+        enableBackupMethod(provider, logger);
+
+        DriveBackup.reloadLocalConfig();
+
+        BasicCommands.sendBriefBackupList(initiator);
+    }
+
+    public static void linkFail(AuthenticationProvider provider, Logger logger) {
+        logger.log("Failed to link your " + provider.getName() + " account, please try again");
+    }
+
+    public static void linkFail(AuthenticationProvider provider, Logger logger, Exception exception) {
+        logger.log("Failed to link your " + provider.getName() + " account, please try again");
+
+        MessageUtil.sendConsoleException(exception);
     }
 
     private static void saveRefreshToken(AuthenticationProvider provider, String token) throws Exception {
@@ -177,8 +195,6 @@ public class Authenticator {
             logger.log("Automatically enabled " + provider.getName() + " backups");
             plugin.getConfig().set(provider.getId() + ".enabled", true);
             plugin.saveConfig();
-            
-            DriveBackup.reloadLocalConfig();
         }
     }
 
