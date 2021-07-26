@@ -84,6 +84,8 @@ public class DriveBackup extends JavaPlugin {
      * What to do when plugin is disabled
      */
     public void onDisable() {
+        Scheduler.stopBackupThread();
+
         MessageUtil.Builder().mmText(intl("plugin-stop")).send();
     }
 
