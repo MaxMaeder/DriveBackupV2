@@ -312,11 +312,13 @@ public class UploadThread implements Runnable {
     private void doSingleBackup(String location, LocalDateTimeFormatter formatter, boolean create, List<String> blackList, List<Uploader> uploaders) {
         logger.info(intl("backup-location-start"), "location", location);
 
+        FileUtil fileUtil = new FileUtil(logger);
+
         if (create) {
             backupStatus = BackupStatus.COMPRESSING;
 
             try {
-                FileUtil.makeBackup(location, formatter, blackList);
+                fileUtil.makeBackup(location, formatter, blackList);
             } catch (IllegalArgumentException exception) {
                 logger.log(intl("backup-failed-absolute-path"));
 
@@ -335,7 +337,9 @@ public class UploadThread implements Runnable {
                 location = "root";
             }
 
-            File file = FileUtil.getNewestBackup(location, formatter);
+            File file = fileUtil
+                            .getLocalBackups(location, formatter)
+                            .descendingMap().firstEntry().getValue();
             Timer timer = new Timer();
 
             for (Uploader uploader : uploaders) {
@@ -355,7 +359,7 @@ public class UploadThread implements Runnable {
                 }
             }
 
-            FileUtil.deleteFiles(location, formatter);
+            fileUtil.pruneLocalBackups(location, formatter);
         } catch (Exception e) {
 
             logger.info(intl("backup-method-upload-failed"));
@@ -408,7 +412,7 @@ public class UploadThread implements Runnable {
 
                 for (BlacklistEntry blacklistEntry : blacklist) {
                     if (blacklistEntry.getPathMatcher().matches(Paths.get(relativeFilePath))) {
-                        blacklistEntry.incrementBlacklistedFiles();
+                        blacklistEntry.incBlacklistedFiles();
     
                         continue;
                     } 

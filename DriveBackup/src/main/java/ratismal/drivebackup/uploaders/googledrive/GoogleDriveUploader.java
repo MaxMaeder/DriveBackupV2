@@ -26,7 +26,6 @@ import ratismal.drivebackup.uploaders.Authenticator;
 import ratismal.drivebackup.uploaders.Authenticator.AuthenticationProvider;
 import ratismal.drivebackup.UploadThread.UploadLogger;
 import ratismal.drivebackup.config.ConfigParser;
-import ratismal.drivebackup.plugin.DriveBackup;
 import ratismal.drivebackup.util.MessageUtil;
 import ratismal.drivebackup.util.NetUtil;
 
@@ -66,12 +65,6 @@ public class GoogleDriveUploader implements Uploader {
      * Global instance of the JSON factory
      */
     private static final JsonFactory JSON_FACTORY = new JacksonFactory();
-
-    /**
-     * Location of the authenticated user's stored Google Drive refresh token
-     */
-    private static final String CLIENT_JSON_PATH = DriveBackup.getInstance().getDataFolder().getAbsolutePath()
-        + "/GoogleDriveCredential.json";
     
     /**
      * Google Drive API credentials

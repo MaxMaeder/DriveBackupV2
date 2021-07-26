@@ -13,7 +13,7 @@ public class BlacklistEntry {
         this.blacklistedFiles = 0;
     }
 
-    public void incrementBlacklistedFiles() {
+    public void incBlacklistedFiles() {
         blacklistedFiles++;
     }
 

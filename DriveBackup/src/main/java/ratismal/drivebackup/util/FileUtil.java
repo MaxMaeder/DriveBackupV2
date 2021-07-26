@@ -1,5 +1,6 @@
 package ratismal.drivebackup.util;
 
+import ratismal.drivebackup.UploadThread.UploadLogger;
 import ratismal.drivebackup.config.ConfigParser;
 import ratismal.drivebackup.config.ConfigParser.Config;
 
@@ -19,69 +20,78 @@ import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import static ratismal.drivebackup.config.Localization.intl;
+
 /**
  * Created by Ratismal on 2016-01-20.
  */
 
 public class FileUtil {
-    private static final TreeMap<Long, File> backupList = new TreeMap<>();
-    private static final List<String> fileList = new ArrayList<>();
-    private static List<BlacklistEntry> blacklist = new ArrayList<>();
-    private static int backupFiles = 0;
+    private UploadLogger logger;
+
+    public FileUtil(UploadLogger logger) {
+        this.logger = logger;
+    }
 
     /**
-     * Gets the most recent backup of the specified backup type
-     * @param type the type of back up (world, plugin, etc)
+     * Gets the local backups in the specified folder as a {@code TreeMap} with their creation date and a reference to them
+     * @param location the location of the folder containing the backups
      * @param formatter the format of the file name
-     * @return The file to upload
+     * @return The list of backups
      */
-    public static File getNewestBackup(String type, LocalDateTimeFormatter formatter) {
-        type = type.replace("../", "");
+    public TreeMap<Long, File> getLocalBackups(String location, LocalDateTimeFormatter formatter) {
+        location = escapeBackupLocation(location);
 
-        backupList.clear();
-        String path = new File(ConfigParser.getConfig().backupStorage.localDirectory).getAbsolutePath() + "/" + type;
+        TreeMap<Long, File> backupList = new TreeMap<>();
+        String path = new File(ConfigParser.getConfig().backupStorage.localDirectory).getAbsolutePath() + "/" + location;
         File[] files = new File(path).listFiles();
 
         for (File file : files) {
             if (file.getName().endsWith(".zip")) {
 
-                String dateString = file.getName();
+                String fileName = file.getName();
 
                 try {
-                    ZonedDateTime date = formatter.parse(dateString);
+                    ZonedDateTime date = formatter.parse(fileName);
                     backupList.put(date.toEpochSecond(), file);
                 } catch (Exception e) {
                     backupList.put(0L, file);
-                    MessageUtil.Builder().text("Unable to parse date format of stored backup \"" + dateString + "\", this can be due to the date format being updated in the config.yml").send();
-                    MessageUtil.Builder().text("Backup will be deleted first").send();
+                    logger.log(intl("file-date-format-invalid"), "file-name", fileName);
                 }
             }
         }
 
-        return backupList.descendingMap().firstEntry().getValue();
+        return backupList;
     }
 
     /**
-     * Creates a local backup zip file for the specified backup type
-     * @param type what to back up (world, plugin, etc)
+     * Creates a local backup zip file for the specified file/folder
+     * @param location the location of the file or folder
      * @param formatter the format of the file name
      * @param blacklistGlobs a list of glob patterns of files/folders to not include in the backup
      * @throws Exception
      */
-    public static void makeBackup(String type, LocalDateTimeFormatter formatter, List<String> blacklistGlobs) throws Exception {
+    public void makeBackup(String location, LocalDateTimeFormatter formatter, List<String> blacklistGlobs) throws Exception {
         Config config = ConfigParser.getConfig();
 
-        if (type.charAt(0) == '/') {
+        if (location.charAt(0) == '/') {
             throw new IllegalArgumentException(); 
         }
-
-        fileList.clear();
 
         ZonedDateTime now = ZonedDateTime.now(config.advanced.dateTimezone);
         String fileName = formatter.format(now);
 
-        blacklist.clear();
-        backupFiles = 0;
+        String subfolderName = location;
+        if (isBaseFolder(subfolderName)) {
+            subfolderName = "root";
+        }
+
+        File path = new File(escapeBackupLocation(config.backupStorage.localDirectory + "/" + subfolderName));
+        if (!path.exists()) {
+            path.mkdirs();
+        }
+
+        List<BlacklistEntry> blacklist = new ArrayList<>();
         for (String blacklistGlob : blacklistGlobs) {
             BlacklistEntry blacklistEntry = new BlacklistEntry(
                 blacklistGlob, 
@@ -91,52 +101,50 @@ public class FileUtil {
             blacklist.add(blacklistEntry);
         }
 
-        String subfolderName = type;
-        if (isBaseFolder(subfolderName)) {
-            subfolderName = "root";
-        }
+        BackupFileList fileList = generateFileList(location, blacklist);
 
-        File path = new File((config.backupStorage.localDirectory + "/" + subfolderName).replace("../", "")); // Keeps working directory inside backups folder
-        if (!path.exists()) {
-            path.mkdirs();
-        }
-
-        generateFileList(type);
-
-        for (BlacklistEntry blacklistEntry : blacklist) {
+        for (BlacklistEntry blacklistEntry : fileList.getBlacklist()) {
             String globPattern = blacklistEntry.getGlobPattern();
             int blacklistedFiles = blacklistEntry.getBlacklistedFiles();
 
             if (blacklistedFiles > 0) {
-                MessageUtil.Builder().text("Didn't include " + blacklistedFiles + " file(s) in the backup, as they are blacklisted by \"" + globPattern + "\"").toConsole(true).send();
+                logger.info(
+                    intl("local-backup-backlisted"),
+                    "blacklisted-files-count", String.valueOf(blacklistedFiles),
+                    "glob-pattern", globPattern);
             }
         }
 
-        if (backupFiles > 0) {
-            MessageUtil.Builder().text("Didn't include " + backupFiles + " file(s) in the backup, as they are in the folder used for backups").toConsole(true).send();
+        int filesInBackupFolder = fileList.getFilesInBackupFolder();
+        if (filesInBackupFolder > 0) {
+            logger.info(
+                intl("local-backup-in-backup-folder"), 
+                "files-in-backup-folder-count", String.valueOf(filesInBackupFolder));
         }
 
-        zipIt(type, path.getPath() + "/" + fileName);
+        zipIt(location, path.getPath() + "/" + fileName, fileList);
     }
 
     /**
      * Deletes the oldest files in the specified folder past the number to retain locally
      * <p>
      * The number of files to retain locally is specified by the user in the {@code config.yml}
-     * @param type the type of file (ex. plugins, world)
+     * @param location the location of the folder containing the backups
      * @param formatter the format of the files name
-     * @throws IOException
      */
-    public static void deleteFiles(String type, LocalDateTimeFormatter formatter) throws IOException {
+    public void pruneLocalBackups(String location, LocalDateTimeFormatter formatter) {
         int localKeepCount = ConfigParser.getConfig().backupStorage.localKeepCount;
-        type = type.replace("../", "");
+        location = escapeBackupLocation(location);
 
         if (localKeepCount != -1) {
             try {
-                getNewestBackup(type, formatter);
+                TreeMap<Long, File> backupList = getLocalBackups(location, formatter);
 
                 if (backupList.size() > localKeepCount) {
-                    MessageUtil.Builder().text("There are " + backupList.size() + " file(s) which exceeds the local limit of " + localKeepCount + ", deleting oldest").toConsole(true).send();
+                    logger.info(
+                        intl("local-backup-limit-reached"),
+                        "backup-count", String.valueOf(backupList.size()),
+                        "backup-limit", String.valueOf(localKeepCount));
                 }
                 
 
@@ -145,14 +153,16 @@ public class FileUtil {
                     long dateOfFile = backupList.descendingMap().lastKey();
 
                     if (!fileToDelete.delete()) {
-                        MessageUtil.Builder().text("Failed to delete local backup \"" + fileToDelete.getName() + "\"").toConsole(true).send();
+                        logger.log(
+                            intl("local-backup-file-failed-to-delete"),
+                            "local-backup-name", fileToDelete.getName());
                     }
                     
                     backupList.remove(dateOfFile);
                 }
             } catch (Exception e) {
+                logger.log(intl("local-backup-failed-to-delete"));
                 MessageUtil.sendConsoleException(e);
-                MessageUtil.Builder().text("Local backup deletion failed").toConsole(true).send();
             }
         }
     }
@@ -161,8 +171,9 @@ public class FileUtil {
      * Zips files in the specified folder into the specified file location
      * @param inputFolderPath the path of the zip file to create
      * @param outputFilePath the path of the folder to put it in
+     * @param fileList
      */
-    private static void zipIt(String inputFolderPath, String outputFilePath) throws Exception {
+    private void zipIt(String inputFolderPath, String outputFilePath, BackupFileList fileList) throws Exception {
         byte[] buffer = new byte[1024];
         FileOutputStream fileOutputStream;
         ZipOutputStream zipOutputStream = null;
@@ -177,7 +188,7 @@ public class FileUtil {
             zipOutputStream = new ZipOutputStream(fileOutputStream);
             zipOutputStream.setLevel(ConfigParser.getConfig().backupStorage.zipCompression);
 
-            for (String file : fileList) {
+            for (String file : fileList.getList()) {
                 zipOutputStream.putNextEntry(new ZipEntry(formattedInputFolderPath + "/" + file));
 
                 try (FileInputStream fileInputStream = new FileInputStream(inputFolderPath + "/" + file)) {
@@ -190,7 +201,9 @@ public class FileUtil {
                     String filePath = new File(inputFolderPath, file).getPath();
 
                     if (!filePath.endsWith(".lock")) { // Don't send warning for .lock files, they will always be locked
-                        MessageUtil.Builder().text("Failed to include \"" + filePath + "\" in the backup, is it locked?").toConsole(true).send();
+                        logger.info(
+                            intl("local-backup-failed-to-include"),
+                            "file-path", filePath);
                     }
                 }
 
@@ -208,47 +221,96 @@ public class FileUtil {
     }
 
     /**
+     * A list of files to put in a zip file
+     * Mutable
+     */
+    private static class BackupFileList {
+        int filesInBackupFolder;
+        List<String> fileList;
+        List<BlacklistEntry> blacklist;
+
+        BackupFileList(List<BlacklistEntry> blacklist) {
+            this.filesInBackupFolder = 0;
+            this.fileList = new ArrayList<>();
+            this.blacklist = blacklist;
+        }
+
+        void incFilesInBackupFolder() {
+            filesInBackupFolder++;
+        }
+
+        public int getFilesInBackupFolder() {
+            return filesInBackupFolder;
+        }
+
+        void appendToList(String file) {
+            fileList.add(file);
+        }
+
+        List<String> getList() {
+            return fileList;
+        }
+
+        List<BlacklistEntry> getBlacklist() {
+            return blacklist;
+        }
+    }
+
+    /**
      * Generates a list of files to put in the zip created from the specified folder
      * @param inputFolderPath The path of the folder to create the zip from
      * @throws Exception
      */
-    private static void generateFileList(String inputFolderPath) throws Exception {
-        generateFileList(new File(inputFolderPath), inputFolderPath);
+    private BackupFileList generateFileList(String inputFolderPath, List<BlacklistEntry> blacklist) throws Exception {
+        BackupFileList fileList = new BackupFileList(blacklist);
+
+        generateFileList(new File(inputFolderPath), inputFolderPath, fileList);
+
+        return fileList;
     }
 
     /**
-     * Adds the specified file or folder to the generated list of files to put in the zip created from the specified folder
+     * Adds the specified file or folder to the list of files to put in the zip created from the specified folder
      * @param file the file or folder to add
-     * @param inputFolderPath the path of the folder to create the zip from
+     * @param inputFolderPath the path of the folder to create the zip 
+     * @param fileList the list of files to add the specified file or folder to
      * @throws Exception
      */
-    private static void generateFileList(File file, String inputFolderPath) throws Exception {
+    private void generateFileList(File file, String inputFolderPath, BackupFileList fileList) throws Exception {
 
         if (file.isFile()) {
             // Verify not backing up previous backups
             if (file.getCanonicalPath().startsWith(new File(ConfigParser.getConfig().backupStorage.localDirectory).getCanonicalPath())) {
-                backupFiles++;
+                fileList.incFilesInBackupFolder();;
 
                 return;
             }
 
             Path relativePath = Paths.get(inputFolderPath).relativize(file.toPath());
 
-            for (BlacklistEntry blacklistEntry : blacklist) {
+            for (BlacklistEntry blacklistEntry : fileList.getBlacklist()) {
                 if (blacklistEntry.getPathMatcher().matches(relativePath)) {
-                    blacklistEntry.incrementBlacklistedFiles();
+                    blacklistEntry.incBlacklistedFiles();
 
                     return;
                 }
             }
-            fileList.add(relativePath.toString());
-        }
 
-        if (file.isDirectory()) {
+            fileList.appendToList(relativePath.toString());
+        } else {
             for (String filename : file.list()) {
-                generateFileList(new File(file, filename), inputFolderPath);
+                generateFileList(new File(file, filename), inputFolderPath, fileList);
             }
         }
+    }
+
+    /**
+     * Removes ".." from the location string in order to keep the location's backup folder within the local-save-directory
+     * @param location the unescaped location
+     * @return the escaped location
+     */
+    private static String escapeBackupLocation(String location) {
+        return location.replace("../", "");
     }
 
     /**
