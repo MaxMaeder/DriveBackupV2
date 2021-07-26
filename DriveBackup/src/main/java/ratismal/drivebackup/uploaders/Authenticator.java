@@ -8,6 +8,8 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+import ratismal.drivebackup.UploadThread.UploadLogger;
+import ratismal.drivebackup.config.Permissions;
 import ratismal.drivebackup.handler.commandHandler.BasicCommands;
 import ratismal.drivebackup.plugin.DriveBackup;
 import ratismal.drivebackup.uploaders.googledrive.GoogleDriveUploader;
@@ -127,7 +129,17 @@ public class Authenticator {
                             saveRefreshToken(provider, (String) parsedResponse.get("refresh_token"));
 
                             if (provider.getId() == "googledrive") {
-                                new GoogleDriveUploader().setupSharedDrives(initiator, provider, logger);
+                                UploadLogger uploadLogger = new UploadLogger() {
+                                    @Override
+                                    public void log(String input, String... placeholders) {
+                                        MessageUtil.Builder()
+                                            .mmText(input, placeholders)
+                                            .to(initiator)
+                                            .send();
+                                    }
+                                };
+
+                                new GoogleDriveUploader(uploadLogger).setupSharedDrives(initiator);
                             } else {
                                 Authenticator.linkSuccess(initiator, provider, logger);
                             }

@@ -26,6 +26,8 @@ import ratismal.drivebackup.uploaders.Authenticator;
 import ratismal.drivebackup.uploaders.Authenticator.AuthenticationProvider;
 import ratismal.drivebackup.UploadThread.UploadLogger;
 import ratismal.drivebackup.config.ConfigParser;
+import ratismal.drivebackup.plugin.DriveBackup;
+import ratismal.drivebackup.util.Logger;
 import ratismal.drivebackup.util.MessageUtil;
 import ratismal.drivebackup.util.NetUtil;
 
@@ -284,11 +286,10 @@ public class GoogleDriveUploader implements Uploader {
 
     /**
      * Setup for authenticated user that has access to one or more shared drives.
-     * @param name the name of the team drive
-     * @return the ID of the team drive
      * @throws Exception
      */
-    public boolean setupSharedDrives(CommandSender initiator, AuthenticationProvider provider, Logger logger) throws Exception {
+    public boolean setupSharedDrives(CommandSender initiator) throws Exception {
+        AuthenticationProvider provider = AuthenticationProvider.GOOGLE_DRIVE;
         List<com.google.api.services.drive.model.Drive> drives = service.drives().list().execute().getItems();
 
         if (drives.size() > 0) {

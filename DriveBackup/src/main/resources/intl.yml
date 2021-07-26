@@ -43,10 +43,7 @@ backup-already-running: |
 backup-skipped-inactivity: "Skipping backup due to inactivity"
 backup-no-methods: "No backup method is enabled"
 backup-empty-list: "The backup list is empty"
-file-backup-message: "File uploaded in <length> seconds (<speed>KB/s)"
-file-date-format-invalid: |
-  Unable to parse date format of stored backup \"<file-name>"\", this can be due to the date format being updated in the config.yml
-  Backup will be the first deleted
+file-upload-message: "File uploaded in <length> seconds (<speed>KB/s)"
 backup-start: "Creating backups, the server may lag for a little while..."
 external-ftp-backup-start: "Downloading files from a (S)FTP server (<socket-addr>) to include in backup"
 external-ftp-backup-blacklisted: "Didn't include <blacklisted-files> file(s) in the backup from the external (S)FTP server, as they are blacklisted by \"<glob-pattern>\""
@@ -56,6 +53,9 @@ external-mysql-backup-start: "Downloading databases from a MySQL server (<socket
 external-mysql-backup-blacklisted: "Didn't include table \"<blacklist-entry>\" in the backup, as it is blacklisted"
 external-mysql-backup-failed: Failed to include databases from a MySQL server (<socket-addr>) in the backup, please check the server credentials in the <gold>config.yml</gold>
 external-mysql-backup-complete: "Databases from a MySQL server (<socket-addr>) were successfully included in the backup"
+local-backup-date-format-invalid: |
+  Unable to parse date format of stored backup \"<file-name>"\", this can be due to the date format being updated in the config.yml
+  Backup will be the first deleted
 local-backup-backlisted: "Didn't include <blacklisted-files-count> file(s) in the backup, as they are blacklisted by \"<glob-pattern>\""
 local-backup-in-backup-folder: "Didn't include <files-in-backup-folder-count> file(s) in the backup, as they are in the folder used for backups"
 local-backup-failed-to-include: "Failed to include \"<file-path>\" in the backup, is it locked? Do you have permission to access it?"

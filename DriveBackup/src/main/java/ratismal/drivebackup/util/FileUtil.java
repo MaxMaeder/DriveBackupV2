@@ -56,7 +56,7 @@ public class FileUtil {
                     backupList.put(date.toEpochSecond(), file);
                 } catch (Exception e) {
                     backupList.put(0L, file);
-                    logger.log(intl("file-date-format-invalid"), "file-name", fileName);
+                    logger.log(intl("local-backup-date-format-invalid"), "file-name", fileName);
                 }
             }
         }

@@ -53,7 +53,7 @@ public class Timer {
         double length = difference / 1000;
         double speed = (file.length() / 1024) / length;
         
-        return intl("file-backup-message")
+        return intl("file-upload-message")
             .replace("<length>", df.format(length))
             .replace("<speed>", df.format(speed));
     }
