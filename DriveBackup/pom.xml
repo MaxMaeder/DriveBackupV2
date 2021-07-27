@@ -39,6 +39,10 @@
                     <createDependencyReducedPom>false</createDependencyReducedPom>
                     <relocations>
                         <relocation>
+                            <pattern>${env.CREDENTIAL_STORE_GROUP_ID}</pattern>
+                            <shadedPattern>ratismal.drivebackup.DriveBackup.lib</shadedPattern>
+                        </relocation>
+                        <relocation>
                             <pattern>org.bstats</pattern>
                             <shadedPattern>ratismal.drivebackup.DriveBackup.lib</shadedPattern>
                         </relocation>
@@ -168,6 +172,11 @@
             <version>1.9-R0.1-SNAPSHOT</version>
             <type>jar</type>
             <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>${env.CREDENTIAL_STORE_GROUP_ID}</groupId>
+            <artifactId>${env.CREDENTIAL_STORE_ARTIFACT_ID}</artifactId>
+            <version>1.0</version>
         </dependency>
         <dependency>
             <groupId>com.google.apis</groupId>
