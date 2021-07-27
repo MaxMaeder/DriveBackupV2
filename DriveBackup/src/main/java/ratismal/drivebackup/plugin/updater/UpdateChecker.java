@@ -99,7 +99,6 @@ public class UpdateChecker {
     public Version getLatest() throws Exception {
         Request request = new Request.Builder()
             .url("https://api.curseforge.com/servermods/files?projectids=" + BUKKIT_PROJECT_ID)
-            .post(RequestBody.create("", null)) // Send empty request body
             .build();
 
         Response response = httpClient.newCall(request).execute();
