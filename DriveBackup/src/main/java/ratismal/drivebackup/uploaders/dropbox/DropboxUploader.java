@@ -16,6 +16,7 @@ import java.util.concurrent.TimeUnit;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import main.java.credentials.DropboxCredentials;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.event.ClickEvent;
@@ -50,8 +51,8 @@ public class DropboxUploader implements Uploader {
     /**
      * Dropbox API credentials
      */
-    private static final String APP_KEY = "***REMOVED***";
-    private static final String APP_SECRET = "***REMOVED***";
+    private static final String APP_KEY = DropboxCredentials.CLIENT_ID;
+    private static final String APP_SECRET = DropboxCredentials.CLIENT_SECRET;
 
     /**
      * Tests the Dropbox account by uploading a small file

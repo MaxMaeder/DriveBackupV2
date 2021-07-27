@@ -15,6 +15,7 @@ import okhttp3.Response;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import main.java.credentials.OneDriveCredentials;
 import ratismal.drivebackup.uploaders.Authenticator;
 import ratismal.drivebackup.uploaders.Uploader;
 import ratismal.drivebackup.uploaders.Authenticator.AuthenticationProvider;
@@ -72,7 +73,7 @@ public class OneDriveUploader implements Uploader {
     /**
      * OneDrive API credentials
      */
-    private static final String CLIENT_ID = "***REMOVED***";
+    private static final String CLIENT_ID = OneDriveCredentials.CLIENT_ID;
     
     /**
      * Creates an instance of the {@code OneDriveUploader} object
