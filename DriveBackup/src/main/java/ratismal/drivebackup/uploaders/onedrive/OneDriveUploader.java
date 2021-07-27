@@ -32,6 +32,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import main.java.credentials.OneDriveCredentials;
+
 import static ratismal.drivebackup.config.Localization.intl;
 
 /**
@@ -68,11 +70,6 @@ public class OneDriveUploader implements Uploader {
      * File upload buffer
      */
     private RandomAccessFile raf;
-
-    /**
-     * OneDrive API credentials
-     */
-    private static final String CLIENT_ID = "***REMOVED***";
     
     /**
      * Creates an instance of the {@code OneDriveUploader} object
@@ -95,7 +92,7 @@ public class OneDriveUploader implements Uploader {
      */
     private void retrieveNewAccessToken() throws Exception {
         RequestBody requestBody = new FormBody.Builder()
-            .add("client_id", CLIENT_ID)
+            .add("client_id", OneDriveCredentials.CLIENT_ID)
             .add("scope", "offline_access Files.ReadWrite")
             .add("refresh_token", refreshToken)
             .add("grant_type", "refresh_token")

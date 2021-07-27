@@ -39,7 +39,7 @@
                     <createDependencyReducedPom>false</createDependencyReducedPom>
                     <relocations>
                         <relocation>
-                            <pattern>${env.CREDENTIAL_STORE_GROUP_ID}</pattern>
+                            <pattern>com.github.maxmaeder</pattern>
                             <shadedPattern>ratismal.drivebackup.DriveBackup.lib</shadedPattern>
                         </relocation>
                         <relocation>
@@ -164,6 +164,13 @@
   			<id>CodeMC</id>
   			<url>https://repo.codemc.org/repository/maven-public</url>
 		</repository>
+        <repository>
+            <id>github</id>
+            <name>GitHub MaxMaeder DriveBackupV2-Credentials Packages</name>
+            <url>https://maven.pkg.github.com/MaxMaeder/DriveBackupV2-Credentials</url>
+            <releases><enabled>true</enabled></releases>
+            <snapshots><enabled>true</enabled></snapshots>
+        </repository>
     </repositories>
     <dependencies>
         <dependency>
@@ -174,8 +181,8 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>${env.CREDENTIAL_STORE_GROUP_ID}</groupId>
-            <artifactId>${env.CREDENTIAL_STORE_ARTIFACT_ID}</artifactId>
+            <groupId>com.github.maxmaeder</groupId>
+            <artifactId>drivebackupv2-credentials</artifactId>
             <version>1.0</version>
         </dependency>
         <dependency>

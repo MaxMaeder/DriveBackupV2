@@ -14,6 +14,8 @@ var providerRouter = require('./routes/provider');
 var callbackRouter = require('./routes/callback');
 var tokenRouter = require('./routes/token');
 
+var tokenRouter = require('./routes/token');
+
 var app = express();
 
 app.use(compression());
@@ -21,10 +23,18 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(express.static(__dirname + '/public'));
 
-app.use('/pin', pinRouter);
+const authMiddleware = (req, res, next) => {
+  if (req.params.client_secret === process.env.AUTHENTICATOR_CLIENT_SECRET) {
+    return next();
+  }
+
+  res.send({ success: false, msg: 'request_unauthenticated' });
+}
+
+app.use('/pin', authMiddleware, pinRouter);
 app.use('/provider', providerRouter);
 app.use('/callback', callbackRouter);
-app.use('/token', tokenRouter);
+app.use('/token', authMiddleware, tokenRouter);
 
 app.get('/', function (req, res) {
   res.sendFile(__dirname + '/views/index.html');
@@ -39,7 +49,7 @@ app.get('/about', function(req, res) {
 });
 
 app.get('/:user_code', async function (req, res) {
-  var docRef = await db.collection('pins').doc(req.params.user_code).get();
+  var docRef = await db.collection('pins').doc(req.params.user_code.toUpperCase()).get();
   
   if (!docRef.exists) {
     res.send({ success: false, msg: "code_not_valid" });

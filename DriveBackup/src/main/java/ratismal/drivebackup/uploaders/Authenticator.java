@@ -9,7 +9,6 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 import ratismal.drivebackup.UploadThread.UploadLogger;
-import ratismal.drivebackup.config.Permissions;
 import ratismal.drivebackup.handler.commandHandler.BasicCommands;
 import ratismal.drivebackup.plugin.DriveBackup;
 import ratismal.drivebackup.uploaders.googledrive.GoogleDriveUploader;
@@ -24,6 +23,8 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.UnknownHostException;
+
+import main.java.credentials.AuthenticatorCredentials;
 
 import static ratismal.drivebackup.config.Localization.intl;
 
@@ -84,7 +85,9 @@ public class Authenticator {
 
         try {
             RequestBody requestBody = new FormBody.Builder()
+                .add("client_secret", AuthenticatorCredentials.CLIENT_SECRET)
                 .add("type", provider.getId())
+                
                 .build();
 
             Request request = new Request.Builder()
@@ -112,6 +115,7 @@ public class Authenticator {
                 public void run() {
                     try {
                         RequestBody requestBody = new FormBody.Builder()
+                            .add("client_secret", AuthenticatorCredentials.CLIENT_SECRET)
                             .add("device_code", deviceCode)
                             .add("user_code", userCode)
                             .build();

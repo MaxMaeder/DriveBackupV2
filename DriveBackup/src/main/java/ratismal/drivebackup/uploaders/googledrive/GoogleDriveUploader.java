@@ -27,7 +27,6 @@ import ratismal.drivebackup.uploaders.Authenticator.AuthenticationProvider;
 import ratismal.drivebackup.UploadThread.UploadLogger;
 import ratismal.drivebackup.config.ConfigParser;
 import ratismal.drivebackup.plugin.DriveBackup;
-import ratismal.drivebackup.util.Logger;
 import ratismal.drivebackup.util.MessageUtil;
 import ratismal.drivebackup.util.NetUtil;
 
@@ -41,6 +40,8 @@ import java.util.concurrent.TimeUnit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.conversations.*;
 import org.json.JSONObject;
+
+import main.java.credentials.GoogleDriveCredentials;
 
 import static ratismal.drivebackup.config.Localization.intl;
 
@@ -69,12 +70,6 @@ public class GoogleDriveUploader implements Uploader {
      * Global instance of the JSON factory
      */
     private static final JsonFactory JSON_FACTORY = new JacksonFactory();
-    
-    /**
-     * Google Drive API credentials
-     */
-    private static final String CLIENT_ID = "${env.GOOGLE_CLIENT_ID}";
-    private static final String CLIENT_SECRET = "${env.GOOGLE_CLIENT_SECRET}";
 
     /**
      * Global Google Drive API client
@@ -87,10 +82,6 @@ public class GoogleDriveUploader implements Uploader {
      */
     public GoogleDriveUploader(UploadLogger logger) {
         this.logger = logger;
-
-        logger.broadcast("Client");
-        logger.broadcast(CLIENT_ID);
-        logger.broadcast(CLIENT_SECRET);
 
         try {
             refreshToken = Authenticator.getRefreshToken(AuthenticationProvider.GOOGLE_DRIVE);
@@ -106,8 +97,8 @@ public class GoogleDriveUploader implements Uploader {
      */
     private void retrieveNewAccessToken() throws Exception {
         RequestBody requestBody = new FormBody.Builder()
-            .add("client_id", CLIENT_ID)
-            .add("client_secret", CLIENT_SECRET)
+            .add("client_id", GoogleDriveCredentials.CLIENT_ID)
+            .add("client_secret", GoogleDriveCredentials.CLIENT_SECRET)
             .add("refresh_token", refreshToken)
             .add("grant_type", "refresh_token")
             .build();

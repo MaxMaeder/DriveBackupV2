@@ -28,6 +28,8 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
+import main.java.credentials.DropboxCredentials;
+
 import static ratismal.drivebackup.config.Localization.intl;
 
 public class DropboxUploader implements Uploader {
@@ -46,12 +48,6 @@ public class DropboxUploader implements Uploader {
      */
     private String accessToken;
     private String refreshToken;
-
-    /**
-     * Dropbox API credentials
-     */
-    private static final String APP_KEY = "***REMOVED***";
-    private static final String APP_SECRET = "***REMOVED***";
 
     /**
      * Tests the Dropbox account by uploading a small file
@@ -324,8 +320,8 @@ public class DropboxUploader implements Uploader {
      */
     private void retrieveNewAccessToken() throws Exception {
         RequestBody requestBody = new FormBody.Builder()
-            .add("client_id", APP_KEY)
-            .add("client_secret", APP_SECRET)
+            .add("client_id", DropboxCredentials.CLIENT_ID)
+            .add("client_secret", DropboxCredentials.CLIENT_SECRET)
             .add("refresh_token", refreshToken)
             .add("grant_type", "refresh_token")
             .build();
