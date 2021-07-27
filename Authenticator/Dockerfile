@@ -1,6 +1,6 @@
 
 # Use the official lightweight Node.js 14 image.
-FROM node:14-slim
+FROM node:16-slim
 
 # Create and change to the app directory.
 WORKDIR /usr/src/app
