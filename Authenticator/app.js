@@ -24,7 +24,7 @@ app.use(express.urlencoded({ extended: false }));
 app.use(express.static(__dirname + '/public'));
 
 const authMiddleware = (req, res, next) => {
-  if (req.params.client_secret === process.env.AUTHENTICATOR_CLIENT_SECRET) {
+  if (req.body.client_secret === process.env.AUTHENTICATOR_CLIENT_SECRET) {
     return next();
   }
 
