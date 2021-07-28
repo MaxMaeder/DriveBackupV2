@@ -257,7 +257,7 @@ public class UploadThread implements Runnable {
             } else {
                 logger.log(
                     intl("backup-method-complete"), 
-                    "backup-method", uploaders.get(i).getName());
+                    "upload-method", uploaders.get(i).getName());
             }
         }
 
