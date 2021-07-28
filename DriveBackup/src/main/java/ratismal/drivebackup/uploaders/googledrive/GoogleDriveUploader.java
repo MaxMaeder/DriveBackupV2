@@ -192,18 +192,12 @@ public class GoogleDriveUploader implements Uploader {
                     continue;
                 }
 
-                try {
-                    if (folder == null && !sharedDriveId.isEmpty()) {
-                        folder = createFolder(typeFolder, sharedDriveId);
-                    } else if (folder == null) {
-                        folder = createFolder(typeFolder);
-                    } else {
-                        folder = createFolder(typeFolder, folder);
-                    }
-                } catch (Exception exception) {
-                    logger.log("Failed to create folder(s) in Google Drive, these folders MUST NOT exist before the plugin creates them.");
-
-                    throw exception;
+                if (folder == null && !sharedDriveId.isEmpty()) {
+                    folder = createFolder(typeFolder, sharedDriveId);
+                } else if (folder == null) {
+                    folder = createFolder(typeFolder);
+                } else {
+                    folder = createFolder(typeFolder, folder);
                 }
             }
 
