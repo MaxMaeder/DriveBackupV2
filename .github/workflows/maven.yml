@@ -1,6 +1,12 @@
 name: DriveBackupV2 CI
 
-on: [push, pull_request]
+on:
+  push:
+    paths:
+      - 'DriveBackup/**'
+  pull_request:
+    paths:
+      - 'DriveBackup/**'
 
 jobs:
   build:
