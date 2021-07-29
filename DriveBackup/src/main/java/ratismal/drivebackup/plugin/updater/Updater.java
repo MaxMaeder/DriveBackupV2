@@ -30,8 +30,8 @@ public class Updater {
      *
      * @param plugin The plugin that is checking for an update.
      */
-    public Updater(DriveBackup plugin, File file) {
-        this.plugin = plugin;
+    public Updater(File file) {
+        this.plugin = DriveBackup.getInstance();
         this.file = file;
         this.updateFolder = this.plugin.getDataFolder().getParentFile();
     }

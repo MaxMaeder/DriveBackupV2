@@ -6,7 +6,6 @@ import org.json.JSONArray;
 
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
-import okhttp3.RequestBody;
 import okhttp3.Response;
 import ratismal.drivebackup.config.ConfigParser;
 import ratismal.drivebackup.plugin.DriveBackup;
@@ -33,7 +32,7 @@ public class UpdateChecker {
 
     public static void updateCheck() {
         DriveBackup plugin = DriveBackup.getInstance();
-        UpdateChecker checker = new UpdateChecker(plugin);
+        UpdateChecker checker = new UpdateChecker();
 
         plugin.getServer().getScheduler().runTask(plugin, new Runnable() {
 
@@ -85,14 +84,8 @@ public class UpdateChecker {
         return latestDownloadUrl;
     }
 
-    private DriveBackup plugin;
-
-    UpdateChecker(DriveBackup plugin) {
-        this.plugin = plugin;
-    };
-
     public Version getCurrent() throws Exception {
-        String versionTitle = plugin.getDescription().getVersion().split("-")[0];
+        String versionTitle = DriveBackup.getInstance().getDescription().getVersion().split("-")[0];
         return Version.parse(versionTitle);
     }
 

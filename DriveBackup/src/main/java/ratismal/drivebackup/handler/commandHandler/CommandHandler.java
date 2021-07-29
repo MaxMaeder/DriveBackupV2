@@ -22,16 +22,6 @@ import static ratismal.drivebackup.config.Localization.intl;
 public class CommandHandler implements CommandExecutor {
     public static final String CHAT_KEYWORD = "drivebackup";
 
-    private DriveBackup plugin;
-
-    /**
-     * Creates an instance of the {@code CommandHandler} object
-     * @param plugin a reference to the plugin
-     */
-    public CommandHandler(DriveBackup plugin) {
-        this.plugin = plugin;
-    }
-
     /**
      * Handles commands sent by players
      * @param sender the player who sent command
@@ -68,8 +58,8 @@ public class CommandHandler implements CommandExecutor {
 
                 MessageUtil.Builder().mmText(intl("debug-log-creating")).to(sender).toConsole(false).send();
 
-                DebugCollector debugInfo = new DebugCollector(this.plugin);
-                String publishedUrl = debugInfo.publish(this.plugin);
+                DebugCollector debugInfo = new DebugCollector(DriveBackup.getInstance());
+                String publishedUrl = debugInfo.publish(DriveBackup.getInstance());
                 MessageUtil.Builder()
                     .mmText(intl("debug-log-created"), "url", publishedUrl)
                     .to(sender).toConsole(false)

@@ -9,24 +9,12 @@ import org.bukkit.command.TabCompleter;
 
 import ratismal.drivebackup.config.ConfigParser;
 import ratismal.drivebackup.config.configSections.BackupMethods;
-import ratismal.drivebackup.plugin.DriveBackup;
 
 /**
  * Created by Ratismal on 2016-01-20.
  */
 
 public class CommandTabComplete implements TabCompleter {
-
-    private DriveBackup plugin;
-
-    /**
-     * CommandTabComplete constructor
-     *
-     * @param plugin DriveBackup plugin
-     */
-    public CommandTabComplete(DriveBackup plugin) {
-        this.plugin = plugin;
-    }
 
     /**
      * Command tab completer

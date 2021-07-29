@@ -66,8 +66,8 @@ public class DriveBackup extends JavaPlugin {
             .mmText(intl("config-loaded"))
             .send();
 
-        getCommand(CommandHandler.CHAT_KEYWORD).setTabCompleter(new CommandTabComplete(plugin));
-        getCommand(CommandHandler.CHAT_KEYWORD).setExecutor(new CommandHandler(plugin));
+        getCommand(CommandHandler.CHAT_KEYWORD).setTabCompleter(new CommandTabComplete());
+        getCommand(CommandHandler.CHAT_KEYWORD).setExecutor(new CommandHandler());
 
         PluginManager pm = getServer().getPluginManager();
         pm.registerEvents(new PlayerListener(), plugin);
@@ -76,7 +76,7 @@ public class DriveBackup extends JavaPlugin {
 
         BstatsMetrics.initMetrics();
 
-        updater = new Updater(plugin, this.getFile());
+        updater = new Updater(this.getFile());
         UpdateChecker.updateCheck();
     }
 
