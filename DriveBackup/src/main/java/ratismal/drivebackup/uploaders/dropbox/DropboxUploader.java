@@ -17,11 +17,6 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import main.java.credentials.DropboxCredentials;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.TextComponent;
-import net.kyori.adventure.text.event.ClickEvent;
-import net.kyori.adventure.text.event.HoverEvent;
-import net.kyori.adventure.text.format.NamedTextColor;
 import okhttp3.FormBody;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
@@ -361,20 +356,6 @@ public class DropboxUploader implements Uploader {
 
     public AuthenticationProvider getAuthProvider() {
         return AuthenticationProvider.DROPBOX;
-    }
-
-    /**
-     * Gets the setup instructions for this uploaders
-     * 
-     * @return a Component explaining how to set up this uploader
-     */
-    public TextComponent getSetupInstructions() {
-        return Component.text()
-            .append(Component.text("Failed to backup to Dropbox, please run ").color(NamedTextColor.DARK_AQUA))
-            .append(Component.text("/drivebackup linkaccount dropbox").color(NamedTextColor.GOLD)
-                .hoverEvent(HoverEvent.showText(Component.text("Run command")))
-                .clickEvent(ClickEvent.runCommand("/drivebackup linkaccount dropbox")))
-            .build();
     }
 
     /**

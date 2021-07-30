@@ -14,6 +14,7 @@ import ratismal.drivebackup.plugin.DriveBackup;
 import ratismal.drivebackup.uploaders.googledrive.GoogleDriveUploader;
 import ratismal.drivebackup.util.Logger;
 import ratismal.drivebackup.util.MessageUtil;
+import ratismal.drivebackup.util.NetUtil;
 import ratismal.drivebackup.util.SchedulerUtil;
 
 import org.bukkit.Bukkit;
@@ -155,28 +156,26 @@ public class Authenticator {
                             throw new UploadException();
                         }
 
-                    } catch (UnknownHostException exception) {
-                        logger.log("Failed to link your " + provider.getName() + " account, check your network connection");   
-                        
-                        Bukkit.getScheduler().cancelTask(task[0]);
-
                     } catch (Exception exception) {
-                        Authenticator.linkFail(provider, logger, exception);
+                        NetUtil.catchException(exception, "drivebackup.web.app", logger);
+
+                        Authenticator.linkFail(provider, logger);
+                        MessageUtil.sendConsoleException(exception);
 
                         Bukkit.getScheduler().cancelTask(task[0]);
                     }
                 }
             }, responseCheckDelay, responseCheckDelay);
-        } catch (UnknownHostException exception) {
-            logger.log("Failed to link your " + provider.getName() + " account, check your network connection");
-            
         } catch (Exception exception) {
-            Authenticator.linkFail(provider, logger, exception);
+            NetUtil.catchException(exception, "drivebackup.web.app", logger);
+
+            Authenticator.linkFail(provider, logger);
+            MessageUtil.sendConsoleException(exception);
         }
     }
 
     public static void linkSuccess(CommandSender initiator, AuthenticationProvider provider, Logger logger) {
-        logger.log("Your " + provider.getName() + " account is linked!");
+        logger.log(intl("link-provider-complete"), "provider", provider.getName());
 
         enableBackupMethod(provider, logger);
 
@@ -186,13 +185,7 @@ public class Authenticator {
     }
 
     public static void linkFail(AuthenticationProvider provider, Logger logger) {
-        logger.log("Failed to link your " + provider.getName() + " account, please try again");
-    }
-
-    public static void linkFail(AuthenticationProvider provider, Logger logger, Exception exception) {
-        logger.log("Failed to link your " + provider.getName() + " account, please try again");
-
-        MessageUtil.sendConsoleException(exception);
+        logger.log(intl("link-provider-failed"), "provider", provider.getName());
     }
 
     private static void saveRefreshToken(AuthenticationProvider provider, String token) throws Exception {

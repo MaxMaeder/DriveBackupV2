@@ -247,17 +247,20 @@ public class UploadThread implements Runnable {
 
         backupStatus = BackupStatus.NOT_RUNNING;
 
-        for(int i = 0; i < uploaders.size(); i++) {
-            uploaders.get(i).close();
-            if (uploaders.get(i).isErrorWhileUploading()) {
-                MessageUtil builder = MessageUtil.Builder().text(uploaders.get(i).getSetupInstructions());
-                if (initiator != null) builder.to(initiator);
-                builder.toPerm(Permissions.BACKUP).send();
+        for (Uploader uploader : uploaders) {
+            uploader.close();
+
+            if (uploader.isErrorWhileUploading()) {
+                logger.log(
+                    intl("backup-method-error-occurred")
+                        .replace("diagnose-command", "/drivebackup test " + uploader.getAuthProvider().getId()), 
+                    "backup-method", uploader.getName());
+
                 errorOccurred = true;
             } else {
                 logger.log(
                     intl("backup-method-complete"), 
-                    "upload-method", uploaders.get(i).getName());
+                    "backup-method", uploader.getName());
             }
         }
 

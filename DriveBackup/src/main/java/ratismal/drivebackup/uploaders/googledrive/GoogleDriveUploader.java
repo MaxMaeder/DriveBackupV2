@@ -11,11 +11,6 @@ import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.model.*;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.TextComponent;
-import net.kyori.adventure.text.event.ClickEvent;
-import net.kyori.adventure.text.event.HoverEvent;
-import net.kyori.adventure.text.format.NamedTextColor;
 import okhttp3.FormBody;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -251,25 +246,6 @@ public class GoogleDriveUploader implements Uploader {
     }
 
     /**
-     * Gets the setup instructions for this uploaders
-     * @return a Component explaining how to set up this uploader
-     */
-    public TextComponent getSetupInstructions() {
-        return Component.text()
-            .append(
-                Component.text("Failed to backup to Google Drive, please run ")
-                .color(NamedTextColor.DARK_AQUA)
-            )
-            .append(
-                Component.text("/drivebackup linkaccount googledrive")
-                .color(NamedTextColor.GOLD)
-                .hoverEvent(HoverEvent.showText(Component.text("Run command")))
-                .clickEvent(ClickEvent.runCommand("/drivebackup linkaccount googledrive"))
-            )
-            .build();
-    }
-
-    /**
      * Setup for authenticated user that has access to one or more shared drives.
      * @throws Exception
      */
@@ -278,25 +254,19 @@ public class GoogleDriveUploader implements Uploader {
         List<com.google.api.services.drive.model.Drive> drives = service.drives().list().execute().getItems();
 
         if (drives.size() > 0) {
-            logger.log("You have access one or more Shared Drive, if you'd like to use one of them either select it or reply with it's number in the chat.");
-            MessageUtil.Builder()
-                .mmText("<bold>[1]</bold>")
-                .text(
-                    Component.text("My Drive").color(NamedTextColor.GOLD)
-                        .hoverEvent(HoverEvent.showText(Component.text("Select Drive")))
-                        .clickEvent(ClickEvent.runCommand("1"))
-                )
-                .to(initiator).toConsole(false).send();
+            logger.log(intl("google-pick-shared-drive"));
+
+            logger.log(
+                intl("google-shared-drive-option").replace("select-command", "1"),
+                "drive-num", "1",
+                "drive-name", "My Drive"); 
+
             int index = 2;
             for (com.google.api.services.drive.model.Drive drive : drives) {
-                MessageUtil.Builder()
-                    .mmText("<bold>[" + index++ + "]</bold>")
-                    .text(
-                        Component.text(drive.getName()).color(NamedTextColor.GOLD)
-                            .hoverEvent(HoverEvent.showText(Component.text("Select Drive")))
-                            .clickEvent(ClickEvent.runCommand(drive.getId()))
-                    )
-                    .to(initiator).toConsole(false).send();
+                logger.log(
+                    intl("google-shared-drive-option").replace("select-command", drive.getId()),
+                    "drive-num", String.valueOf(index++),
+                    "drive-name", drive.getName()); 
             }
             final Prompt driveId = new StringPrompt() {
 
@@ -307,29 +277,39 @@ public class GoogleDriveUploader implements Uploader {
     
                 @Override
                 public Prompt acceptInput(final ConversationContext context, String input) {
+                    final DriveBackup instance = DriveBackup.getInstance();
+                    final String idKey = "googledrive.shared-drive-id";
+
                     for (com.google.api.services.drive.model.Drive drive : drives) {
                         if (input.equals(drive.getId())) {
-                            DriveBackup.getInstance().getConfig().set("googledrive.shared-drive-id", input);
-                            DriveBackup.getInstance().saveConfig();
+
+                            instance.getConfig().set(idKey, input);
+                            instance.saveConfig();
                             Authenticator.linkSuccess(initiator, provider, logger);
+
                             return Prompt.END_OF_CONVERSATION;
                         }
                     }
+
                     if (input.equals("1")) {
-                        DriveBackup.getInstance().getConfig().set("googledrive.shared-drive-id", "");
-                        DriveBackup.getInstance().saveConfig();
+
+                        instance.getConfig().set(idKey, "");
+                        instance.saveConfig();
                         Authenticator.linkSuccess(initiator, provider, logger);
+
                         return Prompt.END_OF_CONVERSATION;
                     } else if (input.matches("[0-9]+")) {
-                        DriveBackup.getInstance().getConfig().set("googledrive.shared-drive-id", drives.get(Integer.parseInt(input) - 2).getId());
-                        DriveBackup.getInstance().saveConfig();
+
+                        instance.getConfig().set(idKey, drives.get(Integer.parseInt(input) - 2).getId());
+                        instance.saveConfig();
                         Authenticator.linkSuccess(initiator, provider, logger);
-                        return Prompt.END_OF_CONVERSATION;
-                    } else {
-                        // TODO handle this
-                        Authenticator.linkFail(provider, logger);
+                        
                         return Prompt.END_OF_CONVERSATION;
                     }
+
+                    // TODO: handle this better
+                    Authenticator.linkFail(provider, logger);
+                    return Prompt.END_OF_CONVERSATION;
                 }
             };
     

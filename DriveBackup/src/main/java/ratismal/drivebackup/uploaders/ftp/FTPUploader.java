@@ -4,10 +4,7 @@ import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
 import org.apache.commons.net.ftp.FTPSClient;
-import org.bukkit.ChatColor;
 
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.TextComponent;
 import ratismal.drivebackup.uploaders.Uploader;
 import ratismal.drivebackup.uploaders.Authenticator.AuthenticationProvider;
 import ratismal.drivebackup.config.ConfigParser;
@@ -291,15 +288,6 @@ public class FTPUploader implements Uploader {
 
     public AuthenticationProvider getAuthProvider() {
         return null;
-    }
-
-    /**
-     * Gets the setup instructions for this uploaders
-     * @return a Component explaining how to set up this uploader
-     */
-    public TextComponent getSetupInstructions()
-    {
-        return Component.text("Failed to backup to the (S)FTP server, please check the server credentials in the " + ChatColor.GOLD + "config.yml");
     }
 
     /**
