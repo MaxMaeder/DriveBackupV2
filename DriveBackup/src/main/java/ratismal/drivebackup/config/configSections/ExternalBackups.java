@@ -11,6 +11,7 @@ import org.bukkit.configuration.file.FileConfiguration;
 import ratismal.drivebackup.config.ConfigParser;
 import ratismal.drivebackup.util.Logger;
 import ratismal.drivebackup.config.configSections.ExternalBackups.ExternalFTPSource.ExternalBackupListEntry;
+import ratismal.drivebackup.config.configSections.ExternalBackups.ExternalMySQLSource.MySQLDatabaseBackup;
 import ratismal.drivebackup.util.LocalDateTimeFormatter;
 
 import static ratismal.drivebackup.config.Localization.intl;
@@ -23,12 +24,12 @@ public class ExternalBackups {
         public final String password;
         public final LocalDateTimeFormatter format;
 
-        private ExternalBackupSource(String hostname, int port, String username, String password, LocalDateTimeFormatter format) {
+        private ExternalBackupSource(String hostname, int port, String username, String password, LocalDateTimeFormatter formatter) {
             this.hostname = hostname;
             this.port = port;
             this.username = username;
             this.password = password;
-            this.format = format;
+            this.format = formatter;
         }
     }
 
@@ -55,7 +56,7 @@ public class ExternalBackups {
             int port, 
             String username, 
             String password, 
-            LocalDateTimeFormatter format,
+            LocalDateTimeFormatter formatter,
             boolean sftp,
             boolean ftps,
             String publicKey, 
@@ -63,7 +64,7 @@ public class ExternalBackups {
             String baseDirectory, 
             ExternalBackupListEntry[] backupList
             ) {
-            super(hostname, port, username, password, format);
+            super(hostname, port, username, password, formatter);
 
             this.sftp = sftp;
             this.ftps = ftps;
@@ -93,11 +94,11 @@ public class ExternalBackups {
             int port, 
             String username, 
             String password, 
-            LocalDateTimeFormatter format,
+            LocalDateTimeFormatter formatter,
             boolean ssl, 
             MySQLDatabaseBackup[] databaseList
             ) {
-            super(hostname, port, username, password, format);
+            super(hostname, port, username, password, formatter);
 
             this.ssl = ssl;
             this.databaseList = databaseList;
@@ -204,7 +205,7 @@ public class ExternalBackups {
                         continue;
                     }
 
-                    ArrayList<ExternalBackupListEntry> backupList = new ArrayList<>();
+                    List<ExternalBackupListEntry> backupList = new ArrayList<>();
                     for (Map<?, ?> rawBackupListEntry : rawBackupList) {
                         String entryBackupIndex = String.valueOf(rawBackupList.indexOf(rawBackupListEntry) + 1);
 
@@ -249,15 +250,56 @@ public class ExternalBackups {
 
                     break;
                 case "mysqlDatabase":
-                    // TODO: Implement
-
+                    boolean ssl = false;
                     try {
-                        
+                        ssl = (boolean) (Boolean) rawListEntry.get("ssl");
                     } catch (Exception e) {
-                        // Temp
-                        logger.log("External Backup entry " + entryIndex + " has an invalid configuration, skipping");
+                        logger.log(intl("external-database-ssl-invalid"), "entry", entryIndex);
+                        // Use false
+                    }
+
+                    List<Map<?, ?>> rawDatabaseList;
+                    try {
+                        rawDatabaseList = (List<Map<?, ?>>) rawListEntry.get("databases");
+                    } catch (Exception e) {
+                        logger.log(intl("external-database-list-invalid"), "entry", entryIndex);
                         continue;
                     }
+
+                    List<MySQLDatabaseBackup> databaseList = new ArrayList<>();
+                    for (Map<?, ?> rawDatabaseListEntry : rawDatabaseList) { 
+                        String entryDatabaseIndex = String.valueOf(rawDatabaseList.indexOf(rawDatabaseListEntry) + 1);
+
+                        String name;
+                        try {
+                            name = (String) rawDatabaseListEntry.get("name");
+                        } catch (Exception e) {
+                            logger.log(intl("external-database-list-name-invalid"), "entry-database", entryDatabaseIndex);
+                            continue;
+                        }
+
+                        String[] blacklist = new String[0];
+                        if (rawDatabaseListEntry.containsKey("blacklist")) {
+                            try {
+                                blacklist = ((List<String>) rawDatabaseListEntry.get("blacklist")).toArray(new String[0]);
+                            } catch (Exception e) {
+                                logger.log(intl("external-database-list-blacklist-invalid"), "entry-database", entryDatabaseIndex);
+                            }
+                        }
+
+                        databaseList.add(new MySQLDatabaseBackup(name, blacklist));
+                    }
+
+                    list.add(
+                        new ExternalMySQLSource(
+                            hostname, 
+                            port, 
+                            username, 
+                            password, 
+                            formatter, 
+                            ssl, 
+                            databaseList.toArray(new MySQLDatabaseBackup[0]))
+                    );
 
                     break;
                 default: 
