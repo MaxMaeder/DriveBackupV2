@@ -115,6 +115,8 @@ public class DropboxUploader implements Uploader {
         int fileSize = (int) file.length();
         MediaType OCTET_STREAM = MediaType.parse("application/octet-stream");
 
+        String folder = type.replaceAll("\\.{1,2}\\/", "");
+
         try (DataInputStream dis = new DataInputStream(new FileInputStream(file))) {
             Boolean chunkeduploadEnabled = false;
             if (chunkeduploadEnabled) {
@@ -183,7 +185,7 @@ public class DropboxUploader implements Uploader {
                     dropboxCursorJson.put("offset", uploaded);
 
                     JSONObject dropboxCommitJson = new JSONObject();
-                    dropboxCommitJson.put("path", "/" + destination + "/" + type + "/" + file.getName());
+                    dropboxCommitJson.put("path", "/" + destination + "/" + folder + "/" + file.getName());
 
                     JSONObject dropboxJson = new JSONObject();
                     dropboxJson.put("cursor", dropboxCursorJson);
@@ -200,7 +202,7 @@ public class DropboxUploader implements Uploader {
                     Response response = httpClient.newCall(request).execute();
                     response.close();
 
-                    deleteFiles(type);
+                    deleteFiles(folder);
                     return;
                 }
             } else {
@@ -211,7 +213,7 @@ public class DropboxUploader implements Uploader {
                 RequestBody requestBody = RequestBody.create(content, OCTET_STREAM);
 
                 JSONObject dropbox_json = new JSONObject();
-                dropbox_json.put("path", "/" + destination + "/" + type + "/" + file.getName());
+                dropbox_json.put("path", "/" + destination + "/" + folder + "/" + file.getName());
                 String dropbox_arg = dropbox_json.toString();
 
                 Request request = new Request.Builder()
@@ -224,7 +226,7 @@ public class DropboxUploader implements Uploader {
                 Response response = httpClient.newCall(request).execute();
                 response.close();
 
-                deleteFiles(type);
+                deleteFiles(folder);
             }
         } catch (Exception exception) {
             NetUtil.catchException(exception, "api.dropboxapi.com", logger);
