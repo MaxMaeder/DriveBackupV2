@@ -46,7 +46,7 @@ google-pick-shared-drive: "You have access one or more Shared Drives, if you'd l
 google-shared-drive-option: "<bold>[<drive-num>]</bold> <gold><hover:show_text:Select Drive><click:run_command:select-command><drive-name></click></hover></gold>"
 file-upload-message: "File uploaded in <length> seconds (<speed>KB/s)"
 backup-forced: "Forcing a backup"
-backup-already-running: |
+backup-already-running: |-
   A backup is already running
   {backup-status}
 backup-skipped-inactivity: "Skipping backup due to inactivity"
@@ -61,7 +61,7 @@ external-mysql-backup-start: "Downloading databases from a MySQL server (<socket
 external-mysql-backup-blacklisted: "Didn't include table \"<blacklist-entry>\" in the backup, as it is blacklisted"
 external-mysql-backup-failed: Failed to include databases from a MySQL server (<socket-addr>) in the backup, please check the server credentials in the <gold>config.yml</gold>
 external-mysql-backup-complete: "Databases from a MySQL server (<socket-addr>) were successfully included in the backup"
-local-backup-date-format-invalid: |
+local-backup-date-format-invalid: |-
   Unable to parse date format of stored backup "<file-name>", this can be due to the date format being updated in the config.yml
   Backup will be the first deleted
 local-backup-backlisted: "Didn't include <blacklisted-files-count> file(s) in the backup, as they are blacklisted by \"<glob-pattern>\""
@@ -71,18 +71,18 @@ local-backup-limit-reached: "There are <backup-count> file(s) which exceeds the 
 local-backup-file-failed-to-delete: "Failed to delete local backup \"<local-backup-name>\""
 local-backup-failed-to-delete: "Local backup deletion failed"
 backup-location-start: "Doing backups for \"<location>\""
-backup-failed-absolute-path: |
+backup-failed-absolute-path: |-
   Failed to create a backup, path to folder to backup is absolute, expected a relative path
   An absolute path can overwrite sensitive files, see the docs for more information
   Skipping backup location
-backup-local-failed: |
+backup-local-failed: |-
   Failed to create local backup
   Even if local-keep-count is set to zero, the plugin needs to temporarily create a local backup
   Skipping backup location
-backup-method-uploading: "Uploading file to <upload-method>"
+backup-method-uploading: "Uploading file to <backup-method>"
 backup-method-limit-reached: "There are <file-count> file(s) for the current backup location in <upload-method> which exceeds the limit of <file-limit>, deleting"
 backup-method-upload-failed: "Failed to upload"
-backup-method-not-linked: |
+backup-method-not-linked: |-
   Skipping backup to <upload-method>, account not yet linked
   To link your account, run <gold><click:run_command:link-command>link-command</click></gold>
 backup-method-error-occurred: "Failed to backup to <upload-method>, verify all credentials are correct or diagnose the problem with <gold><click:run_command:diagnose-command>diagnose-command</click</gold>"
@@ -111,19 +111,19 @@ link-account-code: "To link your <provider> account, go to <gold><click:open_url
 link-account-failed: "Failed to link your <provider> account"
 connection-error: "Failed to connect to <domain>, check your network connection and server firewall"
 drivebackup-command-header: "<gold>|====== <dark_red>DriveBackupV2 ======|"
-drivebackup-docs-command: |
+drivebackup-docs-command: |-
   <header>
   Need help? Check out these helpful resources!
   Wiki: <gold><click:open_link:http://bit.ly/3dDdmwK>http://bit.ly/3dDdmwK</click></gold>
   Discord: <gold><click:open_link:http://bit.ly/3f4VuuT>http://bit.ly/3f4VuuT</click></gold>
-drivebackup-version-command: |
+drivebackup-version-command: |-
   <header>
   Plugin version: <gold><plugin-version></gold>
   Java version: <gold><java-version></gold>
   Server software: <gold><server-software></gold>
   Server software version: <gold><server-version></gold>
 drivebackup-version-update: <gold>Plugin update available!
-drivebackup-help-command: |
+drivebackup-help-command: |-
   <header>
   <gold><click:run_command:/drivebackup>/drivebackup</click></gold> - Displays this menu
   <gold><click:run_command:/drivebackup help>/drivebackup help</click></gold> - Displays help resources
