@@ -28,8 +28,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import main.java.credentials.OneDriveCredentials;
-
 import static ratismal.drivebackup.config.Localization.intl;
 
 /**

@@ -62,7 +62,7 @@ external-mysql-backup-blacklisted: "Didn't include table \"<blacklist-entry>\" i
 external-mysql-backup-failed: Failed to include databases from a MySQL server (<socket-addr>) in the backup, please check the server credentials in the <gold>config.yml</gold>
 external-mysql-backup-complete: "Databases from a MySQL server (<socket-addr>) were successfully included in the backup"
 local-backup-date-format-invalid: |
-  Unable to parse date format of stored backup \"<file-name>"\", this can be due to the date format being updated in the config.yml
+  Unable to parse date format of stored backup "<file-name>", this can be due to the date format being updated in the config.yml
   Backup will be the first deleted
 local-backup-backlisted: "Didn't include <blacklisted-files-count> file(s) in the backup, as they are blacklisted by \"<glob-pattern>\""
 local-backup-in-backup-folder: "Didn't include <files-in-backup-folder-count> file(s) in the backup, as they are in the folder used for backups"

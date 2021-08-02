@@ -16,6 +16,8 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+
+import main.java.credentials.GoogleDriveCredentials;
 import ratismal.drivebackup.uploaders.Uploader;
 import ratismal.drivebackup.uploaders.Authenticator;
 import ratismal.drivebackup.uploaders.Authenticator.AuthenticationProvider;
@@ -35,8 +37,6 @@ import java.util.concurrent.TimeUnit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.conversations.*;
 import org.json.JSONObject;
-
-import main.java.credentials.GoogleDriveCredentials;
 
 import static ratismal.drivebackup.config.Localization.intl;
 

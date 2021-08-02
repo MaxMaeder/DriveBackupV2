@@ -1,5 +1,6 @@
 package ratismal.drivebackup.uploaders.dropbox;
 
+import main.java.credentials.DropboxCredentials;
 import ratismal.drivebackup.util.MessageUtil;
 import ratismal.drivebackup.util.NetUtil;
 import ratismal.drivebackup.uploaders.Authenticator;
@@ -16,15 +17,12 @@ import java.util.concurrent.TimeUnit;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import main.java.credentials.DropboxCredentials;
 import okhttp3.FormBody;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
-
-import main.java.credentials.DropboxCredentials;
 
 import static ratismal.drivebackup.config.Localization.intl;
 

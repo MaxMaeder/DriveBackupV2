@@ -43,7 +43,7 @@ public class LocalDateTimeFormatter {
     }
 
     private DateTimeFormatter getFormatter() {
-        return formatter.withLocale(ConfigParser.getConfig().advanced.dateLanguage);
+        return formatter.withLocale(ConfigParser.getConfig().advanced.dateLanguage).withZone(ConfigParser.getConfig().advanced.dateTimezone);
     }
 
     private static void verifyPattern(String pattern) throws IllegalArgumentException {
