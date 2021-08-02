@@ -79,7 +79,7 @@ backup-local-failed: |-
   Failed to create local backup
   Even if local-keep-count is set to zero, the plugin needs to temporarily create a local backup
   Skipping backup location
-backup-method-uploading: "Uploading file to <backup-method>"
+backup-method-uploading: "Uploading file to <upload-method>"
 backup-method-limit-reached: "There are <file-count> file(s) for the current backup location in <upload-method> which exceeds the limit of <file-limit>, deleting"
 backup-method-upload-failed: "Failed to upload"
 backup-method-not-linked: |-
