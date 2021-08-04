@@ -127,7 +127,7 @@ public class TestThread implements Runnable {
                 break;
             case "ftp":
                 if (config.backupMethods.ftp.enabled) {
-                    uploadMethod = new FTPUploader();
+                    uploadMethod = new FTPUploader(logger);
                 } else {
                     sendMethodDisabled(logger, FTPUploader.UPLOADER_NAME);
                     return;

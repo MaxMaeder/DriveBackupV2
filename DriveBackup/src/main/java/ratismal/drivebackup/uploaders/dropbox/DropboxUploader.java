@@ -202,7 +202,7 @@ public class DropboxUploader implements Uploader {
                     Response response = httpClient.newCall(request).execute();
                     response.close();
 
-                    deleteFiles(folder);
+                    pruneBackups(folder);
                     return;
                 }
             } else {
@@ -226,7 +226,7 @@ public class DropboxUploader implements Uploader {
                 Response response = httpClient.newCall(request).execute();
                 response.close();
 
-                deleteFiles(folder);
+                pruneBackups(folder);
             }
         } catch (Exception exception) {
             NetUtil.catchException(exception, "api.dropboxapi.com", logger);
@@ -245,7 +245,7 @@ public class DropboxUploader implements Uploader {
      * @param type the type of file (ex. plugins, world)
      * @throws Exception
      */
-    private void deleteFiles(String type) throws Exception {
+    private void pruneBackups(String type) throws Exception {
         Config config = ConfigParser.getConfig();
 
         String destination = config.backupStorage.remoteDirectory;
@@ -272,7 +272,7 @@ public class DropboxUploader implements Uploader {
 
         if (files.length() > fileLimit) {
             logger.info(
-                intl("upload-method-limit-reached"), 
+                intl("backup-method-limit-reached"), 
                 "file-count", String.valueOf(files.length()),
                 "upload-method", getName(),
                 "file-limit", String.valueOf(fileLimit));

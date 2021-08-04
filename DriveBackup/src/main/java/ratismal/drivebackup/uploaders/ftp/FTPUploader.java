@@ -7,26 +7,31 @@ import org.apache.commons.net.ftp.FTPSClient;
 
 import ratismal.drivebackup.uploaders.Uploader;
 import ratismal.drivebackup.uploaders.Authenticator.AuthenticationProvider;
+import ratismal.drivebackup.UploadThread.UploadLogger;
 import ratismal.drivebackup.config.ConfigParser;
 import ratismal.drivebackup.config.ConfigParser.Config;
 import ratismal.drivebackup.config.configSections.BackupMethods.FTPBackupMethod;
 import ratismal.drivebackup.util.MessageUtil;
+import ratismal.drivebackup.util.NetUtil;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
-import java.net.UnknownHostException;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 import com.google.api.client.util.Strings;
+
+import static ratismal.drivebackup.config.Localization.intl;
 
 /**
  * Created by Ratismal on 2016-03-30.
  */
 
 public class FTPUploader implements Uploader {
+    private UploadLogger logger;
+
     public static final String UPLOADER_NAME = "(S)FTP";
 
     private FTPClient ftpClient;
@@ -37,6 +42,7 @@ public class FTPUploader implements Uploader {
     private String initialRemoteFolder;
     private String _localBaseFolder;
     private String _remoteBaseFolder;
+    private String host;
 
     /**
      * Returns the configured FTP file separator
@@ -49,15 +55,18 @@ public class FTPUploader implements Uploader {
     /**
      * Creates an instance of the {@code FTPUploader} object using the server credentials specified by the user in the {@code config.yml}
      */
-    public FTPUploader() {
+    public FTPUploader(UploadLogger logger) {
+        this.logger = logger;
+
         try {
             Config config = ConfigParser.getConfig();
             FTPBackupMethod ftp = config.backupMethods.ftp;
 
             if (ftp.sftp) {
-                sftpClient = new SFTPUploader();
+                sftpClient = new SFTPUploader(logger);
             } else {
                 connect(ftp.hostname, ftp.port, ftp.username, ftp.password, ftp.ftps);
+                host = ftp.hostname;
             }
 
             _localBaseFolder = ".";
@@ -85,12 +94,15 @@ public class FTPUploader implements Uploader {
      * @param localBaseFolder the path to the folder which all local file paths are relative to
      * @param remoteBaseFolder the path to the folder which all remote file paths are relative to 
      */
-    public FTPUploader(String host, int port, String username, String password, boolean ftps, boolean sftp, String publicKey, String passphrase, String localBaseFolder, String remoteBaseFolder) {
+    public FTPUploader(UploadLogger logger, String host, int port, String username, String password, boolean ftps, boolean sftp, String publicKey, String passphrase, String localBaseFolder, String remoteBaseFolder) {
+        this.logger = logger;
+
         try {
             if (sftp) {
-                sftpClient = new SFTPUploader(host, port, username, password, publicKey, passphrase, localBaseFolder, remoteBaseFolder);
+                sftpClient = new SFTPUploader(logger, host, port, username, password, publicKey, passphrase, localBaseFolder, remoteBaseFolder);
             } else {
                 connect(host, port, username, password, ftps);
+                this.host = host;
             }
 
             _localBaseFolder = localBaseFolder;
@@ -163,10 +175,9 @@ public class FTPUploader implements Uploader {
                     
                 ftpClient.deleteFile(testFile.getName());
             }
-        } catch (UnknownHostException exception) {
-            MessageUtil.Builder().text("Failed to upload test file to FTP, check your network connection").toPerm("drivebackup.linkAccounts").send();
-        } catch (Exception e) {
-            MessageUtil.sendConsoleException(e);
+        } catch (Exception exception) {
+            NetUtil.catchException(exception, host, logger);
+            MessageUtil.sendConsoleException(exception);
             setErrorOccurred(true);
         }
     }
@@ -193,14 +204,12 @@ public class FTPUploader implements Uploader {
             ftpClient.storeFile(file.getName(), fs);
             fs.close();
 
-            deleteFiles(type);
+            pruneBackups(type);
 
             ftpClient.disconnect();
-        } catch (UnknownHostException exception) {
-            MessageUtil.Builder().text("Failed to upload backup to FTP, check your network connection").toPerm("drivebackup.linkAccounts").send();
-            setErrorOccurred(true);
-        } catch (Exception e) {
-            MessageUtil.sendConsoleException(e);
+        } catch (Exception exception) {
+            NetUtil.catchException(exception, host, logger);
+            MessageUtil.sendConsoleException(exception);
             setErrorOccurred(true);
         }
     }
@@ -297,7 +306,7 @@ public class FTPUploader implements Uploader {
      * @param type the type of file (ex. plugins, world)
      * @throws Exception
      */
-    private void deleteFiles(String type) throws Exception {
+    private void pruneBackups(String type) throws Exception {
         int fileLimit = ConfigParser.getConfig().backupStorage.keepCount;
         if (fileLimit == -1) {
             return;
@@ -305,7 +314,12 @@ public class FTPUploader implements Uploader {
         TreeMap<Date, FTPFile> files = getZipFiles();
 
         if (files.size() > fileLimit) {
-            MessageUtil.Builder().text("There are " + files.size() + " file(s) which exceeds the limit of " + fileLimit + ", deleting").toConsole(true).send();
+            logger.info(
+                intl("backup-method-limit-reached"), 
+                "file-count", String.valueOf(files.size()),
+                "upload-method", getName(),
+                "file-limit", String.valueOf(fileLimit));
+
             while (files.size() > fileLimit) {
                 ftpClient.deleteFile(files.firstEntry().getValue().getName());
                 files.remove(files.firstKey());

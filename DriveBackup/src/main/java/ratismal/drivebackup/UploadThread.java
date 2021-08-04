@@ -221,7 +221,7 @@ public class UploadThread implements Runnable {
             uploaders.add(new DropboxUploader(logger));
         }
         if (config.backupMethods.ftp.enabled) {
-            uploaders.add(new FTPUploader());
+            uploaders.add(new FTPUploader(logger));
         }
 
         ensureMethodsLinked();
@@ -377,6 +377,7 @@ public class UploadThread implements Runnable {
             "socked-addr", getSocketAddress(externalBackup));
 
         FTPUploader ftpUploader = new FTPUploader(
+                logger,
                 externalBackup.hostname, 
                 externalBackup.port, 
                 externalBackup.username, 

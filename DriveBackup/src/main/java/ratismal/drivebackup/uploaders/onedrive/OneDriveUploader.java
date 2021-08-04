@@ -223,7 +223,7 @@ public class OneDriveUploader implements Uploader {
                 response.close();
             }
 
-            deleteFiles(folder);
+            pruneBackups(folder);
         } catch (Exception exception) {
             NetUtil.catchException(exception, "graph.microsoft.com", logger);
             MessageUtil.sendConsoleException(exception);
@@ -415,7 +415,7 @@ public class OneDriveUploader implements Uploader {
      * @param folder the folder containing the files
      * @throws Exception
      */
-    private void deleteFiles(File parent) throws Exception {
+    private void pruneBackups(File parent) throws Exception {
         int fileLimit = ConfigParser.getConfig().backupStorage.keepCount;
 
         if (fileLimit == -1) {
@@ -440,7 +440,7 @@ public class OneDriveUploader implements Uploader {
 
         if(fileLimit < fileIDs.size()){
             logger.info(
-                intl("upload-method-limit-reached"), 
+                intl("backup-method-limit-reached"), 
                 "file-count", String.valueOf(fileIDs.size()),
                 "upload-method", getName(),
                 "file-limit", String.valueOf(fileLimit));

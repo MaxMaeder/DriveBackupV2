@@ -1,14 +1,13 @@
 package ratismal.drivebackup.uploaders.ftp;
 
+import ratismal.drivebackup.UploadThread.UploadLogger;
 import ratismal.drivebackup.config.ConfigParser;
 import ratismal.drivebackup.config.ConfigParser.Config;
 import ratismal.drivebackup.config.configSections.BackupMethods.FTPBackupMethod;
 import ratismal.drivebackup.plugin.DriveBackup;
-import ratismal.drivebackup.util.MessageUtil;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.net.UnknownHostException;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -23,11 +22,15 @@ import net.schmizz.sshj.userauth.method.AuthMethod;
 import net.schmizz.sshj.userauth.method.AuthPassword;
 import net.schmizz.sshj.userauth.method.AuthPublickey;
 
+import static ratismal.drivebackup.config.Localization.intl;
+
 /**
  * Created by Ratismal on 2016-03-30.
  */
 
 public class SFTPUploader {
+    private UploadLogger logger;
+
     private SSHClient sshClient;
     private StatefulSFTPClient sftpClient;
 
@@ -39,7 +42,9 @@ public class SFTPUploader {
      * Creates an instance of the {@code SFTPUploader} object using the server credentials specified by the user in the {@code config.yml}
      * @throws Exception
      */
-    public SFTPUploader() throws Exception {
+    public SFTPUploader(UploadLogger logger) throws Exception {
+        this.logger = logger;
+
         Config config = ConfigParser.getConfig();
         FTPBackupMethod ftp = config.backupMethods.ftp;
 
@@ -65,7 +70,8 @@ public class SFTPUploader {
      * @param remoteBaseFolder the path to the folder which all remote file paths are relative to 
      * @throws Exception
      */
-    public SFTPUploader(String host, int port, String username, String password, String publicKey, String passphrase, String localBaseFolder, String remoteBaseFolder) throws Exception {
+    public SFTPUploader(UploadLogger logger, String host, int port, String username, String password, String publicKey, String passphrase, String localBaseFolder, String remoteBaseFolder) throws Exception {
+        this.logger = logger;
         connect(host, port, username, password, publicKey, passphrase);
 
         _localBaseFolder = localBaseFolder;
@@ -134,7 +140,7 @@ public class SFTPUploader {
      * @param testFileSize the size (in bytes) of the file
      * @throws Exception
      */
-    public void test(File testFile) {
+    public void test(File testFile) throws Exception {
         try (FileOutputStream fos = new FileOutputStream(testFile)) {
             resetWorkingDirectory();
             createThenEnter(_remoteBaseFolder);
@@ -144,10 +150,8 @@ public class SFTPUploader {
             TimeUnit.SECONDS.sleep(5);
             
             sftpClient.rm(testFile.getName());
-        } catch (UnknownHostException exception) {
-            MessageUtil.Builder().text("Failed to upload test file to SFTP, check your network connection").toPerm("drivebackup.linkAccounts").send();
-        } catch (Exception e) {
-            MessageUtil.sendConsoleException(e);
+        } catch (Exception exception) {
+            throw exception;
         }
     }
 
@@ -157,14 +161,14 @@ public class SFTPUploader {
      * @param type the type of file (ex. plugins, world)
      * @throws Exception
      */
-    public void uploadFile(File file, String type) throws Exception, UnknownHostException {
+    public void uploadFile(File file, String type) throws Exception {
         resetWorkingDirectory();
         createThenEnter(_remoteBaseFolder);
         createThenEnter(type);
 
         sftpClient.put(file.getAbsolutePath(), file.getName());
         
-        deleteFiles();
+        pruneBackups();
     }
 
     /**
@@ -215,7 +219,7 @@ public class SFTPUploader {
      * The number of files to retain is specified by the user in the {@code config.yml}
      * @throws Exception
      */
-    private void deleteFiles() throws Exception {
+    private void pruneBackups() throws Exception {
         int fileLimit = ConfigParser.getConfig().backupStorage.keepCount;
         if (fileLimit == -1) {
             return;
@@ -223,7 +227,11 @@ public class SFTPUploader {
         TreeMap<Date, RemoteResourceInfo> files = getZipFiles();
 
         if (files.size() > fileLimit) {
-            MessageUtil.Builder().text("There are " + files.size() + " file(s) which exceeds the limit of " + fileLimit + ", deleting").toConsole(true).send();
+            logger.info(
+                intl("backup-method-limit-reached"), 
+                "file-count", String.valueOf(files.size()),
+                "upload-method", "(S)FTP",
+                "file-limit", String.valueOf(fileLimit));
 
             while (files.size() > fileLimit) {
                 sftpClient.rm(files.firstEntry().getValue().getName());

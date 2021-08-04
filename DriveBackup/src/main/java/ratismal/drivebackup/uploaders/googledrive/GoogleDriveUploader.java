@@ -209,7 +209,7 @@ public class GoogleDriveUploader implements Uploader {
 
             service.files().insert(fileMetadata, fileContent).setSupportsAllDrives(true).execute();
 
-            deleteFiles(folder);
+            pruneBackups(folder);
         } catch (Exception exception) {
             NetUtil.catchException(exception, "www.googleapis.com", logger);
             MessageUtil.sendConsoleException(exception);
@@ -524,7 +524,7 @@ public class GoogleDriveUploader implements Uploader {
      * @param folder the folder containing the files
      * @throws Exception
      */
-    private void deleteFiles(File folder) throws Exception {
+    private void pruneBackups(File folder) throws Exception {
         int fileLimit = ConfigParser.getConfig().backupStorage.keepCount;
 
         if (fileLimit == -1) {
@@ -534,7 +534,7 @@ public class GoogleDriveUploader implements Uploader {
         List<ChildReference> files = getFiles(folder);
         if (files.size() > fileLimit) {
             logger.info(
-                intl("upload-method-limit-reached"), 
+                intl("backup-method-limit-reached"), 
                 "file-count", String.valueOf(files.size()),
                 "upload-method", getName(),
                 "file-limit", String.valueOf(fileLimit));
