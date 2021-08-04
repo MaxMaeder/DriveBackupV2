@@ -105,9 +105,9 @@ public class Authenticator {
             long responseCheckDelay = SchedulerUtil.sToTicks(parsedResponse.getLong("interval"));
 
             logger.log(
-                intl("link-account-code")
-                    .replace("link-url", VERIFICATION_ENDPOINT)
-                    .replace("link-code", userCode),
+                intl("link-account-code"),
+                "link-url", VERIFICATION_ENDPOINT,
+                "link-code", userCode,
                 "provider", provider.getName());
 
             final int[] task = new int[]{-1};

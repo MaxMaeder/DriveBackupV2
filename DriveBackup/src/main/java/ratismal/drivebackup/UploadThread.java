@@ -252,9 +252,9 @@ public class UploadThread implements Runnable {
 
             if (uploader.isErrorWhileUploading()) {
                 logger.log(
-                    intl("backup-method-error-occurred")
-                        .replace("diagnose-command", "/drivebackup test " + uploader.getAuthProvider().getId()), 
-                    "upload-method", uploader.getName());
+                    intl("backup-method-error-occurred"),
+                    "diagnose-command", "/drivebackup test " + uploader.getAuthProvider().getId(),
+                    "backup-method", uploader.getName());
 
                 errorOccurred = true;
             } else {
@@ -291,12 +291,9 @@ public class UploadThread implements Runnable {
 
             if (!Authenticator.hasRefreshToken(provider)) {
                 logger.log(
-                    intl("backup-method-not-linked")
-                        .replace(
-                            "link-command", 
-                            "/drivebackup linkaccount " + provider.getId().replace("-", "")), 
-                    "upload-method", 
-                    provider.getName());
+                    intl("backup-method-not-linked"),
+                    "link-command", "/drivebackup linkaccount " + provider.getId().replace("-", ""),
+                    "upload-method", provider.getName());
 
                 uploaders.remove(uploader);
             }

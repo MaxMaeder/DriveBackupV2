@@ -257,14 +257,16 @@ public class GoogleDriveUploader implements Uploader {
             logger.log(intl("google-pick-shared-drive"));
 
             logger.log(
-                intl("google-shared-drive-option").replace("select-command", "1"),
+                intl("google-shared-drive-option"),
+                "select-command", "1",
                 "drive-num", "1",
                 "drive-name", "My Drive"); 
 
             int index = 2;
             for (com.google.api.services.drive.model.Drive drive : drives) {
                 logger.log(
-                    intl("google-shared-drive-option").replace("select-command", drive.getId()),
+                    intl("google-shared-drive-option"),
+                    "select-command", drive.getId(),
                     "drive-num", String.valueOf(index++),
                     "drive-name", drive.getName()); 
             }
@@ -291,6 +293,8 @@ public class GoogleDriveUploader implements Uploader {
                         }
                     }
 
+                    logger.log("got: " + input);
+
                     if (input.equals("1")) {
 
                         instance.getConfig().set(idKey, "");
@@ -299,6 +303,7 @@ public class GoogleDriveUploader implements Uploader {
 
                         return Prompt.END_OF_CONVERSATION;
                     } else if (input.matches("[0-9]+")) {
+                        logger.log("in here");
 
                         instance.getConfig().set(idKey, drives.get(Integer.parseInt(input) - 2).getId());
                         instance.saveConfig();
