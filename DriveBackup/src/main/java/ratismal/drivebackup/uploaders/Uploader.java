@@ -1,6 +1,5 @@
 package ratismal.drivebackup.uploaders;
 
-import net.kyori.adventure.text.TextComponent;
 import ratismal.drivebackup.uploaders.Authenticator.AuthenticationProvider;
 
 public interface Uploader {
