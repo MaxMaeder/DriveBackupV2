@@ -260,7 +260,7 @@ public class GoogleDriveUploader implements Uploader {
                 intl("google-shared-drive-option"),
                 "select-command", "1",
                 "drive-num", "1",
-                "drive-name", "My Drive"); 
+                "drive-name", intl("default-google-drive-name")); 
 
             int index = 2;
             for (com.google.api.services.drive.model.Drive drive : drives) {
@@ -282,6 +282,8 @@ public class GoogleDriveUploader implements Uploader {
                     final DriveBackup instance = DriveBackup.getInstance();
                     final String idKey = "googledrive.shared-drive-id";
 
+                    logger.log("got: " + input);
+
                     for (com.google.api.services.drive.model.Drive drive : drives) {
                         if (input.equals(drive.getId())) {
 
@@ -292,8 +294,6 @@ public class GoogleDriveUploader implements Uploader {
                             return Prompt.END_OF_CONVERSATION;
                         }
                     }
-
-                    logger.log("got: " + input);
 
                     if (input.equals("1")) {
 
