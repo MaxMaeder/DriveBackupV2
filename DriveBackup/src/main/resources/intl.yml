@@ -48,7 +48,7 @@ file-upload-message: "File uploaded in <length> seconds (<speed>KB/s)"
 backup-forced: "Forcing a backup"
 backup-already-running: |-
   A backup is already running
-  {backup-status}
+  <backup-status>
 backup-skipped-inactivity: "Skipping backup due to inactivity"
 backup-no-methods: "No backup method is enabled"
 backup-empty-list: "The backup list is empty"
@@ -85,7 +85,7 @@ backup-method-upload-failed: "Failed to upload"
 backup-method-not-linked: |-
   Skipping backup to <upload-method>, account not yet linked
   To link your account, run <gold><click:run_command:'<link-command>'><link-command></click></gold>
-backup-method-error-occurred: "Failed to backup to <upload-method>, verify all credentials are correct or diagnose the problem with <gold><click:run_command:`<diagnose-command>`><diagnose-command></click</gold>"
+backup-method-error-occurred: "Failed to backup to <upload-method>, verify all credentials are correct or diagnose the problem with <gold><click:run_command:'<diagnose-command>'><diagnose-command></click</gold>"
 backup-method-complete: "Backup to <gold><upload-method></gold> complete"
 backup-complete: "Backup complete,"
 backup-disabled-inactivity: "Disabling automatic backups due to inactivity"

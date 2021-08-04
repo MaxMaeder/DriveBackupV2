@@ -254,7 +254,7 @@ public class UploadThread implements Runnable {
                 logger.log(
                     intl("backup-method-error-occurred"),
                     "diagnose-command", "/drivebackup test " + uploader.getAuthProvider().getId(),
-                    "backup-method", uploader.getName());
+                    "upload-method", uploader.getName());
 
                 errorOccurred = true;
             } else {
