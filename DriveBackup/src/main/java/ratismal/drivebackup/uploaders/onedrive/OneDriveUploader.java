@@ -87,6 +87,7 @@ public class OneDriveUploader implements Uploader {
     private void retrieveNewAccessToken() throws Exception {
         RequestBody requestBody = new FormBody.Builder()
             .add("client_id", OneDriveCredentials.CLIENT_ID)
+            .add("client_secret", OneDriveCredentials.CLIENT_SECRET)
             .add("scope", "offline_access Files.ReadWrite")
             .add("refresh_token", refreshToken)
             .add("grant_type", "refresh_token")

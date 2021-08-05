@@ -58,6 +58,7 @@ router.post('/', async function(req, res) {
       method: 'POST',
       body: new URLSearchParams({
         'client_id': process.env.ONEDRIVE_ID,
+        'client_secret': process.env.ONEDRIVE_SECRET,
         'code': doc.auth_code,
         'grant_type': 'authorization_code',
         'redirect_uri': 'https://drivebackup.web.app/callback'

@@ -20,7 +20,7 @@ router.post('/', async function(req, res) {
       verifyURL = `https://www.dropbox.com/oauth2/authorize?token_access_type=offline&response_type=code&client_id=9as745vm8v7g0rr&redirect_uri=https://drivebackup.web.app/callback&state=${user_code}`;
       break;
     case ('onedrive'):
-      verifyURL = `https://login.microsoftonline.com/common/oauth2/v2.0/authorize?client_id=b2a5e63c-4173-4819-9e52-166d80b589bb&scope=files.readwrite%20offline_access&response_type=code&redirect_uri=https://drivebackup.web.app/callback&state=${user_code}`;
+      verifyURL = `https://login.microsoftonline.com/common/oauth2/v2.0/authorize?client_id=52e1b74e-7f53-41a7-aa0a-a9e9497726f8&scope=files.readwrite%20offline_access&response_type=code&redirect_uri=https://drivebackup.web.app/callback&state=${user_code}`;
       break;
     default:
       return res.send({success: false, msg: "invalid_type"});
