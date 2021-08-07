@@ -41,7 +41,7 @@ public class PlayerListener implements Listener {
                 .send();
         }
 
-        if (UploadThread.wasLastBackupSuccessful() && player.hasPermission(Permissions.BACKUP)) {
+        if (!UploadThread.wasLastBackupSuccessful() && player.hasPermission(Permissions.BACKUP)) {
             MessageUtil.Builder()
                 .mmText(intl("player-join-backup-failed"))
                 .to(player)
