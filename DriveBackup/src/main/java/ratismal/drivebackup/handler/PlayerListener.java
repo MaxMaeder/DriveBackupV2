@@ -1,9 +1,12 @@
 package ratismal.drivebackup.handler;
 
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 
+import ratismal.drivebackup.UploadThread;
+import ratismal.drivebackup.config.Permissions;
 import ratismal.drivebackup.plugin.updater.UpdateChecker;
 import ratismal.drivebackup.util.MessageUtil;
 
@@ -27,11 +30,21 @@ public class PlayerListener implements Listener {
             autoBackupsActive = true;
         }
 
-        if (UpdateChecker.isUpdateAvailable() && event.getPlayer().hasPermission("drivebackup.linkAccounts")) {
+        Player player = event.getPlayer();
+
+        if (UpdateChecker.isUpdateAvailable() && player.hasPermission(Permissions.LINK_ACCOUNTS)) {
 
             MessageUtil.Builder()
                 .mmText(intl("player-join-update-available"))
-                .to(event.getPlayer())
+                .to(player)
+                .toConsole(false)
+                .send();
+        }
+
+        if (UploadThread.wasLastBackupSuccessful() && player.hasPermission(Permissions.BACKUP)) {
+            MessageUtil.Builder()
+                .mmText(intl("player-join-backup-failed"))
+                .to(player)
                 .toConsole(false)
                 .send();
         }

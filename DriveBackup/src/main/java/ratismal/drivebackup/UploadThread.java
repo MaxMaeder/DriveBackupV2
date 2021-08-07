@@ -78,12 +78,13 @@ public class UploadThread implements Runnable {
      */
     private static List<BackupListEntry> backupList;
 
-    private static LocalDateTime nextIntervalBackupTime = null;
-
     /**
      * The {@code BackupStatus} of the backup thread
      */
     private static BackupStatus backupStatus = BackupStatus.NOT_RUNNING;
+    
+    private static LocalDateTime nextIntervalBackupTime = null;
+    private static boolean lastBackupSuccessful = true;
 
     /**
      * The backup currently being backed up by the 
@@ -276,6 +277,8 @@ public class UploadThread implements Runnable {
         }
 
         ServerUtil.setAutoSave(true);
+
+        lastBackupSuccessful = !errorOccurred;
 
         if (errorOccurred) {
             DriveBackupApi.backupError();
@@ -569,6 +572,10 @@ public class UploadThread implements Runnable {
      */
     public static void updateNextIntervalBackupTime() {
         nextIntervalBackupTime = LocalDateTime.now().plus(ConfigParser.getConfig().backupStorage.delay, ChronoUnit.MINUTES);
+    }
+
+    public static boolean wasLastBackupSuccessful() {
+        return lastBackupSuccessful;
     }
 
     /**
