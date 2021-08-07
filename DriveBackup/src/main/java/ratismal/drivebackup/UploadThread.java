@@ -295,7 +295,7 @@ public class UploadThread implements Runnable {
             if (!Authenticator.hasRefreshToken(provider)) {
                 logger.log(
                     intl("backup-method-not-linked"),
-                    "link-command", "/drivebackup linkaccount " + provider.getId().replace("-", ""),
+                    "link-command", "/drivebackup linkaccount " + provider.getId(),
                     "upload-method", provider.getName());
 
                 uploaders.remove(uploader);
