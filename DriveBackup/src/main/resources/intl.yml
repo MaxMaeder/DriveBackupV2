@@ -112,7 +112,7 @@ debug-log-created: "Debug URL: <url>"
 link-account-code: "To link your <provider> account, go to <gold><click:open_url:'<link-url>'><link-url></click></gold> and enter <gold><click:copy_to_clipboard:'<link-code>'><link-code></click></gold>"
 link-account-failed: "Failed to link your <provider> account"
 connection-error: "Failed to connect to <domain>, check your network connection and server firewall"
-drivebackup-command-header: "<gold>|====== <dark_red>DriveBackupV2 ======|"
+drivebackup-command-header: "\n<gold>|====== <dark_red>DriveBackupV2</dark_red> ======|</gold>"
 drivebackup-docs-command: |-
   <header>
   Need help? Check out these helpful resources!
