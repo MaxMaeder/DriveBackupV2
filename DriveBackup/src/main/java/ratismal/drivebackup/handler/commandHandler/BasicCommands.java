@@ -5,9 +5,8 @@ import org.bukkit.command.CommandSender;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent.Builder;
-import net.kyori.adventure.text.event.ClickEvent;
-import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.minimessage.MiniMessage;
 import ratismal.drivebackup.config.ConfigParser;
 import ratismal.drivebackup.config.ConfigParser.Config;
 import ratismal.drivebackup.config.configSections.BackupList.BackupListEntry;
@@ -93,25 +92,24 @@ public class BasicCommands {
         }
 
         if (config.externalBackups.sources.length > 0) {
-            backupLocations.add("some external backups");
+            backupLocations.add(intl("brief-backup-list-external-backups"));
         }
 
         locationMessage.append(
-            Component.text("DriveBackupV2 will currently back up ")
-            .color(NamedTextColor.DARK_AQUA));
+            MiniMessage.get().parse("<dark_aqua>" + intl("brief-backup-list")));
 
         if (backupLocations.size() == 0) {
             locationMessage.append(
-                Component.text("nothing")
-                .color(NamedTextColor.DARK_AQUA));
+                MiniMessage.get().parse(intl("brief-backup-list-empty")));
+
         } else {
             for (int i = 0; i < backupLocations.size(); i++) {
     
                 String linkWord = null;
                 if (i == backupLocations.size() - 1) {
-                    linkWord = " and ";
+                    linkWord = intl("list-last-delimiter");
                 } else if (i != 0) {
-                    linkWord = ", ";
+                    linkWord = intl("list-delimiter");
                 }
     
                 if (linkWord != null) {
@@ -128,18 +126,7 @@ public class BasicCommands {
 
         MessageUtil.Builder().text(locationMessage.build()).toConsole(false).to(player).send();
 
-        Component helpMessage = Component.text()
-            .append(
-                Component.text("Want to back up something else? See ")
-                .color(NamedTextColor.DARK_AQUA))
-            .append(
-                Component.text("https://bit.ly/3xoHRAs")
-                .color(NamedTextColor.GOLD)
-                .hoverEvent(HoverEvent.showText(Component.text("Go to URL")))
-                .clickEvent(ClickEvent.openUrl("https://bit.ly/3xoHRAs")))
-            .build();
-
-        MessageUtil.Builder().text(helpMessage).toConsole(false).to(player).send();
+        MessageUtil.Builder().mmText(intl("brief-backup-list-help")).toConsole(false).to(player).send();
     }
 
     /**

@@ -1,6 +1,21 @@
 plugin-stop: "Stopping plugin!"
 metrics-started: "Metrics started"
 metrics-error: "Metrics failed to start"
+update-checker-started: "Checking for updates..."
+update-checker-new-release: |-
+  DriveBackup version <latest-version> has been released, You are currently running version <current-version>
+  Update at: <gold><click:open_link:http://bit.ly/2VGtF7L>http://bit.ly/2VGtF7L</click></gold>" or with <gold><click:run_command:/drivebackup update>/drivebackup update</click></gold>
+update-checker-unsupported-release: |-
+  You are running an unsupported release!
+  The recommended release is <latest-version>, and you are running <current-version>
+  If the plugin has just recently updated, please ignore this message
+update-checker-latest-release: "Hooray! You are running the latest release!"
+update-checker-failed: "There was an issue attempting to check for the latest DriveBackupV2 release"
+updater-start: "Attempting to download the latest version of DriveBackupV2"
+updater-no-updates: "You are using the latest version of DriveBackupV2!"
+updater-fetch-failed: "Unable to fetch latest version of DriveBackupV2"
+updater-update-failed: "Plugin update failed, see console for more info"
+updater-successful: "Successfully updated plugin! Please restart your server in order for changes to take effect"
 config-loaded: "Config loaded!"
 config-reloaded: "Config reloaded!"
 date-format-invalid: "Date format timezone not valid, using UTC"
@@ -40,6 +55,7 @@ external-database-list-blacklist-invalid: "Blacklist invalid in external backup 
 backups-scheduled: "Scheduling a backup to run at <time> every <days>"
 backups-interval-scheduled: "Scheduling a backup to run every <delay> minutes"
 no-perm: "You don't have permission to do this!"
+link-account-code: "To link your <provider> account, go to <gold><click:open_url:'<link-url>'><link-url></click></gold> and enter <gold><click:copy_to_clipboard:'<link-code>'><link-code></click></gold>"
 link-provider-failed: "Failed to link your <provider> account, please try again"
 link-provider-complete: "Your <provider> account is linked!"
 google-pick-shared-drive: "You have access one or more Shared Drives, if you'd like to use one of them either select it or reply with it's number in the chat."
@@ -106,12 +122,16 @@ test-method-failed: "The <upload-method> test was unsuccessful, please check the
 test-method-successful: "The <upload-method> test was successful"
 player-join-backup-enable: "Enabling automatic backups"
 player-join-update-available: "An update is available, get it here: <gold><click:open_link:http://bit.ly/2M14uVD>http://bit.ly/2M14uVD</click></gold>"
-player-join-backup-failed: "<red>The last backup failed!<red>"
+player-join-backup-failed: |-
+  <red>The last backup failed!<red>
+  Check the console for more info
 debug-log-creating: "Generating Debug Log"
 debug-log-created: "Debug URL: <url>"
-link-account-code: "To link your <provider> account, go to <gold><click:open_url:'<link-url>'><link-url></click></gold> and enter <gold><click:copy_to_clipboard:'<link-code>'><link-code></click></gold>"
-link-account-failed: "Failed to link your <provider> account"
 connection-error: "Failed to connect to <domain>, check your network connection and server firewall"
+brief-backup-list: "DriveBackupV2 will currently back up <list>"
+brief-backup-list-empty: "nothing"
+brief-backup-list-external-backups: "some external backups"
+brief-backup-list-help: "Want to back up something else? See <gold><click:open_link:http://bit.ly/3xoHRAs>http://bit.ly/3xoHRAs</click></gold>"
 drivebackup-command-header: "\n<gold>|====== <dark_red>DriveBackupV2</dark_red> ======|</gold>"
 drivebackup-docs-command: |-
   <header>
@@ -143,3 +163,5 @@ drivebackup-help-command: |-
   <gold><click:run_command:/drivebackup test onedrive>/drivebackup test onedrive</click></gold> - Tests the connection to OneDrive
   <gold><click:run_command:/drivebackup test dropbox>/drivebackup test dropbox</click></gold> - Tests the connection to Dropbox
   <gold><click:run_command:/drivebackup update>/drivebackup update</click></gold> - Updates the plugin if there is a newer version
+list-delimiter: ", "
+list-last-delimiter: " and "

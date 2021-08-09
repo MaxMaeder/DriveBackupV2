@@ -14,7 +14,10 @@ import okhttp3.Request;
 import okhttp3.Response;
 import ratismal.drivebackup.config.Permissions;
 import ratismal.drivebackup.plugin.DriveBackup;
+import ratismal.drivebackup.util.Logger;
 import ratismal.drivebackup.util.MessageUtil;
+
+import static ratismal.drivebackup.config.Localization.intl;
 
 public class Updater {
     // Plugin running Updater
@@ -55,21 +58,25 @@ public class Updater {
     }
 
     public void runUpdater(CommandSender initiator) {
+        Logger logger = (input, placeholders) -> {
+            MessageUtil.Builder().mmText(input, placeholders).to(initiator).send();
+        };
+
         if (UpdateChecker.isUpdateAvailable()) {
             if (UpdateChecker.getLatestDownloadUrl() != null) {
                 try {
-                    MessageUtil.Builder().text("Attempting to download the latest version of DriveBackupV2").to(initiator).toConsole(false).send();
-                    this.downloadFile();
-                    MessageUtil.Builder().text("Successfully updated plugin! Please restart your server in order for changes to take effect").toPerm(Permissions.BACKUP).to(initiator).send();
+                    logger.log(intl("updater-start"));
+                    downloadFile();
+                    logger.log(intl("updater-successful"));
                 } catch (Exception exception) {
-                    MessageUtil.Builder().text("Plugin update failed, see console for more info").to(initiator).toConsole(false).send();
+                    logger.log(intl("updater-update-failed"));
                     MessageUtil.sendConsoleException(exception);
                 }
             } else {
-                MessageUtil.Builder().text("Unable to fetch latest version of DriveBackupV2").to(initiator).toConsole(false).send();
+                logger.log(intl("updater-fetch-failed"));
             }
         } else {
-            MessageUtil.Builder().text("You are using the latest version of DriveBackupV2!").to(initiator).toConsole(false).send();
+            logger.log(intl("updater-no-updates"));
         }
     }
 }

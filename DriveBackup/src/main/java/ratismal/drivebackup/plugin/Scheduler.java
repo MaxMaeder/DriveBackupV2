@@ -87,9 +87,9 @@ public class Scheduler {
 
                 for (int i = 0; i < entry.days.length; i++) {
                     if (i == entry.days.length - 1) {
-                        scheduleDays.append(" and ");
+                        scheduleDays.append(intl("list-last-delimiter"));
                     } else if (i != 0) {
-                        scheduleDays.append(", ");
+                        scheduleDays.append(intl("list-delimiter"));
                     }
 
                     String dayName = entry.days[i].getDisplayName(TextStyle.FULL, config.advanced.dateLanguage);

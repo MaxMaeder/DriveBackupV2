@@ -1,7 +1,5 @@
 package ratismal.drivebackup.plugin.updater;
 
-import java.net.UnknownHostException;
-
 import org.json.JSONArray;
 
 import okhttp3.OkHttpClient;
@@ -9,9 +7,13 @@ import okhttp3.Request;
 import okhttp3.Response;
 import ratismal.drivebackup.config.ConfigParser;
 import ratismal.drivebackup.plugin.DriveBackup;
+import ratismal.drivebackup.util.Logger;
 import ratismal.drivebackup.util.MessageUtil;
+import ratismal.drivebackup.util.NetUtil;
 import ratismal.drivebackup.util.SchedulerUtil;
 import ratismal.drivebackup.util.Version;
+
+import static ratismal.drivebackup.config.Localization.intl;
 
 public class UpdateChecker {
     private static final int BUKKIT_PROJECT_ID = 383461;
@@ -43,26 +45,32 @@ public class UpdateChecker {
                     @Override
                     public void run() {
                         if (ConfigParser.getConfig().advanced.updateCheckEnabled) {
+                            Logger logger = (input, placeholders) -> {
+                                MessageUtil.Builder().mmText(input, placeholders).send();
+                            };
+
                             try {
-                                MessageUtil.Builder().text("Checking for updates...").toConsole(true).send();
+                                logger.log(intl("update-checker-started"));
 
                                 currentVersion = checker.getCurrent();
                                 latestVersion = checker.getLatest();
 
                                 if (latestVersion.isAfter(currentVersion)) {
-                                    MessageUtil.Builder().text("Version " + latestVersion.toString() + " has been released." + " You are currently running version " + currentVersion.toString()).toConsole(true).send();
-                                    MessageUtil.Builder().text("Update at: http://dev.bukkit.org/bukkit-plugins/drivebackupv2/").toConsole(true).send();
+                                    logger.log(
+                                        intl("update-checker-started"),
+                                        "latest-version", latestVersion.toString(),
+                                        "current-version", currentVersion.toString());
                                 } else if (currentVersion.isAfter(latestVersion)) {
-                                    MessageUtil.Builder().text("You are running an unsupported release!").toConsole(true).send();
-                                    MessageUtil.Builder().text("The recommended release is " + latestVersion.toString() + ", and you are running " + currentVersion.toString()).toConsole(true).send();
-                                    MessageUtil.Builder().text("If the plugin has just recently updated, please ignore this message").toConsole(true).send();
+                                    logger.log(
+                                        intl("update-checker-unsupported-release"),
+                                        "latest-version", latestVersion.toString(),
+                                        "current-version", currentVersion.toString());
                                 } else {
-                                    MessageUtil.Builder().text("Hooray! You are running the latest release!").toConsole(true).send();
+                                    logger.log(intl("update-checker-latest-release"));
                                 }
-                            } catch (UnknownHostException exception) {
-                                MessageUtil.Builder().text("There was an issue attempting to check for the latest DriveBackupV2 release, check your network connection").toPerm("drivebackup.linkAccounts").send();
                             } catch (Exception exception) {
-                                MessageUtil.Builder().text("There was an issue attempting to check for the latest DriveBackupV2 release").toConsole(true).send();
+                                NetUtil.catchException(exception, "dev.bukkit.org", logger);
+                                logger.log(intl("update-checker-failed"));
                                 MessageUtil.sendConsoleException(exception);
                             }
                         }
