@@ -1,3 +1,8 @@
+# Check if someone has translated the plugin into your language already!
+# https://github.com/MaxMaeder/DriveBackupV2/tree/master/translations
+#
+# If not, feel free to contribute!
+
 plugin-stop: "Stopping plugin!"
 metrics-started: "Metrics started"
 metrics-error: "Metrics failed to start"
