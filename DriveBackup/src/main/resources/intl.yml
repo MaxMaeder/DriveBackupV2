@@ -9,7 +9,7 @@ metrics-error: "Metrics failed to start"
 update-checker-started: "Checking for updates..."
 update-checker-new-release: |-
   DriveBackup version <latest-version> has been released, You are currently running version <current-version>
-  Update at: <gold><click:open_link:http://bit.ly/2VGtF7L>http://bit.ly/2VGtF7L</click></gold>" or with <gold><click:run_command:/drivebackup update>/drivebackup update</click></gold>
+  Update at: <gold><click:open_url:http://bit.ly/2VGtF7L>http://bit.ly/2VGtF7L</click></gold>" or with <gold><click:run_command:/drivebackup update>/drivebackup update</click></gold>
 update-checker-unsupported-release: |-
   You are running an unsupported release!
   The recommended release is <latest-version>, and you are running <current-version>
@@ -126,7 +126,7 @@ test-file-creation-failed: "Test file creation failed, please try again"
 test-method-failed: "The <upload-method> test was unsuccessful, please check the <gold>config.yml</gold>"
 test-method-successful: "The <upload-method> test was successful"
 player-join-backup-enable: "Enabling automatic backups"
-player-join-update-available: "An update is available, get it here: <gold><click:open_link:http://bit.ly/2M14uVD>http://bit.ly/2M14uVD</click></gold>"
+player-join-update-available: "An update is available, get it here: <gold><click:open_url:http://bit.ly/2M14uVD>http://bit.ly/2M14uVD</click></gold>"
 player-join-backup-failed: |-
   <red>The last backup failed!<red>
   Check the console for more info
@@ -136,13 +136,13 @@ connection-error: "Failed to connect to <domain>, check your network connection 
 brief-backup-list: "DriveBackupV2 will currently back up <list>"
 brief-backup-list-empty: "nothing"
 brief-backup-list-external-backups: "some external backups"
-brief-backup-list-help: "Want to back up something else? See <gold><click:open_link:http://bit.ly/3xoHRAs>http://bit.ly/3xoHRAs</click></gold>"
+brief-backup-list-help: "Want to back up something else? See <gold><click:open_url:http://bit.ly/3xoHRAs>http://bit.ly/3xoHRAs</click></gold>"
 drivebackup-command-header: "\n<gold>|====== <dark_red>DriveBackupV2</dark_red> ======|</gold>"
 drivebackup-docs-command: |-
   <header>
   Need help? Check out these helpful resources!
-  Wiki: <gold><click:open_link:http://bit.ly/3dDdmwK>http://bit.ly/3dDdmwK</click></gold>
-  Discord: <gold><click:open_link:http://bit.ly/3f4VuuT>http://bit.ly/3f4VuuT</click></gold>
+  Wiki: <gold><click:open_url:http://bit.ly/3dDdmwK>http://bit.ly/3dDdmwK</click></gold>
+  Discord: <gold><click:open_url:http://bit.ly/3f4VuuT>http://bit.ly/3f4VuuT</click></gold>
 drivebackup-version-command: |-
   <header>
   Plugin version: <gold><plugin-version></gold>
