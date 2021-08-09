@@ -362,12 +362,12 @@ public class UploadThread implements Runnable {
                 }
             }
 
-            fileUtil.pruneLocalBackups(location, formatter);
         } catch (Exception e) {
 
             logger.info(intl("backup-method-upload-failed"));
             MessageUtil.sendConsoleException(e);
         }
+        fileUtil.pruneLocalBackups(location, formatter);
     }
 
     /**
