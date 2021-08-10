@@ -126,6 +126,10 @@ public class SFTPUploader {
         initialRemoteFolder = sftpClient.pwd();
     }
 
+    public boolean isAuthenticated() {
+        return sshClient.isConnected();
+    }
+
     /**
      * Closes the connection to the SFTP server
      * @throws Exception

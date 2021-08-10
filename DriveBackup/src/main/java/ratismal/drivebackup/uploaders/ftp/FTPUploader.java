@@ -139,6 +139,14 @@ public class FTPUploader implements Uploader {
         initialRemoteFolder = ftpClient.printWorkingDirectory();
     }
 
+    public boolean isAuthenticated() {
+        if (sftpClient != null) {
+            return sftpClient.isAuthenticated();
+        } else {
+            return ftpClient.isConnected();
+        }
+    }
+
     /**
      * Closes the connection to the (S)FTP server
      */
@@ -290,8 +298,7 @@ public class FTPUploader implements Uploader {
      * Gets the name of this upload service
      * @return name of upload service
      */
-    public String getName()
-    {
+    public String getName() {
         return "(S)FTP";
     }
 

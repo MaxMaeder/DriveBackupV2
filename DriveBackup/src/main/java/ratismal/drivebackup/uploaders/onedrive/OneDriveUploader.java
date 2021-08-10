@@ -39,7 +39,7 @@ public class OneDriveUploader implements Uploader {
     private boolean errorOccurred;
     private long totalUploaded;
     private long lastUploaded;
-    private String accessToken;
+    private String accessToken = "";
     private String refreshToken;
 
     public static final String UPLOADER_NAME = "OneDrive";
@@ -103,7 +103,13 @@ public class OneDriveUploader implements Uploader {
         JSONObject parsedResponse = new JSONObject(response.body().string());
         response.close();
 
+        if (!response.isSuccessful()) return;
+
         accessToken = parsedResponse.getString("access_token");
+    }
+
+    public boolean isAuthenticated() {
+        return !accessToken.isEmpty();
     }
 
     /**

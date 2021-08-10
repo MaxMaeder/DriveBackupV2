@@ -40,7 +40,7 @@ public class DropboxUploader implements Uploader {
     /**
      * Global Dropbox tokens
      */
-    private String accessToken;
+    private String accessToken = "";
     private String refreshToken;
 
     /**
@@ -331,7 +331,13 @@ public class DropboxUploader implements Uploader {
         JSONObject parsedResponse = new JSONObject(response.body().string());
         response.close();
 
+        if (!response.isSuccessful()) return;
+
         accessToken = parsedResponse.getString("access_token");
+    }
+
+    public boolean isAuthenticated() {
+        return accessToken.isEmpty();
     }
 
     public boolean isErrorWhileUploading() {

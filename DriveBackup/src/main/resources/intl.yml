@@ -107,7 +107,13 @@ backup-method-upload-failed: "Failed to upload"
 backup-method-not-linked: |-
   Skipping backup to <upload-method>, account not yet linked
   To link your account, run <gold><click:run_command:'<link-command>'><link-command></click></gold>
+backup-method-not-auth: |-
+  Skipping backup to <upload-method>, failed to authenticate
+  Please verify all credentials are correct in the <gold>config.yml<gold>
 backup-method-error-occurred: "Failed to backup to <upload-method>, verify all credentials are correct or diagnose the problem with <gold><click:run_command:'<diagnose-command>'><diagnose-command></click></gold>"
+backup-method-not-auth-authenticator: |-
+  Skipping backup to <upload-method>, failed to authenticate
+  Please try re-linking your account, run <gold><click:run_command:'<link-command>'><link-command></click></gold>
 backup-method-complete: "Backup to <gold><upload-method></gold> complete"
 backup-complete: "Backup complete,"
 backup-disabled-inactivity: "Disabling automatic backups due to inactivity"

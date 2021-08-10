@@ -186,19 +186,6 @@ public class UploadThread implements Runnable {
 
         boolean errorOccurred = false;
 
-        if (
-            !config.backupMethods.googleDrive.enabled && 
-            !config.backupMethods.oneDrive.enabled && 
-            !config.backupMethods.dropbox.enabled && 
-            !config.backupMethods.ftp.enabled && 
-            config.backupStorage.localKeepCount == 0
-            ) {
-
-            logger.log(intl("backup-no-methods"));
-
-            return;
-        }
-
         List<ExternalBackupSource> externalBackupList = Arrays.asList(config.externalBackups.sources);
         backupList = Arrays.asList(config.backupList.list);
 
@@ -206,10 +193,6 @@ public class UploadThread implements Runnable {
             logger.log(intl("backup-empty-list"));
             return;
         }
-
-        ServerUtil.setAutoSave(false);
-
-        logger.broadcast(intl("backup-start"));
 
         uploaders = new ArrayList<Uploader>();
         if (config.backupMethods.googleDrive.enabled) {
@@ -224,8 +207,17 @@ public class UploadThread implements Runnable {
         if (config.backupMethods.ftp.enabled) {
             uploaders.add(new FTPUploader(logger));
         }
-
-        ensureMethodsLinked();
+        
+        ensureMethodsAuthenticated();
+        
+        if (uploaders.size() == 0 && config.backupStorage.localKeepCount == 0) {
+            logger.log(intl("backup-no-methods"));
+                
+            return;
+        }
+            
+        logger.broadcast(intl("backup-start"));
+        ServerUtil.setAutoSave(false);
 
         for (ExternalBackupSource externalBackup : externalBackupList) {
             if (externalBackup instanceof ExternalFTPSource) {
@@ -287,18 +279,39 @@ public class UploadThread implements Runnable {
         }
     }
 
-    private void ensureMethodsLinked() {
-        for (Uploader uploader : uploaders) {
-            AuthenticationProvider provider = uploader.getAuthProvider();
-            if (provider == null) continue;
+    private void ensureMethodsAuthenticated() {
+        Iterator<Uploader> iterator = uploaders.iterator();
 
-            if (!Authenticator.hasRefreshToken(provider)) {
+        while (iterator.hasNext()) {
+            Uploader uploader = iterator.next();
+            AuthenticationProvider provider = uploader.getAuthProvider();
+
+            String linkCommand = "/drivebackup linkaccount ";
+
+            if (provider != null && !Authenticator.hasRefreshToken(provider)) {
                 logger.log(
                     intl("backup-method-not-linked"),
-                    "link-command", "/drivebackup linkaccount " + provider.getId(),
+                    "link-command", linkCommand + provider.getId(),
                     "upload-method", provider.getName());
 
-                uploaders.remove(uploader);
+                iterator.remove();
+                continue;
+            }
+
+            if (!uploader.isAuthenticated()) {
+                if (provider == null) {
+                    logger.log(
+                        intl("backup-method-not-auth"),
+                        "upload-method", uploader.getName());
+                } else {
+                    logger.log(
+                        intl("backup-method-not-auth-authenticator"),
+                        "link-command", linkCommand + provider.getId(),
+                        "upload-method", uploader.getName());
+                }
+
+                iterator.remove();
+                continue;
             }
         }
     }

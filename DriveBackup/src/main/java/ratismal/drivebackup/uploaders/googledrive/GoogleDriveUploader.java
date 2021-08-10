@@ -119,6 +119,10 @@ public class GoogleDriveUploader implements Uploader {
             .build();
     }
 
+    public boolean isAuthenticated() {
+        return service != null;
+    }
+
     /**
      * Sets the connect/read timeouts of the Google Drive Client by implementing {@code HttpRequestInitializer}
      * @param requestInitializer the default {@code HttpRequestInitializer} provided by the Google Drive Client
@@ -236,8 +240,7 @@ public class GoogleDriveUploader implements Uploader {
      * Gets the name of this upload service
      * @return name of upload service
      */
-    public String getName()
-    {
+    public String getName() {
         return UPLOADER_NAME;
     }
 
