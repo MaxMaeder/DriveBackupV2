@@ -337,7 +337,7 @@ public class DropboxUploader implements Uploader {
     }
 
     public boolean isAuthenticated() {
-        return accessToken.isEmpty();
+        return !accessToken.isEmpty();
     }
 
     public boolean isErrorWhileUploading() {
