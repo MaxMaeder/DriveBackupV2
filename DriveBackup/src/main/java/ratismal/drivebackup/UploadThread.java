@@ -179,8 +179,6 @@ public class UploadThread implements Runnable {
         }
 
         if (config.backupStorage.backupsRequirePlayers && !PlayerListener.isAutoBackupsActive() && initiator == null) {
-            logger.log(intl("backup-skipped-inactivity"));
-
             return;
         }
 

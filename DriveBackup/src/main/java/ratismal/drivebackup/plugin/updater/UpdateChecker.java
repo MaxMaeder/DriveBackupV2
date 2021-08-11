@@ -32,6 +32,8 @@ public class UpdateChecker {
     private static Version latestVersion;
     private static String latestDownloadUrl;
 
+    private static boolean hasSentStartMessage = false;
+
     public static void updateCheck() {
         DriveBackup plugin = DriveBackup.getInstance();
         UpdateChecker checker = new UpdateChecker();
@@ -50,7 +52,10 @@ public class UpdateChecker {
                             };
 
                             try {
-                                logger.log(intl("update-checker-started"));
+                                if (!hasSentStartMessage) {
+                                    logger.log(intl("update-checker-started"));
+                                    hasSentStartMessage = true;
+                                }
 
                                 currentVersion = checker.getCurrent();
                                 latestVersion = checker.getLatest();
@@ -65,8 +70,6 @@ public class UpdateChecker {
                                         intl("update-checker-unsupported-release"),
                                         "latest-version", latestVersion.toString(),
                                         "current-version", currentVersion.toString());
-                                } else {
-                                    logger.log(intl("update-checker-latest-release"));
                                 }
                             } catch (Exception exception) {
                                 NetUtil.catchException(exception, "dev.bukkit.org", logger);

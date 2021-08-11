@@ -14,7 +14,6 @@ update-checker-unsupported-release: |-
   You are running an unsupported release!
   The recommended release is <latest-version>, and you are running <current-version>
   If the plugin has just recently updated, please ignore this message
-update-checker-latest-release: "Hooray! You are running the latest release!"
 update-checker-failed: "There was an issue attempting to check for the latest DriveBackupV2 release"
 updater-start: "Attempting to download the latest version of DriveBackupV2"
 updater-no-updates: "You are using the latest version of DriveBackupV2!"
@@ -71,7 +70,6 @@ backup-forced: "Forcing a backup"
 backup-already-running: |-
   A backup is already running
   <backup-status>
-backup-skipped-inactivity: "Skipping backup due to inactivity"
 backup-no-methods: "No backup method is enabled"
 backup-empty-list: "The backup list is empty"
 backup-start: "Creating backups, the server may lag for a little while..."
