@@ -547,7 +547,7 @@ public class GoogleDriveUploader implements Uploader {
                     break;
                 }
                 ChildReference file = iterator.next();
-                Drive.Files.Delete removeItem = service.files().delete(file.getId());
+                Drive.Files.Delete removeItem = service.files().delete(file.getId()).setSupportsAllDrives(true);
                 removeItem.execute();
                 iterator.remove();
             }
