@@ -155,10 +155,9 @@ public class MessageUtil {
         if (sendToConsole) recipients.add(Bukkit.getConsoleSender());
 
         Config config = (Config) ObjectUtils.defaultIfNull(ConfigParser.getConfig(), ConfigParser.defaultConfig());
-        if (!config.messages.sendInChat) return;
 
         for (CommandSender player : recipients) {
-            if (player == null) {
+            if (player == null || (!config.messages.sendInChat && player instanceof Player)) {
                 continue;
             }
 
