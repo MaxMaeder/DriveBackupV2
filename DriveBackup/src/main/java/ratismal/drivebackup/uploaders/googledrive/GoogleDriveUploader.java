@@ -145,24 +145,32 @@ public class GoogleDriveUploader implements Uploader {
      */
     public void test(java.io.File testFile) {
         try {
+            String sharedDriveId = ConfigParser.getConfig().backupMethods.googleDrive.sharedDriveId;
             String destination = ConfigParser.getConfig().backupStorage.remoteDirectory;
+
             File body = new File();
-                body.setTitle(testFile.getName());
-                body.setDescription("DriveBackupV2 test file");
+            body.setTitle(testFile.getName());
+            body.setDescription("DriveBackupV2 test file");
 
-            FileContent mediaContent = new FileContent("plain/txt", testFile);
+            FileContent testContent = new FileContent("plain/txt", testFile);
 
-            File folder = getFolder(destination);
+            File folder;
+            if (!sharedDriveId.isEmpty()) {
+                folder = createFolder(destination, sharedDriveId);
+            } else {
+                folder = createFolder(destination);
+            }
+
             ParentReference fileParent = new ParentReference();
             fileParent.setId(folder.getId());
             body.setParents(Collections.singletonList(fileParent));
 
-            File uploadedFile = service.files().insert(body, mediaContent).execute();
+            File uploadedFile = service.files().insert(body, testContent).setSupportsAllDrives(true).execute();
             String fileId = uploadedFile.getId();
             
             TimeUnit.SECONDS.sleep(5);
                 
-            service.files().delete(fileId).execute();
+            service.files().delete(fileId).setSupportsAllDrives(true).execute();
         } catch (Exception exception) {
             NetUtil.catchException(exception, "www.googleapis.com", logger);
             MessageUtil.sendConsoleException(exception);
@@ -407,7 +415,7 @@ public class GoogleDriveUploader implements Uploader {
         folder.setTitle(name);
         folder.setMimeType("application/vnd.google-apps.folder");
 
-        folder = service.files().insert(folder).execute();
+        folder = service.files().insert(folder).setSupportsAllDrives(true).execute();
 
         return folder;
     }
@@ -450,6 +458,7 @@ public class GoogleDriveUploader implements Uploader {
             Drive.Files.List request = service.files().list()
                 .setSupportsAllDrives(true)
                 .setIncludeItemsFromAllDrives(true)
+                .setCorpora("allDrives")
                 .setQ("mimeType='application/vnd.google-apps.folder' and trashed=false and '" + parent.getId() + "' in parents");
             FileList files = request.execute();
             for (File folderfiles : files.getItems()) {
@@ -474,6 +483,8 @@ public class GoogleDriveUploader implements Uploader {
         try {
             Drive.Files.List request = service.files().list()
                 .setSupportsAllDrives(true)
+                .setIncludeItemsFromAllDrives(true)
+                .setCorpora("allDrives")
                 .setQ("mimeType='application/vnd.google-apps.folder' and trashed=false");
             FileList files = request.execute();
             for (File folderfiles : files.getItems()) {
