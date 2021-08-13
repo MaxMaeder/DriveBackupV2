@@ -185,7 +185,7 @@ public class UploadThread implements Runnable {
         boolean errorOccurred = false;
 
         List<ExternalBackupSource> externalBackupList = Arrays.asList(config.externalBackups.sources);
-        backupList = Arrays.asList(config.backupList.list);
+        backupList = new ArrayList<BackupListEntry>(Arrays.asList(config.backupList.list));
 
         if (externalBackupList.size() == 0 && backupList.size() == 0) {
             logger.log(intl("backup-empty-list"));
