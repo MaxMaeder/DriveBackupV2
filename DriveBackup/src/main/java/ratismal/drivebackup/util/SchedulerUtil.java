@@ -1,9 +1,9 @@
 package ratismal.drivebackup.util;
 
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
 import java.time.temporal.TemporalAccessor;
 import java.util.ArrayList;
-import java.util.Locale;
 
 import org.bukkit.Bukkit;
 
@@ -36,6 +36,11 @@ public class SchedulerUtil {
      * @return the parsed time
      */
     public static TemporalAccessor parseTime(String time) throws IllegalArgumentException {
-        return DateTimeFormatter.ofPattern("kk:mm", Locale.ENGLISH).parse(time);
+        DateTimeFormatter formatter = new DateTimeFormatterBuilder()
+            .appendOptional(DateTimeFormatter.ofPattern("kk:mm"))
+            .appendOptional(DateTimeFormatter.ofPattern("k:mm"))
+            .toFormatter();
+
+        return formatter.parse(time);
     }
 }
