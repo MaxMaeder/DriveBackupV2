@@ -1,5 +1,6 @@
 package ratismal.drivebackup.plugin;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.bukkit.command.CommandSender;
@@ -13,10 +14,9 @@ import ratismal.drivebackup.config.ConfigParser;
 import ratismal.drivebackup.config.Localization;
 import ratismal.drivebackup.config.Permissions;
 import ratismal.drivebackup.handler.CommandTabComplete;
-import ratismal.drivebackup.handler.PlayerListener;
 import ratismal.drivebackup.handler.commandHandler.CommandHandler;
-import ratismal.drivebackup.plugin.updater.UpdateChecker;
-import ratismal.drivebackup.plugin.updater.Updater;
+import ratismal.drivebackup.handler.listeners.*;
+import ratismal.drivebackup.plugin.updater.*;
 import ratismal.drivebackup.util.CustomConfig;
 import ratismal.drivebackup.util.MessageUtil;
 
@@ -39,12 +39,18 @@ public class DriveBackup extends JavaPlugin {
     public static BukkitAudiences adventure;
 
     /**
+     * A list of players who are currently waiting to reply.
+     */
+    public static List<CommandSender> chatInputPlayers;
+
+    /**
      * What to do when plugin is enabled (init)
      */
     public void onEnable() {
         plugin = this;
 
         DriveBackup.adventure = BukkitAudiences.create(plugin);
+        DriveBackup.chatInputPlayers = new ArrayList<>();
 
         List<CommandSender> configPlayers = Permissions.getPlayersWithPerm(Permissions.RELOAD_CONFIG);
 
@@ -71,6 +77,7 @@ public class DriveBackup extends JavaPlugin {
 
         PluginManager pm = getServer().getPluginManager();
         pm.registerEvents(new PlayerListener(), plugin);
+        pm.registerEvents(new ChatInputListener(), plugin);
 
         Scheduler.startBackupThread();
 

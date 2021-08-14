@@ -35,7 +35,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import org.bukkit.command.CommandSender;
-import org.bukkit.conversations.*;
+import org.bukkit.entity.Player;
 import org.json.JSONObject;
 
 import static ratismal.drivebackup.config.Localization.intl;
@@ -48,6 +48,11 @@ public class GoogleDriveUploader implements Uploader {
     private UploadLogger logger;
     private boolean errorOccurred;
     private String refreshToken;
+
+    /**
+     * Cached instance of shared drives
+     */
+    private List<com.google.api.services.drive.model.Drive> drives;
 
     public static final String UPLOADER_NAME = "Google Drive";
 
@@ -81,6 +86,7 @@ public class GoogleDriveUploader implements Uploader {
         try {
             refreshToken = Authenticator.getRefreshToken(AuthenticationProvider.GOOGLE_DRIVE);
             retrieveNewAccessToken();
+            drives = service.drives().list().execute().getItems();
         } catch (Exception e) {
             MessageUtil.sendConsoleException(e);
             setErrorOccurred(true);
@@ -260,10 +266,7 @@ public class GoogleDriveUploader implements Uploader {
      * Setup for authenticated user that has access to one or more shared drives.
      * @throws Exception
      */
-    public boolean setupSharedDrives(CommandSender initiator) throws Exception {
-        AuthenticationProvider provider = AuthenticationProvider.GOOGLE_DRIVE;
-        List<com.google.api.services.drive.model.Drive> drives = service.drives().list().execute().getItems();
-
+    public void setupSharedDrives(CommandSender initiator) throws Exception {
         if (drives.size() > 0) {
             logger.log(intl("google-pick-shared-drive"));
 
@@ -273,72 +276,56 @@ public class GoogleDriveUploader implements Uploader {
                 "drive-num", "1",
                 "drive-name", intl("default-google-drive-name")); 
 
-            int index = 2;
+            int index = 1;
             for (com.google.api.services.drive.model.Drive drive : drives) {
                 logger.log(
                     intl("google-shared-drive-option"),
                     "select-command", drive.getId(),
-                    "drive-num", String.valueOf(index++),
+                    "drive-num", String.valueOf(++index),
                     "drive-name", drive.getName()); 
             }
-            final Prompt driveId = new StringPrompt() {
-
-                @Override
-                public String getPromptText(final ConversationContext context) {
-                    return "";
-                }
-    
-                @Override
-                public Prompt acceptInput(final ConversationContext context, String input) {
-                    final DriveBackup instance = DriveBackup.getInstance();
-                    final String idKey = "googledrive.shared-drive-id";
-
-                    logger.log("got: " + input);
-
-                    for (com.google.api.services.drive.model.Drive drive : drives) {
-                        if (input.equals(drive.getId())) {
-
-                            instance.getConfig().set(idKey, input);
-                            instance.saveConfig();
-                            Authenticator.linkSuccess(initiator, provider, logger);
-
-                            return Prompt.END_OF_CONVERSATION;
-                        }
-                    }
-
-                    if (input.equals("1")) {
-
-                        instance.getConfig().set(idKey, "");
-                        instance.saveConfig();
-                        Authenticator.linkSuccess(initiator, provider, logger);
-
-                        return Prompt.END_OF_CONVERSATION;
-                    } else if (input.matches("[0-9]+")) {
-                        logger.log("in here");
-
-                        instance.getConfig().set(idKey, drives.get(Integer.parseInt(input) - 2).getId());
-                        instance.saveConfig();
-                        Authenticator.linkSuccess(initiator, provider, logger);
-                        
-                        return Prompt.END_OF_CONVERSATION;
-                    }
-
-                    // TODO: handle this better
-                    Authenticator.linkFail(provider, logger);
-                    return Prompt.END_OF_CONVERSATION;
-                }
-            };
-    
-            final ConversationFactory factory = new ConversationFactory(DriveBackup.getInstance())
-                .withTimeout(60)
-                .withLocalEcho(false)
-                .withFirstPrompt(driveId);
-    
-            factory.buildConversation((Conversable) initiator).begin();
-            return true;
-        } else {
-            return false;
+            if (initiator instanceof Player) {
+                Player player = (Player) initiator;
+                DriveBackup.chatInputPlayers.add(player);
+            } else {
+                DriveBackup.chatInputPlayers.add(initiator);
+            }
         }
+    }
+
+    public void finalizeSharedDrives(CommandSender initiator, String input) {
+        final DriveBackup instance = DriveBackup.getInstance();
+        final String idKey = "googledrive.shared-drive-id";
+
+        for (com.google.api.services.drive.model.Drive drive : drives) {
+            if (input.equals(drive.getId())) {
+
+                instance.getConfig().set(idKey, input);
+                instance.saveConfig();
+                Authenticator.linkSuccess(initiator, getAuthProvider(), logger);
+
+                return;
+            }
+        }
+
+        if (input.equals("1")) {
+
+            instance.getConfig().set(idKey, "");
+            instance.saveConfig();
+            Authenticator.linkSuccess(initiator, getAuthProvider(), logger);
+
+            return;
+        } else if (input.matches("[0-9]+")) {
+
+            instance.getConfig().set(idKey, drives.get(Integer.parseInt(input) - 2).getId());
+            instance.saveConfig();
+            Authenticator.linkSuccess(initiator, getAuthProvider(), logger);
+                        
+            return;
+        }
+
+        // TODO: handle this better
+        Authenticator.linkFail(getAuthProvider(), logger);
     }
 
     /**
