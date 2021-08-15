@@ -3,7 +3,7 @@ package ratismal.drivebackup.util;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.temporal.TemporalAccessor;
-import java.util.ArrayList;
+import java.util.List;
 
 import org.bukkit.Bukkit;
 
@@ -12,13 +12,14 @@ public class SchedulerUtil {
 
     /**
      * Cancels the specified tasks
-     * @param taskList an ArrayList of the IDs of the tasks
+     * @param taskList an List of the IDs of the tasks
      */
-    public static void cancelTasks(ArrayList<Integer> taskList) {
-        for (int i = 0; i < taskList.size(); i++) {
-            Bukkit.getScheduler().cancelTask(taskList.get(i));
-            taskList.remove(i);
+    public static void cancelTasks(List<Integer> taskList) {
+        for (int task : taskList) {
+            Bukkit.getScheduler().cancelTask(task);
         }
+
+        taskList.clear();
     }
 
     /**
