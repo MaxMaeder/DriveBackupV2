@@ -10,7 +10,7 @@ router.get('/', async function(req, res) {
 
   await docRef.update({ auth_code: req.query.code });
 
-  res.sendFile(__dirname + '/views/success.html');
+  res.sendFile(process.cwd() + '/views/success.html');
 });
 
 module.exports = router;
