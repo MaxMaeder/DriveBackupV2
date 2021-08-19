@@ -1,0 +1,38 @@
+name: Bug report
+description: Create a report to help us improve
+body:
+- type: markdown
+  attributes:
+    value: |
+      Thanks for taking the time to fill out this bug report! Fill out the following form to your best ability to help us fix the problem.
+      Only use this if you're absolutely sure that you found a bug and can reproduce it. For anything else, use: [our Discord server](https://discord.gg/VdCAUtm) or the [the Wiki](https://github.com/MaxMaeder/DriveBackupV2/wiki).
+- type: textarea
+  attributes:
+    label: Describe the bug
+    description: A clear and concise description of what the bug is.
+  validations:
+    required: true
+- type: textarea
+  attributes:
+    label: To Reproduce
+    description: Steps to reproduce this behaviour
+    placeholder: |
+      1. Go to '...'
+      2. Click on '...'
+      3. Scroll down to '...'
+      4. See error
+  validations:
+    required: true
+- type: textarea
+  attributes:
+    label: Screenshots / Videos
+    description: If applicable, add screenshots to help explain your problem.
+- type: textarea
+  attributes:
+    label: Server and Plugin Versions
+    description: |
+      If this bug occurs on a server you do not control, please fill this in to the best of your knowledge.
+- type: textarea
+  attributes:
+    label: Additional Context
+    description: Add any other context about the problem here
