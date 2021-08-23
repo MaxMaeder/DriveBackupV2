@@ -209,8 +209,10 @@ public class GoogleDriveUploader implements Uploader {
                     folder = createFolder(typeFolder, sharedDriveId);
                 } else if (folder == null) {
                     folder = createFolder(typeFolder);
+                } else if (!sharedDriveId.isEmpty()) {
+                    folder = createFolder(typeFolder, folder, true);
                 } else {
-                    folder = createFolder(typeFolder, folder);
+                    folder = createFolder(typeFolder, folder, false);
                 }
             }
 
@@ -335,10 +337,10 @@ public class GoogleDriveUploader implements Uploader {
      * @return the created folder
      * @throws Exception
      */
-    private File createFolder(String name, File parent) throws Exception {
+    private File createFolder(String name, File parent, boolean sharedDrive) throws Exception {
         File folder = null;
 
-        folder = getFolder(name, parent);
+        folder = getFolder(name, parent, sharedDrive);
         if (folder != null) {
             return folder;
         }
@@ -402,7 +404,7 @@ public class GoogleDriveUploader implements Uploader {
         folder.setTitle(name);
         folder.setMimeType("application/vnd.google-apps.folder");
 
-        folder = service.files().insert(folder).setSupportsAllDrives(true).execute();
+        folder = service.files().insert(folder).execute();
 
         return folder;
     }
@@ -440,13 +442,16 @@ public class GoogleDriveUploader implements Uploader {
      * @param parent the parent folder
      * @return the folder or {@code null}
      */
-    private File getFolder(String name, File parent) {
+    private File getFolder(String name, File parent, boolean sharedDrive) {
         try {
             Drive.Files.List request = service.files().list()
-                .setSupportsAllDrives(true)
-                .setIncludeItemsFromAllDrives(true)
-                .setCorpora("allDrives")
                 .setQ("mimeType='application/vnd.google-apps.folder' and trashed=false and '" + parent.getId() + "' in parents");
+            if (sharedDrive) {
+                request.setSupportsAllDrives(true)
+                .setIncludeItemsFromAllDrives(true)
+                .setCorpora("allDrives");
+            }
+            
             FileList files = request.execute();
             for (File folderfiles : files.getItems()) {
                 if (folderfiles.getTitle().equals(name)) {
@@ -469,9 +474,6 @@ public class GoogleDriveUploader implements Uploader {
     private File getFolder(String name) {
         try {
             Drive.Files.List request = service.files().list()
-                .setSupportsAllDrives(true)
-                .setIncludeItemsFromAllDrives(true)
-                .setCorpora("allDrives")
                 .setQ("mimeType='application/vnd.google-apps.folder' and trashed=false");
             FileList files = request.execute();
             for (File folderfiles : files.getItems()) {
