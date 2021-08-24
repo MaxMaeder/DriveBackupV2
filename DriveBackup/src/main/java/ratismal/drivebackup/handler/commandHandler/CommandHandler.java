@@ -9,7 +9,6 @@ import ratismal.drivebackup.UploadThread;
 import ratismal.drivebackup.uploaders.Authenticator;
 import ratismal.drivebackup.uploaders.Authenticator.AuthenticationProvider;
 import ratismal.drivebackup.config.Permissions;
-import ratismal.drivebackup.handler.DebugCollector;
 import ratismal.drivebackup.plugin.DriveBackup;
 import ratismal.drivebackup.util.MessageUtil;
 
@@ -53,7 +52,7 @@ public class CommandHandler implements CommandExecutor {
                 MessageUtil.Builder().mmText(intl("config-reloaded")).to(sender).send();
 
                 break;
-            case "debug":
+            /*case "debug":
                 if (!Permissions.hasPerm(sender, Permissions.RELOAD_CONFIG)) break;
 
                 MessageUtil.Builder().mmText(intl("debug-log-creating")).to(sender).toConsole(false).send();
@@ -65,7 +64,7 @@ public class CommandHandler implements CommandExecutor {
                     .to(sender).toConsole(false)
                     .send();
 
-                break;
+                break;*/
             case "linkaccount":
                 if (args.length < 2) {
                     BasicCommands.sendHelp(sender);
