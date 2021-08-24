@@ -33,7 +33,7 @@ remote-save-directory: "backups"
 
 googledrive:
   enabled: false
-  shared-drive-id:
+  shared-drive-id: ""
 onedrive:
   enabled: false
 dropbox:
