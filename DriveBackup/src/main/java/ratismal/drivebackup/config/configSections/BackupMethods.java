@@ -91,7 +91,7 @@ public class BackupMethods {
     public static BackupMethods parse(FileConfiguration config, Logger logger) {
         GoogleDriveBackupMethod googleDriveMethod = new GoogleDriveBackupMethod(
             config.getBoolean("googledrive.enabled"),
-            config.getString("googledrive.shared-drive-id")
+            config.getString("googledrive.shared-drive-id").trim()
             );
 
         OneDriveBackupMethod oneDriveMethod = new OneDriveBackupMethod(
