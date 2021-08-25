@@ -8,6 +8,8 @@ router.get('/', async function(req, res) {
   }
   var docRef = db.collection('pins').doc(req.query.state);
 
+  if (!docRef.exists) return res.send({ success: false, msg: "code_not_authenticated"});
+
   await docRef.update({ auth_code: req.query.code });
 
   res.sendFile(process.cwd() + '/views/success.html');
