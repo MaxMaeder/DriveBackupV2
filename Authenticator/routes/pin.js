@@ -30,6 +30,7 @@ router.post('/', async function(req, res) {
     success: true,
     user_code,
     device_code,
+    verification_uri: "https://drivebackup.web.app/",
     interval
   });
   
