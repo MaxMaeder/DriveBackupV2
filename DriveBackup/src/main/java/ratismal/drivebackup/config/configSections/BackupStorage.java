@@ -47,7 +47,7 @@ public class BackupStorage {
         Configuration defaultConfig = config.getDefaults();
 
         long delay = config.getLong("delay");
-        if (delay <= 5 && delay != -1) {
+        if (delay < 5 && delay != -1) {
             logger.log(intl("invalid-backup-delay"));
             delay = defaultConfig.getLong("delay");
         }
