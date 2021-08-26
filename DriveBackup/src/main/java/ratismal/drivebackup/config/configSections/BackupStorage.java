@@ -62,7 +62,7 @@ public class BackupStorage {
         }
 
         int keepCount = config.getInt("keep-count");
-        if (keepCount < -1) {
+        if (keepCount < 1 && keepCount != -1) {
             logger.log(intl("keep-count-invalid"));
             keepCount = defaultConfig.getInt("keep-count");
         }
