@@ -163,7 +163,6 @@ drivebackup-help-command: |-
   <gold><click:run_command:/drivebackup linkaccount onedrive>/drivebackup linkaccount onedrive</click></gold> - Links your OneDrive account for backups
   <gold><click:run_command:/drivebackup linkaccount dropbox>/drivebackup linkaccount dropbox</click></gold> - Links your Dropbox account for backups
   <gold><click:run_command:/drivebackup reloadconfig>/drivebackup reloadconfig</click></gold> - Reloads the config.yml
-  <gold><click:run_command:/drivebackup debug>/drivebackup debug</click></gold> - Generates a debug log
   <gold><click:run_command:/drivebackup nextbackup>/drivebackup nextbackup</click></gold> - Gets the time/date of the next auto backup
   <gold><click:run_command:/drivebackup status>/drivebackup status</click></gold> - Gets the status of the running backup
   <gold><click:run_command:/drivebackup backup>/drivebackup backup</click></gold> - Manually initiates a backup
