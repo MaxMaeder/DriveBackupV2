@@ -258,7 +258,8 @@ public class UploadThread implements Runnable {
         if (initiator != null) {
             logger.broadcast(intl("backup-complete"));
         } else {
-            logger.broadcast(intl("backup-complete") + " " + getNextAutoBackup());
+            logger.broadcast(intl("backup-complete"));
+            logger.broadcast(getNextAutoBackup());
         }
 
         if (config.backupStorage.backupsRequirePlayers && Bukkit.getOnlinePlayers().size() == 0 && PlayerListener.isAutoBackupsActive()) {

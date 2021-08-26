@@ -113,13 +113,13 @@ backup-method-not-auth-authenticator: |-
   Skipping backup to <upload-method>, failed to authenticate
   Please try re-linking your account, run <gold><click:run_command:'<link-command>'><link-command></click></gold>
 backup-method-complete: "Backup to <gold><upload-method></gold> complete"
-backup-complete: "Backup complete,"
+backup-complete: "Backup complete"
 backup-disabled-inactivity: "Disabling automatic backups due to inactivity"
 backup-status-not-running: "No backups are running"
 backup-status-compressing: "Compressing backup set \"<set-name>\", set <set-num> of <set-count>"
 backup-status-uploading: "Uploading backup set \"<set-name>\", set <set-num> of <set-count>"
-next-backup: "the next backup is in %TIME minutes"
-next-schedule-backup: "the next backup is at %DATE"
+next-backup: "The next backup is in %TIME minutes"
+next-schedule-backup: "The next backup is at %DATE"
 next-schedule-backup-format: "h:mm a EEE, MMM d O"
 auto-backups-disabled: "Automatic backups are disabled"
 test-method-not-specified: "Please specify a backup method to test"
