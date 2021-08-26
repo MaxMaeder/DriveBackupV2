@@ -6,7 +6,6 @@ import org.json.JSONObject;
 import okhttp3.FormBody;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
-import okhttp3.RequestBody;
 import okhttp3.Response;
 import ratismal.drivebackup.UploadThread.UploadLogger;
 import ratismal.drivebackup.handler.commandHandler.BasicCommands;
@@ -25,6 +24,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 
 import main.java.credentials.AuthenticatorCredentials;
+import main.java.credentials.OneDriveCredentials;
 
 import static ratismal.drivebackup.config.Localization.intl;
 
@@ -33,13 +33,16 @@ public class Authenticator {
      * Endpoints
      */
     private static String REQUEST_CODE_ENDPOINT = "https://drivebackup.web.app/pin";
-    private static String VERIFICATION_ENDPOINT = "https://drivebackup.web.app/";
     private static String POLL_VERIFICATION_ENDPOINT = "https://drivebackup.web.app/token";
+    private static String ONEDRIVE_REQUEST_CODE_ENDPOINT = "https://login.microsoftonline.com/common/oauth2/v2.0/devicecode";
+    private static String ONEDRIVE_POLL_VERIFICATION_ENDPOINT = "https://login.microsoftonline.com/common/oauth2/v2.0/token";
 
     /**
      * Global instance of the HTTP client
      */
     private static final OkHttpClient httpClient = new OkHttpClient();
+
+    private static int taskId = -1;
 
     public enum AuthenticationProvider {
         GOOGLE_DRIVE("Google Drive", "googledrive", "/GoogleDriveCredential.json"),
@@ -83,16 +86,27 @@ public class Authenticator {
             MessageUtil.Builder().mmText(input, placeholders).to(initiator).toConsole(false).send();
         };
 
+        cancelPollTask();
+
         try {
-            RequestBody requestBody = new FormBody.Builder()
-                .add("client_secret", AuthenticatorCredentials.CLIENT_SECRET)
-                .add("type", provider.getId())
+            FormBody.Builder requestBody = new FormBody.Builder()
+                .add("type", provider.getId());
+
+            String requestEndpoint;
+            if (provider == AuthenticationProvider.ONEDRIVE) {
+                requestBody.add("client_id", OneDriveCredentials.CLIENT_ID);
+                requestBody.add("scope", "offline_access Files.ReadWrite");
+
+                requestEndpoint = ONEDRIVE_REQUEST_CODE_ENDPOINT;
+            } else {
+                requestBody.add("client_secret", AuthenticatorCredentials.CLIENT_SECRET);
                 
-                .build();
+                requestEndpoint = REQUEST_CODE_ENDPOINT;
+            }
 
             Request request = new Request.Builder()
-                .url(REQUEST_CODE_ENDPOINT)
-                .post(requestBody)
+                .url(requestEndpoint)
+                .post(requestBody.build())
                 .build();
 
             Response response = httpClient.newCall(request).execute();
@@ -101,28 +115,38 @@ public class Authenticator {
 
             String userCode = parsedResponse.getString("user_code");
             final String deviceCode = parsedResponse.getString("device_code");
+            String verificationUri = parsedResponse.getString("verification_uri");
             long responseCheckDelay = SchedulerUtil.sToTicks(parsedResponse.getLong("interval"));
 
             logger.log(
                 intl("link-account-code"),
-                "link-url", VERIFICATION_ENDPOINT,
+                "link-url", verificationUri,
                 "link-code", userCode,
                 "provider", provider.getName());
 
-            final int[] task = new int[]{-1};
-            task[0] = plugin.getServer().getScheduler().scheduleSyncRepeatingTask(plugin, new Runnable() {
+            taskId = plugin.getServer().getScheduler().scheduleSyncRepeatingTask(plugin, new Runnable() {
                 @Override
                 public void run() {
                     try {
-                        RequestBody requestBody = new FormBody.Builder()
-                            .add("client_secret", AuthenticatorCredentials.CLIENT_SECRET)
+                        FormBody.Builder requestBody = new FormBody.Builder()
                             .add("device_code", deviceCode)
-                            .add("user_code", userCode)
-                            .build();
+                            .add("user_code", userCode);
+
+                        String requestEndpoint;
+                        if (provider == AuthenticationProvider.ONEDRIVE) {
+                            requestBody.add("client_id", OneDriveCredentials.CLIENT_ID);
+                            requestBody.add("grant_type", "urn:ietf:params:oauth:grant-type:device_code");
+
+                            requestEndpoint = ONEDRIVE_POLL_VERIFICATION_ENDPOINT;
+                        } else {
+                            requestBody.add("client_secret", AuthenticatorCredentials.CLIENT_SECRET);
+
+                            requestEndpoint = POLL_VERIFICATION_ENDPOINT;
+                        }
                 
                         Request request = new Request.Builder()
-                            .url(POLL_VERIFICATION_ENDPOINT)
-                            .post(requestBody)
+                            .url(requestEndpoint)
+                            .post(requestBody.build())
                             .build();
                         
                         Response response = httpClient.newCall(request).execute();
@@ -148,9 +172,12 @@ public class Authenticator {
                                 Authenticator.linkSuccess(initiator, provider, logger);
                             }
 
-                            Bukkit.getScheduler().cancelTask(task[0]);
+                            cancelPollTask();
+                        } else if (
+                            (provider == AuthenticationProvider.ONEDRIVE && !parsedResponse.getString("error").equals("authorization_pending")) ||
+                            (provider != AuthenticationProvider.ONEDRIVE && !parsedResponse.get("msg").equals("code_not_authenticated"))
+                            ) {
 
-                        } else if (!parsedResponse.get("msg").equals("code_not_authenticated")) {
                             MessageUtil.Builder().text(parsedResponse.toString()).send();
                             throw new UploadException();
                         }
@@ -161,7 +188,7 @@ public class Authenticator {
                         Authenticator.linkFail(provider, logger);
                         MessageUtil.sendConsoleException(exception);
 
-                        Bukkit.getScheduler().cancelTask(task[0]);
+                        cancelPollTask();
                     }
                 }
             }, responseCheckDelay, responseCheckDelay);
@@ -170,6 +197,13 @@ public class Authenticator {
 
             Authenticator.linkFail(provider, logger);
             MessageUtil.sendConsoleException(exception);
+        }
+    }
+
+    private static void cancelPollTask() {
+        if (taskId != -1) {
+            Bukkit.getScheduler().cancelTask(taskId);
+            taskId = -1;
         }
     }
 
