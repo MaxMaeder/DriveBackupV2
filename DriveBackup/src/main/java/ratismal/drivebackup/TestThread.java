@@ -82,11 +82,12 @@ public class TestThread implements Runnable {
         } catch (Exception exception) {
             testFileSize = 1000;
         }
-
+        
+        String method = args[1];
         try {
-            testUploadMethod(testFileName, testFileSize, args[1]);
+            testUploadMethod(testFileName, testFileSize, method);
         } catch (Exception exception) {
-            logger.initiatorError(intl("test-method-invalid"));
+            logger.initiatorError(intl("test-method-invalid"), "specified-method", method);
         }
     }
 
