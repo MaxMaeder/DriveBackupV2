@@ -292,6 +292,8 @@ public class GoogleDriveUploader implements Uploader {
             } else {
                 DriveBackup.chatInputPlayers.add(initiator);
             }
+        } else {
+            Authenticator.linkSuccess(initiator, getAuthProvider(), logger);
         }
     }
 
