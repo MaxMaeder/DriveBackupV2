@@ -101,6 +101,10 @@ backup-local-failed: |-
   Skipping backup location
 backup-method-uploading: "Uploading file to <upload-method>"
 backup-method-limit-reached: "There are <file-count> file(s) for the current backup location in <upload-method> which exceeds the limit of <file-limit>, deleting"
+backup-method-prune-failed: "Failed to delete backups exceeding limit"
+backup-method-shared-drive-prune-failed: |-
+  Failed to delete backups exceeding limit
+  Try asking the owner of the shared drive to elevate your account's permissions, or set keep-count to 0 to disable deleting backups
 backup-method-upload-failed: "Failed to upload"
 backup-method-not-linked: |-
   Skipping backup to <upload-method>, account not yet linked

@@ -226,7 +226,13 @@ public class DropboxUploader implements Uploader {
                 Response response = httpClient.newCall(request).execute();
                 response.close();
 
-                pruneBackups(folder);
+                try {
+                    pruneBackups(folder);
+                } catch (Exception e) {
+                    logger.log(intl("backup-method-prune-failed"));
+                    
+                    throw e;
+                }
             }
         } catch (Exception exception) {
             NetUtil.catchException(exception, "api.dropboxapi.com", logger);

@@ -172,7 +172,13 @@ public class SFTPUploader {
 
         sftpClient.put(file.getAbsolutePath(), file.getName());
         
-        pruneBackups();
+        try {
+            pruneBackups();
+        } catch (Exception e) {
+            logger.log(intl("backup-method-prune-failed"));
+            
+            throw e;
+        }
     }
 
     /**

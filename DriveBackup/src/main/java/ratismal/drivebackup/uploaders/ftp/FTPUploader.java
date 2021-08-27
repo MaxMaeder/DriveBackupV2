@@ -212,7 +212,13 @@ public class FTPUploader implements Uploader {
             ftpClient.storeFile(file.getName(), fs);
             fs.close();
 
-            pruneBackups(type);
+            try {
+                pruneBackups(type);
+            } catch (Exception e) {
+                logger.log(intl("backup-method-prune-failed"));
+                
+                throw e;
+            }
 
             ftpClient.disconnect();
         } catch (Exception exception) {

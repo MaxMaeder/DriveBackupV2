@@ -229,7 +229,13 @@ public class OneDriveUploader implements Uploader {
                 response.close();
             }
 
-            pruneBackups(folder);
+            try {
+                pruneBackups(folder);
+            } catch (Exception e) {
+                logger.log(intl("backup-method-prune-failed"));
+                
+                throw e;
+            }
         } catch (Exception exception) {
             NetUtil.catchException(exception, "graph.microsoft.com", logger);
             MessageUtil.sendConsoleException(exception);

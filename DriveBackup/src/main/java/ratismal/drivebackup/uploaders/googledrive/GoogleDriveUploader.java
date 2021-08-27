@@ -229,7 +229,17 @@ public class GoogleDriveUploader implements Uploader {
 
             service.files().insert(fileMetadata, fileContent).setSupportsAllDrives(true).execute();
 
-            pruneBackups(folder);
+            try {
+                pruneBackups(folder);
+            } catch (Exception e) {
+                if (!sharedDriveId.isEmpty()) {
+                    logger.log(intl("backup-method-shared-drive-prune-failed"));
+                } else {
+                    logger.log(intl("backup-method-prune-failed"));
+                }
+                
+                throw e;
+            }
         } catch (Exception exception) {
             NetUtil.catchException(exception, "www.googleapis.com", logger);
             MessageUtil.sendConsoleException(exception);
