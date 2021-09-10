@@ -3,7 +3,8 @@ package ratismal.drivebackup.plugin;
 import java.io.IOException;
 import java.util.concurrent.Callable;
 
-import org.bstats.bukkit.*;
+import org.bstats.bukkit.Metrics;
+import org.bstats.charts.SimplePie;
 
 import ratismal.drivebackup.config.ConfigParser;
 import ratismal.drivebackup.config.ConfigParser.Config;
@@ -36,7 +37,7 @@ public class BstatsMetrics {
     public void updateMetrics() throws IOException {
         Config config = ConfigParser.getConfig();
 
-        metrics.addCustomChart(new Metrics.SimplePie("automaticBackupType", new Callable<String>() {
+        metrics.addCustomChart(new SimplePie("automaticBackupType", new Callable<String>() {
             @Override
             public String call() throws Exception {
                 if (config.backupScheduling.enabled) {
@@ -49,7 +50,7 @@ public class BstatsMetrics {
             }
         }));
 
-        metrics.addCustomChart(new Metrics.SimplePie("backupMethodEnabled", new Callable<String>() {
+        metrics.addCustomChart(new SimplePie("backupMethodEnabled", new Callable<String>() {
             @Override
             public String call() throws Exception {
                 return enabled(
@@ -60,28 +61,28 @@ public class BstatsMetrics {
             }
         }));
 
-        metrics.addCustomChart(new Metrics.SimplePie("googleDriveEnabled", new Callable<String>() {
+        metrics.addCustomChart(new SimplePie("googleDriveEnabled", new Callable<String>() {
             @Override
             public String call() throws Exception {
                 return enabled(config.backupMethods.googleDrive.enabled);
             }
         }));
         
-        metrics.addCustomChart(new Metrics.SimplePie("oneDriveEnabled", new Callable<String>() {
+        metrics.addCustomChart(new SimplePie("oneDriveEnabled", new Callable<String>() {
             @Override
             public String call() throws Exception {
                 return enabled(config.backupMethods.oneDrive.enabled);
             }
         }));
 
-        metrics.addCustomChart(new Metrics.SimplePie("dropboxEnabled", new Callable<String>() {
+        metrics.addCustomChart(new SimplePie("dropboxEnabled", new Callable<String>() {
             @Override
             public String call() throws Exception {
                 return enabled(config.backupMethods.dropbox.enabled);
             }
         }));
 
-        metrics.addCustomChart(new Metrics.SimplePie("ftpEnabled", new Callable<String>() {
+        metrics.addCustomChart(new SimplePie("ftpEnabled", new Callable<String>() {
             @Override
             public String call() throws Exception {
                 return enabled(config.backupMethods.ftp.enabled);
@@ -89,7 +90,7 @@ public class BstatsMetrics {
         }));
 
         if (config.backupMethods.ftp.enabled) {
-            metrics.addCustomChart(new Metrics.SimplePie("sftpEnabledNew", new Callable<String>() {
+            metrics.addCustomChart(new SimplePie("sftpEnabledNew", new Callable<String>() {
                 @Override
                 public String call() throws Exception {
                     return config.backupMethods.ftp.sftp ? "FTP using SSH" : "FTP";
@@ -97,7 +98,7 @@ public class BstatsMetrics {
             }));
         }
 
-        metrics.addCustomChart(new Metrics.SimplePie("updateCheckEnabled", new Callable<String>() {
+        metrics.addCustomChart(new SimplePie("updateCheckEnabled", new Callable<String>() {
             @Override
             public String call() throws Exception {
                 return config.advanced.updateCheckEnabled ? "Enabled" : "Disabled";
