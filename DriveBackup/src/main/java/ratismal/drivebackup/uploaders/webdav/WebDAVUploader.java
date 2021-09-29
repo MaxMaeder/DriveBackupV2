@@ -101,7 +101,7 @@ public class WebDAVUploader implements Uploader {
      */
     public void uploadFile(File file, String type) {
         try {
-            type = type.replace("../", "");
+            type = type.replaceAll(".{1,2}[/\\\\]", "");
 
             FileInputStream fs = new FileInputStream(file);
             createDirectory(_remoteBaseFolder.toString() + "/" + type);

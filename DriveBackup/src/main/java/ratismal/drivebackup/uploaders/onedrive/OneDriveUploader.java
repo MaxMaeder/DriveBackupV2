@@ -169,7 +169,7 @@ public class OneDriveUploader implements Uploader {
             
             ArrayList<String> typeFolders = new ArrayList<>();
             Collections.addAll(typeFolders, destination.split("/"));
-            Collections.addAll(typeFolders, type.split("/"));
+            Collections.addAll(typeFolders, type.split("[/\\\\]"));
 
             File folder = null;
 
