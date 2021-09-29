@@ -5,7 +5,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.commons.lang.ObjectUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
@@ -154,7 +153,7 @@ public class MessageUtil {
 
         if (sendToConsole) recipients.add(Bukkit.getConsoleSender());
 
-        Config config = (Config) ObjectUtils.defaultIfNull(ConfigParser.getConfig(), ConfigParser.defaultConfig());
+        Config config = (Config) ((ConfigParser.getConfig() != null) ? ConfigParser.getConfig() : ConfigParser.defaultConfig());
 
         for (CommandSender player : recipients) {
             if (player == null || (!config.messages.sendInChat && player instanceof Player)) {
@@ -172,7 +171,7 @@ public class MessageUtil {
      * @param exception Exception to send the stack trace of
      */
     public static void sendConsoleException(Exception exception) {
-        Config config = (Config) ObjectUtils.defaultIfNull(ConfigParser.getConfig(), ConfigParser.defaultConfig());
+        Config config = (Config) ((ConfigParser.getConfig() != null) ? ConfigParser.getConfig() : ConfigParser.defaultConfig());
     	if (!config.advanced.suppressErrors) {
     		exception.printStackTrace();
     	}
@@ -184,7 +183,7 @@ public class MessageUtil {
      * @return the prefixed message
      */
     private static Component prefixMessage(Component message) {
-        Config config = (Config) ObjectUtils.defaultIfNull(ConfigParser.getConfig(), ConfigParser.defaultConfig());
+        Config config = (Config) ((ConfigParser.getConfig() != null) ? ConfigParser.getConfig() : ConfigParser.defaultConfig());
 
         return Component.text(translateMessageColors(config.messages.prefix)).append(message);
     }

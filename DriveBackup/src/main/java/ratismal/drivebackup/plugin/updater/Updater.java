@@ -6,13 +6,11 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.UnknownHostException;
 
-import org.apache.commons.lang.RandomStringUtils;
 import org.bukkit.command.CommandSender;
 
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
-import ratismal.drivebackup.config.Permissions;
 import ratismal.drivebackup.plugin.DriveBackup;
 import ratismal.drivebackup.util.Logger;
 import ratismal.drivebackup.util.MessageUtil;
@@ -42,8 +40,7 @@ public class Updater {
      * Download the latest plugin jar and save it to the plugins folder.
      */
     private void downloadFile() throws FileNotFoundException, UnknownHostException, IOException  {
-        String randomFilename = RandomStringUtils.randomAlphabetic(5) + ".jar";
-        File outputPath = new File(this.updateFolder, randomFilename);
+        File outputPath = new File(this.updateFolder, "DriveBackupV2.jar.temp");
         
         OkHttpClient client = new OkHttpClient();
         Request request = new Request.Builder().url(UpdateChecker.getLatestDownloadUrl()).build();
