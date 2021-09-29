@@ -10,6 +10,7 @@ import ratismal.drivebackup.uploaders.dropbox.DropboxUploader;
 import ratismal.drivebackup.uploaders.ftp.FTPUploader;
 import ratismal.drivebackup.uploaders.googledrive.GoogleDriveUploader;
 import ratismal.drivebackup.uploaders.onedrive.OneDriveUploader;
+import ratismal.drivebackup.uploaders.webdav.WebDAVUploader;
 import ratismal.drivebackup.uploaders.mysql.MySQLUploader;
 import ratismal.drivebackup.config.ConfigParser;
 import ratismal.drivebackup.config.Permissions;
@@ -201,6 +202,9 @@ public class UploadThread implements Runnable {
         }
         if (config.backupMethods.dropbox.enabled) {
             uploaders.add(new DropboxUploader(logger));
+        }
+        if (config.backupMethods.webdav.enabled) {
+            uploaders.add(new WebDAVUploader(logger));
         }
         if (config.backupMethods.ftp.enabled) {
             uploaders.add(new FTPUploader(logger));

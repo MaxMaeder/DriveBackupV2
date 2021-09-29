@@ -74,6 +74,9 @@ public class CommandTabComplete implements TabCompleter {
                 if (methods.dropbox.enabled) {
                     commandList.add("dropbox");
                 }
+                if (methods.webdav.enabled) {
+                    commandList.add("webdav");
+                }
                 if (methods.ftp.enabled) {
                     commandList.add("ftp");
                 }

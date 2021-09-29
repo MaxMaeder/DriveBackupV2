@@ -79,7 +79,7 @@
                             <shadedPattern>ratismal.drivebackup.DriveBackup.lib</shadedPattern>
                         </relocation>
                         <relocation>
-                            <pattern>mysql-connector-java</pattern>
+                            <pattern>com.github.lookfirst</pattern>
                             <shadedPattern>ratismal.drivebackup.DriveBackup.lib</shadedPattern>
                         </relocation>
                         <relocation>
@@ -214,9 +214,9 @@
             <version>0.29.0</version>
         </dependency>
         <dependency>
-            <groupId>mysql</groupId>
-            <artifactId>mysql-connector-java</artifactId>
-            <version>8.0.16</version>
+            <groupId>com.github.lookfirst</groupId>
+            <artifactId>sardine</artifactId>
+            <version>5.10</version>
         </dependency>
         <dependency>
             <groupId>net.kyori</groupId>

@@ -39,6 +39,25 @@ public class BackupMethods {
         }
     }
 
+    public static class WebDAVBackupMethod extends BackupMethod {
+        public final String hostname;
+        public final String username;
+        public final String password;
+
+        public WebDAVBackupMethod(
+            boolean enabled,
+            String hostname,
+            String username,
+            String password
+            ) {
+            super(enabled);
+
+            this.hostname = hostname;
+            this.username = username;
+            this.password = password;
+        }
+    }
+
     public static class FTPBackupMethod extends BackupMethod {
         public final String hostname; 
         public final int port;
@@ -79,12 +98,14 @@ public class BackupMethods {
     public final GoogleDriveBackupMethod googleDrive;
     public final OneDriveBackupMethod oneDrive;
     public final DropboxBackupMethod dropbox;
+    public final WebDAVBackupMethod webdav;
     public final FTPBackupMethod ftp;
 
-    public BackupMethods(GoogleDriveBackupMethod googleDrive, OneDriveBackupMethod oneDrive, DropboxBackupMethod dropbox, FTPBackupMethod ftp) {
+    public BackupMethods(GoogleDriveBackupMethod googleDrive, OneDriveBackupMethod oneDrive, DropboxBackupMethod dropbox, WebDAVBackupMethod webdav, FTPBackupMethod ftp) {
         this.googleDrive = googleDrive;
         this.oneDrive = oneDrive;
         this.dropbox = dropbox;
+        this.webdav = webdav;
         this.ftp = ftp;
     }
 
@@ -100,6 +121,13 @@ public class BackupMethods {
 
         DropboxBackupMethod dropboxMethod = new DropboxBackupMethod(
             config.getBoolean("dropbox.enabled")
+            );
+
+        WebDAVBackupMethod webdavMethod = new WebDAVBackupMethod(
+            config.getBoolean("webdav.enabled"), 
+            config.getString("webdav.hostname"),
+            config.getString("webdav.username"), 
+            config.getString("webdav.password")
             );
 
         boolean ftpEnabled = config.getBoolean("ftp.enabled");
@@ -135,6 +163,6 @@ public class BackupMethods {
             baseDir
             );
 
-        return new BackupMethods(googleDriveMethod, oneDriveMethod, dropboxMethod, ftpMethod);
+        return new BackupMethods(googleDriveMethod, oneDriveMethod, dropboxMethod, webdavMethod, ftpMethod);
     }
 }

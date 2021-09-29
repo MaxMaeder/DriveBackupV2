@@ -38,6 +38,11 @@ onedrive:
   enabled: false
 dropbox:
   enabled: false
+webdav:
+  enabled: false
+  hostname: "http://example.com/directory"
+  username: "Username"
+  password: "Password"
 ftp:
   enabled: false
   hostname: "ftp.example.com"
@@ -45,7 +50,7 @@ ftp:
   sftp: false
   ftps: false
   username: "Username"
-  password: 
+  password: "Password"
   sftp-public-key: 
   sftp-passphrase: 
   working-dir:

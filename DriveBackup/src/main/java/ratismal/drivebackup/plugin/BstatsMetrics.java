@@ -57,6 +57,7 @@ public class BstatsMetrics {
                     config.backupMethods.googleDrive.enabled || 
                     config.backupMethods.oneDrive.enabled || 
                     config.backupMethods.dropbox.enabled ||
+                    config.backupMethods.webdav.enabled ||
                     config.backupMethods.ftp.enabled);
             }
         }));
