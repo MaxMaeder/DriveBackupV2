@@ -43,6 +43,7 @@ public class OneDriveUploader implements Uploader {
     private String refreshToken;
 
     public static final String UPLOADER_NAME = "OneDrive";
+    public static final String UPLOADER_ID = "onedrive";
 
     /**
      * Global instance of the HTTP client
@@ -264,8 +265,16 @@ public class OneDriveUploader implements Uploader {
      * Gets the name of this upload service
      * @return name of upload service
      */
-    public String getName(){
+    public String getName() {
         return UPLOADER_NAME;
+    }
+
+    /**
+     * Gets the id of this upload service
+     * @return id of upload service
+     */
+    public String getId() {
+        return UPLOADER_ID;
     }
 
     public AuthenticationProvider getAuthProvider() {

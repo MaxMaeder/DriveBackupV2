@@ -33,6 +33,7 @@ public class FTPUploader implements Uploader {
     private UploadLogger logger;
 
     public static final String UPLOADER_NAME = "(S)FTP";
+    public static final String UPLOADER_ID = "ftp";
 
     private FTPClient ftpClient;
     private SFTPUploader sftpClient;
@@ -305,7 +306,15 @@ public class FTPUploader implements Uploader {
      * @return name of upload service
      */
     public String getName() {
-        return "(S)FTP";
+        return UPLOADER_NAME;
+    }
+
+    /**
+     * Gets the id of this upload service
+     * @return id of upload service
+     */
+    public String getId() {
+        return UPLOADER_ID;
     }
 
     public AuthenticationProvider getAuthProvider() {

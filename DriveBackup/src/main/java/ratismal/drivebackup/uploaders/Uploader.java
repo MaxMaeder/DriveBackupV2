@@ -4,6 +4,7 @@ import ratismal.drivebackup.uploaders.Authenticator.AuthenticationProvider;
 
 public interface Uploader {
     public String getName();
+    public String getId();
     public AuthenticationProvider getAuthProvider();
     public boolean isAuthenticated();
     public boolean isErrorWhileUploading();

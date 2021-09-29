@@ -55,6 +55,7 @@ public class GoogleDriveUploader implements Uploader {
     private List<com.google.api.services.drive.model.Drive> drives;
 
     public static final String UPLOADER_NAME = "Google Drive";
+    public static final String UPLOADER_ID = "googledrive";
 
     /**
      * Global instance of the HTTP client
@@ -268,6 +269,14 @@ public class GoogleDriveUploader implements Uploader {
      */
     public String getName() {
         return UPLOADER_NAME;
+    }
+
+    /**
+     * Gets the id of this upload service
+     * @return id of upload service
+     */
+    public String getId() {
+        return UPLOADER_ID;
     }
 
     public AuthenticationProvider getAuthProvider() {

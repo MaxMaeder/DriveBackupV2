@@ -31,6 +31,7 @@ public class DropboxUploader implements Uploader {
     private boolean errorOccurred;
 
     public static final String UPLOADER_NAME = "Dropbox";
+    public static final String UPLOADER_ID = "dropbox";
 
     /**
      * Global instance of the HTTP client
@@ -359,11 +360,18 @@ public class DropboxUploader implements Uploader {
 
     /**
      * Gets the name of this upload service
-     * 
      * @return name of upload service
      */
     public String getName() {
-        return "Dropbox";
+        return UPLOADER_NAME;
+    }
+
+    /**
+     * Gets the id of this upload service
+     * @return id of upload service
+     */
+    public String getId() {
+        return UPLOADER_ID;
     }
 
     public AuthenticationProvider getAuthProvider() {
