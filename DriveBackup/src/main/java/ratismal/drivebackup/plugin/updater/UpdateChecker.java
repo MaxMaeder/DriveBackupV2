@@ -88,7 +88,8 @@ public class UpdateChecker {
      * @return whether an update is available
      */
     public static boolean isUpdateAvailable() {
-        return latestVersion.isAfter(currentVersion);
+        if (latestVersion != null) return latestVersion.isAfter(currentVersion);
+        return false;
     }
 
     public static String getLatestDownloadUrl() {
