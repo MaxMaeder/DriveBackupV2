@@ -195,6 +195,8 @@ public class GoogleDriveUploader implements Uploader {
             String sharedDriveId = ConfigParser.getConfig().backupMethods.googleDrive.sharedDriveId;
             String destination = ConfigParser.getConfig().backupStorage.remoteDirectory;
 
+            retrieveNewAccessToken();
+
             ArrayList<String> typeFolders = new ArrayList<>();
             Collections.addAll(typeFolders, destination.split("[/\\\\]"));
             Collections.addAll(typeFolders, type.split("[/\\\\]"));
