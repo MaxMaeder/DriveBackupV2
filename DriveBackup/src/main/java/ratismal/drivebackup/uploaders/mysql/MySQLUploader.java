@@ -77,7 +77,7 @@ public class MySQLUploader {
      */
     public void downloadDatabase(String name, String type, List<String> blacklist) {
         try {
-            String connectionUrl = "jdbc:mysql://" + host + ":" + port + "/" + name + "?useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC&useSSL=" + useSsl;
+            String connectionUrl = "jdbc:mysql://" + host + ":" + port + "/" + name + "?useUnicode=true&useJDBCCompliantTimezoneShift=true&zeroDateTimeBehavior=convertToNull&useLegacyDatetimeCode=false&serverTimezone=UTC&useSSL=" + useSsl;
             Class.forName("com.mysql.cj.jdbc.Driver");
             Connection connection = DriverManager.getConnection(connectionUrl, username, password);
 
