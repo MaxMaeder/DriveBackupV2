@@ -50,7 +50,7 @@ public class DropboxUploader implements Uploader {
      */
     public void test(java.io.File testFile) {
         try (DataInputStream dis = new DataInputStream(new FileInputStream(testFile))) {
-            byte[] content = new byte[dis.available()];
+            byte[] content = new byte[(int) testFile.length()];
             dis.readFully(content);
 
             MediaType OCTET_STREAM = MediaType.parse("application/octet-stream");
@@ -119,97 +119,88 @@ public class DropboxUploader implements Uploader {
         String folder = type.replaceAll("\\.{1,2}\\/", "");
 
         try (DataInputStream dis = new DataInputStream(new FileInputStream(file))) {
-            Boolean chunkeduploadEnabled = false;
-            if (chunkeduploadEnabled) {
-                //More than 150MB - Chunked upload
+            if (fileSize > 150000000 /* 150MB */) {
+                // Chunked upload
+
                 final int CHUNKED_UPLOAD_CHUNK_SIZE = (1024 * 1024 * 10); //10 MB chunk
-                final int CHUNKED_UPLOAD_MAX_ATTEMPTS = 5;
                 int uploaded = 0;
                 byte[] buff = new byte[CHUNKED_UPLOAD_CHUNK_SIZE];
                 String sessionId = null;
 
-                for (int i = 0; i < CHUNKED_UPLOAD_MAX_ATTEMPTS; ++i) {
-                    // (1) Start
-                    if (sessionId == null) {
+                // (1) Start
+                if (sessionId == null) {
 
-                        dis.read(buff, 0, CHUNKED_UPLOAD_CHUNK_SIZE);
-                        RequestBody requestBody = RequestBody.create(buff, OCTET_STREAM);
+                    dis.readFully(buff);
+                    RequestBody requestBody = RequestBody.create(buff, OCTET_STREAM);
 
-                        Request request = new Request.Builder()
-                            .addHeader("Authorization", "Bearer " + accessToken)
-                            .post(requestBody)
-                            .url("https://content.dropboxapi.com/2/files/upload_session/start")
-                            .build();
+                    Request request = new Request.Builder()
+                        .addHeader("Authorization", "Bearer " + accessToken)
+                        .post(requestBody)
+                        .url("https://content.dropboxapi.com/2/files/upload_session/start")
+                        .build();
 
-                        Response response = httpClient.newCall(request).execute();
-                        uploaded += CHUNKED_UPLOAD_CHUNK_SIZE;
-                        JSONObject parsedResponse = new JSONObject(response.body().string());
-                        sessionId = parsedResponse.getString("session_id");
-                        response.close();
-                    }
+                    Response response = DriveBackup.httpClient.newCall(request).execute();
+                    JSONObject parsedResponse = new JSONObject(response.body().string());
+                    sessionId = parsedResponse.getString("session_id");
+                    response.close();
+                    uploaded += CHUNKED_UPLOAD_CHUNK_SIZE;
+                }
 
-                    // (2) Append
-                    while ((dis.available() - uploaded) > CHUNKED_UPLOAD_CHUNK_SIZE) {
-                        dis.read(buff, 0, buff.length);
-                        RequestBody requestBody = RequestBody.create(buff, OCTET_STREAM);
+                // (2) Append
+                while (fileSize - uploaded > CHUNKED_UPLOAD_CHUNK_SIZE) {
+                    dis.readFully(buff);
+                    RequestBody requestBody = RequestBody.create(buff, OCTET_STREAM);
 
-                        JSONObject dropbox_cursor = new JSONObject();
-                        dropbox_cursor.put("session_id", sessionId);
-                        dropbox_cursor.put("offset", uploaded);
+                    JSONObject dropbox_cursor = new JSONObject();
+                    dropbox_cursor.put("session_id", sessionId);
+                    dropbox_cursor.put("offset", uploaded);
 
-                        JSONObject dropbox_json = new JSONObject();
-                        dropbox_json.put("cursor", dropbox_cursor);
-                        String dropbox_arg = dropbox_json.toString();
-
-                        Request request = new Request.Builder()
-                            .addHeader("Dropbox-API-Arg", dropbox_arg)
-                            .addHeader("Authorization", "Bearer " + accessToken)
-                            .post(requestBody)
-                            .url("https://content.dropboxapi.com/2/files/upload_session/append_v2")
-                            .build();
-
-                        Response response = httpClient.newCall(request).execute();
-                        response.close();
-                        uploaded += CHUNKED_UPLOAD_CHUNK_SIZE;
-                    }
-
-                    // (3) Finish
-                    int remaining = fileSize - uploaded;
-
-                    byte[] lastchunk = new byte[remaining];
-                    dis.skip(uploaded);
-                    dis.read(lastchunk, 0, lastchunk.length);
-                    RequestBody requestBody = RequestBody.create(lastchunk, OCTET_STREAM);
-
-                    JSONObject dropboxCursorJson = new JSONObject();
-                    dropboxCursorJson.put("session_id", sessionId);
-                    dropboxCursorJson.put("offset", uploaded);
-
-                    JSONObject dropboxCommitJson = new JSONObject();
-                    dropboxCommitJson.put("path", "/" + destination + "/" + folder + "/" + file.getName());
-
-                    JSONObject dropboxJson = new JSONObject();
-                    dropboxJson.put("cursor", dropboxCursorJson);
-                    dropboxJson.put("commit", dropboxCommitJson);
-                    String dropbox_arg = dropboxJson.toString();
+                    JSONObject dropbox_json = new JSONObject();
+                    dropbox_json.put("cursor", dropbox_cursor);
+                    String dropbox_arg = dropbox_json.toString();
 
                     Request request = new Request.Builder()
                         .addHeader("Dropbox-API-Arg", dropbox_arg)
                         .addHeader("Authorization", "Bearer " + accessToken)
                         .post(requestBody)
-                        .url("https://content.dropboxapi.com/2/files/upload_session/finish")
+                        .url("https://content.dropboxapi.com/2/files/upload_session/append_v2")
                         .build();
 
-                    Response response = httpClient.newCall(request).execute();
+                    Response response = DriveBackup.httpClient.newCall(request).execute();
                     response.close();
-
-                    pruneBackups(folder);
-                    return;
+                    uploaded += CHUNKED_UPLOAD_CHUNK_SIZE;
                 }
-            } else {
-                //Less than 150MB - Single upload
 
-                byte[] content = new byte[dis.available()];
+                // (3) Finish
+                byte[] remaining = new byte[fileSize - uploaded];
+                dis.readFully(remaining);
+                RequestBody requestBody = RequestBody.create(remaining, OCTET_STREAM);
+
+                JSONObject dropboxCursor = new JSONObject();
+                dropboxCursor.put("session_id", sessionId);
+                dropboxCursor.put("offset", uploaded);
+
+                JSONObject dropboxCommit = new JSONObject();
+                dropboxCommit.put("path", "/" + destination + "/" + folder + "/" + file.getName());
+
+                JSONObject dropboxJson = new JSONObject();
+                dropboxJson.put("cursor", dropboxCursor);
+                dropboxJson.put("commit", dropboxCommit);
+                String dropbox_arg = dropboxJson.toString();
+
+                Request request = new Request.Builder()
+                    .addHeader("Dropbox-API-Arg", dropbox_arg)
+                    .addHeader("Authorization", "Bearer " + accessToken)
+                    .post(requestBody)
+                    .url("https://content.dropboxapi.com/2/files/upload_session/finish")
+                    .build();
+
+                Response response = DriveBackup.httpClient.newCall(request).execute();
+                response.close();
+            } else {
+                // Single upload
+
+                byte[] content = new byte[fileSize];
                 dis.readFully(content);
                 RequestBody requestBody = RequestBody.create(content, OCTET_STREAM);
 
@@ -224,16 +215,14 @@ public class DropboxUploader implements Uploader {
                     .post(requestBody)
                     .build();
 
-                Response response = httpClient.newCall(request).execute();
+                Response response = DriveBackup.httpClient.newCall(request).execute();
                 response.close();
-
-                try {
-                    pruneBackups(folder);
-                } catch (Exception e) {
-                    logger.log(intl("backup-method-prune-failed"));
-                    
-                    throw e;
-                }
+            }
+            try {
+                pruneBackups(folder);
+            } catch (Exception e) {
+                logger.log(intl("backup-method-prune-failed"));
+                throw e;
             }
         } catch (Exception exception) {
             NetUtil.catchException(exception, "api.dropboxapi.com", logger);
