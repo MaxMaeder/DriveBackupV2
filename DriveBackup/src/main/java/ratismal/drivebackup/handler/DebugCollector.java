@@ -11,7 +11,6 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 import okhttp3.FormBody;
-import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
@@ -48,19 +47,16 @@ public class DebugCollector {
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         String jsonInString = gson.toJson(this);
 
-        OkHttpClient httpClient = new OkHttpClient();
-
         RequestBody formBody = new FormBody.Builder()
             .add("content", jsonInString.toString())
             .build();
-
 
         Request request = new Request.Builder()
             .url(PASTEBIN_UPLOAD_URL)
             .post(formBody)
             .build();
 
-        try (Response response = httpClient.newCall(request).execute()) {
+        try (Response response = DriveBackup.httpClient.newCall(request).execute()) {
             if (!response.isSuccessful()) throw new Exception("Unexpected code " + response);
 
             JSONObject responseJson = new JSONObject(response.body().string());

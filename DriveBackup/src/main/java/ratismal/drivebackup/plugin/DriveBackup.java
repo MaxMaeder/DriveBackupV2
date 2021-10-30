@@ -9,6 +9,7 @@ import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import net.kyori.adventure.platform.bukkit.BukkitAudiences;
+import okhttp3.OkHttpClient;
 import ratismal.drivebackup.config.ConfigMigrator;
 import ratismal.drivebackup.config.ConfigParser;
 import ratismal.drivebackup.config.Localization;
@@ -18,6 +19,7 @@ import ratismal.drivebackup.handler.commandHandler.CommandHandler;
 import ratismal.drivebackup.handler.listeners.*;
 import ratismal.drivebackup.plugin.updater.*;
 import ratismal.drivebackup.util.CustomConfig;
+import ratismal.drivebackup.util.HttpLogger;
 import ratismal.drivebackup.util.MessageUtil;
 
 import static ratismal.drivebackup.config.Localization.intl;
@@ -44,11 +46,19 @@ public class DriveBackup extends JavaPlugin {
     public static List<CommandSender> chatInputPlayers;
 
     /**
+     * Global instance of OkHTTP client
+     */
+    public static OkHttpClient httpClient;
+
+    /**
      * What to do when plugin is enabled (init)
      */
     public void onEnable() {
         plugin = this;
 
+        DriveBackup.httpClient = new OkHttpClient.Builder()
+            .addInterceptor(new HttpLogger())
+            .build();
         DriveBackup.adventure = BukkitAudiences.create(plugin);
         DriveBackup.chatInputPlayers = new ArrayList<>();
 

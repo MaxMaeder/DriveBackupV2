@@ -9,6 +9,7 @@ import ratismal.drivebackup.uploaders.Authenticator.AuthenticationProvider;
 import ratismal.drivebackup.UploadThread.UploadLogger;
 import ratismal.drivebackup.config.ConfigParser;
 import ratismal.drivebackup.config.ConfigParser.Config;
+import ratismal.drivebackup.plugin.DriveBackup;
 
 import java.io.DataInputStream;
 import java.io.FileInputStream;
@@ -19,7 +20,6 @@ import org.json.JSONObject;
 
 import okhttp3.FormBody;
 import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
@@ -32,11 +32,6 @@ public class DropboxUploader implements Uploader {
 
     public static final String UPLOADER_NAME = "Dropbox";
     public static final String UPLOADER_ID = "dropbox";
-
-    /**
-     * Global instance of the HTTP client
-     */
-    private static final OkHttpClient httpClient = new OkHttpClient();
 
     /**
      * Global Dropbox tokens
@@ -70,7 +65,7 @@ public class DropboxUploader implements Uploader {
                 .post(requestBody)
                 .build();
 
-            Response response = httpClient.newCall(request).execute();
+            Response response = DriveBackup.httpClient.newCall(request).execute();
             int statusCode = response.code();
             response.close();
     
@@ -90,7 +85,7 @@ public class DropboxUploader implements Uploader {
                 .post(deleteRequestBody)
                 .build();
 
-            response = httpClient.newCall(request).execute();
+            response = DriveBackup.httpClient.newCall(request).execute();
             statusCode = response.code();
             response.close();
         
@@ -261,7 +256,7 @@ public class DropboxUploader implements Uploader {
             .post(requestBody)
             .build();
 
-        Response response = httpClient.newCall(request).execute();
+        Response response = DriveBackup.httpClient.newCall(request).execute();
         JSONObject parsedResponse = new JSONObject(response.body().string());
         JSONArray files = parsedResponse.getJSONArray("entries");
         response.close();
@@ -284,7 +279,7 @@ public class DropboxUploader implements Uploader {
                     .post(deleteRequestBody)
                     .build();
 
-                Response deleteResponse = httpClient.newCall(deleteRequest).execute();
+                Response deleteResponse = DriveBackup.httpClient.newCall(deleteRequest).execute();
                 deleteResponse.close();
                 
                 files.remove(0);
@@ -323,7 +318,7 @@ public class DropboxUploader implements Uploader {
             .post(requestBody)
             .build();
 
-        Response response = httpClient.newCall(request).execute();
+        Response response = DriveBackup.httpClient.newCall(request).execute();
         JSONObject parsedResponse = new JSONObject(response.body().string());
         response.close();
 

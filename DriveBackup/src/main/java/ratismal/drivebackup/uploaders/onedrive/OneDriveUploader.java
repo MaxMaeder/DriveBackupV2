@@ -2,7 +2,6 @@ package ratismal.drivebackup.uploaders.onedrive;
 
 import okhttp3.FormBody;
 import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
@@ -16,6 +15,7 @@ import ratismal.drivebackup.uploaders.Uploader;
 import ratismal.drivebackup.uploaders.Authenticator.AuthenticationProvider;
 import ratismal.drivebackup.UploadThread.UploadLogger;
 import ratismal.drivebackup.config.ConfigParser;
+import ratismal.drivebackup.plugin.DriveBackup;
 import ratismal.drivebackup.util.MessageUtil;
 import ratismal.drivebackup.util.NetUtil;
 
@@ -45,14 +45,6 @@ public class OneDriveUploader implements Uploader {
     public static final String UPLOADER_NAME = "OneDrive";
     public static final String UPLOADER_ID = "onedrive";
 
-    /**
-     * Global instance of the HTTP client
-     */
-    private static final OkHttpClient httpClient = new OkHttpClient.Builder()
-        .connectTimeout(1, TimeUnit.MINUTES)
-        .writeTimeout(3, TimeUnit.MINUTES)
-        .readTimeout(3, TimeUnit.MINUTES)
-        .build();
     private static final MediaType zipMediaType = MediaType.parse("application/zip; charset=utf-8");
     private static final MediaType jsonMediaType = MediaType.parse("application/json; charset=utf-8");
 
@@ -99,7 +91,7 @@ public class OneDriveUploader implements Uploader {
             .post(requestBody)
             .build();
 
-        Response response = httpClient.newCall(request).execute();
+        Response response = DriveBackup.httpClient.newCall(request).execute();
         JSONObject parsedResponse = new JSONObject(response.body().string());
         response.close();
 
@@ -126,7 +118,7 @@ public class OneDriveUploader implements Uploader {
                 .put(RequestBody.create(testFile, MediaType.parse("plain/txt")))
                 .build();
 
-            Response response = httpClient.newCall(request).execute();
+            Response response = DriveBackup.httpClient.newCall(request).execute();
             int statusCode = response.code();
             response.close();
 
@@ -142,7 +134,7 @@ public class OneDriveUploader implements Uploader {
                 .delete()
                 .build();
             
-            response = httpClient.newCall(request).execute();
+            response = DriveBackup.httpClient.newCall(request).execute();
             statusCode = response.code();
             response.close();
 
@@ -191,7 +183,7 @@ public class OneDriveUploader implements Uploader {
                 .post(RequestBody.create("{}", jsonMediaType))
                 .build();
 
-            Response response = httpClient.newCall(request).execute();
+            Response response = DriveBackup.httpClient.newCall(request).execute();
             JSONObject parsedResponse = new JSONObject(response.body().string());
             response.close();
 
@@ -211,7 +203,7 @@ public class OneDriveUploader implements Uploader {
                     .put(RequestBody.create(bytesToUpload, zipMediaType))
                     .build();
 
-                response = httpClient.newCall(request).execute();
+                response = DriveBackup.httpClient.newCall(request).execute();
 
                 if (getTotalUploaded() + bytesToUpload.length < file.length()) {
                     try {
@@ -300,7 +292,7 @@ public class OneDriveUploader implements Uploader {
             .url("https://graph.microsoft.com/v1.0/me/drive/root:/" + parent.getPath())
             .build();
 
-        Response response = httpClient.newCall(request).execute();
+        Response response = DriveBackup.httpClient.newCall(request).execute();
         JSONObject parsedResponse = new JSONObject(response.body().string());
         response.close();
 
@@ -319,7 +311,7 @@ public class OneDriveUploader implements Uploader {
             .post(requestBody)
             .build();
 
-        response = httpClient.newCall(request).execute();
+        response = DriveBackup.httpClient.newCall(request).execute();
         boolean folderCreated = response.isSuccessful();
         response.close();
 
@@ -355,7 +347,7 @@ public class OneDriveUploader implements Uploader {
             .post(requestBody)
             .build();
 
-        Response response = httpClient.newCall(request).execute();
+        Response response = DriveBackup.httpClient.newCall(request).execute();
         boolean folderCreated = response.isSuccessful();
         response.close();
 
@@ -379,7 +371,7 @@ public class OneDriveUploader implements Uploader {
                 .url("https://graph.microsoft.com/v1.0/me/drive/root:/" + parent.getPath() + ":/children")
                 .build();
 
-            Response response = httpClient.newCall(request).execute();
+            Response response = DriveBackup.httpClient.newCall(request).execute();
             JSONObject parsedResponse = new JSONObject(response.body().string());
             response.close();
 
@@ -410,7 +402,7 @@ public class OneDriveUploader implements Uploader {
                 .url("https://graph.microsoft.com/v1.0/me/drive/root/children")
                 .build();
 
-            Response response = httpClient.newCall(request).execute();
+            Response response = DriveBackup.httpClient.newCall(request).execute();
             JSONObject parsedResponse = new JSONObject(response.body().string());
             response.close();
 
@@ -448,7 +440,7 @@ public class OneDriveUploader implements Uploader {
             .url("https://graph.microsoft.com/v1.0/me/drive/root:/" + parent.getPath() + ":/children?sort_by=createdDateTime")
             .build();
 
-        Response response = httpClient.newCall(request).execute();
+        Response response = DriveBackup.httpClient.newCall(request).execute();
         JSONObject parsedResponse = new JSONObject(response.body().string());
         response.close();
 
@@ -476,7 +468,7 @@ public class OneDriveUploader implements Uploader {
                     .delete()
                     .build();
 
-                httpClient.newCall(request).execute().close();
+                DriveBackup.httpClient.newCall(request).execute().close();
                     
                 iterator.remove();
             }

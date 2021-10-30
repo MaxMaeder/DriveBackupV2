@@ -12,7 +12,6 @@ import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.model.*;
 import okhttp3.FormBody;
-import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
@@ -56,11 +55,6 @@ public class GoogleDriveUploader implements Uploader {
 
     public static final String UPLOADER_NAME = "Google Drive";
     public static final String UPLOADER_ID = "googledrive";
-
-    /**
-     * Global instance of the HTTP client
-     */
-    private static final OkHttpClient httpClient = new OkHttpClient();
 
     /**
      * Global instance of the HTTP transport
@@ -110,7 +104,7 @@ public class GoogleDriveUploader implements Uploader {
             .post(requestBody)
             .build();
 
-        Response response = httpClient.newCall(request).execute();
+        Response response = DriveBackup.httpClient.newCall(request).execute();
         JSONObject parsedResponse = new JSONObject(response.body().string());
         response.close();
         

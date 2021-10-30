@@ -2,7 +2,6 @@ package ratismal.drivebackup.plugin.updater;
 
 import org.json.JSONArray;
 
-import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 import ratismal.drivebackup.config.ConfigParser;
@@ -22,11 +21,6 @@ public class UpdateChecker {
      * How often to check for updates, in seconds
      */
     private static final long UPDATE_CHECK_INTERVAL = 60 * 60 * 4;
-
-    /**
-     * Global instance of the HTTP client
-     */
-    private static final OkHttpClient httpClient = new OkHttpClient();
 
     private static Version currentVersion;
     private static Version latestVersion;
@@ -106,7 +100,7 @@ public class UpdateChecker {
             .url("https://api.curseforge.com/servermods/files?projectids=" + BUKKIT_PROJECT_ID)
             .build();
 
-        Response response = httpClient.newCall(request).execute();
+        Response response = DriveBackup.httpClient.newCall(request).execute();
         JSONArray pluginVersions = new JSONArray(response.body().string());
         response.close();
 

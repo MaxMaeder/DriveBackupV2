@@ -8,7 +8,6 @@ import java.net.UnknownHostException;
 
 import org.bukkit.command.CommandSender;
 
-import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 import ratismal.drivebackup.plugin.DriveBackup;
@@ -41,10 +40,9 @@ public class Updater {
      */
     private void downloadFile() throws FileNotFoundException, UnknownHostException, IOException  {
         File outputPath = new File(this.updateFolder, "DriveBackupV2.jar.temp");
-        
-        OkHttpClient client = new OkHttpClient();
+
         Request request = new Request.Builder().url(UpdateChecker.getLatestDownloadUrl()).build();
-        Response response = client.newCall(request).execute();
+        Response response = DriveBackup.httpClient.newCall(request).execute();
         if (!response.isSuccessful()) {
             throw new IOException("Failed to download file: " + response);
         }

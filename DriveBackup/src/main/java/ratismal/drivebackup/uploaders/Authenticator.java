@@ -4,7 +4,6 @@ import org.bukkit.command.CommandSender;
 import org.json.JSONObject;
 
 import okhttp3.FormBody;
-import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 import ratismal.drivebackup.UploadThread.UploadLogger;
@@ -36,11 +35,6 @@ public class Authenticator {
     private static String POLL_VERIFICATION_ENDPOINT = "https://drivebackup.web.app/token";
     private static String ONEDRIVE_REQUEST_CODE_ENDPOINT = "https://login.microsoftonline.com/common/oauth2/v2.0/devicecode";
     private static String ONEDRIVE_POLL_VERIFICATION_ENDPOINT = "https://login.microsoftonline.com/common/oauth2/v2.0/token";
-
-    /**
-     * Global instance of the HTTP client
-     */
-    private static final OkHttpClient httpClient = new OkHttpClient();
 
     private static int taskId = -1;
 
@@ -109,7 +103,7 @@ public class Authenticator {
                 .post(requestBody.build())
                 .build();
 
-            Response response = httpClient.newCall(request).execute();
+            Response response = DriveBackup.httpClient.newCall(request).execute();
             JSONObject parsedResponse = new JSONObject(response.body().string());
             response.close();
 
@@ -149,7 +143,7 @@ public class Authenticator {
                             .post(requestBody.build())
                             .build();
                         
-                        Response response = httpClient.newCall(request).execute();
+                        Response response = DriveBackup.httpClient.newCall(request).execute();
                         JSONObject parsedResponse = new JSONObject(response.body().string());
                         response.close();
 

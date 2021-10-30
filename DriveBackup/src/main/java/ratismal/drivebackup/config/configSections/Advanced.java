@@ -13,6 +13,7 @@ public class Advanced {
     public final boolean metricsEnabled;
     public final boolean updateCheckEnabled;
     public final boolean suppressErrors;
+    public final boolean debugEnabled;
     public final Locale dateLanguage;
     public final ZoneOffset dateTimezone;
     public final String fileSeparator;
@@ -20,7 +21,8 @@ public class Advanced {
     public Advanced(
         boolean metricsEnabled, 
         boolean updateCheckEnabled, 
-        boolean suppressErrors, 
+        boolean suppressErrors,
+        boolean debugEnabled,
         Locale dateLanguage, 
         ZoneOffset dateTimezone, 
         String fileSeparator
@@ -29,6 +31,7 @@ public class Advanced {
         this.metricsEnabled = metricsEnabled;
         this.updateCheckEnabled = updateCheckEnabled;
         this.suppressErrors = suppressErrors;
+        this.debugEnabled = debugEnabled;
         this.dateLanguage = dateLanguage;
         this.dateTimezone = dateTimezone;
         this.fileSeparator = fileSeparator;
@@ -38,6 +41,7 @@ public class Advanced {
         boolean metrics = config.getBoolean("advanced.metrics");
         boolean updateCheck = config.getBoolean("advanced.update-check");
         boolean suppressErrors = config.getBoolean("advanced.suppress-errors");
+        boolean debugEnabled = config.getBoolean("advanced.debug");
         Locale dateLanguage = new Locale(config.getString("advanced.date-language"));
         
         ZoneOffset dateTimezone;
@@ -53,7 +57,8 @@ public class Advanced {
         return new Advanced(
             metrics, 
             updateCheck, 
-            suppressErrors, 
+            suppressErrors,
+            debugEnabled,
             dateLanguage,
             dateTimezone, 
             fileSeparator
