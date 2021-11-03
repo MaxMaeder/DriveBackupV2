@@ -14,8 +14,6 @@ var providerRouter = require('./routes/provider');
 var callbackRouter = require('./routes/callback');
 var tokenRouter = require('./routes/token');
 
-var tokenRouter = require('./routes/token');
-
 var app = express();
 
 app.use(compression());

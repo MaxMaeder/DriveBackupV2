@@ -1,5 +1,4 @@
-
-# Use the official lightweight Node.js 14 image.
+# Use the official lightweight Node.js 16 image.
 FROM node:16-slim
 
 # Create and change to the app directory.
