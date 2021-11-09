@@ -32,49 +32,44 @@ public class UpdateChecker {
         DriveBackup plugin = DriveBackup.getInstance();
         UpdateChecker checker = new UpdateChecker();
 
-        plugin.getServer().getScheduler().runTask(plugin, new Runnable() {
+        if (ConfigParser.getConfig().advanced.updateCheckEnabled) {
+            plugin.getServer().getScheduler().runTaskTimerAsynchronously(plugin, new Runnable() {
+                @Override
+                public void run() {
+                    Logger logger = (input, placeholders) -> {
+                        MessageUtil.Builder().mmText(input, placeholders).send();
+                    };
 
-            @Override
-            public void run() {
-                plugin.getServer().getScheduler().runTaskTimerAsynchronously(plugin, new Runnable() {
-
-                    @Override
-                    public void run() {
-                        if (ConfigParser.getConfig().advanced.updateCheckEnabled) {
-                            Logger logger = (input, placeholders) -> {
-                                MessageUtil.Builder().mmText(input, placeholders).send();
-                            };
-
-                            try {
-                                if (!hasSentStartMessage) {
-                                    logger.log(intl("update-checker-started"));
-                                    hasSentStartMessage = true;
-                                }
-
-                                currentVersion = checker.getCurrent();
-                                latestVersion = checker.getLatest();
-
-                                if (latestVersion.isAfter(currentVersion)) {
-                                    logger.log(
-                                        intl("update-checker-started"),
-                                        "latest-version", latestVersion.toString(),
-                                        "current-version", currentVersion.toString());
-                                } else if (currentVersion.isAfter(latestVersion)) {
-                                    logger.log(
-                                        intl("update-checker-unsupported-release"),
-                                        "latest-version", latestVersion.toString(),
-                                        "current-version", currentVersion.toString());
-                                }
-                            } catch (Exception exception) {
-                                NetUtil.catchException(exception, "dev.bukkit.org", logger);
-                                logger.log(intl("update-checker-failed"));
-                                MessageUtil.sendConsoleException(exception);
-                            }
+                    try {
+                        if (!hasSentStartMessage) {
+                            logger.log(intl("update-checker-started"));
+                            hasSentStartMessage = true;
                         }
+
+                        //get versions
+                        currentVersion = checker.getCurrent();
+                        latestVersion = checker.getLatest();
+
+                        //check if current version is outdated
+                        if (latestVersion.isAfter(currentVersion)) {
+                            logger.log(
+                                intl("update-checker-new-release"),
+                                "latest-version", latestVersion.toString(),
+                                "current-version", currentVersion.toString());
+                        } else if (currentVersion.isAfter(latestVersion)) {
+                            logger.log(
+                                intl("update-checker-unsupported-release"),
+                                "latest-version", latestVersion.toString(),
+                                "current-version", currentVersion.toString());
+                        }
+                    } catch (Exception e) {
+                        NetUtil.catchException(e, "dev.bukkit.org", logger);
+                        logger.log(intl("update-checker-failed"));
+                        MessageUtil.sendConsoleException(e);
                     }
-                }, 0, SchedulerUtil.sToTicks(UPDATE_CHECK_INTERVAL));
-            }
-        });
+                }
+            }, 0, SchedulerUtil.sToTicks(UPDATE_CHECK_INTERVAL));
+        }
     }
 
     /**
