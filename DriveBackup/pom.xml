@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>ratismal</groupId>
     <artifactId>DriveBackupV2</artifactId>
-    <version>1.5.3</version>
+    <version>1.5.4</version>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <github.global.oauth>${GITHUB_OAUTH_TOKEN}</github.global.oauth>
