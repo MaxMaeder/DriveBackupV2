@@ -182,6 +182,7 @@ public class TestThread implements Runnable {
         }
         
         testFile.delete();
+        uploadMethod.close();
     }
 
     private void sendMethodDisabled(UploadLogger logger, String methodName) {
