@@ -52,7 +52,7 @@ public class ConfigMigrator {
         migrate("dir", "local-save-directory");
         migrate("destination", "remote-save-directory");
 
-        if (!config.getString("schedule-timezone").equals(DEFAULT_TIMEZONE_STRING)) {
+        if (config.isSet("schedule-timezone") && !config.getString("schedule-timezone").equals(DEFAULT_TIMEZONE_STRING)) {
             migrate("schedule-timezone", "advanced.date-timezone");
             config.set("backup-format-timezone", null);
         } else {
