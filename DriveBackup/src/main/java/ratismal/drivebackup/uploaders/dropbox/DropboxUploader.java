@@ -1,9 +1,9 @@
 package ratismal.drivebackup.uploaders.dropbox;
 
-import main.java.credentials.DropboxCredentials;
 import ratismal.drivebackup.util.MessageUtil;
 import ratismal.drivebackup.util.NetUtil;
 import ratismal.drivebackup.uploaders.Authenticator;
+import ratismal.drivebackup.uploaders.Obfusticate;
 import ratismal.drivebackup.uploaders.Uploader;
 import ratismal.drivebackup.uploaders.Authenticator.AuthenticationProvider;
 import ratismal.drivebackup.UploadThread.UploadLogger;
@@ -307,8 +307,8 @@ public class DropboxUploader implements Uploader {
      */
     private void retrieveNewAccessToken() throws Exception {
         RequestBody requestBody = new FormBody.Builder()
-            .add("client_id", DropboxCredentials.CLIENT_ID)
-            .add("client_secret", DropboxCredentials.CLIENT_SECRET)
+            .add("client_id", Obfusticate.decrypt(AuthenticationProvider.DROPBOX.getClientId()))
+            .add("client_secret", Obfusticate.decrypt(AuthenticationProvider.DROPBOX.getClientSecret()))
             .add("refresh_token", refreshToken)
             .add("grant_type", "refresh_token")
             .build();

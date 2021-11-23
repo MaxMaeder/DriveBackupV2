@@ -22,9 +22,6 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 
-import main.java.credentials.AuthenticatorCredentials;
-import main.java.credentials.OneDriveCredentials;
-
 import static ratismal.drivebackup.config.Localization.intl;
 
 public class Authenticator {
@@ -36,21 +33,30 @@ public class Authenticator {
     private static String ONEDRIVE_REQUEST_CODE_ENDPOINT = "https://login.microsoftonline.com/common/oauth2/v2.0/devicecode";
     private static String ONEDRIVE_POLL_VERIFICATION_ENDPOINT = "https://login.microsoftonline.com/common/oauth2/v2.0/token";
 
+    /**
+     * Authenticator client secret
+     */
+    private static String CLIENT_SECRET = "fyKCRZRyJeHW5PzGJvQkL4dr2zRHRmwTaOutG7BBhQM=";
+
     private static int taskId = -1;
 
     public enum AuthenticationProvider {
-        GOOGLE_DRIVE("Google Drive", "googledrive", "/GoogleDriveCredential.json"),
-        ONEDRIVE("OneDrive", "onedrive", "/OneDriveCredential.json"),
-        DROPBOX("Dropbox", "dropbox", "/DropboxCredential.json");
+        GOOGLE_DRIVE("Google Drive", "googledrive", "/GoogleDriveCredential.json", "qWd2xXC/ORzdZvUotXoWhHC0POkMNuO/xuwcKWc9s1LLodayZXvkdKimmpOQqWYS6I+qGSrYNb8UCJWMhrgDXhIWEbDvytkQTwq+uNcnfw8=", "pasQz0KvtyC7o6CrlLPSMVV9Y0RMX76cXzsAbBoCBxI="),
+        ONEDRIVE("OneDrive", "onedrive", "/OneDriveCredential.json", "Ktj7Jd1h0oYNVicuyTBk5fU+gHS+QYReZxZKNZNO9CDxxHaf8bXlw0SKO9jnwc81", ""),
+        DROPBOX("Dropbox", "dropbox", "/DropboxCredential.json", "OSpqXymVUFSRnANAmj2DTA==", "4MrYNbN0I6J/fsAFeF00GQ==");
 
         private final String name;
         private final String id;
         private final String credStoreLocation;
+        private final String clientId;
+        private final String clientSecret;
 
-        AuthenticationProvider(final String name, final String id, final String credStoreLocation) {
+        AuthenticationProvider(final String name, final String id, final String credStoreLocation, final String clientId, final String clientSecret) {
             this.name = name;
             this.id = id;
             this.credStoreLocation = credStoreLocation;
+            this.clientId = clientId;
+            this.clientSecret = clientSecret;
         }
 
         public String getName() {
@@ -63,6 +69,14 @@ public class Authenticator {
 
         public String getCredStoreLocation() {
             return DriveBackup.getInstance().getDataFolder().getAbsolutePath() + credStoreLocation;
+        }
+
+        public String getClientId() {
+            return clientId;
+        }
+
+        public String getClientSecret() {
+            return clientSecret;
         }
     }
 
@@ -88,13 +102,12 @@ public class Authenticator {
 
             String requestEndpoint;
             if (provider == AuthenticationProvider.ONEDRIVE) {
-                requestBody.add("client_id", OneDriveCredentials.CLIENT_ID);
+                requestBody.add("client_id", Obfusticate.decrypt(provider.getClientId()));
                 requestBody.add("scope", "offline_access Files.ReadWrite");
 
                 requestEndpoint = ONEDRIVE_REQUEST_CODE_ENDPOINT;
             } else {
-                requestBody.add("client_secret", AuthenticatorCredentials.CLIENT_SECRET);
-                
+                requestBody.add("client_secret", Obfusticate.decrypt(CLIENT_SECRET));
                 requestEndpoint = REQUEST_CODE_ENDPOINT;
             }
 
@@ -128,12 +141,12 @@ public class Authenticator {
 
                         String requestEndpoint;
                         if (provider == AuthenticationProvider.ONEDRIVE) {
-                            requestBody.add("client_id", OneDriveCredentials.CLIENT_ID);
+                            requestBody.add("client_id", Obfusticate.decrypt(provider.getClientId()));
                             requestBody.add("grant_type", "urn:ietf:params:oauth:grant-type:device_code");
 
                             requestEndpoint = ONEDRIVE_POLL_VERIFICATION_ENDPOINT;
                         } else {
-                            requestBody.add("client_secret", AuthenticatorCredentials.CLIENT_SECRET);
+                            requestBody.add("client_secret", Obfusticate.decrypt(CLIENT_SECRET));
 
                             requestEndpoint = POLL_VERIFICATION_ENDPOINT;
                         }

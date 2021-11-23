@@ -9,8 +9,8 @@ import okhttp3.Response;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import main.java.credentials.OneDriveCredentials;
 import ratismal.drivebackup.uploaders.Authenticator;
+import ratismal.drivebackup.uploaders.Obfusticate;
 import ratismal.drivebackup.uploaders.Uploader;
 import ratismal.drivebackup.uploaders.Authenticator.AuthenticationProvider;
 import ratismal.drivebackup.UploadThread.UploadLogger;
@@ -79,7 +79,7 @@ public class OneDriveUploader implements Uploader {
      */
     private void retrieveNewAccessToken() throws Exception {
         RequestBody requestBody = new FormBody.Builder()
-            .add("client_id", OneDriveCredentials.CLIENT_ID)
+            .add("client_id", Obfusticate.decrypt(AuthenticationProvider.ONEDRIVE.getClientId()))
             .add("scope", "offline_access Files.ReadWrite")
             .add("refresh_token", refreshToken)
             .add("grant_type", "refresh_token")

@@ -16,9 +16,9 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
-import main.java.credentials.GoogleDriveCredentials;
 import ratismal.drivebackup.uploaders.Uploader;
 import ratismal.drivebackup.uploaders.Authenticator;
+import ratismal.drivebackup.uploaders.Obfusticate;
 import ratismal.drivebackup.uploaders.Authenticator.AuthenticationProvider;
 import ratismal.drivebackup.UploadThread.UploadLogger;
 import ratismal.drivebackup.config.ConfigParser;
@@ -93,8 +93,8 @@ public class GoogleDriveUploader implements Uploader {
      */
     private void retrieveNewAccessToken() throws Exception {
         RequestBody requestBody = new FormBody.Builder()
-            .add("client_id", GoogleDriveCredentials.CLIENT_ID)
-            .add("client_secret", GoogleDriveCredentials.CLIENT_SECRET)
+            .add("client_id", Obfusticate.decrypt(AuthenticationProvider.GOOGLE_DRIVE.getClientId()))
+            .add("client_secret", Obfusticate.decrypt(AuthenticationProvider.GOOGLE_DRIVE.getClientSecret()))
             .add("refresh_token", refreshToken)
             .add("grant_type", "refresh_token")
             .build();
