@@ -155,6 +155,8 @@ public class FTPUploader implements Uploader {
         try {
             if (sftpClient != null) {
                 sftpClient.close();
+            } else {
+                ftpClient.disconnect();
             }
         } catch (Exception e) {
             MessageUtil.sendConsoleException(e);
@@ -220,8 +222,6 @@ public class FTPUploader implements Uploader {
                 
                 throw e;
             }
-
-            ftpClient.disconnect();
         } catch (Exception exception) {
             NetUtil.catchException(exception, host, logger);
             MessageUtil.sendConsoleException(exception);
