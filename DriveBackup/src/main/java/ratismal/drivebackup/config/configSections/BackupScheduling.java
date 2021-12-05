@@ -28,19 +28,23 @@ public class BackupScheduling {
     }
 
     public final boolean enabled;
+    public final boolean driftCorrectionEnabled;
     public final BackupScheduleEntry[] schedule;
 
     public BackupScheduling(
         boolean enabled, 
+        boolean driftCorrectionEnabled,
         BackupScheduleEntry[] schedule
         ) {
 
         this.enabled = enabled;
+        this.driftCorrectionEnabled = driftCorrectionEnabled;
         this.schedule = schedule;
     }
 
     public static BackupScheduling parse(FileConfiguration config, Logger logger) {
         boolean enabled = config.getBoolean("scheduled-backups");
+        boolean driftCorrectionEnabled = config.getBoolean("schedule-drift-correction");
 
         List<Map<?, ?>> rawSchedule = config.getMapList("backup-schedule-list");
         List<BackupScheduleEntry> schedule = new ArrayList<>();
@@ -111,6 +115,7 @@ public class BackupScheduling {
 
         return new BackupScheduling(
             enabled, 
+            driftCorrectionEnabled,
             schedule.toArray(new BackupScheduleEntry[0])
             );
     }

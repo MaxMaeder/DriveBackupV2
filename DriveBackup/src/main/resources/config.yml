@@ -16,6 +16,7 @@ backups-require-players: true
 disable-saving-during-backups: true
 
 scheduled-backups: false
+schedule-drift-correction: true
 backup-schedule-list:
 
 backup-list:

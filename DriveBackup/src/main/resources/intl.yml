@@ -57,6 +57,7 @@ external-database-list-invalid: "Database list invalid, skipping external backup
 external-database-list-name-invalid: "Name invalid, skipping external backup database list entry <entry-database>"
 external-database-list-blacklist-invalid: "Blacklist invalid in external backup database list entry <entry-backup>, leaving blank"
 backups-scheduled: "Scheduling a backup to run at <time> every <days>"
+backups-rescheduled: "Rescheduling backups to correct for drift"
 backups-interval-scheduled: "Scheduling a backup to run every <delay> minutes"
 no-perm: "You don't have permission to do this!"
 link-account-code: "To link your <provider> account, go to <gold><click:open_url:'<link-url>'><link-url></click></gold> and enter <gold><click:copy_to_clipboard:'<link-code>'><link-code></click></gold>"

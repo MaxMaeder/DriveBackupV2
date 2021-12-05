@@ -24,9 +24,19 @@ import static ratismal.drivebackup.config.Localization.intl;
 
 public class Scheduler {
     /**
+     * How often to run the schedule drift correction task, in seconds
+     */
+    private static final long SCHEDULE_DRIFT_CORRECTION_INTERVAL = 1 * 60 * 60 * 24;
+
+    /**
      * List of the IDs of the scheduled backup tasks
      */
     private static ArrayList<Integer> backupTasks = new ArrayList<>();
+
+    /**
+     * ID of the schedule drift correction task
+     */
+    private static int scheduleDriftTask = -1;
 
     /**
      * List of Dates representing each time a scheduled backup will occur
@@ -37,6 +47,13 @@ public class Scheduler {
      * Starts the backup thread
      */
     public static void startBackupThread() {
+        startBackupThread(false);
+    }
+
+    /**
+     * Starts the backup thread
+     */
+    private static void startBackupThread(boolean reschedule) {
         Config config = ConfigParser.getConfig();
         BukkitScheduler taskScheduler = Bukkit.getServer().getScheduler();
 
@@ -104,8 +121,33 @@ public class Scheduler {
                     .toConsole(true)
                     .send();
             }
+
+            if (!config.backupScheduling.driftCorrectionEnabled || reschedule) {
+                return;
+            }
+
+            if (scheduleDriftTask != -1) {
+                Bukkit.getScheduler().cancelTask(scheduleDriftTask);
+            }
+
+            long driftInt = SchedulerUtil.sToTicks(SCHEDULE_DRIFT_CORRECTION_INTERVAL);
+            scheduleDriftTask = taskScheduler.runTaskTimer(DriveBackup.getInstance(), new Runnable() {
+                @Override
+                public void run() {
+                    MessageUtil.Builder()
+                        .mmText(intl("backups-rescheduled"))
+                        .toConsole(true)
+                        .send();
+
+                    startBackupThread(true);
+                }
+            }, driftInt, driftInt).getTaskId();
         } else if (config.backupStorage.delay != -1) {
             SchedulerUtil.cancelTasks(backupTasks);
+
+            if (scheduleDriftTask != -1) {
+                Bukkit.getScheduler().cancelTask(scheduleDriftTask);
+            }
 
             MessageUtil.Builder()
                 .mmText(intl("backups-interval-scheduled"), "delay", String.valueOf(config.backupStorage.delay))
