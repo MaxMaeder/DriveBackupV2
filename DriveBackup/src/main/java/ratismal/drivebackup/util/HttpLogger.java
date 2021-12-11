@@ -2,6 +2,8 @@ package ratismal.drivebackup.util;
 
 import java.io.IOException;
 
+import org.json.JSONObject;
+
 import okhttp3.Interceptor;
 import okhttp3.MediaType;
 import okhttp3.Request;
@@ -42,7 +44,17 @@ public class HttpLogger implements Interceptor {
     String responseBodyString = responseBody.string();
     MediaType responseBodyContentType = responseBody.contentType();
     responseBody.close();
-    MessageUtil.Builder().text("Res: " + responseBodyString).toConsole(true).send();
+    if (responseBodyContentType.equals(jsonMediaType)) {
+      try {
+        JSONObject responseBodyJson = new JSONObject(responseBodyString);
+        if (responseBodyJson.getString("msg").equals("code_not_authenticated")) return response.newBuilder().body(ResponseBody.create(responseBodyString, responseBodyContentType)).build();
+        MessageUtil.Builder().text("Resp: " + responseBodyJson).toConsole(true).send();
+      } catch (Exception exception) {
+        MessageUtil.Builder().text("Resp: " + responseBodyString).toConsole(true).send();
+      }
+    } else {
+      MessageUtil.Builder().text("Resp: " + responseBodyString).toConsole(true).send();
+    }
 
     return response.newBuilder().body(ResponseBody.create(responseBodyString, responseBodyContentType)).build();
   }
