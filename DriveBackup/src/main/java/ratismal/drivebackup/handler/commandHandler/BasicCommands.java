@@ -7,7 +7,6 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent.Builder;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.minimessage.MiniMessage;
-import net.kyori.adventure.text.minimessage.Template;
 import ratismal.drivebackup.config.ConfigParser;
 import ratismal.drivebackup.config.ConfigParser.Config;
 import ratismal.drivebackup.config.configSections.BackupList.BackupListEntry;
@@ -98,7 +97,7 @@ public class BasicCommands {
 
         if (backupLocations.size() == 0) {
             locationMessage.append(
-                MiniMessage.get().parse(intl("brief-backup-list-empty")));
+                MiniMessage.miniMessage().deserialize(intl("brief-backup-list-empty")));
 
         } else {
             for (int i = 0; i < backupLocations.size(); i++) {
@@ -122,7 +121,7 @@ public class BasicCommands {
             }
         }
 
-        MessageUtil.Builder().mmText(intl("brief-backup-list"), Template.of("list", locationMessage.build())).toConsole(false).to(player).send();
+        MessageUtil.Builder().mmText(intl("brief-backup-list"), "list", locationMessage.build()).toConsole(false).to(player).send();
 
         MessageUtil.Builder().mmText(intl("brief-backup-list-help")).toConsole(false).to(player).send();
     }

@@ -11,9 +11,10 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.JoinConfiguration;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.minimessage.MiniMessage;
-import net.kyori.adventure.text.minimessage.Template;
+import net.kyori.adventure.text.minimessage.placeholder.PlaceholderResolver;
 import ratismal.drivebackup.config.ConfigParser;
 import ratismal.drivebackup.config.ConfigParser.Config;
 import ratismal.drivebackup.plugin.DriveBackup;
@@ -54,7 +55,7 @@ public class MessageUtil {
      * @return the calling MessageUtil's instance
      */
     public MessageUtil mmText(String text) {
-        message.add(MiniMessage.get().parse("<dark_aqua>" + text));
+        message.add(MiniMessage.miniMessage().deserialize("<dark_aqua>" + text));
         return this;
     }
 
@@ -65,7 +66,7 @@ public class MessageUtil {
      * @return the calling MessageUtil's instance
      */
     public MessageUtil mmText(String text, String... placeholders) {
-        message.add(MiniMessage.get().parse("<dark_aqua>" + text, placeholders));
+        message.add(MiniMessage.miniMessage().deserialize("<dark_aqua>" + text, PlaceholderResolver.resolving(placeholders)));
         return this;
     }
 
@@ -75,8 +76,8 @@ public class MessageUtil {
      * @param templates optional {@code Template}
      * @return the calling MessageUtil's instance
      */
-    public MessageUtil mmText(String text, Template... templates) {
-        message.add(MiniMessage.get().parse("<dark_aqua>" + text, templates));
+    public MessageUtil mmText(String text, String title, Component content) {
+        message.add(MiniMessage.miniMessage().deserialize("<dark_aqua>" + text, PlaceholderResolver.resolving(title, content)));
         return this;
     }
 
@@ -146,7 +147,8 @@ public class MessageUtil {
      * Sends the message to the recipients
      */
     public void send() {
-        Component builtComponent = Component.join(Component.text(" "), message);
+        JoinConfiguration seperator = JoinConfiguration.separator(Component.text(" "));
+        Component builtComponent = Component.join(seperator, message);
         if (addPrefix) {
             builtComponent = prefixMessage(builtComponent);
         }
