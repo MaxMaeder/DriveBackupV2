@@ -20,7 +20,6 @@ import ratismal.drivebackup.util.MessageUtil;
 import ratismal.drivebackup.util.NetUtil;
 
 import java.io.*;
-import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -153,6 +152,7 @@ public class OneDriveUploader implements Uploader {
      * @param file the file
      * @param type the type of file (ex. plugins, world)
      */
+    @SuppressWarnings (value="unchecked")
     public void uploadFile(java.io.File file, String type) throws Exception {
         try {
             resetRanges();
@@ -589,7 +589,6 @@ public class OneDriveUploader implements Uploader {
         }
 
         if (ranges.length > 0) {
-            lastUploaded = ranges[0].start - totalUploaded;
             totalUploaded = ranges[0].start;
         }
     }
@@ -614,18 +613,6 @@ public class OneDriveUploader implements Uploader {
     }
 
     /**
-     * Formats the specified number of bytes as a readable file size
-     * @param size the number of bytes
-     * @return a {@code String} containing the readable file size
-     */
-    private static String readableFileSize(long size) {
-        if (size <= 0) return "0";
-        final String[] units = new String[]{"B", "KB", "MB", "GB", "TB"};
-        int digitGroups = (int) (Math.log10(size) / Math.log10(1024));
-        return new DecimalFormat("#,##0.#").format(size / Math.pow(1024, digitGroups)) + " " + units[digitGroups];
-    }
-
-    /**
      * Sets whether an error occurred while accessing the authenticated user's OneDrive
      * @param errorOccurredValue whether an error occurred
      */
@@ -639,13 +626,5 @@ public class OneDriveUploader implements Uploader {
      */
     private long getTotalUploaded() {
         return totalUploaded;
-    }
-
-    /**
-     * Gets the number of bytes uploaded in the last chunk
-     * @return the number of bytes
-     */
-    private long getLastUploaded() {
-        return lastUploaded;
     }
 }

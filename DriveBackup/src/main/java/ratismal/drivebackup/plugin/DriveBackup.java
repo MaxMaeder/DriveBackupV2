@@ -2,6 +2,7 @@ package ratismal.drivebackup.plugin;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -57,6 +58,9 @@ public class DriveBackup extends JavaPlugin {
         plugin = this;
 
         DriveBackup.httpClient = new OkHttpClient.Builder()
+            .connectTimeout(1, TimeUnit.MINUTES)
+            .writeTimeout(3, TimeUnit.MINUTES)
+            .readTimeout(3, TimeUnit.MINUTES)
             .addInterceptor(new HttpLogger())
             .build();
         DriveBackup.adventure = BukkitAudiences.create(plugin);
