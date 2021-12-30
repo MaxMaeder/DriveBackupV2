@@ -1,8 +1,10 @@
 package ratismal.drivebackup.util;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.bukkit.Bukkit;
@@ -16,6 +18,7 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.minimessage.placeholder.Placeholder;
 import net.kyori.adventure.text.minimessage.placeholder.PlaceholderResolver;
+import net.kyori.adventure.text.minimessage.placeholder.Replacement;
 import ratismal.drivebackup.config.ConfigParser;
 import ratismal.drivebackup.config.ConfigParser.Config;
 import ratismal.drivebackup.plugin.DriveBackup;
@@ -67,11 +70,21 @@ public class MessageUtil {
      * @return the calling MessageUtil's instance
      */
     public MessageUtil mmText(String text, String... placeholders) {
-        List<Placeholder<?>> placeholderComponents = new ArrayList<Placeholder<?>>();
-        for (int i = 0; i < placeholders.length; i += 2) {
-            placeholderComponents.add(Placeholder.component(placeholders[i], Component.text(placeholders[i+1], NamedTextColor.DARK_AQUA)));
+        int size = placeholders.length;
+        final Map<String, Replacement<?>> plmap = new HashMap<>(size/2);
+
+        String key = null;
+        for (int i = 0; i < size; i++) {
+            if (key == null) {
+                key = placeholders[i];
+            } else {
+                plmap.put(key, Replacement.miniMessage(placeholders[i]));
+                key = null;
+            }
+
         }
-        message.add(MiniMessage.miniMessage().deserialize("<dark_aqua>" + text, PlaceholderResolver.placeholders(placeholderComponents)));
+
+        message.add(MiniMessage.miniMessage().deserialize("<dark_aqua>" + text, PlaceholderResolver.map(plmap)));
         return this;
     }
 
