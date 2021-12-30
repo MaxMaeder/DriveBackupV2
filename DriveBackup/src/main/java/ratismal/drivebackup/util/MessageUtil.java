@@ -14,6 +14,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.JoinConfiguration;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.kyori.adventure.text.minimessage.placeholder.Placeholder;
 import net.kyori.adventure.text.minimessage.placeholder.PlaceholderResolver;
 import ratismal.drivebackup.config.ConfigParser;
 import ratismal.drivebackup.config.ConfigParser.Config;
@@ -66,7 +67,11 @@ public class MessageUtil {
      * @return the calling MessageUtil's instance
      */
     public MessageUtil mmText(String text, String... placeholders) {
-        message.add(MiniMessage.miniMessage().deserialize("<dark_aqua>" + text, PlaceholderResolver.resolving(placeholders)));
+        List<Placeholder<?>> placeholderComponents = new ArrayList<Placeholder<?>>();
+        for (int i = 0; i < placeholders.length; i += 2) {
+            placeholderComponents.add(Placeholder.component(placeholders[i], Component.text(placeholders[i+1], NamedTextColor.DARK_AQUA)));
+        }
+        message.add(MiniMessage.miniMessage().deserialize("<dark_aqua>" + text, PlaceholderResolver.placeholders(placeholderComponents)));
         return this;
     }
 
@@ -77,7 +82,7 @@ public class MessageUtil {
      * @return the calling MessageUtil's instance
      */
     public MessageUtil mmText(String text, String title, Component content) {
-        message.add(MiniMessage.miniMessage().deserialize("<dark_aqua>" + text, PlaceholderResolver.resolving(title, content)));
+        message.add(MiniMessage.miniMessage().deserialize("<dark_aqua>" + text, PlaceholderResolver.placeholders(Placeholder.component(title, content))));
         return this;
     }
 
