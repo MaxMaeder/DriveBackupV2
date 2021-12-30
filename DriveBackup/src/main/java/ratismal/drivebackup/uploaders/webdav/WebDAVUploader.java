@@ -220,6 +220,13 @@ public class WebDAVUploader implements Uploader {
         return files;
     }
 
+    private String rstrip(String src, char remove) {
+        while (src.charAt(src.length()-1) == remove) {
+            src = src.substring(0, src.length()-2);
+        }
+        return src;
+    }
+
     /**
      * Creates a folder with the specified path inside the current working directory, then enters it
      * @param parentFolder the parent folder
@@ -227,8 +234,16 @@ public class WebDAVUploader implements Uploader {
      * @throws Exception
      */
     private void createDirectory(String path) {
+        path = rstrip(path, '/');
         try {
             if (!sardine.exists(path)) {
+                int li = path.lastIndexOf('/');
+                if (li > 0) {
+                    String parent = path.substring(0, li);
+                    if (!sardine.exists(parent)) {
+                        createDirectory(parent);
+                    }
+                }
                 sardine.createDirectory(path);
             }
         } catch (IOException exception) {
