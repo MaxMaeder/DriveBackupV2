@@ -11,6 +11,7 @@ import ratismal.drivebackup.uploaders.dropbox.DropboxUploader;
 import ratismal.drivebackup.uploaders.ftp.FTPUploader;
 import ratismal.drivebackup.uploaders.googledrive.GoogleDriveUploader;
 import ratismal.drivebackup.uploaders.onedrive.OneDriveUploader;
+import ratismal.drivebackup.uploaders.webdav.NextcloudUploader;
 import ratismal.drivebackup.uploaders.webdav.WebDAVUploader;
 import ratismal.drivebackup.UploadThread.UploadLogger;
 import ratismal.drivebackup.config.ConfigParser;
@@ -129,9 +130,17 @@ public class TestThread implements Runnable {
                 break;
             case "webdav":
                 if (config.backupMethods.webdav.enabled) {
-                    uploadMethod = new WebDAVUploader(logger);
+                    uploadMethod = new WebDAVUploader(logger, config.backupMethods.webdav);
                 } else {
                     sendMethodDisabled(logger, WebDAVUploader.UPLOADER_NAME);
+                    return;
+                }
+                break;
+            case "nextcloud":
+                if (config.backupMethods.nextcloud.enabled) {
+                    uploadMethod = new NextcloudUploader(logger, config.backupMethods.nextcloud);
+                } else {
+                    sendMethodDisabled(logger, NextcloudUploader.UPLOADER_NAME);
                     return;
                 }
                 break;

@@ -77,6 +77,9 @@ public class CommandTabComplete implements TabCompleter {
                 if (methods.webdav.enabled) {
                     commandList.add("webdav");
                 }
+                if (methods.nextcloud.enabled) {
+                    commandList.add("nextcloud");
+                }
                 if (methods.ftp.enabled) {
                     commandList.add("ftp");
                 }

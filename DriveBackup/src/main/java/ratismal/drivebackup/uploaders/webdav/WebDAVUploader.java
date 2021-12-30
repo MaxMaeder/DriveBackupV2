@@ -4,7 +4,6 @@ import ratismal.drivebackup.uploaders.Uploader;
 import ratismal.drivebackup.uploaders.Authenticator.AuthenticationProvider;
 import ratismal.drivebackup.UploadThread.UploadLogger;
 import ratismal.drivebackup.config.ConfigParser;
-import ratismal.drivebackup.config.ConfigParser.Config;
 import ratismal.drivebackup.config.configSections.BackupMethods.WebDAVBackupMethod;
 import ratismal.drivebackup.util.MessageUtil;
 import ratismal.drivebackup.util.NetUtil;
@@ -25,10 +24,10 @@ import static ratismal.drivebackup.config.Localization.intl;
 public class WebDAVUploader implements Uploader {
     private UploadLogger logger;
 
-    public static final String UPLOADER_NAME = "WebDAV";
-    public static final String UPLOADER_ID = "webdav";
+    public static String UPLOADER_NAME = "WebDAV";
+    public static String UPLOADER_ID = "webdav";
 
-    private Sardine sardine;
+    public Sardine sardine;
 
     private boolean _errorOccurred;
 
@@ -38,15 +37,13 @@ public class WebDAVUploader implements Uploader {
     /**
      * Creates an instance of the {@code WebDAVUploader} object using the server credentials specified by the user in the {@code config.yml}
      */
-    public WebDAVUploader(UploadLogger logger) {
+    public WebDAVUploader(UploadLogger logger, WebDAVBackupMethod webdav) {
         this.logger = logger;
 
         try {
-            Config config = ConfigParser.getConfig();
-            WebDAVBackupMethod webdav = config.backupMethods.webdav;
 
             _localBaseFolder = ".";
-            _remoteBaseFolder = new URL(webdav.hostname + "/" + config.backupStorage.remoteDirectory);
+            _remoteBaseFolder = new URL(webdav.hostname + "/" + webdav.remoteDirectory);
 
             sardine = SardineFactory.begin(webdav.username, webdav.password);
             sardine.enablePreemptiveAuthentication(_remoteBaseFolder.getHost());
@@ -93,7 +90,7 @@ public class WebDAVUploader implements Uploader {
         }
     }
 
-    private void realUploadFile(File file, URL target) throws IOException {
+    public void realUploadFile(File file, URL target) throws IOException {
         try (FileInputStream fis = new FileInputStream(file)) {
             sardine.put(target.toString(), fis, (String)null, true, file.length());
         }
@@ -107,6 +104,7 @@ public class WebDAVUploader implements Uploader {
     public void uploadFile(File file, String type) {
         try {
             type = type.replaceAll(".{1,2}[/\\\\]", "");
+            createDirectory(_remoteBaseFolder.toString() + "/" + type);
             URL target = new URL(_remoteBaseFolder + "/" + type + "/" + file.getName());
             realUploadFile(file, target);
             try {

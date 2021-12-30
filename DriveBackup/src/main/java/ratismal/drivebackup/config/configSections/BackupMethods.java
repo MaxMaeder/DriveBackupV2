@@ -43,18 +43,31 @@ public class BackupMethods {
         public final String hostname;
         public final String username;
         public final String password;
+        public final String remoteDirectory;
 
         public WebDAVBackupMethod(
             boolean enabled,
             String hostname,
             String username,
-            String password
+            String password,
+            String remoteDirectory
             ) {
             super(enabled);
 
             this.hostname = hostname;
             this.username = username;
             this.password = password;
+            this.remoteDirectory = remoteDirectory;
+        }
+    }
+
+    public static class NextcloudBackupMethod extends WebDAVBackupMethod {
+        public final int chunkSize;
+
+        public NextcloudBackupMethod(boolean enabled, String hostname, String username, String password,
+                String remoteDirectory, int chunkSize) {
+            super(enabled, hostname, username, password, remoteDirectory);
+            this.chunkSize = chunkSize;
         }
     }
 
@@ -99,13 +112,15 @@ public class BackupMethods {
     public final OneDriveBackupMethod oneDrive;
     public final DropboxBackupMethod dropbox;
     public final WebDAVBackupMethod webdav;
+    public final NextcloudBackupMethod nextcloud;
     public final FTPBackupMethod ftp;
 
-    public BackupMethods(GoogleDriveBackupMethod googleDrive, OneDriveBackupMethod oneDrive, DropboxBackupMethod dropbox, WebDAVBackupMethod webdav, FTPBackupMethod ftp) {
+    public BackupMethods(GoogleDriveBackupMethod googleDrive, OneDriveBackupMethod oneDrive, DropboxBackupMethod dropbox, WebDAVBackupMethod webdav, NextcloudBackupMethod nextcloud, FTPBackupMethod ftp) {
         this.googleDrive = googleDrive;
         this.oneDrive = oneDrive;
         this.dropbox = dropbox;
         this.webdav = webdav;
+        this.nextcloud = nextcloud;
         this.ftp = ftp;
     }
 
@@ -127,7 +142,17 @@ public class BackupMethods {
             config.getBoolean("webdav.enabled"), 
             config.getString("webdav.hostname"),
             config.getString("webdav.username"), 
-            config.getString("webdav.password")
+            config.getString("webdav.password"),
+            config.getString("webdav.remote-save-directory", config.getString("remote-save-directory"))
+            );
+
+        NextcloudBackupMethod nextcloudMethod = new NextcloudBackupMethod(
+            config.getBoolean("nextcloud.enabled"), 
+            config.getString("nextcloud.hostname"),
+            config.getString("nextcloud.username"), 
+            config.getString("nextcloud.password"),
+            config.getString("nextcloud.remote-save-directory", config.getString("remote-save-directory")),
+            config.getInt("nextcloud.chunk-size", 10_000_000)
             );
 
         boolean ftpEnabled = config.getBoolean("ftp.enabled");
@@ -163,6 +188,6 @@ public class BackupMethods {
             baseDir
             );
 
-        return new BackupMethods(googleDriveMethod, oneDriveMethod, dropboxMethod, webdavMethod, ftpMethod);
+        return new BackupMethods(googleDriveMethod, oneDriveMethod, dropboxMethod, webdavMethod, nextcloudMethod, ftpMethod);
     }
 }

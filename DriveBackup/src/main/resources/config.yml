@@ -44,6 +44,13 @@ webdav:
   hostname: "http://example.com/directory"
   username: "Username"
   password: "Password"
+nextcloud:
+  enabled: false
+  hostname: "https://example.com/remote.php/dav/files/user/"
+  username: "Username"
+  password: "Password"
+  # Don't make the chunk size too large, as it needs to fit comfortably in RAM
+  chunk-size: 20_000_000
 ftp:
   enabled: false
   hostname: "ftp.example.com"
