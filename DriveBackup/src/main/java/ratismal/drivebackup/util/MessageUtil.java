@@ -79,6 +79,7 @@ public class MessageUtil {
                 key = placeholders[i];
             } else {
                 plmap.put(key, Replacement.miniMessage(placeholders[i]));
+                key = null;
             }
 
         }
