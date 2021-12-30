@@ -79,18 +79,23 @@ public class WebDAVUploader implements Uploader {
      */
     public void test(File testFile) {
         try {
-            try (FileInputStream fis = new FileInputStream(testFile)) {
+            URL target = new URL(_remoteBaseFolder + "/" + testFile.getName());
 
-                sardine.put(new URL(_remoteBaseFolder + "/" + testFile.getName()).toString(), fis);
+            realUploadFile(testFile, target);
 
-                TimeUnit.SECONDS.sleep(5);
+            TimeUnit.SECONDS.sleep(5);
 
-                sardine.delete(new URL(_remoteBaseFolder + "/" + testFile.getName()).toString());
-            }
+            sardine.delete(target.toString());
         } catch (Exception exception) {
             NetUtil.catchException(exception, _remoteBaseFolder.getHost(), logger);
             MessageUtil.sendConsoleException(exception);
             setErrorOccurred(true);
+        }
+    }
+
+    private void realUploadFile(File file, URL target) throws IOException {
+        try (FileInputStream fis = new FileInputStream(file)) {
+            sardine.put(target.toString(), fis, (String)null, true, file.length());
         }
     }
 
@@ -102,12 +107,8 @@ public class WebDAVUploader implements Uploader {
     public void uploadFile(File file, String type) {
         try {
             type = type.replaceAll(".{1,2}[/\\\\]", "");
-
-            FileInputStream fs = new FileInputStream(file);
-            createDirectory(_remoteBaseFolder.toString() + "/" + type);
-            sardine.put(new URL(_remoteBaseFolder + "/" + type + "/" + file.getName()).toString(), fs);
-            fs.close();
-
+            URL target = new URL(_remoteBaseFolder + "/" + type + "/" + file.getName());
+            realUploadFile(file, target);
             try {
                 pruneBackups(type);
             } catch (Exception e) {
