@@ -130,7 +130,7 @@ public class TestThread implements Runnable {
                 break;
             case "webdav":
                 if (config.backupMethods.webdav.enabled) {
-                    uploadMethod = new WebDAVUploader(logger, config.backupMethods.webdav);
+                    uploadMethod = new WebDAVUploader(logger);
                 } else {
                     sendMethodDisabled(logger, WebDAVUploader.UPLOADER_NAME);
                     return;
@@ -138,7 +138,7 @@ public class TestThread implements Runnable {
                 break;
             case "nextcloud":
                 if (config.backupMethods.nextcloud.enabled) {
-                    uploadMethod = new NextcloudUploader(logger, config.backupMethods.nextcloud);
+                    uploadMethod = new NextcloudUploader(logger);
                 } else {
                     sendMethodDisabled(logger, NextcloudUploader.UPLOADER_NAME);
                     return;

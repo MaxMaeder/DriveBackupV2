@@ -43,21 +43,18 @@ public class BackupMethods {
         public final String hostname;
         public final String username;
         public final String password;
-        public final String remoteDirectory;
 
         public WebDAVBackupMethod(
             boolean enabled,
             String hostname,
             String username,
-            String password,
-            String remoteDirectory
+            String password
             ) {
             super(enabled);
 
             this.hostname = hostname;
             this.username = username;
             this.password = password;
-            this.remoteDirectory = remoteDirectory;
         }
     }
 
@@ -65,8 +62,8 @@ public class BackupMethods {
         public final int chunkSize;
 
         public NextcloudBackupMethod(boolean enabled, String hostname, String username, String password,
-                String remoteDirectory, int chunkSize) {
-            super(enabled, hostname, username, password, remoteDirectory);
+                int chunkSize) {
+            super(enabled, hostname, username, password);
             this.chunkSize = chunkSize;
         }
     }
@@ -142,8 +139,7 @@ public class BackupMethods {
             config.getBoolean("webdav.enabled"), 
             config.getString("webdav.hostname"),
             config.getString("webdav.username"), 
-            config.getString("webdav.password"),
-            config.getString("webdav.remote-save-directory", config.getString("remote-save-directory"))
+            config.getString("webdav.password")
             );
 
         NextcloudBackupMethod nextcloudMethod = new NextcloudBackupMethod(
@@ -151,7 +147,6 @@ public class BackupMethods {
             config.getString("nextcloud.hostname"),
             config.getString("nextcloud.username"), 
             config.getString("nextcloud.password"),
-            config.getString("nextcloud.remote-save-directory", config.getString("remote-save-directory")),
             config.getInt("nextcloud.chunk-size", 10_000_000)
             );
 

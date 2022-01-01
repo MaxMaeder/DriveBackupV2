@@ -205,10 +205,10 @@ public class UploadThread implements Runnable {
             uploaders.add(new DropboxUploader(logger));
         }
         if (config.backupMethods.webdav.enabled) {
-            uploaders.add(new WebDAVUploader(logger, config.backupMethods.webdav));
+            uploaders.add(new WebDAVUploader(logger));
         }
         if (config.backupMethods.nextcloud.enabled) {
-            uploaders.add(new NextcloudUploader(logger, config.backupMethods.nextcloud));
+            uploaders.add(new NextcloudUploader(logger));
         }
         if (config.backupMethods.ftp.enabled) {
             uploaders.add(new FTPUploader(logger));

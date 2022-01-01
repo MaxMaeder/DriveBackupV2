@@ -4,6 +4,7 @@ import ratismal.drivebackup.uploaders.Uploader;
 import ratismal.drivebackup.uploaders.Authenticator.AuthenticationProvider;
 import ratismal.drivebackup.UploadThread.UploadLogger;
 import ratismal.drivebackup.config.ConfigParser;
+import ratismal.drivebackup.config.ConfigParser.Config;
 import ratismal.drivebackup.config.configSections.BackupMethods.WebDAVBackupMethod;
 import ratismal.drivebackup.util.MessageUtil;
 import ratismal.drivebackup.util.NetUtil;
@@ -37,13 +38,15 @@ public class WebDAVUploader implements Uploader {
     /**
      * Creates an instance of the {@code WebDAVUploader} object using the server credentials specified by the user in the {@code config.yml}
      */
-    public WebDAVUploader(UploadLogger logger, WebDAVBackupMethod webdav) {
+    public WebDAVUploader(UploadLogger logger) {
         this.logger = logger;
 
         try {
+            Config config = ConfigParser.getConfig();
+            WebDAVBackupMethod webdav = config.backupMethods.webdav;
 
             _localBaseFolder = ".";
-            _remoteBaseFolder = new URL(webdav.hostname + "/" + webdav.remoteDirectory);
+            _remoteBaseFolder = new URL(webdav.hostname + "/" + config.backupStorage.remoteDirectory);
 
             sardine = SardineFactory.begin(webdav.username, webdav.password);
             sardine.enablePreemptiveAuthentication(_remoteBaseFolder.getHost());
