@@ -125,6 +125,11 @@ public class FTPUploader implements Uploader {
             ftpClient = new FTPSClient();
         }
 
+        ftpClient.setConnectTimeout(10 * 1000);
+        ftpClient.setDefaultTimeout(30 * 1000);
+        ftpClient.setDataTimeout(30 * 1000);
+        ftpClient.setControlKeepAliveTimeout(30 * 1000);
+
         ftpClient.connect(host, port);
         ftpClient.login(username, password);
 
