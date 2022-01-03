@@ -56,13 +56,10 @@ public class FTPUploader implements Uploader {
     /**
      * Creates an instance of the {@code FTPUploader} object using the server credentials specified by the user in the {@code config.yml}
      */
-    public FTPUploader(UploadLogger logger, FTPBackupMethod webdav) {
+    public FTPUploader(UploadLogger logger, FTPBackupMethod ftp) {
         this.logger = logger;
 
         try {
-            Config config = ConfigParser.getConfig();
-            FTPBackupMethod ftp = config.backupMethods.ftp;
-
             if (ftp.sftp) {
                 sftpClient = new SFTPUploader(logger);
             } else {
