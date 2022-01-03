@@ -12,8 +12,6 @@ import java.util.concurrent.TimeUnit;
 import com.github.sardine.impl.SardineException;
 
 import ratismal.drivebackup.UploadThread.UploadLogger;
-import ratismal.drivebackup.config.ConfigParser;
-import ratismal.drivebackup.config.ConfigParser.Config;
 import ratismal.drivebackup.config.configSections.BackupMethods.NextcloudBackupMethod;
 
 public class NextcloudUploader extends WebDAVUploader {
@@ -21,15 +19,14 @@ public class NextcloudUploader extends WebDAVUploader {
     public static String UPLOADER_NAME = "Nextcloud";
     public static String UPLOADER_ID = "nextcloud";
 
-    private NextcloudBackupMethod webdav;
+    private NextcloudBackupMethod config;
     private UploadLogger logger;
 
     private String magic_upload_dir;
 
-    public NextcloudUploader(UploadLogger logger) {
-        super(logger);
-        Config config = ConfigParser.getConfig();
-        webdav = config.backupMethods.nextcloud;
+    public NextcloudUploader(UploadLogger logger, NextcloudBackupMethod webdav) {
+        super(logger, webdav);
+        config = webdav;
 
         try {
             findUploadDir();
@@ -39,17 +36,17 @@ public class NextcloudUploader extends WebDAVUploader {
     }
 
     private void findUploadDir() throws IOException {
-        URL url = new URL(webdav.hostname);
+        URL url = new URL(config.hostname);
         String host = url.toString();
         host = host.substring(0, host.indexOf(url.getPath()));
 
-        if (sardine.exists(host + "/remote.php/dav/uploads/" + webdav.username)) {
-            magic_upload_dir = host + "/remote.php/dav/uploads/" + webdav.username;
+        if (sardine.exists(host + "/remote.php/dav/uploads/" + config.username)) {
+            magic_upload_dir = host + "/remote.php/dav/uploads/" + config.username;
             return;
         }
 
-        if (sardine.exists(host + "/uploads/" + webdav.username)) {
-            magic_upload_dir = host + "/uploads/" + webdav.username;
+        if (sardine.exists(host + "/uploads/" + config.username)) {
+            magic_upload_dir = host + "/uploads/" + config.username;
             return;
         }
 
@@ -57,8 +54,8 @@ public class NextcloudUploader extends WebDAVUploader {
 
         for (int i = 0; i<Array.getLength(exploded); i++) {
             host += "/" + exploded[i];
-            if (sardine.exists(host + "/uploads/" + webdav.username)) {
-                magic_upload_dir = host + "/uploads/" + webdav.username;
+            if (sardine.exists(host + "/uploads/" + config.username)) {
+                magic_upload_dir = host + "/uploads/" + config.username;
                 return;
             }
         }
@@ -66,7 +63,7 @@ public class NextcloudUploader extends WebDAVUploader {
 
     @Override
     public void realUploadFile(File file, URL target) throws IOException {
-        int chunksize = webdav.chunkSize;
+        int chunksize = config.chunkSize;
         if (file.length() > chunksize && magic_upload_dir != null) {
             String tempdir = magic_upload_dir + "/" + UUID.randomUUID().toString();
             sardine.createDirectory(tempdir);
@@ -123,5 +120,22 @@ public class NextcloudUploader extends WebDAVUploader {
             }
         }
     }
-    
+
+    /**
+     * Gets the name of this upload service
+     * @return name of upload service
+     */
+    @Override
+    public String getName() {
+        return UPLOADER_NAME;
+    }
+
+    /**
+     * Gets the id of this upload service
+     * @return id of upload service
+     */
+    @Override
+    public String getId() {
+        return UPLOADER_ID;
+    }
 }

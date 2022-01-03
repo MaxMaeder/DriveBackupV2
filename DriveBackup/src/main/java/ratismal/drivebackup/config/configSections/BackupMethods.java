@@ -43,18 +43,21 @@ public class BackupMethods {
         public final String hostname;
         public final String username;
         public final String password;
+        public final String remoteDirectory;
 
         public WebDAVBackupMethod(
             boolean enabled,
             String hostname,
             String username,
-            String password
+            String password,
+            String remoteDirectory
             ) {
             super(enabled);
 
             this.hostname = hostname;
             this.username = username;
             this.password = password;
+            this.remoteDirectory = remoteDirectory;
         }
     }
 
@@ -62,8 +65,8 @@ public class BackupMethods {
         public final int chunkSize;
 
         public NextcloudBackupMethod(boolean enabled, String hostname, String username, String password,
-                int chunkSize) {
-            super(enabled, hostname, username, password);
+                String remoteDirectory, int chunkSize) {
+            super(enabled, hostname, username, password, remoteDirectory);
             this.chunkSize = chunkSize;
         }
     }
@@ -77,7 +80,7 @@ public class BackupMethods {
         public final String password;
         public final String publicKey;
         public final String passphrase;
-        public final String baseDirectory;
+        public final String remoteDirectory;
 
         public FTPBackupMethod(
             boolean enabled, 
@@ -89,7 +92,7 @@ public class BackupMethods {
             String password, 
             String publicKey, 
             String passphrase, 
-            String baseDirectory
+            String remoteDirectory
             ) {
             super(enabled);
 
@@ -101,7 +104,7 @@ public class BackupMethods {
             this.password = password;
             this.publicKey = publicKey;
             this.passphrase = passphrase;
-            this.baseDirectory = baseDirectory;
+            this.remoteDirectory = remoteDirectory;
         }
     }
 
@@ -139,7 +142,8 @@ public class BackupMethods {
             config.getBoolean("webdav.enabled"), 
             config.getString("webdav.hostname"),
             config.getString("webdav.username"), 
-            config.getString("webdav.password")
+            config.getString("webdav.password"),
+            config.getString("webdav.remote-save-directory", config.getString("remote-save-directory"))
             );
 
         NextcloudBackupMethod nextcloudMethod = new NextcloudBackupMethod(
@@ -147,6 +151,7 @@ public class BackupMethods {
             config.getString("nextcloud.hostname"),
             config.getString("nextcloud.username"), 
             config.getString("nextcloud.password"),
+            config.getString("nextcloud.remote-save-directory", config.getString("remote-save-directory")),
             config.getInt("nextcloud.chunk-size", 10_000_000)
             );
 

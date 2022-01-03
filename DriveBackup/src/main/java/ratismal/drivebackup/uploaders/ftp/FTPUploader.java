@@ -56,7 +56,7 @@ public class FTPUploader implements Uploader {
     /**
      * Creates an instance of the {@code FTPUploader} object using the server credentials specified by the user in the {@code config.yml}
      */
-    public FTPUploader(UploadLogger logger) {
+    public FTPUploader(UploadLogger logger, FTPBackupMethod webdav) {
         this.logger = logger;
 
         try {
@@ -71,10 +71,10 @@ public class FTPUploader implements Uploader {
             }
 
             _localBaseFolder = ".";
-            if (Strings.isNullOrEmpty(ftp.baseDirectory)) {
+            if (Strings.isNullOrEmpty(ftp.remoteDirectory)) {
                 _remoteBaseFolder = config.backupStorage.remoteDirectory;
             } else {
-                _remoteBaseFolder = ftp.baseDirectory + sep() + config.backupStorage.remoteDirectory;
+                _remoteBaseFolder = ftp.remoteDirectory + sep() + config.backupStorage.remoteDirectory;
             }
         } catch (Exception e) {
             MessageUtil.sendConsoleException(e);

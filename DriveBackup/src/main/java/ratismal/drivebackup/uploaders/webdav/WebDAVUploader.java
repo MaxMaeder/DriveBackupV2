@@ -38,15 +38,13 @@ public class WebDAVUploader implements Uploader {
     /**
      * Creates an instance of the {@code WebDAVUploader} object using the server credentials specified by the user in the {@code config.yml}
      */
-    public WebDAVUploader(UploadLogger logger) {
+    public WebDAVUploader(UploadLogger logger, WebDAVBackupMethod webdav) {
         this.logger = logger;
 
         try {
-            Config config = ConfigParser.getConfig();
-            WebDAVBackupMethod webdav = config.backupMethods.webdav;
 
             _localBaseFolder = ".";
-            _remoteBaseFolder = new URL(webdav.hostname + "/" + config.backupStorage.remoteDirectory);
+            _remoteBaseFolder = new URL(webdav.hostname + "/" + webdav.remoteDirectory);
 
             sardine = SardineFactory.begin(webdav.username, webdav.password);
             sardine.enablePreemptiveAuthentication(_remoteBaseFolder.getHost());
@@ -173,6 +171,10 @@ public class WebDAVUploader implements Uploader {
         return UPLOADER_ID;
     }
 
+    /**
+     * Gets the authentication provider for this upload service
+     * @return authentication provider for this upload service
+     */
     public AuthenticationProvider getAuthProvider() {
         return null;
     }
@@ -184,7 +186,7 @@ public class WebDAVUploader implements Uploader {
      * @param type the type of file (ex. plugins, world)
      * @throws Exception
      */
-    private void pruneBackups(String type) throws Exception {
+    public void pruneBackups(String type) throws Exception {
         int fileLimit = ConfigParser.getConfig().backupStorage.keepCount;
         if (fileLimit == -1) {
             return;
@@ -271,7 +273,7 @@ public class WebDAVUploader implements Uploader {
      * Sets whether an error occurred while accessing the FTP server
      * @param errorOccurred whether an error occurred
      */
-    private void setErrorOccurred(boolean errorOccurred) {
+    public void setErrorOccurred(boolean errorOccurred) {
         _errorOccurred = errorOccurred;
     }
 }
