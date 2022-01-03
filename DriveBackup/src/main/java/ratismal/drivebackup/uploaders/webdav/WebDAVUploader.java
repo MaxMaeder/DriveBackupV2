@@ -25,10 +25,10 @@ import static ratismal.drivebackup.config.Localization.intl;
 public class WebDAVUploader implements Uploader {
     private UploadLogger logger;
 
-    public static final String UPLOADER_NAME = "WebDAV";
-    public static final String UPLOADER_ID = "webdav";
+    public static String UPLOADER_NAME = "WebDAV";
+    public static String UPLOADER_ID = "webdav";
 
-    private Sardine sardine;
+    public Sardine sardine;
 
     private boolean _errorOccurred;
 
@@ -38,15 +38,13 @@ public class WebDAVUploader implements Uploader {
     /**
      * Creates an instance of the {@code WebDAVUploader} object using the server credentials specified by the user in the {@code config.yml}
      */
-    public WebDAVUploader(UploadLogger logger) {
+    public WebDAVUploader(UploadLogger logger, WebDAVBackupMethod webdav) {
         this.logger = logger;
 
         try {
-            Config config = ConfigParser.getConfig();
-            WebDAVBackupMethod webdav = config.backupMethods.webdav;
 
             _localBaseFolder = ".";
-            _remoteBaseFolder = new URL(webdav.hostname + "/" + config.backupStorage.remoteDirectory);
+            _remoteBaseFolder = new URL(webdav.hostname + "/" + webdav.remoteDirectory);
 
             sardine = SardineFactory.begin(webdav.username, webdav.password);
             sardine.enablePreemptiveAuthentication(_remoteBaseFolder.getHost());
@@ -79,18 +77,23 @@ public class WebDAVUploader implements Uploader {
      */
     public void test(File testFile) {
         try {
-            try (FileInputStream fis = new FileInputStream(testFile)) {
+            URL target = new URL(_remoteBaseFolder + "/" + testFile.getName());
 
-                sardine.put(new URL(_remoteBaseFolder + "/" + testFile.getName()).toString(), fis);
+            realUploadFile(testFile, target);
 
-                TimeUnit.SECONDS.sleep(5);
+            TimeUnit.SECONDS.sleep(5);
 
-                sardine.delete(new URL(_remoteBaseFolder + "/" + testFile.getName()).toString());
-            }
+            sardine.delete(target.toString());
         } catch (Exception exception) {
             NetUtil.catchException(exception, _remoteBaseFolder.getHost(), logger);
             MessageUtil.sendConsoleException(exception);
             setErrorOccurred(true);
+        }
+    }
+
+    public void realUploadFile(File file, URL target) throws IOException {
+        try (FileInputStream fis = new FileInputStream(file)) {
+            sardine.put(target.toString(), fis, (String)null, true, file.length());
         }
     }
 
@@ -102,12 +105,9 @@ public class WebDAVUploader implements Uploader {
     public void uploadFile(File file, String type) {
         try {
             type = type.replaceAll(".{1,2}[/\\\\]", "");
-
-            FileInputStream fs = new FileInputStream(file);
             createDirectory(_remoteBaseFolder.toString() + "/" + type);
-            sardine.put(new URL(_remoteBaseFolder + "/" + type + "/" + file.getName()).toString(), fs);
-            fs.close();
-
+            URL target = new URL(_remoteBaseFolder + "/" + type + "/" + file.getName());
+            realUploadFile(file, target);
             try {
                 pruneBackups(type);
             } catch (Exception e) {
@@ -171,6 +171,10 @@ public class WebDAVUploader implements Uploader {
         return UPLOADER_ID;
     }
 
+    /**
+     * Gets the authentication provider for this upload service
+     * @return authentication provider for this upload service
+     */
     public AuthenticationProvider getAuthProvider() {
         return null;
     }
@@ -182,7 +186,7 @@ public class WebDAVUploader implements Uploader {
      * @param type the type of file (ex. plugins, world)
      * @throws Exception
      */
-    private void pruneBackups(String type) throws Exception {
+    public void pruneBackups(String type) throws Exception {
         int fileLimit = ConfigParser.getConfig().backupStorage.keepCount;
         if (fileLimit == -1) {
             return;
@@ -220,6 +224,13 @@ public class WebDAVUploader implements Uploader {
         return files;
     }
 
+    private String rstrip(String src, char remove) {
+        while (src.charAt(src.length()-1) == remove) {
+            src = src.substring(0, src.length()-2);
+        }
+        return src;
+    }
+
     /**
      * Creates a folder with the specified path inside the current working directory, then enters it
      * @param parentFolder the parent folder
@@ -227,8 +238,16 @@ public class WebDAVUploader implements Uploader {
      * @throws Exception
      */
     private void createDirectory(String path) {
+        path = rstrip(path, '/');
         try {
             if (!sardine.exists(path)) {
+                int li = path.lastIndexOf('/');
+                if (li > 0) {
+                    String parent = path.substring(0, li);
+                    if (!sardine.exists(parent)) {
+                        createDirectory(parent);
+                    }
+                }
                 sardine.createDirectory(path);
             }
         } catch (IOException exception) {
@@ -254,7 +273,7 @@ public class WebDAVUploader implements Uploader {
      * Sets whether an error occurred while accessing the FTP server
      * @param errorOccurred whether an error occurred
      */
-    private void setErrorOccurred(boolean errorOccurred) {
+    public void setErrorOccurred(boolean errorOccurred) {
         _errorOccurred = errorOccurred;
     }
 }

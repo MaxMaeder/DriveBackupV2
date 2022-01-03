@@ -9,7 +9,6 @@ import ratismal.drivebackup.uploaders.Uploader;
 import ratismal.drivebackup.uploaders.Authenticator.AuthenticationProvider;
 import ratismal.drivebackup.UploadThread.UploadLogger;
 import ratismal.drivebackup.config.ConfigParser;
-import ratismal.drivebackup.config.ConfigParser.Config;
 import ratismal.drivebackup.config.configSections.BackupMethods.FTPBackupMethod;
 import ratismal.drivebackup.util.MessageUtil;
 import ratismal.drivebackup.util.NetUtil;
@@ -56,13 +55,10 @@ public class FTPUploader implements Uploader {
     /**
      * Creates an instance of the {@code FTPUploader} object using the server credentials specified by the user in the {@code config.yml}
      */
-    public FTPUploader(UploadLogger logger) {
+    public FTPUploader(UploadLogger logger, FTPBackupMethod ftp) {
         this.logger = logger;
 
         try {
-            Config config = ConfigParser.getConfig();
-            FTPBackupMethod ftp = config.backupMethods.ftp;
-
             if (ftp.sftp) {
                 sftpClient = new SFTPUploader(logger);
             } else {
@@ -71,10 +67,10 @@ public class FTPUploader implements Uploader {
             }
 
             _localBaseFolder = ".";
-            if (Strings.isNullOrEmpty(ftp.baseDirectory)) {
-                _remoteBaseFolder = config.backupStorage.remoteDirectory;
+            if (Strings.isNullOrEmpty(ftp.remoteDirectory)) {
+                _remoteBaseFolder = ftp.remoteDirectory;
             } else {
-                _remoteBaseFolder = ftp.baseDirectory + sep() + config.backupStorage.remoteDirectory;
+                _remoteBaseFolder = ftp.remoteDirectory + sep() + ftp.remoteDirectory;
             }
         } catch (Exception e) {
             MessageUtil.sendConsoleException(e);

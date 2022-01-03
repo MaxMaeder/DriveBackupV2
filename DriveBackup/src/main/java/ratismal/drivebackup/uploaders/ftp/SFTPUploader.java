@@ -51,10 +51,10 @@ public class SFTPUploader {
         connect(ftp.hostname, ftp.port, ftp.username, ftp.password, ftp.publicKey, ftp.passphrase);
 
         _localBaseFolder = ".";
-        if (Strings.isNullOrEmpty(ftp.baseDirectory)) {
+        if (Strings.isNullOrEmpty(ftp.remoteDirectory)) {
             _remoteBaseFolder = config.backupStorage.remoteDirectory;
         } else {
-            _remoteBaseFolder = ftp.baseDirectory + "/" + config.backupStorage.remoteDirectory;
+            _remoteBaseFolder = ftp.remoteDirectory + "/" + config.backupStorage.remoteDirectory;
         }
     }
 

@@ -58,6 +58,7 @@ public class BstatsMetrics {
                     config.backupMethods.oneDrive.enabled || 
                     config.backupMethods.dropbox.enabled ||
                     config.backupMethods.webdav.enabled ||
+                    config.backupMethods.nextcloud.enabled ||
                     config.backupMethods.ftp.enabled);
             }
         }));
@@ -80,6 +81,20 @@ public class BstatsMetrics {
             @Override
             public String call() throws Exception {
                 return enabled(config.backupMethods.dropbox.enabled);
+            }
+        }));
+
+        metrics.addCustomChart(new SimplePie("webdavEnabled", new Callable<String>() {
+            @Override
+            public String call() throws Exception {
+                return enabled(config.backupMethods.webdav.enabled);
+            }
+        }));
+
+        metrics.addCustomChart(new SimplePie("nextcloudEnabled", new Callable<String>() {
+            @Override
+            public String call() throws Exception {
+                return enabled(config.backupMethods.nextcloud.enabled);
             }
         }));
 
