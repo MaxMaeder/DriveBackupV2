@@ -9,7 +9,6 @@ import ratismal.drivebackup.uploaders.Uploader;
 import ratismal.drivebackup.uploaders.Authenticator.AuthenticationProvider;
 import ratismal.drivebackup.UploadThread.UploadLogger;
 import ratismal.drivebackup.config.ConfigParser;
-import ratismal.drivebackup.config.ConfigParser.Config;
 import ratismal.drivebackup.config.configSections.BackupMethods.FTPBackupMethod;
 import ratismal.drivebackup.util.MessageUtil;
 import ratismal.drivebackup.util.NetUtil;
@@ -69,9 +68,9 @@ public class FTPUploader implements Uploader {
 
             _localBaseFolder = ".";
             if (Strings.isNullOrEmpty(ftp.remoteDirectory)) {
-                _remoteBaseFolder = config.backupStorage.remoteDirectory;
+                _remoteBaseFolder = ftp.remoteDirectory;
             } else {
-                _remoteBaseFolder = ftp.remoteDirectory + sep() + config.backupStorage.remoteDirectory;
+                _remoteBaseFolder = ftp.remoteDirectory + sep() + ftp.remoteDirectory;
             }
         } catch (Exception e) {
             MessageUtil.sendConsoleException(e);

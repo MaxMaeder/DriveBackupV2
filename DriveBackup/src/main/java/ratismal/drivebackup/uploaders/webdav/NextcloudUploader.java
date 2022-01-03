@@ -12,7 +12,7 @@ import java.util.concurrent.TimeUnit;
 import com.github.sardine.impl.SardineException;
 
 import ratismal.drivebackup.UploadThread.UploadLogger;
-import ratismal.drivebackup.nextcloud.configSections.BackupMethods.NextcloudBackupMethod;
+import ratismal.drivebackup.config.configSections.BackupMethods.NextcloudBackupMethod;
 
 public class NextcloudUploader extends WebDAVUploader {
 
@@ -25,7 +25,7 @@ public class NextcloudUploader extends WebDAVUploader {
     private String magic_upload_dir;
 
     public NextcloudUploader(UploadLogger logger, NextcloudBackupMethod nextcloud) {
-        super(logger, webdav);
+        super(logger, nextcloud);
         this.nextcloud = nextcloud;
 
         try {
