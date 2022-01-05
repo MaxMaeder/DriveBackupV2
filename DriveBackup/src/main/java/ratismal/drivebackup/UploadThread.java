@@ -244,6 +244,8 @@ public class UploadThread implements Runnable {
 
         FileUtil.deleteFolder(new File("external-backups"));
 
+        ServerUtil.setAutoSave(true);
+
         backupStatus = BackupStatus.NOT_RUNNING;
 
         for (Uploader uploader : uploaders) {
@@ -274,8 +276,6 @@ public class UploadThread implements Runnable {
             logger.info(intl("backup-disabled-inactivity"));
             PlayerListener.setAutoBackupsActive(false);
         }
-
-        ServerUtil.setAutoSave(true);
 
         lastBackupSuccessful = !errorOccurred;
 

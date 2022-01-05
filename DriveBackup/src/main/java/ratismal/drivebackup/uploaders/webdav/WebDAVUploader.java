@@ -64,6 +64,7 @@ public class WebDAVUploader implements Uploader {
      */
     public void close() {
         try {
+            sardine.shutdown();
         } catch (Exception e) {
             MessageUtil.sendConsoleException(e);
             setErrorOccurred(true);
