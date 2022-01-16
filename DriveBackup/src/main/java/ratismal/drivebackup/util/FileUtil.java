@@ -55,7 +55,8 @@ public class FileUtil {
                     ZonedDateTime date = formatter.parse(fileName);
                     backupList.put(date.toEpochSecond(), file);
                 } catch (Exception e) {
-                    backupList.put(0L, file);
+                    // Fallback to using file creation date if the file name doesn't match the format
+                    backupList.put((file.lastModified() / 1000), file);
                     logger.log(intl("local-backup-date-format-invalid"), "file-name", fileName);
                 }
             }
