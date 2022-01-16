@@ -63,6 +63,8 @@ no-perm: "You don't have permission to do this!"
 link-account-code: "To link your <provider> account, go to <gold><click:open_url:'<link-url>'><link-url></click></gold> and enter <gold><click:copy_to_clipboard:'<link-code>'><link-code></click></gold>"
 link-provider-failed: "Failed to link your <provider> account, please try again"
 link-provider-complete: "Your <provider> account is linked!"
+unlink-provider-failed: "Failed to unlink your <provider> account, please try again"
+unlink-provider-complete: "Your <provider> account is unlinked!"
 google-pick-shared-drive: "You have access one or more Shared Drives, if you'd like to use one of them either select it or reply with it's number in the chat."
 default-google-drive-name: "My Drive"
 google-shared-drive-option: "<bold>[<drive-num>]</bold> <gold><hover:show_text:Select Drive><click:run_command:'<select-command>'><drive-name></click></hover></gold>"
@@ -165,10 +167,14 @@ drivebackup-help-command: |-
   <header>
   <gold><click:run_command:/drivebackup>/drivebackup</click></gold> - Displays this menu
   <gold><click:run_command:/drivebackup help>/drivebackup help</click></gold> - Displays help resources
-  <gold><click:run_command:/drivebackup v>/drivebackup v</click></gold> - Displays the plugin version
-  <gold><click:run_command:/drivebackup linkaccount googledrive>/drivebackup linkaccount googledrive</click></gold> - Links your Google Drive account for backups
-  <gold><click:run_command:/drivebackup linkaccount onedrive>/drivebackup linkaccount onedrive</click></gold> - Links your OneDrive account for backups
-  <gold><click:run_command:/drivebackup linkaccount dropbox>/drivebackup linkaccount dropbox</click></gold> - Links your Dropbox account for backups
+  <gold><click:run_command:/drivebackup commands>/drivebackup commands</click></gold> - Displays this command help page
+  <gold><click:run_command:/drivebackup v>/drivebackup [v|version]</click></gold> - Displays the plugin version
+  <gold><click:run_command:/drivebackup linkaccount googledrive>/drivebackup [link|linkaccount] googledrive</click></gold> - Links your Google Drive account for backups
+  <gold><click:run_command:/drivebackup linkaccount onedrive>/drivebackup [link|linkaccount] onedrive</click></gold> - Links your OneDrive account for backups
+  <gold><click:run_command:/drivebackup linkaccount dropbox>/drivebackup [link|linkaccount] dropbox</click></gold> - Links your Dropbox account for backups
+  <gold><click:run_command:/drivebackup linkaccount googledrive>/drivebackup [unlink|unlinkaccount] googledrive</click></gold> - Unlinks your Google Drive account and disables method
+  <gold><click:run_command:/drivebackup linkaccount onedrive>/drivebackup [unlink|unlinkaccount] onedrive</click></gold> - Unlinks your OneDrive account and disables method
+  <gold><click:run_command:/drivebackup linkaccount dropbox>/drivebackup [unlink|unlinkaccount] dropbox</click></gold> - Unlinks your Dropbox account and disables method
   <gold><click:run_command:/drivebackup reloadconfig>/drivebackup reloadconfig</click></gold> - Reloads the config.yml
   <gold><click:run_command:/drivebackup nextbackup>/drivebackup nextbackup</click></gold> - Gets the time/date of the next auto backup
   <gold><click:run_command:/drivebackup status>/drivebackup status</click></gold> - Gets the status of the running backup

@@ -42,6 +42,10 @@ public class CommandHandler implements CommandExecutor {
             case "help":
                 BasicCommands.sendDocs(sender);
                 break;
+            case "commands":
+                BasicCommands.sendHelp(sender);
+                break;
+            case "version":
             case "v":
                 BasicCommands.sendVersion(sender);
                 break;
@@ -66,6 +70,7 @@ public class CommandHandler implements CommandExecutor {
 
                 break;*/
             case "linkaccount":
+            case "link":
                 if (args.length < 2) {
                     BasicCommands.sendHelp(sender);
                     break;
@@ -87,6 +92,30 @@ public class CommandHandler implements CommandExecutor {
                         BasicCommands.sendHelp(sender);
                         break;
                     }
+                break;
+            case "unlinkaccount":
+            case "unlink":
+                if (args.length < 2) {
+                    BasicCommands.sendHelp(sender);
+                    break;
+                }
+
+                if (!Permissions.hasPerm(sender, Permissions.LINK_ACCOUNTS)) break;
+
+                switch (args[1].toLowerCase()) {
+                    case "googledrive":
+                        Authenticator.unauthenticateUser(AuthenticationProvider.GOOGLE_DRIVE, sender);
+                        break;
+                    case "onedrive":
+                        Authenticator.unauthenticateUser(AuthenticationProvider.ONEDRIVE, sender);
+                        break;
+                    case "dropbox":
+                        Authenticator.unauthenticateUser(AuthenticationProvider.DROPBOX, sender);
+                        break;
+                    default:
+                        BasicCommands.sendHelp(sender);
+                        break;
+                }
                 break;
             case "status":
                 if (!Permissions.hasPerm(sender, Permissions.GET_BACKUP_STATUS)) break;

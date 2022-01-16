@@ -18,6 +18,7 @@ import ratismal.drivebackup.util.SchedulerUtil;
 import org.bukkit.Bukkit;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -192,7 +193,7 @@ public class Authenticator {
                     } catch (Exception exception) {
                         NetUtil.catchException(exception, "drivebackup.web.app", logger);
 
-                        Authenticator.linkFail(provider, logger);
+                        logger.log(intl("link-provider-failed"), "provider", provider.getName());
                         MessageUtil.sendConsoleException(exception);
 
                         cancelPollTask();
@@ -202,9 +203,29 @@ public class Authenticator {
         } catch (Exception exception) {
             NetUtil.catchException(exception, "drivebackup.web.app", logger);
 
-            Authenticator.linkFail(provider, logger);
+            logger.log(intl("link-provider-failed"), "provider", provider.getName());
             MessageUtil.sendConsoleException(exception);
         }
+    }
+
+    public static void unauthenticateUser(final AuthenticationProvider provider, final CommandSender initiator) {
+        Logger logger = (input, placeholders) -> {
+            MessageUtil.Builder().mmText(input, placeholders).to(initiator).send();
+        };
+
+        disableBackupMethod(provider, logger);
+
+        try {
+            File credStoreFile = new File(provider.getCredStoreLocation());
+            if (credStoreFile.exists()) {
+                credStoreFile.delete();
+            }
+        } catch (Exception exception) {
+            logger.log(intl("unlink-provider-failed"), "provider", provider.getName());
+            MessageUtil.sendConsoleException(exception);
+        }
+
+        logger.log(intl("unlink-provider-complete"), "provider", provider.getName());
     }
 
     private static void cancelPollTask() {
@@ -224,10 +245,6 @@ public class Authenticator {
         BasicCommands.sendBriefBackupList(initiator);
     }
 
-    public static void linkFail(AuthenticationProvider provider, Logger logger) {
-        logger.log(intl("link-provider-failed"), "provider", provider.getName());
-    }
-
     private static void saveRefreshToken(AuthenticationProvider provider, String token) throws Exception {
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("refresh_token", token);
@@ -243,6 +260,16 @@ public class Authenticator {
         if (!plugin.getConfig().getBoolean(provider.getId() + ".enabled")) {
             logger.log("Automatically enabled " + provider.getName() + " backups");
             plugin.getConfig().set(provider.getId() + ".enabled", true);
+            plugin.saveConfig();
+        }
+    }
+
+    private static void disableBackupMethod(AuthenticationProvider provider, Logger logger) {
+        DriveBackup plugin = DriveBackup.getInstance();
+
+        if (plugin.getConfig().getBoolean(provider.getId() + ".enabled")) {
+            logger.log("Disabled " + provider.getName() + " backups");
+            plugin.getConfig().set(provider.getId() + ".enabled", false);
             plugin.saveConfig();
         }
     }

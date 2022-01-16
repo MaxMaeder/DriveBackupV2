@@ -344,7 +344,7 @@ public class GoogleDriveUploader implements Uploader {
         }
 
         // TODO: handle this better
-        Authenticator.linkFail(getAuthProvider(), logger);
+        logger.log(intl("link-provider-failed"), "provider", getAuthProvider().getName());
     }
 
     /**
@@ -376,9 +376,9 @@ public class GoogleDriveUploader implements Uploader {
     }
 
     /**
-     * Creates a folder with the specified name in the specified parent folder in the authenticated user's specified Shared Drive
+     * Creates a folder with the specified name in the authenticated user's specified Shared Drive
      * @param name the name of the folder
-     * @param parent the parent folder
+     * @param driveId the parent folder
      * @return the created folder
      * @throws Exception
      */
@@ -427,7 +427,7 @@ public class GoogleDriveUploader implements Uploader {
     }
 
     /**
-     * Returns the folder in the specified parent folder of the authenticated user's Google Drive with the specified name
+     * Returns the folder in the specified Shared Drive of the authenticated user's Google Drive with the specified name
      * @param name the name of the folder
      * @param parent the parent folder
      * @return the folder or {@code null}
@@ -439,7 +439,7 @@ public class GoogleDriveUploader implements Uploader {
                 .setSupportsAllDrives(true)
                 .setIncludeItemsFromAllDrives(true)
                 .setCorpora("drive")
-                .setQ("mimeType='application/vnd.google-apps.folder' and trashed=false");
+                .setQ("mimeType='application/vnd.google-apps.folder' and trashed=false and '" + driveId + "' in parents");
             FileList files = request.execute();
             for (File folderfiles : files.getItems()) {
                 if (folderfiles.getTitle().equals(name)) {
@@ -491,8 +491,8 @@ public class GoogleDriveUploader implements Uploader {
     private File getFolder(String name) {
         try {
             Drive.Files.List request = service.files().list()
-                .setQ("mimeType='application/vnd.google-apps.folder' and trashed=false");
-            FileList files = request.execute();
+                .setQ("mimeType='application/vnd.google-apps.folder' and trashed=false and 'root' in parents");
+            FileList files = request.execute();;
             for (File folderfiles : files.getItems()) {
                 if (folderfiles.getTitle().equals(name)) {
                     return folderfiles;
