@@ -47,13 +47,6 @@ public class Scheduler {
      * Starts the backup thread
      */
     public static void startBackupThread() {
-        startBackupThread(false);
-    }
-
-    /**
-     * Starts the backup thread
-     */
-    private static void startBackupThread(boolean reschedule) {
         Config config = ConfigParser.getConfig();
         BukkitScheduler taskScheduler = Bukkit.getServer().getScheduler();
 
@@ -122,10 +115,6 @@ public class Scheduler {
                     .send();
             }
 
-            if (!config.backupScheduling.driftCorrectionEnabled || reschedule) {
-                return;
-            }
-
             if (scheduleDriftTask != -1) {
                 Bukkit.getScheduler().cancelTask(scheduleDriftTask);
             }
@@ -134,12 +123,7 @@ public class Scheduler {
             scheduleDriftTask = taskScheduler.runTaskTimer(DriveBackup.getInstance(), new Runnable() {
                 @Override
                 public void run() {
-                    MessageUtil.Builder()
-                        .mmText(intl("backups-rescheduled"))
-                        .toConsole(true)
-                        .send();
-
-                    startBackupThread(true);
+                    startBackupThread();
                 }
             }, driftInt, driftInt).getTaskId();
         } else if (config.backupStorage.delay != -1) {
