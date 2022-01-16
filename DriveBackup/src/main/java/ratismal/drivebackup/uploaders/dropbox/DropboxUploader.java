@@ -13,8 +13,13 @@ import ratismal.drivebackup.plugin.DriveBackup;
 
 import java.io.DataInputStream;
 import java.io.FileInputStream;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.util.Date;
+import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.http.client.utils.DateUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -244,34 +249,20 @@ public class DropboxUploader implements Uploader {
         if (fileLimit == -1) {
             return;
         }
-        
-        MediaType JSON = MediaType.parse("application/json; charset=utf-8");
-        JSONObject json = new JSONObject();
-        json.put("path", "/" + destination + "/" + type);
-        RequestBody requestBody = RequestBody.create(json.toString(), JSON);
-        
-        Request request = new Request.Builder()
-            .addHeader("Authorization", "Bearer " + accessToken)
-            .url("https://api.dropboxapi.com/2/files/list_folder")
-            .post(requestBody)
-            .build();
 
-        Response response = DriveBackup.httpClient.newCall(request).execute();
-        JSONObject parsedResponse = new JSONObject(response.body().string());
-        JSONArray files = parsedResponse.getJSONArray("entries");
-        response.close();
+        TreeMap<Instant, String> files = getZipFiles(destination, type);
 
-        if (files.length() > fileLimit) {
+        if (files.size() > fileLimit) {
             logger.info(
                 intl("backup-method-limit-reached"), 
-                "file-count", String.valueOf(files.length()),
+                "file-count", String.valueOf(files.size()),
                 "upload-method", getName(),
                 "file-limit", String.valueOf(fileLimit));
 
-            while (files.length() > fileLimit) {
+            while (files.size() > fileLimit) {
                 JSONObject deleteJson = new JSONObject();
-                deleteJson.put("path", "/" + destination + "/" + type + "/" + files.getJSONObject(0).get("name"));
-                RequestBody deleteRequestBody = RequestBody.create(deleteJson.toString(), JSON);
+                deleteJson.put("path", "/" + destination + "/" + type + "/" + files.firstEntry().getValue());
+                RequestBody deleteRequestBody = RequestBody.create(deleteJson.toString(), MediaType.parse("application/json"));
 
                 Request deleteRequest = new Request.Builder()
                     .addHeader("Authorization", "Bearer " + accessToken)
@@ -282,9 +273,42 @@ public class DropboxUploader implements Uploader {
                 Response deleteResponse = DriveBackup.httpClient.newCall(deleteRequest).execute();
                 deleteResponse.close();
                 
-                files.remove(0);
+                files.remove(files.firstKey());
             }
         }
+    }
+
+    /**
+     * Returns a list of ZIP files and their modification dates inside the given folder
+     * @return the list of files
+     * @throws Exception
+     */
+    private TreeMap<Instant, String> getZipFiles(String destination, String type) throws Exception {
+        TreeMap<Instant, String> files = new TreeMap<>();
+
+        JSONObject json = new JSONObject();
+        json.put("path", "/" + destination + "/" + type);
+        RequestBody requestBody = RequestBody.create(json.toString(), MediaType.parse("application/json"));
+        
+        Request request = new Request.Builder()
+            .addHeader("Authorization", "Bearer " + accessToken)
+            .url("https://api.dropboxapi.com/2/files/list_folder")
+            .post(requestBody)
+            .build();
+
+        Response response = DriveBackup.httpClient.newCall(request).execute();
+        JSONObject parsedResponse = new JSONObject(response.body().string());
+        JSONArray resFiles = parsedResponse.getJSONArray("entries");
+        response.close();
+
+        for (int i = 0; i < resFiles.length(); i++) {
+            JSONObject file = resFiles.getJSONObject(i);
+            if (file.getString("name").endsWith(".zip")) {
+                files.put(Instant.parse(file.getString("server_modified")), file.getString("name"));
+            }
+        }
+
+        return files;
     }
 
     /**
