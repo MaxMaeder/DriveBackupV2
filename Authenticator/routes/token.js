@@ -1,7 +1,7 @@
 const { db } = require('../app.js');
-var express = require('express');
-var fetch = require('node-fetch');
-var router = express.Router();
+const express = require('express');
+const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
+let router = express.Router();
 
 router.post('/', async function(req, res) {
   if (req.body.device_code === undefined || req.body.user_code === undefined) return res.send({ success: false, msg: "missing_params" });
