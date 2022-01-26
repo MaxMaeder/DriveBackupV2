@@ -223,7 +223,6 @@ public class UploadThread implements Runnable {
         }
             
         logger.broadcast(intl("backup-start"));
-        ServerUtil.setAutoSave(false);
 
         for (ExternalBackupSource externalBackup : externalBackupList) {
             if (externalBackup instanceof ExternalFTPSource) {
@@ -341,6 +340,7 @@ public class UploadThread implements Runnable {
             backupStatus = BackupStatus.COMPRESSING;
 
             try {
+                ServerUtil.setAutoSave(false);
                 fileUtil.makeBackup(location, formatter, blackList);
             } catch (IllegalArgumentException exception) {
                 logger.log(intl("backup-failed-absolute-path"));
@@ -351,6 +351,7 @@ public class UploadThread implements Runnable {
 
                 return;
             }
+            ServerUtil.setAutoSave(true); // we want to re-enable auto-save even if backup failed
         }
 
         try {
