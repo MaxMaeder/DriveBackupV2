@@ -2,6 +2,7 @@ package ratismal.drivebackup.config;
 
 import java.util.List;
 
+import org.apache.commons.lang.ObjectUtils;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 
@@ -12,16 +13,17 @@ import ratismal.drivebackup.util.MessageUtil;
 
 public class ConfigMigrator {
     private static final String DEFAULT_TIMEZONE_STRING = "-00:00";
- 
-    // ConfigMigrator is called before localization is parsed, since ConfigMigrator may change the intl file
-    // Therefore, we just hardcode any messages
+
+    // ConfigMigrator is called before localization is parsed, since ConfigMigrator
+    // may change the intl file. Therefore, we just hardcode any messages
     private static final String MIGRATING_MESSAGE = "Automatically migrating config to version <version>";
 
     FileConfiguration config;
     FileConfiguration localizationConfig;
     List<CommandSender> initiators;
 
-    public ConfigMigrator(FileConfiguration config, FileConfiguration localizationConfig, List<CommandSender> initiators) {
+    public ConfigMigrator(FileConfiguration config, FileConfiguration localizationConfig,
+            List<CommandSender> initiators) {
         this.config = config;
         this.localizationConfig = localizationConfig;
         this.initiators = initiators;
@@ -52,7 +54,8 @@ public class ConfigMigrator {
         migrate("dir", "local-save-directory");
         migrate("destination", "remote-save-directory");
 
-        if (config.isSet("schedule-timezone") && !config.getString("schedule-timezone").equals(DEFAULT_TIMEZONE_STRING)) {
+        if (config.isSet("schedule-timezone")
+                && !ObjectUtils.equals(config.getString("schedule-timezone"), DEFAULT_TIMEZONE_STRING)) {
             migrate("schedule-timezone", "advanced.date-timezone");
             config.set("backup-format-timezone", null);
         } else {
@@ -75,7 +78,7 @@ public class ConfigMigrator {
         migrateIntl("messages.next-schedule-backup", "next-schedule-backup");
         migrateIntl("messages.next-schedule-backup-format", "next-schedule-backup-format");
         migrateIntl("messages.auto-backups-disabled", "auto-backups-disabled");
-        
+
         DriveBackup.getInstance().saveConfig();
         DriveBackup.getInstance().saveIntlConfig();
     }
