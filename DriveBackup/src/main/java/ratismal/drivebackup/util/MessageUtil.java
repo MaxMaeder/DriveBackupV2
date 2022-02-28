@@ -1,10 +1,8 @@
 package ratismal.drivebackup.util;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.bukkit.Bukkit;
@@ -16,9 +14,9 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.JoinConfiguration;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.minimessage.MiniMessage;
-import net.kyori.adventure.text.minimessage.placeholder.Placeholder;
-import net.kyori.adventure.text.minimessage.placeholder.PlaceholderResolver;
-import net.kyori.adventure.text.minimessage.placeholder.Replacement;
+import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
+import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
+import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver.Builder;
 import ratismal.drivebackup.config.ConfigParser;
 import ratismal.drivebackup.config.ConfigParser.Config;
 import ratismal.drivebackup.plugin.DriveBackup;
@@ -70,21 +68,13 @@ public class MessageUtil {
      * @return the calling MessageUtil's instance
      */
     public MessageUtil mmText(String text, String... placeholders) {
-        int size = placeholders.length;
-        final Map<String, Replacement<?>> plmap = new HashMap<>(size/2);
-
-        String key = null;
-        for (int i = 0; i < size; i++) {
-            if (key == null) {
-                key = placeholders[i];
-            } else {
-                plmap.put(key, Replacement.miniMessage(placeholders[i]));
-                key = null;
-            }
-
+        Builder builder = TagResolver.builder();
+        // take pairs of placeholders and values and add them to the builder
+        for (int i = 0; i < placeholders.length; i += 2) {
+            builder.resolver(Placeholder.parsed(placeholders[i], placeholders[i + 1]));
         }
 
-        message.add(MiniMessage.miniMessage().deserialize("<dark_aqua>" + text, PlaceholderResolver.map(plmap)));
+        message.add(MiniMessage.miniMessage().deserialize("<dark_aqua>" + text, builder.build()));
         return this;
     }
 
@@ -95,7 +85,7 @@ public class MessageUtil {
      * @return the calling MessageUtil's instance
      */
     public MessageUtil mmText(String text, String title, Component content) {
-        message.add(MiniMessage.miniMessage().deserialize("<dark_aqua>" + text, PlaceholderResolver.placeholders(Placeholder.component(title, content))));
+        message.add(MiniMessage.miniMessage().deserialize("<dark_aqua>" + text, TagResolver.resolver(Placeholder.component(title, content))));
         return this;
     }
 
