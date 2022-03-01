@@ -4,7 +4,6 @@ import ratismal.drivebackup.uploaders.Uploader;
 import ratismal.drivebackup.uploaders.Authenticator.AuthenticationProvider;
 import ratismal.drivebackup.UploadThread.UploadLogger;
 import ratismal.drivebackup.config.ConfigParser;
-import ratismal.drivebackup.config.ConfigParser.Config;
 import ratismal.drivebackup.config.configSections.BackupMethods.WebDAVBackupMethod;
 import ratismal.drivebackup.util.MessageUtil;
 import ratismal.drivebackup.util.NetUtil;
@@ -31,8 +30,6 @@ public class WebDAVUploader implements Uploader {
     public Sardine sardine;
 
     private boolean _errorOccurred;
-
-    private String _localBaseFolder;
     private URL _remoteBaseFolder;
 
     /**
@@ -43,7 +40,6 @@ public class WebDAVUploader implements Uploader {
 
         try {
 
-            _localBaseFolder = ".";
             _remoteBaseFolder = new URL(webdav.hostname + "/" + webdav.remoteDirectory);
 
             sardine = SardineFactory.begin(webdav.username, webdav.password);

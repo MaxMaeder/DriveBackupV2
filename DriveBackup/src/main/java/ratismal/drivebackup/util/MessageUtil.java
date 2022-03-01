@@ -69,7 +69,6 @@ public class MessageUtil {
      */
     public MessageUtil mmText(String text, String... placeholders) {
         Builder builder = TagResolver.builder();
-        // take pairs of placeholders and values and add them to the builder
         for (int i = 0; i < placeholders.length; i += 2) {
             builder.resolver(Placeholder.parsed(placeholders[i], placeholders[i + 1]));
         }

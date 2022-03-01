@@ -14,12 +14,9 @@ import ratismal.drivebackup.plugin.DriveBackup;
 import java.io.DataInputStream;
 import java.io.FileInputStream;
 import java.time.Instant;
-import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.http.client.utils.DateUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 

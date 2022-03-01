@@ -19,7 +19,6 @@ public class NextcloudUploader extends WebDAVUploader {
     public static String UPLOADER_ID = "nextcloud";
 
     private NextcloudBackupMethod nextcloud;
-    private UploadLogger logger;
 
     private String magic_upload_dir;
 
