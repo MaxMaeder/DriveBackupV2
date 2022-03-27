@@ -350,8 +350,9 @@ public class UploadThread implements Runnable {
                 logger.log(intl("backup-local-failed"));
 
                 return;
+            } finally {
+                ServerUtil.setAutoSave(true); // we want to re-enable auto-save even if backup failed
             }
-            ServerUtil.setAutoSave(true); // we want to re-enable auto-save even if backup failed
         }
 
         try {

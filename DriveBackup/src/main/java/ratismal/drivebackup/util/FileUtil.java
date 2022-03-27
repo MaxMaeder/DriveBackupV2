@@ -298,10 +298,15 @@ public class FileUtil {
             }
 
             fileList.appendToList(relativePath.toString());
-        } else {
+        } else if (file.isDirectory()) {
             for (String filename : file.list()) {
                 generateFileList(new File(file, filename), inputFolderPath, fileList);
             }
+        } else {
+            logger.info(
+                intl("local-backup-failed-to-include"),
+                "file-path", file.getAbsolutePath()
+                );
         }
     }
 
