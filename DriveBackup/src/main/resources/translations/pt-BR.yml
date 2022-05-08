@@ -1,0 +1,187 @@
+# Check if someone has translated the plugin into your language already!
+# https://github.com/MaxMaeder/DriveBackupV2/tree/master/translations
+#
+# If not, feel free to contribute!
+
+plugin-stop: "Desabilitando o plugin"
+metrics-started: "Inicializando métrica"
+metrics-error: "Falha ao iniciar métrica"
+update-checker-started: "Procurando por atualizações..."
+update-checker-new-release: |-
+  DriveBackup foi atualizado para a versão <latest-version>, você está usando a versão <current-version>
+  Atualize em: <gold><click:open_url:http://bit.ly/2VGtF7L>http://bit.ly/2VGtF7L</click></gold>" ou utilize <gold><click:run_command:/drivebackup update>/drivebackup update</click></gold>
+update-checker-unsupported-release: |-
+  Você está executando um lançamento sem suporte!
+  A versão recomendada é <latest-version>, você está usando a versão <current-version>
+  Se o plugin foi atualizado recentemente, ignore esta mensagem.
+update-checker-failed: "Houve um problema na tentativa de verificar o último lançamento do DriveBackupV2"
+updater-start: "Tentando fazer o download da última versão do DriveBackupV2"
+updater-no-updates: "Você está usando a última versão do DriveBackupV2!"
+updater-fetch-failed: "Incapaz de buscar a última versão do DriveBackupV2"
+updater-update-failed: "A atualização do plugin falhou, veja o console para mais informações"
+updater-successful: "Plugin atualizado com sucesso! Por favor, reinicie seu servidor para que as mudanças tenham efeito"
+config-loaded: "Config carregado!"
+config-reloaded: "Configuração recarregada!"
+date-format-invalid: "Formato da data Fuso horário não válido, utilizando UTC"
+backup-list-glob-invalid: "Globo inválido, pulando a entrada da lista de reserva <entry>"
+backup-list-path-invalid: "Caminho inválido, pulando a entrada da lista de reserva <entry>"
+backup-list-no-dest-specified: "Nenhum caminho ou globo especificado, pulando a entrada da lista de reserva <entry>"
+backup-list-format-invalid: "Formato inválido, pulando a entrada da lista de reserva <entry>"
+backup-list-blacklist-invalid: "Lista negra inválida na entrada de backup <entry>, deixando em branco"
+ftp-method-pubic-key-invalid: "Caminho para chave pública inválido para o método de backup FTP, deixando em branco"
+ftp-method-passphrase-invalid: "Frases inválidas para o método de backup FTP, deixando em branco"
+backup-schedule-days-invalid: "Lista de dias inválida, pulando a entrada de horários <entry>"
+backup-schedule-day-invalid: "Dia da semana inválido, dia da semana \"<day>\""
+backup-schedule-day-empty: "Lista de dias da semana vazia, pulando a entrada de horários <entry>"
+backup-schedule-time-invalid: "Tempo inválido, pular a entrada de horários <entry>"
+backup-schedule-empty: "Programação de backups vazios, desativando os backups baseados em programação"
+invalid-backup-delay: "Atraso de backup inserido inválido, usando o padrão"
+thread-priority-too-low: "Prioridade de rosca entrada menor que o mínimo, usando o mínimo"
+thread-priority-too-high: "Prioridade de rosca entrada mais que o máximo, usando o máximo"
+keep-count-invalid: "Manter a contagem inválida, usando o padrão"
+local-keep-count-invalid: "A contagem local de entradas mantém inválida, usando o padrão"
+zip-compression-too-low: "Entrada de compressão de zíper menor que o mínimo, usando o mínimo"
+zip-compression-too-high: "Compressão de zíper entrada mais que o máximo, usando o máximo"
+external-backup-type-invalid: "Tipo de backup inválido, pulando a entrada externa de backup <entry>"
+external-backup-host-port-invalid: "Hostname/porta inválido, pulando a entrada externa de backup <entry>"
+external-backup-user-pass-invalid: "Nome de usuário/senha inválida, pulando a entrada externa de backup <entry>"
+external-backup-format-invalid: "Formato inválido, pulando a entrada externa de backup <entry>"
+external-backup-public-key-invalid: "Caminho para a chave pública inválida na entrada externa de backup <entry>, ignorando..."
+external-backup-passphrase-invalid: "Passphrase invalid in external backup entry <entry>, ignorando..."
+external-backup-base-dir-invalid: "Caminho para a chave do diretório base inválido na entrada de backup externo <entry>, ignorando..."
+external-backup-list-invalid: "Lista de backups inválida, pulando entrada de backup externo <entry>"
+external-backup-list-path-invalid: "Caminho inválido, pulando a entrada da lista externa de backups <entry-backup>"
+external-backup-list-blacklist-invalid: "Lista negra inválida na entrada da lista externa de backups <entry-backup>, ignorando..."
+external-database-ssl-invalid: "Configuração SSL ativada inválida na entrada de backup externo <entry>, desativando SSL"
+external-database-list-invalid: "Lista de bancos de dados inválidos, pulando entrada de backup externo <entry>"
+external-database-list-name-invalid: "Nome inválido, pulando a entrada da lista externa de banco de dados de backup <entry-database>"
+external-database-list-blacklist-invalid: "Lista negra inválida na entrada da lista de banco de dados de backup externo <entry-backup>, ignorando..."
+backups-scheduled: "Agendando um backup para ser executado em <time> a cada <days>"
+backups-interval-scheduled: "Agendando um backup para executar cada <delay> minutos"
+no-perm: "Você não tem permissão para fazer isso!"
+link-account-code: "Para vincular a sua conta do <provider>, vá para <gold><click:open_url:'<link-url>'><link-url></click></gold> e entre em <gold><click:copy_to_clipboard:'<link-code>'><link-code></click></gold>"
+link-provider-failed: "Falha na vinculação da sua <provider> conta, por favor tente novamente"
+link-provider-complete: "Sua conta do(a) <provider> foi vinculada!"
+unlink-provider-failed: "Falha ao desvincular sua conta do(a) <provider> por favor, tente novamente"
+unlink-provider-complete: "<provider> foi desvinculada!"
+google-pick-shared-drive: "Você tem acesso a um ou mais Drives Compartilhados, se quiser usar um deles, selecione-o ou responda com o seu número no chat."
+default-google-drive-name: "Meu Drive"
+google-shared-drive-option: "<bold>[<drive-num>]</bold> <gold><hover:show_text:Select Drive><click:run_command:'<select-command>'><drive-name></click></hover></gold>"
+file-upload-message: "Arquivo upado em <length> segundos (<speed>KB/s)"
+backup-forced: "Forçando um backup"
+backup-already-running: |-
+  Um backup já está funcionando
+  <backup-status>
+backup-no-methods: "Nenhum método de backup está habilitado"
+backup-empty-list: "A lista de reserva está vazia"
+backup-start: "Iniciando backup... Rezem! (O servidor pode lagar um pouco)"
+external-ftp-backup-start: "Download de arquivos a partir de um servidor (S)FTP (<socket-addr>) para incluir em backup"
+external-ftp-backup-blacklisted: "Não incluímos <blacklisted-files> arquivo(s) no backup do servidor (S)FTP externo, uma vez que eles estão na lista negra por \"<glob-pattern>\""
+external-ftp-backup-failed: Falha em incluir arquivos de um servidor (S)FTP (<socket-addr>) no backup, por favor verifique as credenciais do servidor no <gold>config.yml</gold>
+external-ftp-backup-complete: "Arquivos de um servidor (S)FTP (<socket-addr>) foram incluídos com sucesso no backup"
+external-mysql-backup-start: "Download de bancos de dados a partir de um servidor MySQL (<socket-addr>) para incluir no backup"
+external-mysql-backup-blacklisted: "Não incluímos a tabela \"<blacklist-entry>\" no backup, já que está na lista negra"
+external-mysql-backup-failed: Falha na inclusão de bancos de dados de um servidor MySQL (<socket-addr>) no backup, por favor verifique as credenciais do servidor no <gold>config.yml</gold>
+external-mysql-backup-complete: "Bases de dados de um servidor MySQL (<socket-addr>) foram incluídos com sucesso no backup"
+local-backup-date-format-invalid: |-
+  Incapaz de analisar o formato da data do backup armazenado "<file-name>", isto pode ser devido ao formato da data ser atualizado no config.yml
+  O backup será o primeiro apagado
+local-backup-backlisted: "Falha ao incluir <blacklisted-files-count> no(s) arquivo(s) de backup, uma vez que estão na lista negra por \"<glob-pattern>\""
+local-backup-in-backup-folder: "Falha ao incluir <files-in-backup-folder-count> arquivo(s) no backup, como estão na pasta utilizada para backups"
+local-backup-failed-to-include: "Falha ao incluir \"<file-path>\" no backup, está trancado? Você tem permissão para acessá-la?"
+local-backup-limit-reached: "Existem <backup-count> arquivo(s) que exceda(m) o limite local de <backup-limit>, apagando o mais antigo"
+local-backup-file-failed-to-delete: "Falha em excluir o backup local \"<local-backup-name>\""
+local-backup-failed-to-delete: "Falha na eliminação do backup local"
+backup-location-start: "Fazendo backups para \"<location>\""
+backup-failed-absolute-path: |-
+  Falha na criação de um backup, caminho para a pasta para o backup é absoluto, espera-se um caminho relativo
+  Um caminho absoluto pode sobrescrever arquivos sensíveis, consulte os documentos para mais informações
+  Pulando o local de backup
+backup-local-failed: |-
+  Falha na criação de backup local
+  Mesmo que a contagem local seja zerada, o plugin precisa criar temporariamente um backup local.
+  Pulando o local de backup
+backup-method-uploading: "Upando o backup para a nuvem..."
+backup-method-limit-reached: "Existe(m) <file-count> arquivo(s) para o local atual de backup no método de <upload-met> que excede o limite de <file-limit>, deletando"
+backup-method-prune-failed: "Falha em excluir backups que excedam o limite"
+backup-method-shared-drive-prune-failed: |-
+  Falha em excluir backups que excedam o limite
+  Tente pedir ao proprietário da unidade compartilhada que eleve as permissões de sua conta, ou configure a contagem regressiva para 0 para desativar a eliminação de backups
+backup-method-upload-failed: "Falha no upload"
+backup-method-not-linked: |-
+  Pulando o backup para o método <upload-method>, conta ainda não vinculada
+  Para vincular sua conta, execute <gold><click:run_command:'<link-command>'>link-command></click></gold>
+backup-method-not-auth: |-
+  Pulando o backup para o método <upload-method>, falhou na autenticação
+  Por favor, verifique se todas as credenciais estão corretas no arquivo <gold>config.yml<gold>
+backup-method-error-occurred: "Falha na cópia de segurança do <upload-method>, verificar se todas as credenciais estão corretas ou diagnosticar o problema com <gold><click:run_command:'<diagnose-command>'><diagnose-command></click></gold>"
+backup-method-not-auth-authenticator: |-
+  Pulando o backup para o método <upload-method>, falhou na autenticação
+  Por favor, tente re-ligar sua conta, execute <gold><click:run_command:'<link-command>'>link-command></click></gold>
+backup-method-complete: "Upload do backup para a nuvem completo. Digite /g amém!"
+backup-complete: "Cópia de segurança completa"
+backup-disabled-inactivity: "Desativação de backups automáticos devido à inatividade"
+backup-status-not-running: "Nenhum backup está rodando"
+backup-status-compressing: "Conjunto de backups de compressão \"<set-name>\", conjunto <set-num> de <set-count>"
+backup-status-uploading: "Carregando o conjunto de backup \"<set-name>\", conjunto <set-num> de <set-count>"
+next-backup: "O próximo backup é em %TIME minutos"
+next-schedule-backup: "O próximo backup está em %DATE"
+next-schedule-backup-format: "h:mm a EEE, MMM d O"
+auto-backups-disabled: "Os backups automáticos estão desabilitados"
+test-method-not-specified: "Favor especificar um método de backup para testar"
+test-method-invalid: "\"<specified-method>\" não é um método de backup válido"
+test-method-not-enabled: "<upload-method> backups são desabilitados, você pode habilitá-los no <gold>config.yml</gold>"
+test-method-begin: "Começando o teste em <upload-method>"
+test-file-creation-failed: "A criação do arquivo de teste falhou, por favor tente novamente"
+test-method-failed: "O <upload-method> teste não foi bem sucedido, favor verificar o <gold>config.yml</gold>"
+test-method-successful: "O teste <upload-method> foi bem sucedido"
+player-join-backup-enable: "Habilitando backups automáticos"
+player-join-update-available: |-
+  Uma atualização está disponível, obtenha-a aqui: <gold><click:open_url:http://bit.ly/2M14uVD>http://bit.ly/2M14uVD</click></gold>
+  ou rodando <gold><click:run_command:/drivebackup update>/drivebackup update</click></gold>
+player-join-backup-failed: |-
+  <red>O último backup falhou!<red>
+  Verifique o console para mais informações
+debug-log-creating: "Gerando Registro de Depuração"
+debug-log-created: "URL de depuração: <url>"
+connection-error: "Falha na conexão com <domain>, verifique sua conexão de rede e firewall do servidor"
+brief-backup-list: "O DriveBackupV2 atualmente fará o backup <list>"
+brief-backup-list-empty: "nada"
+brief-backup-list-external-backups: "alguns backups externos"
+brief-backup-list-help: "Deseja apoiar algo mais? Veja <gold><click:open_url:http://bit.ly/3xoHRAs>http://bit.ly/3xoHRAs</click></gold>"
+drivebackup-command-header: <gold>|====== <dark_red>DriveBackupV2</dark_red> ======|</gold>
+drivebackup-docs-command: |-
+  <header>
+  Precisa de ajuda? Confira estes recursos úteis!
+  Wiki: <gold><click:open_url:http://bit.ly/3dDdmwK>http://bit.ly/3dDdmwK</click></gold>
+  Discord: <gold><click:open_url:http://bit.ly/3f4VuuT>http://bit.ly/3f4VuuT</click></gold>
+drivebackup-version-command: |-
+  <header>
+  Versão do Plugin: <gold><plugin-version></gold>
+  Versão do Java: <gold><java-version></gold>
+  Server software: <gold><server-software></gold>
+  Server software version: <gold><server-version></gold>
+drivebackup-version-update: <gold>Plugin update available!
+drivebackup-help-command: |-
+  <header>
+  <gold><click:run_command:/drivebackup>/drivebackup</click></gold> - Exibe este menu
+  <gold><click:run_command:/drivebackup help>/drivebackup help</click></gold> - Exibe recursos de ajuda
+  <gold><click:run_command:/drivebackup commands>/drivebackup commands</click></gold> - Exibe esta página de ajuda de comando
+  <gold><click:run_command:/drivebackup v>/drivebackup [v|version]</click></gold> - Exibe a versão plugin
+  <gold><click:run_command:/drivebackup linkaccount googledrive>/drivebackup [link|linkaccount] googledrive</click></gold> - Vincula sua conta Google Drive para backups
+  <gold><click:run_command:/drivebackup linkaccount onedrive>/drivebackup [link|linkaccount] onedrive</click></gold> - Vincula para sua conta OneDrive para backups
+  <gold><click:run_command:/drivebackup linkaccount dropbox>/drivebackup [link|linkaccount] dropbox</click></gold> - Vincula para sua conta Dropbox para backups
+  <gold><click:run_command:/drivebackup linkaccount googledrive>/drivebackup [unlink|unlinkaccount] googledrive</click></gold> - Desvincula sua conta Google Drive e desabilita o método
+  <gold><click:run_command:/drivebackup linkaccount onedrive>/drivebackup [unlink|unlinkaccount] onedrive</click></gold> - Desvincula sua conta OneDrive e desabilita o método
+  <gold><click:run_command:/drivebackup linkaccount dropbox>/drivebackup [unlink|unlinkaccount] dropbox</click></gold> - Desvincula sua conta Dropbox e desabilita o método
+  <gold><click:run_command:/drivebackup reloadconfig>/drivebackup reloadconfig</click></gold> - Recarrega a config.yml
+  <gold><click:run_command:/drivebackup nextbackup>/drivebackup nextbackup</click></gold> - Obtém a hora/data do próximo backup automático
+  <gold><click:run_command:/drivebackup status>/drivebackup status</click></gold> - Obtém o status do backup em execução
+  <gold><click:run_command:/drivebackup backup>/drivebackup backup</click></gold> - Inicia manualmente um backup
+  <gold><click:run_command:/drivebackup test ftp>/drivebackup test ftp</click></gold> - Testa a conexão com o servidor (S)FTP
+  <gold><click:run_command:/drivebackup test googledrive>/drivebackup test googledrive</click></gold> - Testa a conexão com o Google Drive
+  <gold><click:run_command:/drivebackup test onedrive>/drivebackup test onedrive</click></gold> - Testa a conexão com a OneDrive
+  <gold><click:run_command:/drivebackup test dropbox>/drivebackup test dropbox</click></gold> - Testa a conexão com o Dropbox
+  <gold><click:run_command:/drivebackup update>/drivebackup update</click></gold> - Atualiza o plugin se houver uma versão mais recente
+list-delimiter: ", "
+list-last-delimiter: " e "

@@ -2,6 +2,11 @@
 
 As users contribute translations of the plugin's `intl.yml`, they will appear here. Simply download a translation file, rename it to `intl.yml`, and place it in the plugin's folder on your Minecraft server.
 
+# Currently translated languages
+- Chinese (by JohnsonRan)
+- Russian (by 2006lev)
+- Portuguese (by Atoidi)
+
 ## Contributing
 
 Make a pull request with changes an existing translation, or add a new translation. Name any new translations files using the following format: `<language-code>.intl` (for example `es.intl`).
