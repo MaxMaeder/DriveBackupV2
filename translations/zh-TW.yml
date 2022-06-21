@@ -74,7 +74,7 @@ backup-already-running: |-
   <backup-status>
 backup-no-methods: "沒有啟用任何備份條目呢"
 backup-empty-list: "備份列表是空的"
-backup-start: "正在建立備份，伺服器可能會卡頓小段時間哦..."
+backup-start: "正在建立備份，伺服器可能會卡頓小段時間..."
 external-ftp-backup-start: "正在從 (S)FTP 伺服器 (<socket-addr>) 下載檔案以包括在備份列表中"
 external-ftp-backup-blacklisted: "未在 (S)FTP 伺服器的備份列表中包括 <blacklisted-files>， 因為它們被 \"<glob-pattern>\" 列入黑名單"
 external-ftp-backup-failed: 未能在備份列表中包括來自 (S)FTP 伺服器 (<socket-addr>) 的檔案，請檢查<gold>config.yml</gold> 中的伺服器證書。
@@ -149,7 +149,7 @@ brief-backup-list: "DriveBackupV2 目前將備份 <list>。"
 brief-backup-list-empty: "什麼都沒有？！"
 brief-backup-list-external-backups: "一些外部備份"
 brief-backup-list-help: "想備份其他東西嗎？參見： <gold><click:open_url:http://bit.ly/3xoHRAs>http://bit.ly/3xoHRAs</click></gold>"
-drivebackup-command-header: <gold>|====== <dark_red>DriveBackupV2</dark_red> <gold>|</gold> <yellow><click:open_url:http://github.com/JohnsonRan>JohnsonRan</click> 漢化</yellow> ======|</gold>
+drivebackup-command-header: <gold>|====== <dark_red>DriveBackupV2</dark_red>  ======|</gold>
 drivebackup-docs-command: |-
   <header>
   需要幫助？ 下方瞭解更多！
