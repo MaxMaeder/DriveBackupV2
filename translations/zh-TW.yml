@@ -174,7 +174,7 @@ drivebackup-help-command: |-
   <gold><click:run_command:/drivebackup linkaccount googledrive>/drivebackup [unlink|unlinkaccount] googledrive</click></gold> - 解除連結你的 Google Drive帳戶並禁用備份方法
   <gold><click:run_command:/drivebackup linkaccount onedrive>/drivebackup [unlink|unlinkaccount] onedrive</click></gold> - 解除連結你的 OneDrive 帳戶並禁用備份方法
   <gold><click:run_command:/drivebackup linkaccount dropbox>/drivebackup [unlink|unlinkaccount] dropbox</click></gold> - 解除連結你的 Dropbox 帳戶並禁用備份方法
-  <gold><click:run_command:/drivebackup reloadconfig>/drivebackup reloadconfig</click></gold> - 過載配置檔案
+  <gold><click:run_command:/drivebackup reloadconfig>/drivebackup reloadconfig</click></gold> - 重載配置檔案
   <gold><click:run_command:/drivebackup nextbackup>/drivebackup nextbackup</click></gold> - 獲取下一次自動備份的時間/日期
   <gold><click:run_command:/drivebackup status>/drivebackup status</click></gold> - 獲取執行中的備份的狀態
   <gold><click:run_command:/drivebackup backup>/drivebackup backup</click></gold> - 手動執行備份
