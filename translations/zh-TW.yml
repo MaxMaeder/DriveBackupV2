@@ -3,7 +3,7 @@
 #
 # If not, feel free to contribute!
 
-plugin-stop: "關閉外掛中！"
+plugin-stop: "關閉插件中！"
 metrics-started: "Metrics 已啟用"
 metrics-error: "Metrics 啟動失敗了"
 update-checker-started: "檢查更新中..."
