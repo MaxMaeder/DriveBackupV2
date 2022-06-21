@@ -72,7 +72,7 @@ backup-forced: "強制備份中"
 backup-already-running: |-
   一個備份任務正在執行
   <backup-status>
-backup-no-methods: "沒有啟用任何備份條目呢"
+backup-no-methods: "沒有啟用任何備份條目"
 backup-empty-list: "備份列表是空的"
 backup-start: "正在建立備份，伺服器可能會卡頓小段時間..."
 external-ftp-backup-start: "正在從 (S)FTP 伺服器 (<socket-addr>) 下載檔案以包括在備份列表中"
