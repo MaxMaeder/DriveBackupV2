@@ -80,7 +80,7 @@ external-ftp-backup-blacklisted: "未在 (S)FTP 伺服器的備份列表中包�
 external-ftp-backup-failed: 未能在備份列表中包括來自 (S)FTP 伺服器 (<socket-addr>) 的檔案，請檢查<gold>config.yml</gold> 中的伺服器證書。
 external-ftp-backup-complete: "來自 (S)FTP 伺服器 (<socket-addr>) 的檔案已成功包括在備份列表中"
 external-mysql-backup-start: "從MySQL伺服器 (<socket-addr>) 下載資料庫以包括在備份列表中"
-external-mysql-backup-blacklisted: "在備份列表中沒有包括表 \"<blacklist-entry>\"，因為它被列入了黑名單。"
+external-mysql-backup-blacklisted: "在備份列表中沒有包括 \"<blacklist-entry>\"，因為它被列入了黑名單。"
 external-mysql-backup-failed: 未能在備份列表中包括來自MySQL伺服器 (<socket-addr>) 的資料庫，請檢查<gold>config.yml</gold>中的伺服器憑證。
 external-mysql-backup-complete: "來自MySQL伺服器(<socket-addr>) 的資料庫被成功包括在備份列表中。"
 local-backup-date-format-invalid: |-
