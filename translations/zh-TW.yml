@@ -107,7 +107,7 @@ backup-method-prune-failed: "刪除超過限制的備份失敗"
 backup-method-shared-drive-prune-failed: |-
   刪除超過限制的備份失敗
   嘗試提升雲端帳戶的帳戶許可權，或將 keep-count 設定為 0 以禁止刪除備份。
-backup-method-upload-failed: "上傳失敗啦"
+backup-method-upload-failed: "上傳失敗"
 backup-method-not-linked: |-
   跳過到 <upload-method> 的備份，帳戶尚未連結
   要連結你的帳戶，請點選 <gold><click:run_command:'<link-command>'><link-command></click></gold>。
