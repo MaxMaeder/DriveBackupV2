@@ -8,7 +8,7 @@ metrics-started: "Metrics 已啟用"
 metrics-error: "Metrics 啟動失敗了"
 update-checker-started: "檢查更新中..."
 update-checker-new-release: |-
-  DriveBackup <latest-version> 已經發布, 你目前正在使用 <current-version>
+  DriveBackup <latest-version> 已經發佈, 你目前正在使用 <current-version>
   從這裡下載更新: <gold><click:open_url:http://bit.ly/2VGtF7L>http://bit.ly/2VGtF7L</click></gold>" 或者點選 <gold><click:run_command:/drivebackup update>/drivebackup update</click></gold> 來更新
 update-checker-unsupported-release: |-
   你正在執行一個不支援的版本!
