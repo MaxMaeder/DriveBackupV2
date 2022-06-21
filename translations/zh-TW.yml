@@ -18,7 +18,7 @@ update-checker-failed: "在嘗試檢查 DriveBackupV2 的更新時出現了問�
 updater-start: "嘗試下載 DriveBackupV2 最新版"
 updater-no-updates: "你正在使用最新版 DriveBackupV2！"
 updater-fetch-failed: "無法獲取最新版 DriveBackupV2"
-updater-update-failed: "插件更新失敗，更多資訊請檢視控制檯"
+updater-update-failed: "插件更新失敗，更多資訊請檢視控制台"
 updater-successful: "成功更新了插件! 重啟您的伺服器以生效。"
 config-loaded: "配置已載入！"
 config-reloaded: "配置已重置！"
