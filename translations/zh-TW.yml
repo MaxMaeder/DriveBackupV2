@@ -161,17 +161,17 @@ drivebackup-version-command: |-
   Java 版本: <gold><java-version></gold>
   服務端型別: <gold><server-software></gold>
   服務端版本: <gold><server-version></gold>
-drivebackup-version-update: <gold>有更新可用咯！
+drivebackup-version-update: <gold>有更新可用！
 drivebackup-help-command: |-
   <header>
   <gold><click:run_command:/drivebackup>/drivebackup</click></gold> - 顯示此選單
   <gold><click:run_command:/drivebackup help>/drivebackup help</click></gold> - 顯示幫助資源
   <gold><click:run_command:/drivebackup commands>/drivebackup commands</click></gold> - 顯示此命令的幫助頁面
   <gold><click:run_command:/drivebackup v>/drivebackup [v|version]</click></gold> - 顯示插件版本
-  <gold><click:run_command:/drivebackup linkaccount googledrive>/drivebackup [link|linkaccount] googledrive</click></gold> - 連結你的 Google 雲盤帳戶進行備份
+  <gold><click:run_command:/drivebackup linkaccount googledrive>/drivebackup [link|linkaccount] googledrive</click></gold> - 連結你的 Google Drive帳戶進行備份
   <gold><click:run_command:/drivebackup linkaccount onedrive>/drivebackup [link|linkaccount] onedrive</click></gold> - 連結你的 OneDrive 帳戶進行備份
   <gold><click:run_command:/drivebackup linkaccount dropbox>/drivebackup [link|linkaccount] dropbox</click></gold> - 連結你的 Dropbox 帳戶進行備份
-  <gold><click:run_command:/drivebackup linkaccount googledrive>/drivebackup [unlink|unlinkaccount] googledrive</click></gold> - 解除連結你的 Google 雲盤帳戶並禁用備份條目
+  <gold><click:run_command:/drivebackup linkaccount googledrive>/drivebackup [unlink|unlinkaccount] googledrive</click></gold> - 解除連結你的 Google Drive帳戶並禁用備份條目
   <gold><click:run_command:/drivebackup linkaccount onedrive>/drivebackup [unlink|unlinkaccount] onedrive</click></gold> - 解除連結你的 OneDrive 帳戶並禁用備份條目
   <gold><click:run_command:/drivebackup linkaccount dropbox>/drivebackup [unlink|unlinkaccount] dropbox</click></gold> - 解除連結你的 Dropbox 帳戶並禁用備份條目
   <gold><click:run_command:/drivebackup reloadconfig>/drivebackup reloadconfig</click></gold> - 過載配置檔案
