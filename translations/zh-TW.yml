@@ -99,7 +99,7 @@ backup-failed-absolute-path: |-
   已跳過備份此位置
 backup-local-failed: |-
   建立本地備份失敗
-  即使 local-keep-count 被設定為零，該插件也需要臨時建立一個本地備份。
+  即使 local-keep-count 被設定為 0，該插件也需要臨時建立一個本地備份。
   已跳過備份此位置
 backup-method-uploading: "正在上傳檔案至 <upload-method>"
 backup-method-limit-reached: "在 <upload-method> 中的當前備份位置已有 <file-count> 個檔案，超過了 <file-limit> 個的限制，刪除中"
