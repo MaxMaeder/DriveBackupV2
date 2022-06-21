@@ -13,13 +13,13 @@ update-checker-new-release: |-
 update-checker-unsupported-release: |-
   你正在執行一個不支援的版本!
   推薦的版本是 <latest-version>，而你正在執行 <current-version>。
-  如果你最近才更新此外掛，請忽略此資訊
+  如果你最近才更新此插件，請忽略此資訊
 update-checker-failed: "在嘗試檢查 DriveBackupV2 的更新時出現了問題"
 updater-start: "嘗試下載 DriveBackupV2 最新版"
 updater-no-updates: "你正在使用最新版 DriveBackupV2！"
 updater-fetch-failed: "無法獲取最新版 DriveBackupV2"
-updater-update-failed: "外掛更新失敗，更多資訊請檢視控制檯"
-updater-successful: "成功更新了外掛! 重啟您的伺服器以生效。"
+updater-update-failed: "插件更新失敗，更多資訊請檢視控制檯"
+updater-successful: "成功更新了插件! 重啟您的伺服器以生效。"
 config-loaded: "配置已載入！"
 config-reloaded: "配置已重置！"
 date-format-invalid: "日期格式時區無效，使用 UTC"
@@ -99,7 +99,7 @@ backup-failed-absolute-path: |-
   已跳過備份此位置
 backup-local-failed: |-
   建立本地備份失敗
-  即使 local-keep-count 被設定為零，該外掛也需要臨時建立一個本地備份。
+  即使 local-keep-count 被設定為零，該插件也需要臨時建立一個本地備份。
   已跳過備份此位置
 backup-method-uploading: "正在上傳檔案至 <upload-method>"
 backup-method-limit-reached: "在 <upload-method> 中的當前備份位置已有 <file-count> 個檔案，超過了 <file-limit> 個的限制，刪除中"
@@ -157,7 +157,7 @@ drivebackup-docs-command: |-
   Discord: <gold><click:open_url:http://bit.ly/3f4VuuT>http://bit.ly/3f4VuuT</click></gold>
 drivebackup-version-command: |-
   <header>
-  外掛版本: <gold><plugin-version></gold>
+  插件版本: <gold><plugin-version></gold>
   Java 版本: <gold><java-version></gold>
   服務端型別: <gold><server-software></gold>
   服務端版本: <gold><server-version></gold>
@@ -167,7 +167,7 @@ drivebackup-help-command: |-
   <gold><click:run_command:/drivebackup>/drivebackup</click></gold> - 顯示此選單
   <gold><click:run_command:/drivebackup help>/drivebackup help</click></gold> - 顯示幫助資源
   <gold><click:run_command:/drivebackup commands>/drivebackup commands</click></gold> - 顯示此命令的幫助頁面
-  <gold><click:run_command:/drivebackup v>/drivebackup [v|version]</click></gold> - 顯示外掛版本
+  <gold><click:run_command:/drivebackup v>/drivebackup [v|version]</click></gold> - 顯示插件版本
   <gold><click:run_command:/drivebackup linkaccount googledrive>/drivebackup [link|linkaccount] googledrive</click></gold> - 連結你的 Google 雲盤賬戶進行備份
   <gold><click:run_command:/drivebackup linkaccount onedrive>/drivebackup [link|linkaccount] onedrive</click></gold> - 連結你的 OneDrive 賬戶進行備份
   <gold><click:run_command:/drivebackup linkaccount dropbox>/drivebackup [link|linkaccount] dropbox</click></gold> - 連結你的 Dropbox 賬戶進行備份
@@ -182,6 +182,6 @@ drivebackup-help-command: |-
   <gold><click:run_command:/drivebackup test googledrive>/drivebackup test googledrive</click></gold> - 測試與 Google 雲盤的連線
   <gold><click:run_command:/drivebackup test onedrive>/drivebackup test onedrive</click></gold> - 測試與 OneDrive 的連線
   <gold><click:run_command:/drivebackup test dropbox>/drivebackup test dropbox</click></gold> - 測試與 Dropbox 的連線
-  <gold><click:run_command:/drivebackup update>/drivebackup update</click></gold> - 如果有新的版本，則下載並更新此外掛
+  <gold><click:run_command:/drivebackup update>/drivebackup update</click></gold> - 如果有新的版本，則下載並更新此插件
 list-delimiter: ", "
 list-last-delimiter: " 和 "
