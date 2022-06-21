@@ -59,12 +59,12 @@ external-database-list-blacklist-invalid: "外部備份資料庫條目 <entry-ba
 backups-scheduled: "計劃在 <days> 的 <time> 進行一次備份"
 backups-interval-scheduled: "計劃每隔 <delay> 分鐘進行一次備份"
 no-perm: "許可權呢，沒有許可權你也敢這麼做？"
-link-account-code: "要連結 <provider> 賬戶, 請前往 <gold><click:open_url:'<link-url>'><link-url></click></gold> 然後填入 <gold><click:copy_to_clipboard:'<link-code>'><link-code></click></gold>"
-link-provider-failed: "無法連結 <provider> 賬戶, 請再試試吧"
-link-provider-complete: "你的 <provider> 賬戶已連結！"
-unlink-provider-failed: "無法取消連結 <provider> 賬戶, 請再試試吧"
-unlink-provider-complete: "你的 <provider> 賬戶已斷開連結！"
-google-pick-shared-drive: "您可以已連結一個或多個雲端賬戶，如果您想使用其中一個，請選擇它或在聊天中回覆它的編號。"
+link-account-code: "要連結 <provider> 帳戶, 請前往 <gold><click:open_url:'<link-url>'><link-url></click></gold> 然後填入 <gold><click:copy_to_clipboard:'<link-code>'><link-code></click></gold>"
+link-provider-failed: "無法連結 <provider> 帳戶, 請再試試吧"
+link-provider-complete: "你的 <provider> 帳戶已連結！"
+unlink-provider-failed: "無法取消連結 <provider> 帳戶, 請再試試吧"
+unlink-provider-complete: "你的 <provider> 帳戶已斷開連結！"
+google-pick-shared-drive: "您可以已連結一個或多個雲端帳戶，如果您想使用其中一個，請選擇它或在聊天中回覆它的編號。"
 default-google-drive-name: "我的雲盤"
 google-shared-drive-option: "<bold>[<drive-num>]</bold> <gold><hover:show_text:選擇雲盤><click:run_command:'<select-command>'><drive-name></click></hover></gold>"
 file-upload-message: "上傳檔案花費了 <length> 秒 (<speed>KB/s)"
@@ -106,18 +106,18 @@ backup-method-limit-reached: "在 <upload-method> 中的當前備份位置已有
 backup-method-prune-failed: "刪除超過限制的備份失敗"
 backup-method-shared-drive-prune-failed: |-
   刪除超過限制的備份失敗
-  嘗試提升雲端賬戶的賬戶許可權，或將 keep-count 設定為 0 以禁止刪除備份。
+  嘗試提升雲端帳戶的帳戶許可權，或將 keep-count 設定為 0 以禁止刪除備份。
 backup-method-upload-failed: "上傳失敗啦"
 backup-method-not-linked: |-
-  跳過到 <upload-method> 的備份，賬戶尚未連結
-  要連結你的賬戶，請點選 <gold><click:run_command:'<link-command>'><link-command></click></gold>。
+  跳過到 <upload-method> 的備份，帳戶尚未連結
+  要連結你的帳戶，請點選 <gold><click:run_command:'<link-command>'><link-command></click></gold>。
 backup-method-not-auth: |-
   跳過到 <upload-method> 的備份，認證失敗
   請檢查<gold>config.yml<gold>中的憑證是否正確。
 backup-method-error-occurred: "備份到 <upload-method> 失敗，驗證憑證是否正確或用 <gold><click:run_command:'<diagnose-command></click></gold> 診斷問題。"
 backup-method-not-auth-authenticator: |-
   跳過到 <upload-method> 的備份，認證失敗
-  請嘗試重新連結您的賬戶，請點選 <gold><click:run_command:'<link-command>'><link-command></click></gold>。
+  請嘗試重新連結您的帳戶，請點選 <gold><click:run_command:'<link-command>'><link-command></click></gold>。
 backup-method-complete: "已成功上傳備份至 <gold><upload-method></gold>"
 backup-complete: "備份已完成"
 backup-disabled-inactivity: "由於你的伺服器太不活躍了而停用自動備份"
@@ -168,12 +168,12 @@ drivebackup-help-command: |-
   <gold><click:run_command:/drivebackup help>/drivebackup help</click></gold> - 顯示幫助資源
   <gold><click:run_command:/drivebackup commands>/drivebackup commands</click></gold> - 顯示此命令的幫助頁面
   <gold><click:run_command:/drivebackup v>/drivebackup [v|version]</click></gold> - 顯示插件版本
-  <gold><click:run_command:/drivebackup linkaccount googledrive>/drivebackup [link|linkaccount] googledrive</click></gold> - 連結你的 Google 雲盤賬戶進行備份
-  <gold><click:run_command:/drivebackup linkaccount onedrive>/drivebackup [link|linkaccount] onedrive</click></gold> - 連結你的 OneDrive 賬戶進行備份
-  <gold><click:run_command:/drivebackup linkaccount dropbox>/drivebackup [link|linkaccount] dropbox</click></gold> - 連結你的 Dropbox 賬戶進行備份
-  <gold><click:run_command:/drivebackup linkaccount googledrive>/drivebackup [unlink|unlinkaccount] googledrive</click></gold> - 解除連結你的 Google 雲盤賬戶並禁用備份條目
-  <gold><click:run_command:/drivebackup linkaccount onedrive>/drivebackup [unlink|unlinkaccount] onedrive</click></gold> - 解除連結你的 OneDrive 賬戶並禁用備份條目
-  <gold><click:run_command:/drivebackup linkaccount dropbox>/drivebackup [unlink|unlinkaccount] dropbox</click></gold> - 解除連結你的 Dropbox 賬戶並禁用備份條目
+  <gold><click:run_command:/drivebackup linkaccount googledrive>/drivebackup [link|linkaccount] googledrive</click></gold> - 連結你的 Google 雲盤帳戶進行備份
+  <gold><click:run_command:/drivebackup linkaccount onedrive>/drivebackup [link|linkaccount] onedrive</click></gold> - 連結你的 OneDrive 帳戶進行備份
+  <gold><click:run_command:/drivebackup linkaccount dropbox>/drivebackup [link|linkaccount] dropbox</click></gold> - 連結你的 Dropbox 帳戶進行備份
+  <gold><click:run_command:/drivebackup linkaccount googledrive>/drivebackup [unlink|unlinkaccount] googledrive</click></gold> - 解除連結你的 Google 雲盤帳戶並禁用備份條目
+  <gold><click:run_command:/drivebackup linkaccount onedrive>/drivebackup [unlink|unlinkaccount] onedrive</click></gold> - 解除連結你的 OneDrive 帳戶並禁用備份條目
+  <gold><click:run_command:/drivebackup linkaccount dropbox>/drivebackup [unlink|unlinkaccount] dropbox</click></gold> - 解除連結你的 Dropbox 帳戶並禁用備份條目
   <gold><click:run_command:/drivebackup reloadconfig>/drivebackup reloadconfig</click></gold> - 過載配置檔案
   <gold><click:run_command:/drivebackup nextbackup>/drivebackup nextbackup</click></gold> - 獲取下一次自動備份的時間/日期
   <gold><click:run_command:/drivebackup status>/drivebackup status</click></gold> - 獲取執行中的備份的狀態
