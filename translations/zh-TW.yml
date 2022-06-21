@@ -70,7 +70,7 @@ google-shared-drive-option: "<bold>[<drive-num>]</bold> <gold><hover:show_text:�
 file-upload-message: "上傳檔案花費了 <length> 秒 (<speed>KB/s)"
 backup-forced: "強制備份中"
 backup-already-running: |-
-  一個備份任務已經在執行啦
+  一個備份任務正在執行
   <backup-status>
 backup-no-methods: "沒有啟用任何備份條目呢"
 backup-empty-list: "備份列表是空的欸"
