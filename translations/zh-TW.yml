@@ -58,7 +58,7 @@ external-database-list-name-invalid: "名稱無效，跳過外部備份資料庫
 external-database-list-blacklist-invalid: "外部備份資料庫條目 <entry-backup> 中的黑名單無效，留空"
 backups-scheduled: "計劃在 <days> 的 <time> 進行一次備份"
 backups-interval-scheduled: "計劃每隔 <delay> 分鐘進行一次備份"
-no-perm: "您無權執行此操作？"
+no-perm: "您無權執行此操作"
 link-account-code: "要連結 <provider> 帳戶, 請前往 <gold><click:open_url:'<link-url>'><link-url></click></gold> 然後填入 <gold><click:copy_to_clipboard:'<link-code>'><link-code></click></gold>"
 link-provider-failed: "無法連結 <provider> 帳戶, 請再試一次"
 link-provider-complete: "你的 <provider> 帳戶已連結！"
