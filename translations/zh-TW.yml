@@ -159,8 +159,8 @@ drivebackup-version-command: |-
   <header>
   插件版本: <gold><plugin-version></gold>
   Java 版本: <gold><java-version></gold>
-  服務端型別: <gold><server-software></gold>
-  服務端版本: <gold><server-version></gold>
+  伺服端型別: <gold><server-software></gold>
+  伺服端版本: <gold><server-version></gold>
 drivebackup-version-update: <gold>有更新可用！
 drivebackup-help-command: |-
   <header>
