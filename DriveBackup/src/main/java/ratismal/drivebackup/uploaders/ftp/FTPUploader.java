@@ -136,6 +136,7 @@ public class FTPUploader implements Uploader {
         ftpClient.enterLocalPassiveMode();
         ftpClient.setFileType(FTP.BINARY_FILE_TYPE, FTP.BINARY_FILE_TYPE);
         ftpClient.setFileTransferMode(FTP.STREAM_TRANSFER_MODE);
+        ftpClient.setBufferSize(1024 * 1024 * 16);
         ftpClient.setListHiddenFiles(false);
 
         initialRemoteFolder = ftpClient.printWorkingDirectory();
