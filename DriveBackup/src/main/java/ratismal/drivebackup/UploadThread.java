@@ -346,6 +346,10 @@ public class UploadThread implements Runnable {
                 logger.log(intl("backup-failed-absolute-path"));
 
                 return;
+            } catch (SecurityException exception) {
+                logger.log(intl("local-backup-failed-permissions"));
+
+                return;
             } catch (Exception exception) {
                 logger.log(intl("backup-local-failed"));
 
