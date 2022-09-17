@@ -92,6 +92,10 @@ local-backup-failed-to-include: "Failed to include \"<file-path>\" in the backup
 local-backup-limit-reached: "There are <backup-count> file(s) which exceeds the local limit of <backup-limit>, deleting oldest"
 local-backup-file-failed-to-delete: "Failed to delete local backup \"<local-backup-name>\""
 local-backup-failed-to-delete: "Local backup deletion failed"
+local-backup-failed-permissions: |-
+  Failed to create local backup, plugin does not have permission to write to the required file system location
+  Even if local-keep-count is set to zero, the plugin needs to temporarily create a local backup
+  Skipping backup location
 backup-location-start: "Doing backups for \"<location>\""
 backup-failed-absolute-path: |-
   Failed to create a backup, path to folder to backup is absolute, expected a relative path
