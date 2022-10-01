@@ -401,7 +401,7 @@ public class UploadThread implements Runnable {
     private void makeExternalFileBackup(ExternalFTPSource externalBackup) {
         logger.info(
             intl("external-ftp-backup-start"), 
-            "socked-addr", getSocketAddress(externalBackup));
+            "socket-addr", getSocketAddress(externalBackup));
 
         FTPUploader ftpUploader = new FTPUploader(
                 logger,
@@ -483,11 +483,11 @@ public class UploadThread implements Runnable {
         if (ftpUploader.isErrorWhileUploading()) {
             logger.log(
                 intl("external-ftp-backup-failed"),
-                "socked-addr", getSocketAddress(externalBackup));
+                "socket-addr", getSocketAddress(externalBackup));
         } else {
             logger.info(
                 intl("external-ftp-backup-complete"),
-                "socked-addr", getSocketAddress(externalBackup));
+                "socket-addr", getSocketAddress(externalBackup));
         }
     }
 
@@ -498,7 +498,7 @@ public class UploadThread implements Runnable {
     private void makeExternalDatabaseBackup(ExternalMySQLSource externalBackup) {
         logger.info(
             intl("external-mysql-backup-start"), 
-            "socked-addr", getSocketAddress(externalBackup));
+            "socket-addr", getSocketAddress(externalBackup));
 
         MySQLUploader mysqlUploader = new MySQLUploader(
                 externalBackup.hostname, 
@@ -532,7 +532,7 @@ public class UploadThread implements Runnable {
         } else {
             logger.info(
                 intl("external-mysql-backup-complete"),
-                "socked-addr", getSocketAddress(externalBackup));
+                "socket-addr", getSocketAddress(externalBackup));
         }
     }
 
@@ -608,7 +608,7 @@ public class UploadThread implements Runnable {
      * @return the socket address
      */
     private static String getSocketAddress(ExternalBackupSource externalBackup) {
-        return externalBackup.hostname + "-" + externalBackup.port;
+        return externalBackup.hostname + ":" + externalBackup.port;
     }
 
     /**
