@@ -39,6 +39,8 @@ Simply run `/drivebackup linkaccount googledrive` and follow the on-screen instr
 Simply run `/drivebackup linkaccount onedrive` and follow the on-screen instructions.
 
 ### DropBox
+Simply run `/drivebackup linkaccount dropbox` and follow the on-screen instructions.
+
 See the [relevant page of the docs](https://github.com/MaxMaeder/DriveBackupV2/wiki/Dropbox-Setup).
 
 ### Local
