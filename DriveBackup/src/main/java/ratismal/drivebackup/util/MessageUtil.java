@@ -13,10 +13,12 @@ import org.bukkit.entity.Player;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.JoinConfiguration;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver.Builder;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import ratismal.drivebackup.config.ConfigParser;
 import ratismal.drivebackup.config.ConfigParser.Config;
 import ratismal.drivebackup.plugin.DriveBackup;
@@ -42,7 +44,12 @@ public class MessageUtil {
     }
     
     public MessageUtil text(String text) {
-        message.add(Component.text(text, NamedTextColor.DARK_AQUA));
+        Config config = ConfigParser.getConfig();
+        TextColor color = LegacyComponentSerializer.legacyAmpersand().deserialize(config.messages.defaultColor).color();
+        if (color == null) {
+            color = NamedTextColor.DARK_AQUA;
+        }
+        message.add(Component.text(text, color));
         return this;
     }
 
@@ -57,7 +64,12 @@ public class MessageUtil {
      * @return the calling MessageUtil's instance
      */
     public MessageUtil mmText(String text) {
-        message.add(MiniMessage.miniMessage().deserialize("<dark_aqua>" + text));
+        Config config = ConfigParser.getConfig();
+        TextColor color = LegacyComponentSerializer.legacyAmpersand().deserialize(config.messages.defaultColor).color();
+        if (color == null) {
+            color = NamedTextColor.DARK_AQUA;
+        }
+        message.add(MiniMessage.miniMessage().deserialize("<color:" + color.asHexString() + ">" + text));
         return this;
     }
 
@@ -73,7 +85,12 @@ public class MessageUtil {
             builder.resolver(Placeholder.parsed(placeholders[i], placeholders[i + 1]));
         }
 
-        message.add(MiniMessage.miniMessage().deserialize("<dark_aqua>" + text, builder.build()));
+        Config config = ConfigParser.getConfig();
+        TextColor color = LegacyComponentSerializer.legacyAmpersand().deserialize(config.messages.defaultColor).color();
+        if (color == null) {
+            color = NamedTextColor.DARK_AQUA;
+        }
+        message.add(MiniMessage.miniMessage().deserialize("<color:" + color.asHexString() + ">" + text, builder.build()));
         return this;
     }
 
@@ -84,7 +101,12 @@ public class MessageUtil {
      * @return the calling MessageUtil's instance
      */
     public MessageUtil mmText(String text, String title, Component content) {
-        message.add(MiniMessage.miniMessage().deserialize("<dark_aqua>" + text, TagResolver.resolver(Placeholder.component(title, content))));
+        Config config = ConfigParser.getConfig();
+        TextColor color = LegacyComponentSerializer.legacyAmpersand().deserialize(config.messages.defaultColor).color();
+        if (color == null) {
+            color = NamedTextColor.DARK_AQUA;
+        }
+        message.add(MiniMessage.miniMessage().deserialize("<color:" + color.asHexString() + ">" + text, TagResolver.resolver(Placeholder.component(title, content))));
         return this;
     }
 
