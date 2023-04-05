@@ -15,10 +15,10 @@ jobs:
 
     steps:
     - name: Checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     - name: Setup Cloud SDK
-      uses: google-github-actions/setup-gcloud@v0
+      uses: google-github-actions/setup-gcloud@v1
       with:
         project_id: drivebackup-276620
         service_account_key: ${{ secrets.GCP_SA_KEY }}
@@ -34,7 +34,7 @@ jobs:
 
     - name: Deploy to Cloud Run
       id: deploy
-      uses: google-github-actions/deploy-cloudrun@v0
+      uses: google-github-actions/deploy-cloudrun@v1
       with:
         service: authenticator
         image: gcr.io/drivebackup-276620/authenticator:${{ github.sha }}
