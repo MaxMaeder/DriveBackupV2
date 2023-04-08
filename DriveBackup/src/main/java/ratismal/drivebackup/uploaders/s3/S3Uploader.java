@@ -92,7 +92,6 @@ public class S3Uploader implements Uploader {
 
         try {
             String key = type + "/" + file.getName();
-            logger.log("key = " + key);
             minioClient.uploadObject(UploadObjectArgs.builder().bucket(_bucket).object(key).filename(file.getAbsolutePath()).build());
 
             try {
