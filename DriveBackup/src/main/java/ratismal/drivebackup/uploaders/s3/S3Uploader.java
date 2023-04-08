@@ -1,9 +1,11 @@
 package ratismal.drivebackup.uploaders.s3;
 
-import io.minio.MinioClient;
-import io.minio.UploadObjectArgs;
+import com.github.sardine.DavResource;
+import io.minio.*;
 import io.minio.errors.*;
+import io.minio.messages.Item;
 import ratismal.drivebackup.UploadThread.UploadLogger;
+import ratismal.drivebackup.config.ConfigParser;
 import ratismal.drivebackup.config.configSections.BackupMethods.S3BackupMethod;
 import ratismal.drivebackup.uploaders.Authenticator;
 import ratismal.drivebackup.uploaders.Uploader;
@@ -15,6 +17,13 @@ import java.io.IOException;
 import java.net.URL;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.time.ZonedDateTime;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
+
+import static ratismal.drivebackup.config.Localization.intl;
 
 public class S3Uploader implements Uploader {
     private UploadLogger logger;
@@ -79,12 +88,20 @@ public class S3Uploader implements Uploader {
 
     @Override
     public void uploadFile(File file, String type) {
-        if(type.startsWith("./")) type = type.substring(2);
+        type = normalizeType(type);
 
         try {
             String key = type + "/" + file.getName();
             logger.log("key = " + key);
             minioClient.uploadObject(UploadObjectArgs.builder().bucket(_bucket).object(key).filename(file.getAbsolutePath()).build());
+
+            try {
+                pruneBackups(type);
+            } catch (Exception e) {
+                logger.log(intl("backup-method-prune-failed"));
+
+                throw e;
+            }
         } catch(Exception exception) {
             NetUtil.catchException(exception, _hostname, logger);
             MessageUtil.sendConsoleException(exception);
@@ -98,5 +115,47 @@ public class S3Uploader implements Uploader {
 
     public void setErrorOccurred(boolean errorOccurred) {
         _errorOccurred = errorOccurred;
+    }
+
+    public void pruneBackups(String type) throws Exception {
+        int fileLimit = ConfigParser.getConfig().backupStorage.keepCount;
+        if (fileLimit == -1) {
+            return;
+        }
+        TreeMap<ZonedDateTime, Item> files = getZipFiles(type);
+
+        if (files.size() > fileLimit) {
+            logger.info(
+                    intl("backup-method-limit-reached"),
+                    "file-count", String.valueOf(files.size()),
+                    "upload-method", getName(),
+                    "file-limit", String.valueOf(fileLimit));
+
+            while (files.size() > fileLimit) {
+                Map.Entry<ZonedDateTime, Item> firstEntry = files.firstEntry();
+                minioClient.removeObject(RemoveObjectArgs.builder().bucket(_bucket).object(firstEntry.getValue().objectName()).build());
+                files.remove(firstEntry.getKey());
+            }
+        }
+    }
+
+    private TreeMap<ZonedDateTime, Item> getZipFiles(String type) throws Exception {
+        type = normalizeType(type);
+
+        String prefix = type + "/";
+
+        TreeMap<ZonedDateTime, Item> files = new TreeMap<>();
+
+        for (Result<Item> result : minioClient.listObjects(ListObjectsArgs.builder().bucket(_bucket).prefix(prefix).build())) {
+            Item item = result.get();
+            files.put(item.lastModified(), item);
+        }
+
+        return files;
+    }
+
+    private String normalizeType(String type) {
+        if(type.startsWith("./")) return type.substring(2);
+        return type;
     }
 }
