@@ -80,6 +80,9 @@ public class CommandTabComplete implements TabCompleter {
                 if (methods.nextcloud.enabled) {
                     commandList.add("nextcloud");
                 }
+                if (methods.s3.enabled) {
+                    commandList.add("s3");
+                }
                 if (methods.ftp.enabled) {
                     commandList.add("ftp");
                 }
