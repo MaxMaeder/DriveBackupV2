@@ -17,18 +17,6 @@ DriveBackupV2 is a plugin that aims to provide an extra layer of security to you
 - Can automatically run backups at an interval or on a schedule
 - And **much** more!
 
-## Proudly Sponsored By:
-
-[![Server Horse Logo](https://raw.githubusercontent.com/MaxMaeder/DriveBackupV2/master/assets/banner-ad.png)](https://serverhorse.com/)
-
-You're missing out on the most powerful Minecraft Hosting experience if you aren't using Server Horse!
-
-Having data loss or corruption is never fun. With Server Horse, you can be certain that your data is in safe hands with our powerful data redundancy features. Combine that with DriveBackupV2 and you have the most reliable Minecraft Server data security possible. Plus your Java Edition server will work on all editions (Xbox, Bedrock, etc.)! Server Horse is the future of Minecraft Server hosting, and we hope we can be a part of your hosting future! 
-
-**Start a Minecraft Server: [serverhorse.com](https://serverhorse.com/)**
-
-*Want to sponsor this plugin? Check out our [Patreon](https://www.patreon.com/DriveBackupV2)!*
-
 ## Basic Setup
 First, download the plugin [here](https://dev.bukkit.org/projects/drivebackupv2) and copy it to the `plugins` folder on your server. Then, restart your server. Finally, follow the instructions below for the backup method of your choice.
 
