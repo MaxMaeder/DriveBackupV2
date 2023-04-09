@@ -284,7 +284,7 @@ public class GoogleDriveUploader implements Uploader {
      * @throws Exception
      */
     public void setupSharedDrives(CommandSender initiator) throws Exception {
-        if (drives.size() > 0) {
+        if (drives != null && drives.size() > 0) {
             logger.log(intl("google-pick-shared-drive"));
 
             logger.log(
