@@ -154,7 +154,7 @@ public class OneDriveUploader implements Uploader {
      * @param file the file
      * @param type the type of file (ex. plugins, world)
      */
-    public void uploadFile(java.io.File file, String type) throws Exception {
+    public void uploadFile(java.io.File file, String type) throws IOException {
         try {
             resetRanges();
 
