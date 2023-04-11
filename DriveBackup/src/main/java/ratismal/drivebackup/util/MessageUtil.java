@@ -189,7 +189,7 @@ public class MessageUtil {
         if (sendToConsole)
             recipients.add(Bukkit.getConsoleSender());
 
-        Config config = (Config) ((ConfigParser.getConfig() != null) ? ConfigParser.getConfig() : ConfigParser.defaultConfig());
+        Config config = (ConfigParser.getConfig() != null) ? ConfigParser.getConfig() : ConfigParser.defaultConfig();
 
         for (CommandSender player : recipients) {
             if (player == null || (!config.messages.sendInChat && player instanceof Player)) {
@@ -207,7 +207,7 @@ public class MessageUtil {
      * @param exception Exception to send the stack trace of
      */
     public static void sendConsoleException(Exception exception) {
-        Config config = (Config) ((ConfigParser.getConfig() != null) ? ConfigParser.getConfig() : ConfigParser.defaultConfig());
+        Config config = (ConfigParser.getConfig() != null) ? ConfigParser.getConfig() : ConfigParser.defaultConfig();
         if (!config.advanced.suppressErrors) {
             exception.printStackTrace();
         }
