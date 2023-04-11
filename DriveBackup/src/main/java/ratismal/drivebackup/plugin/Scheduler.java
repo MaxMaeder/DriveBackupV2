@@ -89,14 +89,22 @@ public class Scheduler {
                     if (now.isAfter(startingOccurrence)) {
                         startingOccurrence = startingOccurrence.plusWeeks(1);
                     }
-
-                    backupTasks.add(taskScheduler.runTaskTimerAsynchronously(
-                        DriveBackup.getInstance(), 
-                        new UploadThread(),
-                        SchedulerUtil.sToTicks(ChronoUnit.SECONDS.between(now, startingOccurrence)),
-                        SchedulerUtil.sToTicks(ChronoUnit.SECONDS.between(previousOccurrence, nextOccurrence))
-                    ).getTaskId());
-
+                    if (folia) {
+                        Consumer<ScheduledTask> consumer = o -> new UploadThread().run();
+                        Bukkit.getAsyncScheduler().runAtFixedRate(
+                                DriveBackup.getInstance(),
+                                consumer,
+                                ChronoUnit.SECONDS.between(now, startingOccurrence),
+                                ChronoUnit.SECONDS.between(previousOccurrence, nextOccurrence),
+                                TimeUnit.SECONDS);
+                    } else {
+                        backupTasks.add(taskScheduler.runTaskTimerAsynchronously(
+                                DriveBackup.getInstance(),
+                                new UploadThread(),
+                                SchedulerUtil.sToTicks(ChronoUnit.SECONDS.between(now, startingOccurrence)),
+                                SchedulerUtil.sToTicks(ChronoUnit.SECONDS.between(previousOccurrence, nextOccurrence))
+                        ).getTaskId());
+                    }
                     backupDatesList.add(startingOccurrence);
                 }
 
@@ -149,11 +157,17 @@ public class Scheduler {
                 .toConsole(true)
                 .send();
 
-            long interval = SchedulerUtil.sToTicks(config.backupStorage.delay * 60);
+            long intervalSeconds = config.backupStorage.delay * 60;
+            long interval = SchedulerUtil.sToTicks(intervalSeconds);
             
             if (folia) {
                 Consumer<ScheduledTask> consumer = o -> new UploadThread().run();
-                Bukkit.getAsyncScheduler().runAtFixedRate(DriveBackup.getInstance(), consumer, interval, interval, TimeUnit.SECONDS);
+                Bukkit.getAsyncScheduler().runAtFixedRate(
+                        DriveBackup.getInstance(),
+                        consumer,
+                        intervalSeconds,
+                        intervalSeconds,
+                        TimeUnit.SECONDS);
             } else {
                 backupTasks.add(taskScheduler.runTaskTimerAsynchronously(
                         DriveBackup.getInstance(),
