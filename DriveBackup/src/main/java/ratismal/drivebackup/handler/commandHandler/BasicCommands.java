@@ -95,7 +95,7 @@ public class BasicCommands {
             backupLocations.add(intl("brief-backup-list-external-backups"));
         }
 
-        if (backupLocations.size() == 0) {
+        if (backupLocations.isEmpty()) {
             locationMessage.append(
                 MiniMessage.miniMessage().deserialize(intl("brief-backup-list-empty")));
 
