@@ -4,6 +4,7 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 
+import org.jetbrains.annotations.NotNull;
 import ratismal.drivebackup.TestThread;
 import ratismal.drivebackup.UploadThread;
 import ratismal.drivebackup.uploaders.Authenticator;
@@ -29,7 +30,7 @@ public class CommandHandler implements CommandExecutor {
      * @param args any arguments that followed the command
      * @return whether the command was handled
      */
-    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+    public boolean onCommand(CommandSender sender, @NotNull Command command, String label, String[] args) {
         if (!command.getName().equalsIgnoreCase(CHAT_KEYWORD)) {
             return false;
         } 
@@ -50,7 +51,8 @@ public class CommandHandler implements CommandExecutor {
                 BasicCommands.sendVersion(sender);
                 break;
             case "reloadconfig":
-                if (!Permissions.hasPerm(sender, Permissions.RELOAD_CONFIG)) break;
+                if (!Permissions.hasPerm(sender, Permissions.RELOAD_CONFIG))
+                    break;
 
                 DriveBackup.reloadLocalConfig();
                 MessageUtil.Builder().mmText(intl("config-reloaded")).to(sender).send();
@@ -76,7 +78,8 @@ public class CommandHandler implements CommandExecutor {
                     break;
                 } 
                 
-                if (!Permissions.hasPerm(sender, Permissions.LINK_ACCOUNTS)) break;
+                if (!Permissions.hasPerm(sender, Permissions.LINK_ACCOUNTS))
+                    break;
 
                 switch (args[1].toLowerCase()) {
                     case "googledrive":
@@ -100,7 +103,8 @@ public class CommandHandler implements CommandExecutor {
                     break;
                 }
 
-                if (!Permissions.hasPerm(sender, Permissions.LINK_ACCOUNTS)) break;
+                if (!Permissions.hasPerm(sender, Permissions.LINK_ACCOUNTS))
+                    break;
 
                 switch (args[1].toLowerCase()) {
                     case "googledrive":
@@ -118,20 +122,23 @@ public class CommandHandler implements CommandExecutor {
                 }
                 break;
             case "status":
-                if (!Permissions.hasPerm(sender, Permissions.GET_BACKUP_STATUS)) break;
+                if (!Permissions.hasPerm(sender, Permissions.GET_BACKUP_STATUS))
+                    break;
                 
                 MessageUtil.Builder().mmText(UploadThread.getBackupStatus()).to(sender).toConsole(false).send();
 
                 break;
             case "nextbackup":
-                if (!Permissions.hasPerm(sender, Permissions.GET_NEXT_BACKUP)) break;
+                if (!Permissions.hasPerm(sender, Permissions.GET_NEXT_BACKUP))
+                    break;
 
                 MessageUtil.Builder().mmText(UploadThread.getNextAutoBackup()).to(sender).toConsole(false).send();
                 
 
                 break;
             case "backup":
-                if (!Permissions.hasPerm(sender, Permissions.BACKUP)) break;
+                if (!Permissions.hasPerm(sender, Permissions.BACKUP))
+                    break;
 
                 MessageUtil.Builder().mmText(intl("backup-forced")).to(sender).send();
 
@@ -140,14 +147,16 @@ public class CommandHandler implements CommandExecutor {
                 
                 break;
             case "test":
-                if (!Permissions.hasPerm(sender, Permissions.BACKUP)) break;
+                if (!Permissions.hasPerm(sender, Permissions.BACKUP))
+                    break;
 
                 Runnable testThread = new TestThread(sender, args);
                 new Thread(testThread).start();
                     
                 break;
             case "update":
-                if (!Permissions.hasPerm(sender, Permissions.BACKUP)) break;
+                if (!Permissions.hasPerm(sender, Permissions.BACKUP))
+                    break;
 
                 DriveBackup.updater.runUpdater(sender);
                 break;
