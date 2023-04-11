@@ -1,5 +1,7 @@
 package ratismal.drivebackup.uploaders.webdav;
 
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 import ratismal.drivebackup.uploaders.Uploader;
 import ratismal.drivebackup.uploaders.Authenticator.AuthenticationProvider;
 import ratismal.drivebackup.UploadThread.UploadLogger;
@@ -88,7 +90,7 @@ public class WebDAVUploader implements Uploader {
         }
     }
 
-    public void realUploadFile(File file, URL target) throws IOException {
+    public void realUploadFile(@NotNull File file, @NotNull URL target) throws IOException {
         try (FileInputStream fis = new FileInputStream(file)) {
             sardine.put(target.toString(), fis, (String)null, true, file.length());
         }
@@ -128,7 +130,8 @@ public class WebDAVUploader implements Uploader {
         ArrayList<String> filePaths = new ArrayList<>();
 
         try {
-            List<DavResource> resources = sardine.list(new URL(_remoteBaseFolder + "/" + folderPath).toString());//TODO path
+            //TODO path
+            List<DavResource> resources = sardine.list(new URL(_remoteBaseFolder + "/" + folderPath).toString());
             for (DavResource resource : resources) {
                 if (resource.isDirectory()) {
                     filePaths.addAll(prependToAll(getFiles(resource.getName()), new File(resource.getName()).getName() + '/'));
@@ -209,6 +212,7 @@ public class WebDAVUploader implements Uploader {
      * @return the list of files
      * @throws Exception
      */
+    @NotNull
     private TreeMap<Date, DavResource> getZipFiles(String type) throws Exception {
         TreeMap<Date, DavResource> files = new TreeMap<>();
 
@@ -221,7 +225,7 @@ public class WebDAVUploader implements Uploader {
         return files;
     }
 
-    private String rstrip(String src, char remove) {
+    private String rstrip(@NotNull String src, char remove) {
         while (src.charAt(src.length()-1) == remove) {
             src = src.substring(0, src.length()-2);
         }
@@ -258,7 +262,8 @@ public class WebDAVUploader implements Uploader {
      * @param string the String
      * @return the new ArrayList
      */
-    private static ArrayList<String> prependToAll(ArrayList<String> list, String string) {
+    @Contract ("_, _ -> param1")
+    private static ArrayList<String> prependToAll(@NotNull ArrayList<String> list, String string) {
         for (int i = 0; i < list.size(); i++) {
             list.set(i, string + list.get(i));
         }
