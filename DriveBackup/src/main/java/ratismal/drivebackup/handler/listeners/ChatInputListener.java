@@ -24,7 +24,7 @@ public class ChatInputListener implements Listener {
                 }
             };
             event.setCancelled(true);
-            new GoogleDriveUploader(uploadLogger).finalizeSharedDrives((CommandSender)event.getPlayer(), event.getMessage());
+            new GoogleDriveUploader(uploadLogger).finalizeSharedDrives(event.getPlayer(), event.getMessage());
             DriveBackup.chatInputPlayers.remove(event.getPlayer());
         }
     }
