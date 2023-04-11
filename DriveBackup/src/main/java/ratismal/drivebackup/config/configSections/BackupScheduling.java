@@ -11,6 +11,8 @@ import java.util.Set;
 
 import org.bukkit.configuration.file.FileConfiguration;
 
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 import ratismal.drivebackup.util.Logger;
 import ratismal.drivebackup.util.SchedulerUtil;
 
@@ -39,7 +41,9 @@ public class BackupScheduling {
         this.schedule = schedule;
     }
 
-    public static BackupScheduling parse(FileConfiguration config, Logger logger) {
+    @NotNull
+    @Contract ("_, _ -> new")
+    public static BackupScheduling parse(@NotNull FileConfiguration config, Logger logger) {
         boolean enabled = config.getBoolean("scheduled-backups");
 
         List<Map<?, ?>> rawSchedule = config.getMapList("backup-schedule-list");
@@ -50,7 +54,7 @@ public class BackupScheduling {
             List<String> rawDays;
             try {
                 rawDays = (List<String>) rawScheduleEntry.get("days");
-            } catch (Exception e) {
+            } catch (ClassCastException e) {
                 logger.log(intl("backup-schedule-days-invalid"), "entry", entryIndex);
                 continue;
             }
@@ -80,12 +84,12 @@ public class BackupScheduling {
                     if (!isDayGroup) {
                         days.add(DayOfWeek.valueOf(rawDay.toUpperCase(Locale.ROOT)));
                     }
-                } catch (Exception e) {
+                } catch (IllegalArgumentException e) {
                     logger.log(intl("backup-schedule-day-invalid"));
                 }
             }
 
-            if (days.size() == 0) {
+            if (days.isEmpty()) {
                 logger.log(intl("backup-schedule-day-empty"), "entry", entryIndex);
                 continue;
             }
@@ -93,7 +97,7 @@ public class BackupScheduling {
             TemporalAccessor time;
             try {
                 time = SchedulerUtil.parseTime((String) rawScheduleEntry.get("time"));
-            } catch (Exception e) {
+            } catch (IllegalArgumentException | ClassCastException e) {
                 logger.log(intl("backup-schedule-time-invalid"), "entry", entryIndex);
                 continue;
             }
@@ -104,7 +108,7 @@ public class BackupScheduling {
                 ));
         }
 
-        if (rawSchedule.size() == 0 && enabled) {
+        if (rawSchedule.isEmpty() && enabled) {
             logger.log(intl("backup-schedule-empty"));
             enabled = false;
         }
