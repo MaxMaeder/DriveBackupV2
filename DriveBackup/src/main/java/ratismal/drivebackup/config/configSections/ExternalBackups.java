@@ -8,6 +8,8 @@ import java.util.Map;
 
 import org.bukkit.configuration.file.FileConfiguration;
 
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 import ratismal.drivebackup.config.ConfigParser;
 import ratismal.drivebackup.util.Logger;
 import ratismal.drivebackup.config.configSections.ExternalBackups.ExternalFTPSource.ExternalBackupListEntry;
@@ -114,13 +116,15 @@ public class ExternalBackups {
         this.sources = sources;
     }
 
-    public static ExternalBackups parse(FileConfiguration config, Logger logger) {
+    @NotNull
+    @Contract ("_, _ -> new")
+    public static ExternalBackups parse(@NotNull FileConfiguration config, Logger logger) {
         List<Map<?, ?>> rawList = config.getMapList("external-backup-list");
         ArrayList<ExternalBackupSource> list = new ArrayList<>();
         for (Map<?, ?> rawListEntry : rawList) {
             String entryIndex = String.valueOf(rawList.indexOf(rawListEntry) + 1);
 
-            String validTypes[] = {"ftpServer", "ftpsServer", "sftpServer", "mysqlDatabase"};
+            String[] validTypes = {"ftpServer", "ftpsServer", "sftpServer", "mysqlDatabase"};
 
             String type;
             try {
@@ -138,8 +142,8 @@ public class ExternalBackups {
             int port;
             try {
                 hostname = (String) rawListEntry.get("hostname");
-                port = (int) (Integer) rawListEntry.get("port");
-            } catch (Exception e) {
+                port = (Integer) rawListEntry.get("port");
+            } catch (ClassCastException e) {
                 logger.log(intl("external-backup-host-port-invalid"), "entry", entryIndex);
                 continue;
             }
@@ -150,7 +154,7 @@ public class ExternalBackups {
             try {
                 username = (String) rawListEntry.get("username");
                 password = (String) rawListEntry.get("password");
-            } catch (Exception e) {
+            } catch (ClassCastException e) {
                 logger.log(intl("external-backup-user-pass-invalid"), "entry", entryIndex);
                 continue;
             }
@@ -158,9 +162,8 @@ public class ExternalBackups {
             LocalDateTimeFormatter formatter;
             try {
                 formatter = LocalDateTimeFormatter.ofPattern((String) rawListEntry.get("format"));
-            } catch (Exception e) {
+            } catch (IllegalArgumentException | ClassCastException e) {
                 logger.log(intl("external-backup-format-invalid"), "entry", entryIndex);
-                if (e instanceof IllegalArgumentException) e.getMessage();
                 continue;
             }
 
@@ -172,9 +175,8 @@ public class ExternalBackups {
                     if (rawListEntry.containsKey("sftp-public-key")) {
                         try {
                             publicKey = ConfigParser.verifyPath((String) rawListEntry.get("sftp-public-key"));
-                        } catch (Exception e) {
+                        } catch (IllegalArgumentException | ClassCastException e) {
                             logger.log(intl("external-backup-public-key-invalid"), "entry", entryIndex);
-                            if (e instanceof InvalidPathException) e.getMessage();
                         }
                     }
 
@@ -182,7 +184,7 @@ public class ExternalBackups {
                     if (rawListEntry.containsKey("passphrase")) {
                         try {
                             passphrase = (String) rawListEntry.get("passphrase");
-                        } catch (Exception e) {
+                        } catch (ClassCastException e) {
                             logger.log(intl("external-backup-passphrase-invalid"), "entry", entryIndex);
                         }
                     }
@@ -191,16 +193,15 @@ public class ExternalBackups {
                     if (rawListEntry.containsKey("base-dir")) {
                         try {
                             baseDirectory = ConfigParser.verifyPath((String) rawListEntry.get("base-dir"));
-                        } catch (Exception e) {
+                        } catch (IllegalArgumentException | ClassCastException e) {
                             logger.log(intl("external-backup-base-dir-invalid"), "entry", entryIndex);
-                            if (e instanceof InvalidPathException) e.getMessage();
                         }
                     }
 
                     List<Map<?, ?>> rawBackupList;
                     try {
                         rawBackupList = (List<Map<?, ?>>) rawListEntry.get("backup-list");
-                    } catch (Exception e) {
+                    } catch (ClassCastException e) {
                         logger.log(intl("external-backup-list-invalid"), "entry", entryIndex);
                         continue;
                     }
@@ -212,9 +213,8 @@ public class ExternalBackups {
                         String path;
                         try {
                             path = ConfigParser.verifyPath((String) rawBackupListEntry.get("path"));
-                        } catch (Exception e) {
+                        } catch (IllegalArgumentException | ClassCastException e) {
                             logger.log(intl("external-backup-list-path-invalid"), "entry-backup", entryBackupIndex);
-                            if (e instanceof InvalidPathException) e.getMessage();
                             continue;
                         }
 
@@ -222,7 +222,7 @@ public class ExternalBackups {
                         if (rawBackupListEntry.containsKey("blacklist")) {
                             try {
                                 blacklist = ((List<String>) rawBackupListEntry.get("blacklist")).toArray(new String[0]);
-                            } catch (Exception e) {
+                            } catch (ArrayStoreException | ClassCastException e) {
                                 logger.log(intl("external-backup-list-blacklist-invalid"), "entry-backup", entryBackupIndex);
                             }
                         }
@@ -252,8 +252,8 @@ public class ExternalBackups {
                 case "mysqlDatabase":
                     boolean ssl = false;
                     try {
-                        ssl = (boolean) (Boolean) rawListEntry.get("ssl");
-                    } catch (Exception e) {
+                        ssl = (Boolean) rawListEntry.get("ssl");
+                    } catch (ClassCastException e) {
                         logger.log(intl("external-database-ssl-invalid"), "entry", entryIndex);
                         // Use false
                     }
@@ -261,7 +261,7 @@ public class ExternalBackups {
                     List<Map<?, ?>> rawDatabaseList;
                     try {
                         rawDatabaseList = (List<Map<?, ?>>) rawListEntry.get("databases");
-                    } catch (Exception e) {
+                    } catch (ClassCastException e) {
                         logger.log(intl("external-database-list-invalid"), "entry", entryIndex);
                         continue;
                     }
@@ -273,7 +273,7 @@ public class ExternalBackups {
                         String name;
                         try {
                             name = (String) rawDatabaseListEntry.get("name");
-                        } catch (Exception e) {
+                        } catch (ClassCastException e) {
                             logger.log(intl("external-database-list-name-invalid"), "entry-database", entryDatabaseIndex);
                             continue;
                         }
@@ -282,7 +282,7 @@ public class ExternalBackups {
                         if (rawDatabaseListEntry.containsKey("blacklist")) {
                             try {
                                 blacklist = ((List<String>) rawDatabaseListEntry.get("blacklist")).toArray(new String[0]);
-                            } catch (Exception e) {
+                            } catch (ArrayStoreException | ClassCastException e) {
                                 logger.log(intl("external-database-list-blacklist-invalid"), "entry-database", entryDatabaseIndex);
                             }
                         }
