@@ -45,12 +45,13 @@ public class Scheduler {
      * List of Dates representing each time a scheduled backup will occur
      */
     private static ArrayList<ZonedDateTime> backupDatesList = new ArrayList<>();
+    
+    private static boolean folia;
 
     /**
      * Starts the backup thread
      */
     public static void startBackupThread() {
-        boolean folia;
         try {
             Class.forName("io.papermc.paper.threadedregions.RegionizedServer");
             folia = true;
@@ -172,6 +173,9 @@ public class Scheduler {
     public static void stopBackupThread() {
         BukkitScheduler scheduler = Bukkit.getServer().getScheduler();
         scheduler.cancelTasks(DriveBackup.getInstance());
+        if (folia) {
+            Bukkit.getAsyncScheduler().cancelTasks(DriveBackup.getInstance());
+        }
     }
 
     /**
