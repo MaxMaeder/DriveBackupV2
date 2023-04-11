@@ -1,5 +1,7 @@
 package ratismal.drivebackup.util;
 
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 import ratismal.drivebackup.UploadThread.UploadLogger;
 import ratismal.drivebackup.config.ConfigParser;
 import ratismal.drivebackup.config.ConfigParser.Config;
@@ -72,7 +74,7 @@ public class FileUtil {
      * @param blacklistGlobs a list of glob patterns of files/folders to not include in the backup
      * @throws Exception
      */
-    public void makeBackup(String location, LocalDateTimeFormatter formatter, List<String> blacklistGlobs) throws Exception {
+    public void makeBackup(@NotNull String location, LocalDateTimeFormatter formatter, List<String> blacklistGlobs) throws Exception {
         Config config = ConfigParser.getConfig();
 
         if (location.charAt(0) == '/') {
@@ -262,6 +264,7 @@ public class FileUtil {
      * @param inputFolderPath The path of the folder to create the zip from
      * @throws Exception
      */
+    @NotNull
     private BackupFileList generateFileList(String inputFolderPath, List<BlacklistEntry> blacklist) throws Exception {
         BackupFileList fileList = new BackupFileList(blacklist);
 
@@ -277,7 +280,7 @@ public class FileUtil {
      * @param fileList the list of files to add the specified file or folder to
      * @throws Exception
      */
-    private void generateFileList(File file, String inputFolderPath, BackupFileList fileList) throws Exception {
+    private void generateFileList(@NotNull File file, String inputFolderPath, BackupFileList fileList) throws Exception {
 
         if (file.isFile()) {
             // Verify not backing up previous backups
@@ -315,7 +318,9 @@ public class FileUtil {
      * @param location the unescaped location
      * @return the escaped location
      */
-    private static String escapeBackupLocation(String location) {
+    @NotNull
+    @Contract (pure = true)
+    private static String escapeBackupLocation(@NotNull String location) {
         return location.replace("../", "");
     }
 
@@ -353,7 +358,7 @@ public class FileUtil {
      * @param folder the folder to be deleted
      * @return whether deleting the folder was successful
      */
-    public static boolean deleteFolder(File folder) {
+    public static boolean deleteFolder(@NotNull File folder) {
         File[] files = folder.listFiles();
         if (files != null) {
             for (File file : files) {
