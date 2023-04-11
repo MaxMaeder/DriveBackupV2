@@ -7,6 +7,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import org.jetbrains.annotations.NotNull;
 import ratismal.drivebackup.handler.commandHandler.BasicCommands;
 
 public class Permissions {
@@ -22,7 +23,7 @@ public class Permissions {
      * @param permission the permission
      * @return whether they have permissions
      */
-    public static boolean hasPerm(CommandSender player, String permission) {
+    public static boolean hasPerm(@NotNull CommandSender player, String permission) {
         if (!player.hasPermission(permission)) {
             BasicCommands.sendNoPerms(player);
             return false;
@@ -35,6 +36,7 @@ public class Permissions {
      * @param permission the permission, as a {@code String}
      * @return the list of players
      */
+    @NotNull
     public static List<CommandSender> getPlayersWithPerm(String permission) {
         ArrayList<CommandSender> players = new ArrayList<>();
 
