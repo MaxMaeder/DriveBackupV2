@@ -5,6 +5,8 @@ import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
 import org.apache.commons.net.ftp.FTPSClient;
 
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 import ratismal.drivebackup.uploaders.Uploader;
 import ratismal.drivebackup.uploaders.Authenticator.AuthenticationProvider;
 import ratismal.drivebackup.UploadThread.UploadLogger;
@@ -17,6 +19,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -211,10 +215,10 @@ public class FTPUploader implements Uploader {
             resetWorkingDirectory();
             createThenEnter(_remoteBaseFolder);
             createThenEnter(type);
-
-            FileInputStream fs = new FileInputStream(file);
-            ftpClient.storeFile(file.getName(), fs);
-            fs.close();
+            
+            try (FileInputStream fs = new FileInputStream(file)) {
+                ftpClient.storeFile(file.getName(), fs);
+            }
 
             try {
                 pruneBackups(type);
@@ -250,7 +254,7 @@ public class FTPUploader implements Uploader {
                 outputFile.mkdirs();
             }
 
-            OutputStream outputStream = new FileOutputStream(_localBaseFolder + "/" + type + "/" + new File(filePath).getName());
+            OutputStream outputStream = Files.newOutputStream(Paths.get(_localBaseFolder + "/" + type + "/" + new File(filePath).getName()));
             ftpClient.retrieveFile(filePath, outputStream);
 
             outputStream.flush();
@@ -355,6 +359,7 @@ public class FTPUploader implements Uploader {
      * @return the list of files
      * @throws Exception
      */
+    @NotNull
     private TreeMap<Date, FTPFile> getZipFiles() throws Exception {
         TreeMap<Date, FTPFile> files = new TreeMap<>();
 
@@ -393,7 +398,8 @@ public class FTPUploader implements Uploader {
      * @param string the String
      * @return the new ArrayList
      */
-    private static ArrayList<String> prependToAll(ArrayList<String> list, String string) {
+    @Contract ("_, _ -> param1")
+    private static ArrayList<String> prependToAll(@NotNull ArrayList<String> list, String string) {
         for (int i = 0; i < list.size(); i++) {
             list.set(i, string + list.get(i));
         }
