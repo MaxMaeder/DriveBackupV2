@@ -3,6 +3,8 @@ package ratismal.drivebackup;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 import ratismal.drivebackup.uploaders.Authenticator;
 import ratismal.drivebackup.uploaders.Uploader;
 import ratismal.drivebackup.uploaders.Authenticator.AuthenticationProvider;
@@ -92,8 +94,8 @@ public class UploadThread implements Runnable {
      * The backup currently being backed up by the 
      */
     private static int backupBackingUp = 0;
-
-    public static abstract class UploadLogger implements Logger {
+    
+    public abstract static class UploadLogger implements Logger {
         public void broadcast(String input, String... placeholders) {
             MessageUtil.Builder()
                 .mmText(input, placeholders)
@@ -317,7 +319,6 @@ public class UploadThread implements Runnable {
                 }
 
                 iterator.remove();
-                continue;
             }
         }
     }
@@ -441,9 +442,7 @@ public class UploadThread implements Runnable {
                 for (BlacklistEntry blacklistEntry : blacklist) {
                     if (blacklistEntry.getPathMatcher().matches(Paths.get(relativeFilePath))) {
                         blacklistEntry.incBlacklistedFiles();
-    
-                        continue;
-                    } 
+                    }
                 }
 
                 String parentFolder = new File(relativeFilePath).getParent();
@@ -607,7 +606,9 @@ public class UploadThread implements Runnable {
      * @param externalBackup the external backup settings
      * @return the socket address
      */
-    private static String getSocketAddress(ExternalBackupSource externalBackup) {
+    @NotNull
+    @Contract (pure = true)
+    private static String getSocketAddress(@NotNull ExternalBackupSource externalBackup) {
         return externalBackup.hostname + ":" + externalBackup.port;
     }
 
@@ -616,6 +617,7 @@ public class UploadThread implements Runnable {
      * @param externalBackup the external backup settings
      * @return the folder name
      */
+    @NotNull
     private static String getTempFolderName(ExternalBackupSource externalBackup) {
         if (externalBackup instanceof ExternalFTPSource) {
             return "ftp-" + getSocketAddress(externalBackup);
