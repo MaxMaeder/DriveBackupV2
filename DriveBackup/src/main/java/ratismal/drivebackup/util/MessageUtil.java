@@ -19,6 +19,8 @@ import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver.Builder;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 import ratismal.drivebackup.config.ConfigParser;
 import ratismal.drivebackup.config.ConfigParser.Config;
 import ratismal.drivebackup.plugin.DriveBackup;
@@ -31,6 +33,8 @@ public class MessageUtil {
     private Boolean sendToConsole = true;
     
 
+    @NotNull
+    @Contract (" -> new")
     public static MessageUtil Builder() {
         return new MessageUtil();
     }
@@ -79,7 +83,7 @@ public class MessageUtil {
      * @param placeholders optional MiniMessage placeholders
      * @return the calling MessageUtil's instance
      */
-    public MessageUtil mmText(String text, String... placeholders) {
+    public MessageUtil mmText(String text, @NotNull String... placeholders) {
         Builder builder = TagResolver.builder();
         for (int i = 0; i < placeholders.length; i += 2) {
             builder.resolver(Placeholder.parsed(placeholders[i], placeholders[i + 1]));
@@ -130,9 +134,9 @@ public class MessageUtil {
      * @param players the list of players to be added to the recipients
      * @return the calling MessageUtil's instance
      */
-    public MessageUtil to(List<CommandSender> players) {
+    public MessageUtil to(@NotNull List<CommandSender> players) {
         for (CommandSender player : players) {
-          recipients.add(player);
+            recipients.add(player);
         }
         return this;
     }
@@ -144,9 +148,9 @@ public class MessageUtil {
      */
     public MessageUtil toPerm(String permission) {
         for (Player player : Bukkit.getServer().getOnlinePlayers()) {
-          if (player.hasPermission("drivebackup.linkAccounts") && !recipients.contains(player)) {
-              recipients.add(player);
-          }
+            if (player.hasPermission("drivebackup.linkAccounts") && !recipients.contains(player)) {
+                recipients.add(player);
+            }
         }
         return this;
     }
@@ -167,7 +171,7 @@ public class MessageUtil {
      */
     public MessageUtil all() {
         for (Player p : Bukkit.getOnlinePlayers()) {
-          recipients.add(p);
+            recipients.add(p);
         }
         return this;
     }
@@ -176,13 +180,14 @@ public class MessageUtil {
      * Sends the message to the recipients
      */
     public void send() {
-        JoinConfiguration seperator = JoinConfiguration.separator(Component.text(" "));
-        Component builtComponent = Component.join(seperator, message);
+        JoinConfiguration separator = JoinConfiguration.separator(Component.text(" "));
+        Component builtComponent = Component.join(separator, message);
         if (addPrefix) {
             builtComponent = prefixMessage(builtComponent);
         }
 
-        if (sendToConsole) recipients.add(Bukkit.getConsoleSender());
+        if (sendToConsole)
+            recipients.add(Bukkit.getConsoleSender());
 
         Config config = (Config) ((ConfigParser.getConfig() != null) ? ConfigParser.getConfig() : ConfigParser.defaultConfig());
 
@@ -203,9 +208,9 @@ public class MessageUtil {
      */
     public static void sendConsoleException(Exception exception) {
         Config config = (Config) ((ConfigParser.getConfig() != null) ? ConfigParser.getConfig() : ConfigParser.defaultConfig());
-    	if (!config.advanced.suppressErrors) {
-    		exception.printStackTrace();
-    	}
+        if (!config.advanced.suppressErrors) {
+            exception.printStackTrace();
+        }
     }
     
     /**
@@ -213,6 +218,7 @@ public class MessageUtil {
      * @param message the message to prefix
      * @return the prefixed message
      */
+    @NotNull
     private static Component prefixMessage(Component message) {
         Config config = (Config) ((ConfigParser.getConfig() != null) ? ConfigParser.getConfig() : ConfigParser.defaultConfig());
 
@@ -224,6 +230,8 @@ public class MessageUtil {
      * @param message the message to translate
      * @return the translated message
      */
+    @NotNull
+    @Contract ("_ -> new")
     public static String translateMessageColors(String message) {
         return ChatColor.translateAlternateColorCodes('&', message);
     }
