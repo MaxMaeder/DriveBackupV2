@@ -34,7 +34,7 @@ public class DriveBackupApi {
         for (Future<Boolean> future : futures){
             try {
 
-                if (!future.get(10, TimeUnit.SECONDS)) {
+                if (Boolean.FALSE.equals(future.get(10, TimeUnit.SECONDS))) {
                     shouldStartBackup = false;
                     MessageUtil.Builder().text("Not starting a backup due to a beforeBackupStart() Callable returning false").toConsole(true).send();
 
