@@ -1,12 +1,14 @@
 package ratismal.drivebackup.handler;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 
+import org.jetbrains.annotations.NotNull;
 import ratismal.drivebackup.config.ConfigParser;
 import ratismal.drivebackup.config.configSections.BackupMethods;
 
@@ -26,27 +28,35 @@ public class CommandTabComplete implements TabCompleter {
      * @return List<String> of valid command tab options
      */
     @Override
-    public List<String> onTabComplete(CommandSender player, Command cmd, String label, String[] args) {
-        if (cmd.getName().equalsIgnoreCase("drivebackup")) {
+    public List<String> onTabComplete(CommandSender player, @NotNull Command cmd, String label, String[] args) {
+        if ("drivebackup".equalsIgnoreCase(cmd.getName())) {
             if (args.length == 1) {
 
                 List<String> commandList = new ArrayList<>();
                 commandList.add("v");
                 commandList.add("help");
-                if (player.hasPermission("drivebackup.linkAccounts")) commandList.add("linkaccount");
-                if (player.hasPermission("drivebackup.reloadConfig")) commandList.add("reloadconfig");
-                if (player.hasPermission("drivebackup.reloadConfig")) commandList.add("debug");
-                if (player.hasPermission("drivebackup.getBackupStatus")) commandList.add("status");
-                if (player.hasPermission("drivebackup.getNextBackup")) commandList.add("nextbackup");
-                if (player.hasPermission("drivebackup.backup")) commandList.add("backup");
-                if (player.hasPermission("drivebackup.backup")) commandList.add("test");
-                if (player.hasPermission("drivebackup.backup")) commandList.add("update");
+                if (player.hasPermission("drivebackup.linkAccounts"))
+                    commandList.add("linkaccount");
+                if (player.hasPermission("drivebackup.reloadConfig"))
+                    commandList.add("reloadconfig");
+                if (player.hasPermission("drivebackup.reloadConfig"))
+                    commandList.add("debug");
+                if (player.hasPermission("drivebackup.getBackupStatus"))
+                    commandList.add("status");
+                if (player.hasPermission("drivebackup.getNextBackup"))
+                    commandList.add("nextbackup");
+                if (player.hasPermission("drivebackup.backup"))
+                    commandList.add("backup");
+                if (player.hasPermission("drivebackup.backup"))
+                    commandList.add("test");
+                if (player.hasPermission("drivebackup.backup"))
+                    commandList.add("update");
                     
                 return commandList;
             } else if (args[0].equalsIgnoreCase("linkaccount") && args.length == 2) {
 
                 if (!player.hasPermission("drivebackup.linkAccounts")) {
-                    return null;
+                    return Collections.emptyList();
                 }
                 
                 List<String> commandList = new ArrayList<>();
@@ -58,7 +68,7 @@ public class CommandTabComplete implements TabCompleter {
             } else if (args[0].equalsIgnoreCase("test") && args.length == 2) {
 
                 if (!player.hasPermission("drivebackup.backup")) {
-                    return null;
+                    return Collections.emptyList();
                 }
                 
                 List<String> commandList = new ArrayList<>();
@@ -88,7 +98,7 @@ public class CommandTabComplete implements TabCompleter {
             }
         }
         
-        return null;
+        return Collections.emptyList();
     }
 
 }
