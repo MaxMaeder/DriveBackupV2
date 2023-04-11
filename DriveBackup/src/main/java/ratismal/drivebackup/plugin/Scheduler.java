@@ -9,7 +9,12 @@ import java.time.temporal.ChronoField;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 
+import io.papermc.paper.threadedregions.RegionizedServerInitEvent;
+import io.papermc.paper.threadedregions.scheduler.AsyncScheduler;
+import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 import org.bukkit.Bukkit;
 import org.bukkit.scheduler.BukkitScheduler;
 
@@ -47,6 +52,13 @@ public class Scheduler {
      * Starts the backup thread
      */
     public static void startBackupThread() {
+        boolean folia;
+        try {
+            Class.forName("io.papermc.paper.threadedregions.RegionizedServer");
+            folia = true;
+        } catch (ClassNotFoundException e) {
+            folia = false;
+        }
         Config config = ConfigParser.getConfig();
         BukkitScheduler taskScheduler = Bukkit.getServer().getScheduler();
 
@@ -139,13 +151,20 @@ public class Scheduler {
                 .send();
 
             long interval = SchedulerUtil.sToTicks(config.backupStorage.delay * 60);
-
-            backupTasks.add(taskScheduler.runTaskTimerAsynchronously(
-                DriveBackup.getInstance(), 
-                new UploadThread(),
-                interval,
-                interval
-            ).getTaskId());
+            
+            if (folia) {
+                Consumer<ScheduledTask> consumer = o -> new UploadThread().run();
+                Bukkit.getAsyncScheduler().runAtFixedRate(DriveBackup.getInstance(), consumer, interval, interval, TimeUnit.SECONDS);
+                
+                Bukkit.getAsyncScheduler().cancelTasks(DriveBackup.getInstance());
+            } else {
+                backupTasks.add(taskScheduler.runTaskTimerAsynchronously(
+                        DriveBackup.getInstance(),
+                        new UploadThread(),
+                        interval,
+                        interval
+                ).getTaskId());
+            }
 
             UploadThread.updateNextIntervalBackupTime();
         }
