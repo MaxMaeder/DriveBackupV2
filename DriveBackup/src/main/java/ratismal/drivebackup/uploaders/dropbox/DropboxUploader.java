@@ -1,5 +1,6 @@
 package ratismal.drivebackup.uploaders.dropbox;
 
+import org.jetbrains.annotations.NotNull;
 import ratismal.drivebackup.util.MessageUtil;
 import ratismal.drivebackup.util.NetUtil;
 import ratismal.drivebackup.uploaders.Authenticator;
@@ -13,6 +14,8 @@ import ratismal.drivebackup.plugin.DriveBackup;
 
 import java.io.DataInputStream;
 import java.io.FileInputStream;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.time.Instant;
 import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
@@ -45,8 +48,8 @@ public class DropboxUploader implements Uploader {
      * Tests the Dropbox account by uploading a small file
      *  @param testFile the file to upload during the test
      */
-    public void test(java.io.File testFile) {
-        try (DataInputStream dis = new DataInputStream(new FileInputStream(testFile))) {
+    public void test(@NotNull java.io.File testFile) {
+        try (DataInputStream dis = new DataInputStream(Files.newInputStream(testFile.toPath()))) {
             byte[] content = new byte[(int) testFile.length()];
             dis.readFully(content);
 
@@ -94,7 +97,7 @@ public class DropboxUploader implements Uploader {
             if (statusCode != 200) {
                 setErrorOccurred(true);
             }
-        } catch (Exception exception) {
+        } catch (IOException | InterruptedException exception) {
             NetUtil.catchException(exception, "api.dropboxapi.com", logger);
             MessageUtil.sendConsoleException(exception);
             setErrorOccurred(true);
@@ -104,18 +107,18 @@ public class DropboxUploader implements Uploader {
     /**
      * Uploads the specified file to the authenticated user's Dropbox inside a
      * folder for the specified file type
-     * 
+     *
      * @param file the file
      * @param type the type of file (ex. plugins, world)
      */
-    public void uploadFile(final java.io.File file, final String type) {
+    public void uploadFile(@NotNull final java.io.File file, @NotNull final String type) {
         String destination = ConfigParser.getConfig().backupStorage.remoteDirectory;
         int fileSize = (int) file.length();
         MediaType OCTET_STREAM = MediaType.parse("application/octet-stream");
 
         String folder = type.replaceAll("\\.{1,2}\\/", "");
 
-        try (DataInputStream dis = new DataInputStream(new FileInputStream(file))) {
+        try (DataInputStream dis = new DataInputStream(Files.newInputStream(file.toPath()))) {
             if (fileSize > 150000000 /* 150MB */) {
                 // Chunked upload
 
@@ -280,6 +283,7 @@ public class DropboxUploader implements Uploader {
      * @return the list of files
      * @throws Exception
      */
+    @NotNull
     private TreeMap<Instant, String> getZipFiles(String destination, String type) throws Exception {
         TreeMap<Instant, String> files = new TreeMap<>();
 
@@ -343,7 +347,8 @@ public class DropboxUploader implements Uploader {
         JSONObject parsedResponse = new JSONObject(response.body().string());
         response.close();
 
-        if (!response.isSuccessful()) return;
+        if (!response.isSuccessful())
+            return;
 
         accessToken = parsedResponse.getString("access_token");
     }
@@ -360,7 +365,7 @@ public class DropboxUploader implements Uploader {
      * closes any remaining connectionsretrieveNewAccessToken
      */
     public void close() {
-        return; // nothing needs to be done
+        // nothing needs to be done
     }
 
     /**
