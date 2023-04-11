@@ -1,6 +1,7 @@
 package ratismal.drivebackup.uploaders;
 
 import org.bukkit.command.CommandSender;
+import org.jetbrains.annotations.NotNull;
 import org.json.JSONObject;
 
 import okhttp3.FormBody;
@@ -91,9 +92,7 @@ public class Authenticator {
     public static void authenticateUser(final AuthenticationProvider provider, final CommandSender initiator) {
         DriveBackup plugin = DriveBackup.getInstance();
 
-        Logger logger = (input, placeholders) -> {
-            MessageUtil.Builder().mmText(input, placeholders).to(initiator).toConsole(false).send();
-        };
+        Logger logger = (input, placeholders) -> MessageUtil.Builder().mmText(input, placeholders).to(initiator).toConsole(false).send();
 
         cancelPollTask();
 
@@ -209,9 +208,7 @@ public class Authenticator {
     }
 
     public static void unauthenticateUser(final AuthenticationProvider provider, final CommandSender initiator) {
-        Logger logger = (input, placeholders) -> {
-            MessageUtil.Builder().mmText(input, placeholders).to(initiator).send();
-        };
+        Logger logger = (input, placeholders) -> MessageUtil.Builder().mmText(input, placeholders).to(initiator).send();
 
         disableBackupMethod(provider, logger);
 
@@ -235,7 +232,7 @@ public class Authenticator {
         }
     }
 
-    public static void linkSuccess(CommandSender initiator, AuthenticationProvider provider, Logger logger) {
+    public static void linkSuccess(CommandSender initiator, @NotNull AuthenticationProvider provider, @NotNull Logger logger) {
         logger.log(intl("link-provider-complete"), "provider", provider.getName());
 
         enableBackupMethod(provider, logger);
@@ -245,7 +242,7 @@ public class Authenticator {
         BasicCommands.sendBriefBackupList(initiator);
     }
 
-    private static void saveRefreshToken(AuthenticationProvider provider, String token) throws Exception {
+    private static void saveRefreshToken(@NotNull AuthenticationProvider provider, String token) throws Exception {
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("refresh_token", token);
 
@@ -254,7 +251,7 @@ public class Authenticator {
         file.close();
     }
 
-    private static void enableBackupMethod(AuthenticationProvider provider, Logger logger) {
+    private static void enableBackupMethod(@NotNull AuthenticationProvider provider, Logger logger) {
         DriveBackup plugin = DriveBackup.getInstance();
 
         if (!plugin.getConfig().getBoolean(provider.getId() + ".enabled")) {
@@ -264,7 +261,7 @@ public class Authenticator {
         }
     }
 
-    private static void disableBackupMethod(AuthenticationProvider provider, Logger logger) {
+    private static void disableBackupMethod(@NotNull AuthenticationProvider provider, Logger logger) {
         DriveBackup plugin = DriveBackup.getInstance();
 
         if (plugin.getConfig().getBoolean(provider.getId() + ".enabled")) {
@@ -274,6 +271,7 @@ public class Authenticator {
         }
     }
 
+    @NotNull
     public static String getRefreshToken(AuthenticationProvider provider) {
         try {
             String clientJSON = processCredentialJsonFile(provider);
@@ -296,23 +294,16 @@ public class Authenticator {
         return !getRefreshToken(provider).isEmpty();
     }
 
-    /*public static String getAccessToken(AuthenticationProvider provider) {
-
-    }*/
-
-    private static String processCredentialJsonFile(AuthenticationProvider provider) throws IOException {
-        BufferedReader br = new BufferedReader(new FileReader(provider.getCredStoreLocation()));
-        StringBuilder sb = new StringBuilder();
-        String line = br.readLine();
-
-        while (line != null) {
-            sb.append(line);
-            line = br.readLine();
+    @NotNull
+    private static String processCredentialJsonFile(@NotNull AuthenticationProvider provider) throws IOException {
+        try (BufferedReader br = new BufferedReader(new FileReader(provider.getCredStoreLocation()));) {
+            StringBuilder sb = new StringBuilder();
+            String line = br.readLine();
+            while (line != null) {
+                sb.append(line);
+                line = br.readLine();
+            }
+            return sb.toString();
         }
-        
-        String result = sb.toString();
-        br.close(); 
-
-        return result;
     }
 }
