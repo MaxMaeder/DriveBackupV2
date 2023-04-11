@@ -6,6 +6,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.server.ServerCommandEvent;
 
+import org.jetbrains.annotations.NotNull;
 import ratismal.drivebackup.UploadThread.UploadLogger;
 import ratismal.drivebackup.plugin.DriveBackup;
 import ratismal.drivebackup.uploaders.googledrive.GoogleDriveUploader;
@@ -14,7 +15,7 @@ import ratismal.drivebackup.util.MessageUtil;
 public class ChatInputListener implements Listener {
 
     @EventHandler
-    public void onPlayerChat(AsyncPlayerChatEvent event) {
+    public void onPlayerChat(@NotNull AsyncPlayerChatEvent event) {
         if (DriveBackup.chatInputPlayers.contains(event.getPlayer())) {
             UploadLogger uploadLogger = new UploadLogger() {
                 @Override
@@ -29,7 +30,7 @@ public class ChatInputListener implements Listener {
     }
 
     @EventHandler
-    public void onCommand(ServerCommandEvent event) {
+    public void onCommand(@NotNull ServerCommandEvent event) {
         if (DriveBackup.chatInputPlayers.contains(event.getSender())) {
             UploadLogger uploadLogger = new UploadLogger() {
                 @Override
