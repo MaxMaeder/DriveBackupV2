@@ -16,6 +16,9 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import ratismal.drivebackup.uploaders.Uploader;
 import ratismal.drivebackup.uploaders.Authenticator;
 import ratismal.drivebackup.uploaders.Obfusticate;
@@ -108,7 +111,8 @@ public class GoogleDriveUploader implements Uploader {
         JSONObject parsedResponse = new JSONObject(response.body().string());
         response.close();
         
-        if (!response.isSuccessful()) return;
+        if (!response.isSuccessful())
+            return;
 
         service = new Drive.Builder(
             httpTransport, 
@@ -129,14 +133,13 @@ public class GoogleDriveUploader implements Uploader {
      * @param requestInitializer the default {@code HttpRequestInitializer} provided by the Google Drive Client
      * @return the modified {@code HttpRequestInitializer} with the connect/read timeouts set 
      */
-    private HttpRequestInitializer setTimeout(final HttpRequestInitializer requestInitializer) {
-        return new HttpRequestInitializer() {
-            @Override
-            public void initialize(HttpRequest httpRequest) throws IOException {
-                requestInitializer.initialize(httpRequest);
-                httpRequest.setConnectTimeout(1 * 60000); // 1 minute connect timeout
-                httpRequest.setReadTimeout(4 * 60 * 60000); // 4 hours read timeout
-            }
+    @NotNull
+    @Contract (value = "_ -> new", pure = true)
+    private static HttpRequestInitializer setTimeout(final HttpRequestInitializer requestInitializer) {
+        return httpRequest -> {
+            requestInitializer.initialize(httpRequest);
+            httpRequest.setConnectTimeout(1 * 60000); // 1 minute connect timeout
+            httpRequest.setReadTimeout(4 * 60 * 60000); // 4 hours read timeout
         };
     }
 
@@ -256,7 +259,7 @@ public class GoogleDriveUploader implements Uploader {
      * closes any remaining connectionsretrieveNewAccessToken
      */
     public void close() {
-        return; // nothing needs to be done
+        // nothing needs to be done
     }
 
     /**
@@ -284,7 +287,7 @@ public class GoogleDriveUploader implements Uploader {
      * @throws Exception
      */
     public void setupSharedDrives(CommandSender initiator) throws Exception {
-        if (drives != null && drives.size() > 0) {
+        if (drives != null && !drives.isEmpty()) {
             logger.log(intl("google-pick-shared-drive"));
 
             logger.log(
@@ -327,7 +330,7 @@ public class GoogleDriveUploader implements Uploader {
             }
         }
 
-        if (input.equals("1")) {
+        if ("1".equals(input)) {
 
             instance.getConfig().set(idKey, "");
             instance.saveConfig();
@@ -432,6 +435,7 @@ public class GoogleDriveUploader implements Uploader {
      * @param parent the parent folder
      * @return the folder or {@code null}
      */
+    @Nullable
     private File getFolder(String name, String driveId) {
         try {
             Drive.Files.List request = service.files().list()
@@ -459,6 +463,7 @@ public class GoogleDriveUploader implements Uploader {
      * @param parent the parent folder
      * @return the folder or {@code null}
      */
+    @Nullable
     private File getFolder(String name, File parent, boolean sharedDrive) {
         try {
             Drive.Files.List request = service.files().list()
@@ -488,6 +493,7 @@ public class GoogleDriveUploader implements Uploader {
      * @param name the name of the folder
      * @return the folder or {@code null}
      */
+    @Nullable
     private File getFolder(String name) {
         try {
             Drive.Files.List request = service.files().list()
@@ -511,7 +517,8 @@ public class GoogleDriveUploader implements Uploader {
      * @return a list of files
      * @throws Exception
      */
-    private List<ChildReference> getFiles(File folder) throws Exception {
+    @NotNull
+    private List<ChildReference> getFiles(@NotNull File folder) throws Exception {
 
         //Create a List to store results
         List<ChildReference> result = new ArrayList<>();
