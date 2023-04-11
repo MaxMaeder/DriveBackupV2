@@ -6,6 +6,7 @@
     <version>1.6.0</version>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <!--suppress UnresolvedMavenProperty -->
         <github.global.oauth>${GITHUB_OAUTH_TOKEN}</github.global.oauth>
         <project.http.version>1.19.0</project.http.version>
         <project.oauth.version>1.19.0</project.oauth.version>
@@ -157,10 +158,10 @@
             <id>bukkit-repo</id>
             <url>https://hub.spigotmc.org/nexus/content/groups/public/</url>
         </repository>
-		<repository>
-  			<id>CodeMC</id>
-  			<url>https://repo.codemc.org/repository/maven-public</url>
-		</repository>
+        <repository>
+            <id>CodeMC</id>
+            <url>https://repo.codemc.org/repository/maven-public</url>
+        </repository>
     </repositories>
     <dependencies>
         <dependency>
@@ -177,9 +178,9 @@
         </dependency>
         <dependency>
             <groupId>org.bstats</groupId>
-		    <artifactId>bstats-bukkit</artifactId>
-		    <version>3.0.2</version>
-		    <scope>compile</scope>
+            <artifactId>bstats-bukkit</artifactId>
+            <version>3.0.2</version>
+            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>com.squareup.okhttp3</groupId>
