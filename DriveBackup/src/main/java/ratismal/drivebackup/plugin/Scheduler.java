@@ -12,8 +12,6 @@ import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
-import io.papermc.paper.threadedregions.RegionizedServerInitEvent;
-import io.papermc.paper.threadedregions.scheduler.AsyncScheduler;
 import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 import org.bukkit.Bukkit;
 import org.bukkit.scheduler.BukkitScheduler;
