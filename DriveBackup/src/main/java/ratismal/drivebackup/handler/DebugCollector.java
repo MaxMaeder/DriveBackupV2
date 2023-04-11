@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.bukkit.plugin.Plugin;
+import org.jetbrains.annotations.NotNull;
 import org.json.JSONObject;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -30,7 +31,7 @@ public class DebugCollector {
     private List<PluginInfo> plugins;
     private final RamInfo ramInfo;
 
-    public DebugCollector(DriveBackup plugin) {
+    public DebugCollector(@NotNull DriveBackup plugin) {
         this.serverType = plugin.getServer().getName();
         this.serverVersion = plugin.getServer().getVersion();
         this.onlineMode = plugin.getServer().getOnlineMode();
@@ -48,7 +49,7 @@ public class DebugCollector {
         String jsonInString = gson.toJson(this);
 
         RequestBody formBody = new FormBody.Builder()
-            .add("content", jsonInString.toString())
+            .add("content", jsonInString)
             .build();
 
         Request request = new Request.Builder()
@@ -57,12 +58,12 @@ public class DebugCollector {
             .build();
 
         try (Response response = DriveBackup.httpClient.newCall(request).execute()) {
-            if (!response.isSuccessful()) throw new Exception("Unexpected code " + response);
+            if (!response.isSuccessful())
+                throw new Exception("Unexpected code " + response);
 
             JSONObject responseJson = new JSONObject(response.body().string());
-            String url = responseJson.getString("url");
-
-            return url;
+    
+            return responseJson.getString("url");
         } catch (UnknownHostException e) {
             return "Network error, check your connection";
         } catch (Exception e) {
