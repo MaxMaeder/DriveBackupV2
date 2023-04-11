@@ -6,6 +6,8 @@ import java.util.concurrent.Callable;
 import org.bstats.bukkit.Metrics;
 import org.bstats.charts.SimplePie;
 
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 import ratismal.drivebackup.config.ConfigParser;
 import ratismal.drivebackup.config.ConfigParser.Config;
 import ratismal.drivebackup.util.MessageUtil;
@@ -122,6 +124,8 @@ public class BstatsMetrics {
         }));
     }
 
+    @NotNull
+    @Contract (pure = true)
     private String enabled(boolean enabled) {
         return enabled ? "Enabled" : "Disabled";
     }
