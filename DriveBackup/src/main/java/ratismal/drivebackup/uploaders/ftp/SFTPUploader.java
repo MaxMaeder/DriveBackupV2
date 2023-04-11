@@ -1,5 +1,7 @@
 package ratismal.drivebackup.uploaders.ftp;
 
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 import ratismal.drivebackup.UploadThread.UploadLogger;
 import ratismal.drivebackup.config.ConfigParser;
 import ratismal.drivebackup.config.ConfigParser.Config;
@@ -8,6 +10,7 @@ import ratismal.drivebackup.plugin.DriveBackup;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -90,7 +93,8 @@ public class SFTPUploader {
      */
     private void connect(String host, int port, String username, final String password, String publicKey, String passphrase) throws Exception {
         sshClient = new SSHClient();
-        sshClient.addHostKeyVerifier(new PromiscuousVerifier()); // Disable host checking
+        // Disable host checking
+        sshClient.addHostKeyVerifier(new PromiscuousVerifier());
         sshClient.connect(host, port);
 
         ArrayList<AuthMethod> sshAuthMethods = new ArrayList<>();
@@ -255,6 +259,7 @@ public class SFTPUploader {
      * @return the list of files
      * @throws Exception
      */
+    @NotNull
     private TreeMap<Date, RemoteResourceInfo> getZipFiles() throws Exception {
         TreeMap<Date, RemoteResourceInfo> files = new TreeMap<>();
 
@@ -285,7 +290,7 @@ public class SFTPUploader {
      * Resets the current working directory to what it was when connection to the SFTP server was established
      * @throws Exception
      */
-    private void resetWorkingDirectory() throws Exception {
+    private void resetWorkingDirectory() throws IOException {
         sftpClient.cd(initialRemoteFolder);
     }
 
@@ -295,7 +300,8 @@ public class SFTPUploader {
      * @param string the String
      * @return the new ArrayList
      */
-    private static ArrayList<String> prependToAll(ArrayList<String> list, String string) {
+    @Contract ("_, _ -> param1")
+    private static ArrayList<String> prependToAll(@NotNull ArrayList<String> list, String string) {
         for (int i = 0; i < list.size(); i++) {
             list.set(i, string + list.get(i));
         }
