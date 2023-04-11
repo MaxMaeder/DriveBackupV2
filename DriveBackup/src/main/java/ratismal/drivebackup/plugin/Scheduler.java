@@ -153,8 +153,6 @@ public class Scheduler {
             if (folia) {
                 Consumer<ScheduledTask> consumer = o -> new UploadThread().run();
                 Bukkit.getAsyncScheduler().runAtFixedRate(DriveBackup.getInstance(), consumer, interval, interval, TimeUnit.SECONDS);
-                
-                Bukkit.getAsyncScheduler().cancelTasks(DriveBackup.getInstance());
             } else {
                 backupTasks.add(taskScheduler.runTaskTimerAsynchronously(
                         DriveBackup.getInstance(),
