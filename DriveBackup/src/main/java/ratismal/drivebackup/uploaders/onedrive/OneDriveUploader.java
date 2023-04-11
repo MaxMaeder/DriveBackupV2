@@ -6,6 +6,8 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -152,7 +154,6 @@ public class OneDriveUploader implements Uploader {
      * @param file the file
      * @param type the type of file (ex. plugins, world)
      */
-    @SuppressWarnings (value="unchecked")
     public void uploadFile(java.io.File file, String type) throws Exception {
         try {
             resetRanges();
@@ -250,7 +251,7 @@ public class OneDriveUploader implements Uploader {
     * closes any remaining connectionsretrieveNewAccessToken
     */
     public void close() {
-        return; // nothing needs to be done
+        // nothing needs to be done
     }
 
     /**
@@ -281,7 +282,8 @@ public class OneDriveUploader implements Uploader {
      * @return the created folder
      * @throws Exception
      */
-    private File createFolder(String name, File parent) throws Exception {
+    @NotNull
+    private File createFolder(String name, File parent) throws IOException {
         File file = getFolder(name, parent);
         if (file != null) {
             return file;
@@ -316,7 +318,7 @@ public class OneDriveUploader implements Uploader {
         response.close();
 
         if (!folderCreated) {
-            throw new Exception("Couldn't create folder " + name);
+            throw new IOException("Couldn't create folder " + name);
         }
             
         return parent.add(name);
@@ -328,7 +330,8 @@ public class OneDriveUploader implements Uploader {
      * @return the created folder
      * @throws Exception
      */
-    private File createFolder(String name) throws Exception {
+    @NotNull
+    private File createFolder(String name) throws IOException {
         File file = getFolder(name);
         if (file != null) {
             return file;
@@ -352,7 +355,7 @@ public class OneDriveUploader implements Uploader {
         response.close();
 
         if (!folderCreated) {
-            throw new Exception("Couldn't create folder " + name);
+            throw new IOException("Couldn't create folder " + name);
         }
 
         return new File().add(name);
@@ -364,6 +367,7 @@ public class OneDriveUploader implements Uploader {
      * @param parent the parent folder
      * @return the folder or {@code null}
      */
+    @Nullable
     private File getFolder(String name, File parent) {
         try {
             Request request = new Request.Builder()
@@ -395,6 +399,7 @@ public class OneDriveUploader implements Uploader {
      * @param name the name of the folder
      * @return the folder or {@code null}
      */
+    @Nullable
     private File getFolder(String name) {
         try {
             Request request = new Request.Builder()
@@ -495,6 +500,7 @@ public class OneDriveUploader implements Uploader {
          * Returns a {@code File} with the specified folder added to the file path
          * @param folder the {@code File}
          */
+        @NotNull
         private File add(String folder) {
             File childFile = new File();
             if (getPath().isEmpty()) {
@@ -510,7 +516,7 @@ public class OneDriveUploader implements Uploader {
          * Sets the path of the file/folder
          * @param path the path, as an {@code String}
          */
-        private void setPath(String path) {
+        private void setPath(@NotNull String path) {
             filePath.clear();
             Collections.addAll(filePath, path.split("/"));
         }
@@ -519,6 +525,7 @@ public class OneDriveUploader implements Uploader {
          * Gets the path of the file/folder
          * @return the path, as a {@code String}
          */
+        @NotNull
         private String getPath() {
             return String.join("/", filePath);
         }
@@ -535,6 +542,7 @@ public class OneDriveUploader implements Uploader {
          * Gets the path of the parent folder of the file/folder
          * @return the path, as a String
          */
+        @NotNull
         private String getParent() {
             ArrayList<String> parentPath = new ArrayList<>(filePath);
             parentPath.remove(parentPath.size() - 1);
@@ -565,15 +573,15 @@ public class OneDriveUploader implements Uploader {
      * Resets the number of bytes uploaded in the last chunk and the number of bytes uploaded in total
      */
     private void resetRanges() {
-    	lastUploaded = 0;
-    	totalUploaded = 0;
+        lastUploaded = 0;
+        totalUploaded = 0;
     }
     
     /**
      * Sets the number of bytes uploaded in the last chunk and the number of bytes uploaded in total from the ranges of bytes the OneDrive API requested to be uploaded last
      * @param stringRanges the ranges of bytes requested
      */
-    private void setRanges(String[] stringRanges) {
+    private void setRanges(@NotNull String[] stringRanges) {
         Range[] ranges = new Range[stringRanges.length];
         for (int i = 0; i < stringRanges.length; i++) {
             long start = Long.parseLong(stringRanges[i].substring(0, stringRanges[i].indexOf('-')));
