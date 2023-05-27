@@ -29,8 +29,9 @@ public class Authenticator {
     /**
      * Endpoints
      */
-    private static String REQUEST_CODE_ENDPOINT = "https://drivebackup.web.app/pin";
-    private static String POLL_VERIFICATION_ENDPOINT = "https://drivebackup.web.app/token";
+    private static String AUTH_URL = "https://auth.drivebackupv2.com";
+    private static String REQUEST_CODE_ENDPOINT = AUTH_URL + "/pin";
+    private static String POLL_VERIFICATION_ENDPOINT = AUTH_URL + "/token";
     private static String ONEDRIVE_REQUEST_CODE_ENDPOINT = "https://login.microsoftonline.com/common/oauth2/v2.0/devicecode";
     private static String ONEDRIVE_POLL_VERIFICATION_ENDPOINT = "https://login.microsoftonline.com/common/oauth2/v2.0/token";
 
@@ -191,7 +192,7 @@ public class Authenticator {
                         }
 
                     } catch (Exception exception) {
-                        NetUtil.catchException(exception, "drivebackup.web.app", logger);
+                        NetUtil.catchException(exception, AUTH_URL, logger);
 
                         logger.log(intl("link-provider-failed"), "provider", provider.getName());
                         MessageUtil.sendConsoleException(exception);
@@ -201,7 +202,7 @@ public class Authenticator {
                 }
             }, responseCheckDelay, responseCheckDelay);
         } catch (Exception exception) {
-            NetUtil.catchException(exception, "drivebackup.web.app", logger);
+            NetUtil.catchException(exception, AUTH_URL, logger);
 
             logger.log(intl("link-provider-failed"), "provider", provider.getName());
             MessageUtil.sendConsoleException(exception);
