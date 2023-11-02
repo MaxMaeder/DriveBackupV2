@@ -6,13 +6,13 @@ admin.initializeApp({
 const db = admin.firestore();
 exports.db = db;
 
-var express = require('express');
-var compression = require('compression');
+const express = require('express');
+const compression = require('compression');
 
-var pinRouter = require('./routes/pin');
-var providerRouter = require('./routes/provider');
-var callbackRouter = require('./routes/callback');
-var tokenRouter = require('./routes/token');
+const pinRouter = require('./routes/pin');
+const providerRouter = require('./routes/provider');
+const callbackRouter = require('./routes/callback');
+const tokenRouter = require('./routes/token');
 
 var app = express();
 

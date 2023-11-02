@@ -1,7 +1,7 @@
-var express = require('express');
-var compression = require('compression');
+const express = require('express');
+const compression = require('compression');
 
-var app = express();
+const app = express();
 
 app.use(compression());
 app.use(express.json());

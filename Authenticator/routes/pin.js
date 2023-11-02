@@ -9,10 +9,10 @@ const AUTH_URL = "https://auth.drivebackupv2.com";
 const interval = 5;
 
 router.post('/', async function (req, res) {
-  var user_code = nanoid(3) + '-' + nanoid(3);
-  var device_code = nanoid(32);
+  const user_code = nanoid(3) + '-' + nanoid(3);
+  const device_code = nanoid(32);
 
-  var verifyURL = '';
+  let verifyURL = '';
 
   switch (req.body.type) {
     case ('googledrive'):
@@ -39,7 +39,7 @@ router.post('/', async function (req, res) {
     interval
   });
 
-  var docRef = db.collection('pins').doc(user_code);
+  const docRef = db.collection('pins').doc(user_code);
 
   await docRef.set({
     device_code: device_code,
@@ -49,7 +49,7 @@ router.post('/', async function (req, res) {
   });
 });
 
-let nanoid = (size = 21) => {
+const nanoid = (size = 21) => {
   let id = ''
   let i = size
   while (i--) {
