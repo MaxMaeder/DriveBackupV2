@@ -32,7 +32,7 @@ public class CommandTabComplete implements TabCompleter {
         if ("drivebackup".equalsIgnoreCase(cmd.getName())) {
             if (args.length == 1) {
 
-                List<String> commandList = new ArrayList<>();
+                List<String> commandList = new ArrayList<>(10);
                 commandList.add("v");
                 commandList.add("help");
                 if (player.hasPermission("drivebackup.linkAccounts"))
@@ -59,7 +59,7 @@ public class CommandTabComplete implements TabCompleter {
                     return Collections.emptyList();
                 }
                 
-                List<String> commandList = new ArrayList<>();
+                List<String> commandList = new ArrayList<>(3);
                 commandList.add("googledrive");
                 commandList.add("onedrive");
                 commandList.add("dropbox");
@@ -71,7 +71,7 @@ public class CommandTabComplete implements TabCompleter {
                     return Collections.emptyList();
                 }
                 
-                List<String> commandList = new ArrayList<>();
+                List<String> commandList = new ArrayList<>(6);
 
                 BackupMethods methods = ConfigParser.getConfig().backupMethods;
 
