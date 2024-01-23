@@ -44,6 +44,13 @@ public class FileUtil {
 
         TreeMap<Long, File> backupList = new TreeMap<>();
         String path = new File(ConfigParser.getConfig().backupStorage.localDirectory).getAbsolutePath() + "/" + location;
+        File folder = new File(path);
+        if (!folder.exists()) {
+            folder.mkdirs();
+        }
+        if (!folder.isDirectory()) {
+            return backupList;
+        }
         File[] files = new File(path).listFiles();
         
         if (files == null) {
