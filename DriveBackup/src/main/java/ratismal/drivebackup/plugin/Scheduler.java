@@ -121,12 +121,7 @@ public class Scheduler {
             }
 
             long driftInt = SchedulerUtil.sToTicks(SCHEDULE_DRIFT_CORRECTION_INTERVAL);
-            scheduleDriftTask = taskScheduler.runTaskTimer(DriveBackup.getInstance(), new Runnable() {
-                @Override
-                public void run() {
-                    startBackupThread();
-                }
-            }, driftInt, driftInt).getTaskId();
+            scheduleDriftTask = taskScheduler.runTaskTimer(DriveBackup.getInstance(), () -> startBackupThread(), driftInt, driftInt).getTaskId();
         } else if (config.backupStorage.delay != -1) {
             SchedulerUtil.cancelTasks(backupTasks);
 
