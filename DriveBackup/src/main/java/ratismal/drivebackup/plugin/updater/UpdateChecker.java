@@ -15,7 +15,7 @@ import ratismal.drivebackup.util.Version;
 import static ratismal.drivebackup.config.Localization.intl;
 
 public class UpdateChecker {
-    private static final int BUKKIT_PROJECT_ID = 383461;
+    private static final int CURSE_PROJECT_ID = 383461;
 
     /**
      * How often to check for updates, in seconds
@@ -88,7 +88,7 @@ public class UpdateChecker {
 
     public Version getLatest() throws Exception {
         Request request = new Request.Builder()
-            .url("https://api.curseforge.com/servermods/files?projectids=" + BUKKIT_PROJECT_ID)
+            .url("https://api.curseforge.com/servermods/files?projectids=" + CURSE_PROJECT_ID)
             .build();
 
         Response response = DriveBackup.httpClient.newCall(request).execute();
