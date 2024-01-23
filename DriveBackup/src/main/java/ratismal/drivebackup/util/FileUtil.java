@@ -45,6 +45,10 @@ public class FileUtil {
         TreeMap<Long, File> backupList = new TreeMap<>();
         String path = new File(ConfigParser.getConfig().backupStorage.localDirectory).getAbsolutePath() + "/" + location;
         File[] files = new File(path).listFiles();
+        
+        if (files == null) {
+            return backupList;
+        }
 
         for (File file : files) {
             if (file.getName().endsWith(".zip")) {
