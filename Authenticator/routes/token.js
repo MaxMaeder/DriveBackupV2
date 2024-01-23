@@ -1,7 +1,9 @@
 const { db } = require('../app.js');
 const express = require('express');
 const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
-let router = express.Router();
+const router = express.Router();
+
+const AUTH_URL = "https://auth.drivebackupv2.com";
 
 router.post('/', async function (req, res) {
   if (req.body.device_code === undefined || req.body.user_code === undefined) return res.send({
@@ -9,7 +11,7 @@ router.post('/', async function (req, res) {
     msg: "missing_params"
   });
 
-  var docRef = await db.collection('pins').doc(req.body.user_code.toUpperCase()).get();
+  const docRef = await db.collection('pins').doc(req.body.user_code.toUpperCase()).get();
 
   // since /pin response is sent before doc creation (for speeeed) clients could potentially poll before the doc exists
   if (!docRef.exists) return res.send({
@@ -17,7 +19,7 @@ router.post('/', async function (req, res) {
     msg: "code_not_authenticated"
   });
 
-  var doc = docRef.data();
+  const doc = docRef.data();
 
   if (doc.auth_code === undefined) return res.send({
     success: false,
@@ -32,7 +34,7 @@ router.post('/', async function (req, res) {
           client_secret: process.env.GOOGLE_SECRET,
           code: doc.auth_code,
           grant_type: 'authorization_code',
-          redirect_uri: 'https://drivebackup.web.app/callback'
+          redirect_uri: `${AUTH_URL}/callback`
         })
       })
       .then(res => res.json())
@@ -57,7 +59,7 @@ router.post('/', async function (req, res) {
           'client_secret': process.env.DROPBOX_SECRET,
           'code': doc.auth_code,
           'grant_type': 'authorization_code',
-          'redirect_uri': 'https://drivebackup.web.app/callback'
+          'redirect_uri': `${AUTH_URL}/callback`
         })
       })
       .then(res => res.json())
@@ -82,7 +84,7 @@ router.post('/', async function (req, res) {
           'client_secret': process.env.ONEDRIVE_SECRET,
           'code': doc.auth_code,
           'grant_type': 'authorization_code',
-          'redirect_uri': 'https://drivebackup.web.app/callback'
+          'redirect_uri': `${AUTH_URL}/callback`
         })
       })
       .then(res => res.json())

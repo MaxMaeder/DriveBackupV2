@@ -1,6 +1,6 @@
 const { db } = require('../app.js');
-var express = require('express');
-var router = express.Router();
+const express = require('express');
+const router = express.Router();
 
 router.get('/', async function (req, res) {
   if (req.query.state === undefined || req.query.code === undefined || req.query.error != undefined) return res.sendFile(process.cwd() + '/views/fail.html');

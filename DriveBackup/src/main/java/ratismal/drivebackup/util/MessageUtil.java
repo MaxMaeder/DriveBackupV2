@@ -69,6 +69,9 @@ public class MessageUtil {
      */
     public MessageUtil mmText(String text) {
         Config config = ConfigParser.getConfig();
+        if (config == null) {
+            config = ConfigParser.defaultConfig();
+        }
         TextColor color = LegacyComponentSerializer.legacyAmpersand().deserialize(config.messages.defaultColor).color();
         if (color == null) {
             color = NamedTextColor.DARK_AQUA;

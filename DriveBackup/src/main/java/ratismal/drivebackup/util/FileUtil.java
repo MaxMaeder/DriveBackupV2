@@ -53,14 +53,14 @@ public class FileUtil {
 
                 String fileName = file.getName();
 
-                try {
-                    ZonedDateTime date = formatter.parse(fileName);
-                    backupList.put(date.toEpochSecond(), file);
-                } catch (Exception e) {
+                // try {
+                //     ZonedDateTime date = formatter.parse(fileName);
+                //     backupList.put(date.toEpochSecond(), file);
+                // } catch (Exception e) {
                     // Fallback to using file creation date if the file name doesn't match the format
                     backupList.put((file.lastModified() / 1000), file);
-                    logger.log(intl("local-backup-date-format-invalid"), "file-name", fileName);
-                }
+                //     logger.log(intl("local-backup-date-format-invalid"), "file-name", fileName);
+                // }
             }
         }
 
@@ -124,7 +124,18 @@ public class FileUtil {
                 intl("local-backup-in-backup-folder"), 
                 "files-in-backup-folder-count", String.valueOf(filesInBackupFolder));
         }
+        // Get the name of the last folder in the location path
+        String lastFolderName = "";
+        int lastSeparatorIndex = location.lastIndexOf('/');
+        if (lastSeparatorIndex != -1) {
+            lastFolderName = location.substring(lastSeparatorIndex + 1);
+        }
 
+        // Replace the placeholder %NAME with the last folder name in the file name
+        String placeholder = "%NAME";
+        if (fileName.contains(placeholder)) {
+            fileName = fileName.replace(placeholder, lastFolderName);
+        }
         zipIt(location, path.getPath() + "/" + fileName, fileList);
     }
 
