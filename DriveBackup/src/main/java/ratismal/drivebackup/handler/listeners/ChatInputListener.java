@@ -5,7 +5,6 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.server.ServerCommandEvent;
-
 import org.jetbrains.annotations.NotNull;
 import ratismal.drivebackup.UploadThread.UploadLogger;
 import ratismal.drivebackup.plugin.DriveBackup;
@@ -16,32 +15,36 @@ public class ChatInputListener implements Listener {
 
     @EventHandler
     public void onPlayerChat(@NotNull AsyncPlayerChatEvent event) {
-        if (DriveBackup.chatInputPlayers.contains(event.getPlayer())) {
-            UploadLogger uploadLogger = new UploadLogger() {
-                @Override
-                public void log(String input, String... placeholders) {
-                    MessageUtil.Builder().mmText(input, placeholders).to(event.getPlayer()).send();
-                }
-            };
+        if (handleInput(event.getPlayer(), event.getMessage())) {
             event.setCancelled(true);
-            new GoogleDriveUploader(uploadLogger).finalizeSharedDrives(event.getPlayer(), event.getMessage());
-            DriveBackup.chatInputPlayers.remove(event.getPlayer());
         }
     }
 
     @EventHandler
     public void onCommand(@NotNull ServerCommandEvent event) {
-        if (DriveBackup.chatInputPlayers.contains(event.getSender())) {
+        if (handleInput(event.getSender(), event.getCommand())) {
+            event.setCancelled(true);
+        }
+    }
+    
+    /**
+     * Handles input from a player
+     * @param sender the player who sent the input
+     * @param input the input
+     * @return whether the input was handled
+     */
+    private boolean handleInput(CommandSender sender, String input) {
+        if (DriveBackup.chatInputPlayers.contains(sender)) {
             UploadLogger uploadLogger = new UploadLogger() {
                 @Override
                 public void log(String input, String... placeholders) {
-                    MessageUtil.Builder().mmText(input, placeholders).to(event.getSender()).send();
+                    MessageUtil.Builder().mmText(input, placeholders).to(sender).send();
                 }
             };
-            event.setCancelled(true);
-            new GoogleDriveUploader(uploadLogger).finalizeSharedDrives(event.getSender(), event.getCommand());
-            DriveBackup.chatInputPlayers.remove(event.getSender());
+            new GoogleDriveUploader(uploadLogger).finalizeSharedDrives(sender, input);
+            DriveBackup.chatInputPlayers.remove(sender);
+            return true;
         }
+        return false;
     }
-
 }
