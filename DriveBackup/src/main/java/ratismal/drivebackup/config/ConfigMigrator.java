@@ -18,9 +18,9 @@ public class ConfigMigrator {
     // may change the intl file. Therefore, we just hardcode any messages
     private static final String MIGRATING_MESSAGE = "Automatically migrating config to version <version>";
 
-    FileConfiguration config;
-    FileConfiguration localizationConfig;
-    List<CommandSender> initiators;
+    private FileConfiguration config;
+    private FileConfiguration localizationConfig;
+    private List<CommandSender> initiators;
 
     public ConfigMigrator(FileConfiguration config, FileConfiguration localizationConfig,
             List<CommandSender> initiators) {
@@ -30,9 +30,7 @@ public class ConfigMigrator {
     }
 
     public void migrate() {
-        Logger logger = (input, placeholders) -> {
-            MessageUtil.Builder().mmText(input, placeholders).to(initiators).send();
-        };
+        Logger logger = (input, placeholders) -> MessageUtil.Builder().mmText(input, placeholders).to(initiators).send();
 
         if (config.isSet("version") && config.getInt("version") >= Config.VERSION) {
             return;

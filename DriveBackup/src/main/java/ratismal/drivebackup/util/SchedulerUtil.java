@@ -6,15 +6,18 @@ import java.time.temporal.TemporalAccessor;
 import java.util.List;
 
 import org.bukkit.Bukkit;
+import org.jetbrains.annotations.NotNull;
 
 public class SchedulerUtil {
     private static final int TICKS_PER_SECOND = 20;
+    
+    private SchedulerUtil() {}
 
     /**
      * Cancels the specified tasks
      * @param taskList an List of the IDs of the tasks
      */
-    public static void cancelTasks(List<Integer> taskList) {
+    public static void cancelTasks(@NotNull List<Integer> taskList) {
         for (int task : taskList) {
             Bukkit.getScheduler().cancelTask(task);
         }
@@ -36,6 +39,7 @@ public class SchedulerUtil {
      * @param time the time, as a String
      * @return the parsed time
      */
+    @NotNull
     public static TemporalAccessor parseTime(String time) throws IllegalArgumentException {
         DateTimeFormatter formatter = new DateTimeFormatterBuilder()
             .appendOptional(DateTimeFormatter.ofPattern("kk:mm"))

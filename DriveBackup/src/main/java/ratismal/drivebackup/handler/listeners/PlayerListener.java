@@ -18,7 +18,7 @@ public class PlayerListener implements Listener {
     public void onPlayerJoin(PlayerJoinEvent event) {
         if (!autoBackupsActive) {
             MessageUtil.Builder().mmText(Localization.intl("player-join-backup-enable")).send();
-            autoBackupsActive = true;
+            PlayerListener.autoBackupsActive = true;
         }
         Player player = event.getPlayer();
         if (UpdateChecker.isUpdateAvailable() && player.hasPermission("drivebackup.linkAccounts")) {

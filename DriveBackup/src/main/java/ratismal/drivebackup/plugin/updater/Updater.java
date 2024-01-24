@@ -1,18 +1,15 @@
 package ratismal.drivebackup.plugin.updater;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.net.UnknownHostException;
-
-import org.bukkit.command.CommandSender;
-
 import okhttp3.Request;
 import okhttp3.Response;
+import org.bukkit.command.CommandSender;
 import ratismal.drivebackup.plugin.DriveBackup;
 import ratismal.drivebackup.util.Logger;
 import ratismal.drivebackup.util.MessageUtil;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 
 import static ratismal.drivebackup.config.Localization.intl;
 
@@ -38,24 +35,23 @@ public class Updater {
     /**
      * Download the latest plugin jar and save it to the plugins folder.
      */
-    private void downloadFile() throws FileNotFoundException, UnknownHostException, IOException  {
+    private void downloadFile() throws IOException  {
         File outputPath = new File(this.updateFolder, "DriveBackupV2.jar.temp");
 
         Request request = new Request.Builder().url(UpdateChecker.getLatestDownloadUrl()).build();
-        Response response = DriveBackup.httpClient.newCall(request).execute();
-        if (!response.isSuccessful()) {
-            throw new IOException("Failed to download file: " + response);
+        try (Response response = DriveBackup.httpClient.newCall(request).execute()) {
+            if (!response.isSuccessful()) {
+                throw new IOException("Failed to download file: " + response);
+            }
+            try (FileOutputStream fos = new FileOutputStream(outputPath)) {
+                fos.write(response.body().bytes());
+            }
         }
-        FileOutputStream fos = new FileOutputStream(outputPath);
-        fos.write(response.body().bytes());
-        fos.close();
         outputPath.renameTo(new File(this.file.getAbsolutePath()));
     }
 
     public void runUpdater(CommandSender initiator) {
-        Logger logger = (input, placeholders) -> {
-            MessageUtil.Builder().mmText(input, placeholders).to(initiator).send();
-        };
+        Logger logger = (input, placeholders) -> MessageUtil.Builder().mmText(input, placeholders).to(initiator).send();
 
         if (UpdateChecker.isUpdateAvailable()) {
             if (UpdateChecker.getLatestDownloadUrl() != null) {

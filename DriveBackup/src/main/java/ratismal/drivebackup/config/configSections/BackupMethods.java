@@ -4,8 +4,12 @@ import com.google.api.client.util.Strings;
 
 import org.bukkit.configuration.file.FileConfiguration;
 
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 import ratismal.drivebackup.config.ConfigParser;
 import ratismal.drivebackup.util.Logger;
+
+import java.nio.file.InvalidPathException;
 
 import static ratismal.drivebackup.config.Localization.intl;
 
@@ -124,7 +128,9 @@ public class BackupMethods {
         this.ftp = ftp;
     }
 
-    public static BackupMethods parse(FileConfiguration config, Logger logger) {
+    @NotNull
+    @Contract ("_, _ -> new")
+    public static BackupMethods parse(@NotNull FileConfiguration config, Logger logger) {
         GoogleDriveBackupMethod googleDriveMethod = new GoogleDriveBackupMethod(
             config.getBoolean("googledrive.enabled"),
             config.getString("googledrive.shared-drive-id").trim()
@@ -161,7 +167,7 @@ public class BackupMethods {
         if (!Strings.isNullOrEmpty(config.getString("ftp.sftp-public-key")) && ftpEnabled) {
             try {
                 publicKey = ConfigParser.verifyPath(config.getString("ftp.sftp-public-key"));
-            } catch (Exception e) {
+            } catch (InvalidPathException e) {
                 logger.log(intl("ftp-method-pubic-key-invalid"));
             }
         }
@@ -170,7 +176,7 @@ public class BackupMethods {
         if (!Strings.isNullOrEmpty(config.getString("ftp.base-dir")) && ftpEnabled) {
             try {
                 baseDir = ConfigParser.verifyPath(config.getString("ftp.base-dir"));
-            } catch (Exception e) {
+            } catch (InvalidPathException e) {
                 logger.log(intl("ftp-method-passphrase-invalid"));
             }
         }

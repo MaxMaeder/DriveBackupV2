@@ -9,6 +9,7 @@ import java.util.UUID;
 
 import com.github.sardine.impl.SardineException;
 
+import org.jetbrains.annotations.NotNull;
 import ratismal.drivebackup.UploadThread.UploadLogger;
 import ratismal.drivebackup.config.configSections.BackupMethods.NextcloudBackupMethod;
 import ratismal.drivebackup.util.ChunkedFileInputStream;
@@ -35,8 +36,8 @@ public class NextcloudUploader extends WebDAVUploader {
 
     private void findUploadDir() throws IOException {
         URL url = new URL(nextcloud.hostname);
-        String host = url.toString();
-        host = host.substring(0, host.indexOf(url.getPath()));
+        StringBuilder host = new StringBuilder(url.toString());
+        host = new StringBuilder(host.substring(0, host.indexOf(url.getPath())));
 
         if (sardine.exists(host + "/remote.php/dav/uploads/" + nextcloud.username)) {
             magic_upload_dir = host + "/remote.php/dav/uploads/" + nextcloud.username;
@@ -51,7 +52,7 @@ public class NextcloudUploader extends WebDAVUploader {
         String[] exploded = url.getPath().split("/");
 
         for (int i = 0; i < Array.getLength(exploded); i++) {
-            host += "/" + exploded[i];
+            host.append("/").append(exploded[i]);
             if (sardine.exists(host + "/uploads/" + nextcloud.username)) {
                 magic_upload_dir = host + "/uploads/" + nextcloud.username;
                 return;
@@ -60,7 +61,7 @@ public class NextcloudUploader extends WebDAVUploader {
     }
 
     @Override
-    public void realUploadFile(File file, URL target) throws IOException {
+    public void realUploadFile(@NotNull File file, URL target) throws IOException {
         int chunksize = nextcloud.chunkSize;
         if (file.length() > chunksize && magic_upload_dir != null) {
             String tempdir = magic_upload_dir + "/" + UUID.randomUUID().toString();

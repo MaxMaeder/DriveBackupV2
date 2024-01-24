@@ -1,5 +1,7 @@
 package ratismal.drivebackup.util;
 
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 import ratismal.drivebackup.UploadThread.UploadLogger;
 import ratismal.drivebackup.config.ConfigParser;
 import ratismal.drivebackup.config.ConfigParser.Config;
@@ -13,6 +15,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
 import java.nio.file.Paths;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -49,7 +52,7 @@ public class FileUtil {
         for (File file : files) {
             if (file.getName().endsWith(".zip")) {
 
-                String fileName = file.getName();
+                //String fileName = file.getName();
 
                 // try {
                 //     ZonedDateTime date = formatter.parse(fileName);
@@ -72,22 +75,22 @@ public class FileUtil {
      * @param blacklistGlobs a list of glob patterns of files/folders to not include in the backup
      * @throws Exception
      */
-    public void makeBackup(String location, LocalDateTimeFormatter formatter, List<String> blacklistGlobs) throws Exception {
+    public void makeBackup(@NotNull String location, LocalDateTimeFormatter formatter, List<String> blacklistGlobs) throws Exception {
         Config config = ConfigParser.getConfig();
 
         if (location.charAt(0) == '/') {
-            throw new IllegalArgumentException(); 
+            throw new IllegalArgumentException("Location cannot start with a slash");
         }
 
         ZonedDateTime now = ZonedDateTime.now(config.advanced.dateTimezone);
         String fileName = formatter.format(now);
 
-        String subfolderName = location;
-        if (isBaseFolder(subfolderName)) {
-            subfolderName = "root";
+        String subFolderName = location;
+        if (isBaseFolder(subFolderName)) {
+            subFolderName = "root";
         }
 
-        File path = new File(escapeBackupLocation(config.backupStorage.localDirectory + "/" + subfolderName));
+        File path = new File(escapeBackupLocation(config.backupStorage.localDirectory + "/" + subFolderName));
         if (!path.exists()) {
             path.mkdirs();
         }
@@ -273,6 +276,7 @@ public class FileUtil {
      * @param inputFolderPath The path of the folder to create the zip from
      * @throws Exception
      */
+    @NotNull
     private BackupFileList generateFileList(String inputFolderPath, List<BlacklistEntry> blacklist) throws Exception {
         BackupFileList fileList = new BackupFileList(blacklist);
 
@@ -288,12 +292,13 @@ public class FileUtil {
      * @param fileList the list of files to add the specified file or folder to
      * @throws Exception
      */
-    private void generateFileList(File file, String inputFolderPath, BackupFileList fileList) throws Exception {
-
-        if (file.isFile()) {
+    private void generateFileList(@NotNull File file, String inputFolderPath, BackupFileList fileList) throws Exception {
+        
+        BasicFileAttributes fileAttributes = Files.readAttributes(file.toPath(), BasicFileAttributes.class);
+        if (fileAttributes.isRegularFile()) {
             // Verify not backing up previous backups
             if (file.getCanonicalPath().startsWith(new File(ConfigParser.getConfig().backupStorage.localDirectory).getCanonicalPath())) {
-                fileList.incFilesInBackupFolder();;
+                fileList.incFilesInBackupFolder();
 
                 return;
             }
@@ -309,7 +314,7 @@ public class FileUtil {
             }
 
             fileList.appendToList(relativePath.toString());
-        } else if (file.isDirectory()) {
+        } else if (fileAttributes.isDirectory()) {
             for (String filename : file.list()) {
                 generateFileList(new File(file, filename), inputFolderPath, fileList);
             }
@@ -326,7 +331,9 @@ public class FileUtil {
      * @param location the unescaped location
      * @return the escaped location
      */
-    private static String escapeBackupLocation(String location) {
+    @NotNull
+    @Contract (pure = true)
+    private static String escapeBackupLocation(@NotNull String location) {
         return location.replace("../", "");
     }
 
@@ -364,7 +371,7 @@ public class FileUtil {
      * @param folder the folder to be deleted
      * @return whether deleting the folder was successful
      */
-    public static boolean deleteFolder(File folder) {
+    public static boolean deleteFolder(@NotNull File folder) {
         File[] files = folder.listFiles();
         if (files != null) {
             for (File file : files) {

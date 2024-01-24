@@ -1,10 +1,13 @@
 package ratismal.drivebackup.config.configSections;
 
+import java.time.DateTimeException;
 import java.time.ZoneOffset;
 import java.util.Locale;
 
 import org.bukkit.configuration.file.FileConfiguration;
 
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 import ratismal.drivebackup.util.Logger;
 
 import static ratismal.drivebackup.config.Localization.intl;
@@ -37,7 +40,9 @@ public class Advanced {
         this.fileSeparator = fileSeparator;
     }
 
-    public static Advanced parse(FileConfiguration config, Logger logger) {
+    @NotNull
+    @Contract ("_, _ -> new")
+    public static Advanced parse(@NotNull FileConfiguration config, Logger logger) {
         boolean metrics = config.getBoolean("advanced.metrics");
         boolean updateCheck = config.getBoolean("advanced.update-check");
         boolean suppressErrors = config.getBoolean("advanced.suppress-errors");
@@ -47,9 +52,10 @@ public class Advanced {
         ZoneOffset dateTimezone;
         try {
             dateTimezone = ZoneOffset.of(config.getString("advanced.date-timezone"));
-        } catch(Exception e) {
+        } catch(DateTimeException e) {
             logger.log(intl("date-format-invalid"));
-            dateTimezone = ZoneOffset.of("Z"); //Fallback to UTC
+            //Fallback to UTC
+            dateTimezone = ZoneOffset.of("Z");
         }
 
         String fileSeparator = config.getString("advanced.ftp-file-separator");

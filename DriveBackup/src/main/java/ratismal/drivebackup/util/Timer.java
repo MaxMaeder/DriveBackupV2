@@ -1,5 +1,7 @@
 package ratismal.drivebackup.util;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.io.File;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
@@ -45,13 +47,13 @@ public class Timer {
      * @param file file that was uploaded
      * @return message
      */
-    public String getUploadTimeMessage(File file) {
+    public String getUploadTimeMessage(@NotNull File file) {
         DecimalFormat df = new DecimalFormat("#.##");
         df.setDecimalFormatSymbols(DecimalFormatSymbols.getInstance(Locale.ENGLISH));
 
         double difference = getTime();
         double length = difference / 1000;
-        double speed = (file.length() / 1024) / length;
+        double speed = ( ((double) file.length()) / 1024) / length;
         
         return intl("file-upload-message")
             .replace("<length>", df.format(length))

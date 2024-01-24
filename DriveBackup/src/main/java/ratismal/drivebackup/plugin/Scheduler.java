@@ -9,6 +9,7 @@ import java.time.temporal.ChronoField;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
+import java.util.List;
 
 import org.bukkit.Bukkit;
 import org.bukkit.scheduler.BukkitScheduler;
@@ -120,12 +121,7 @@ public class Scheduler {
             }
 
             long driftInt = SchedulerUtil.sToTicks(SCHEDULE_DRIFT_CORRECTION_INTERVAL);
-            scheduleDriftTask = taskScheduler.runTaskTimer(DriveBackup.getInstance(), new Runnable() {
-                @Override
-                public void run() {
-                    startBackupThread();
-                }
-            }, driftInt, driftInt).getTaskId();
+            scheduleDriftTask = taskScheduler.runTaskTimer(DriveBackup.getInstance(), () -> startBackupThread(), driftInt, driftInt).getTaskId();
         } else if (config.backupStorage.delay != -1) {
             SchedulerUtil.cancelTasks(backupTasks);
 
@@ -163,7 +159,7 @@ public class Scheduler {
      * Gets a list of Dates representing each time a scheduled backup will occur
      * @return the ArrayList of {@code ZonedDateTime} objects
      */
-    public static ArrayList<ZonedDateTime> getBackupDatesList() {
+    public static List<ZonedDateTime> getBackupDatesList() {
         return backupDatesList;
     }
 }

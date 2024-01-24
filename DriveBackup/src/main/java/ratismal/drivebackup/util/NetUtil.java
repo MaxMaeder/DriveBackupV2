@@ -6,11 +6,9 @@ import static ratismal.drivebackup.config.Localization.intl;
 
 public class NetUtil {
     public static void catchException(Exception exception, String domain) {
-        Logger logger = (input, placeholders) -> {
-            MessageUtil.Builder()
-                .mmText(input, placeholders)
-                .send();
-        };
+        Logger logger = (input, placeholders) -> MessageUtil.Builder()
+            .mmText(input, placeholders)
+            .send();
 
         catchException(exception, domain, logger);
     }

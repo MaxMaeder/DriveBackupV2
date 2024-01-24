@@ -5,6 +5,8 @@ import java.util.zip.Deflater;
 import org.bukkit.configuration.Configuration;
 import org.bukkit.configuration.file.FileConfiguration;
 
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 import ratismal.drivebackup.util.Logger;
 
 import static ratismal.drivebackup.config.Localization.intl;
@@ -43,7 +45,9 @@ public class BackupStorage {
         this.remoteDirectory = remoteDirectory;
     }
 
-    public static BackupStorage parse(FileConfiguration config, Logger logger) {
+    @NotNull
+    @Contract ("_, _ -> new")
+    public static BackupStorage parse(@NotNull FileConfiguration config, Logger logger) {
         Configuration defaultConfig = config.getDefaults();
 
         long delay = config.getLong("delay");
@@ -90,4 +94,4 @@ public class BackupStorage {
 
         return new BackupStorage(delay, threadPriority, keepCount, localKeepCount, zipCompression, backupsRequirePlayers, disableSavingDuringBackups, localDirectory, remoteDirectory);
     }
-} 
+}

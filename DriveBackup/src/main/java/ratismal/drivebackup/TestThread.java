@@ -6,6 +6,7 @@ import java.util.Random;
 
 import org.bukkit.command.CommandSender;
 
+import org.jetbrains.annotations.NotNull;
 import ratismal.drivebackup.uploaders.Uploader;
 import ratismal.drivebackup.uploaders.dropbox.DropboxUploader;
 import ratismal.drivebackup.uploaders.ftp.FTPUploader;
@@ -99,7 +100,7 @@ public class TestThread implements Runnable {
      * @param testFileSize the size (in bytes) of the file
      * @param method name of the upload method to test
      */
-    private void testUploadMethod(String testFileName, int testFileSize, String method) throws Exception {
+    private void testUploadMethod(String testFileName, int testFileSize, @NotNull String method) throws Exception {
         Config config = ConfigParser.getConfig();
         Uploader uploadMethod = null;
         
@@ -194,7 +195,7 @@ public class TestThread implements Runnable {
         uploadMethod.close();
     }
 
-    private void sendMethodDisabled(UploadLogger logger, String methodName) {
+    private void sendMethodDisabled(@NotNull UploadLogger logger, String methodName) {
         logger.log(
             intl("test-method-not-enabled"), 
             "upload-method", methodName);

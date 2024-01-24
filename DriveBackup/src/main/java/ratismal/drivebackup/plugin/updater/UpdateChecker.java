@@ -15,7 +15,7 @@ import ratismal.drivebackup.util.Version;
 import static ratismal.drivebackup.config.Localization.intl;
 
 public class UpdateChecker {
-    private static final int BUKKIT_PROJECT_ID = 383461;
+    private static final int CURSE_PROJECT_ID = 383461;
 
     /**
      * How often to check for updates, in seconds
@@ -33,40 +33,35 @@ public class UpdateChecker {
         UpdateChecker checker = new UpdateChecker();
 
         if (ConfigParser.getConfig().advanced.updateCheckEnabled) {
-            plugin.getServer().getScheduler().runTaskTimerAsynchronously(plugin, new Runnable() {
-                @Override
-                public void run() {
-                    Logger logger = (input, placeholders) -> {
-                        MessageUtil.Builder().mmText(input, placeholders).send();
-                    };
+            plugin.getServer().getScheduler().runTaskTimerAsynchronously(plugin, () -> {
+                Logger logger = (input, placeholders) -> MessageUtil.Builder().mmText(input, placeholders).send();
 
-                    try {
-                        if (!hasSentStartMessage) {
-                            logger.log(intl("update-checker-started"));
-                            hasSentStartMessage = true;
-                        }
-
-                        //get versions
-                        currentVersion = checker.getCurrent();
-                        latestVersion = checker.getLatest();
-
-                        //check if current version is outdated
-                        if (latestVersion.isAfter(currentVersion)) {
-                            logger.log(
-                                intl("update-checker-new-release"),
-                                "latest-version", latestVersion.toString(),
-                                "current-version", currentVersion.toString());
-                        } else if (currentVersion.isAfter(latestVersion)) {
-                            logger.log(
-                                intl("update-checker-unsupported-release"),
-                                "latest-version", latestVersion.toString(),
-                                "current-version", currentVersion.toString());
-                        }
-                    } catch (Exception e) {
-                        NetUtil.catchException(e, "dev.bukkit.org", logger);
-                        logger.log(intl("update-checker-failed"));
-                        MessageUtil.sendConsoleException(e);
+                try {
+                    if (!hasSentStartMessage) {
+                        logger.log(intl("update-checker-started"));
+                        hasSentStartMessage = true;
                     }
+
+                    //get versions
+                    currentVersion = checker.getCurrent();
+                    latestVersion = checker.getLatest();
+
+                    //check if current version is outdated
+                    if (latestVersion.isAfter(currentVersion)) {
+                        logger.log(
+                            intl("update-checker-new-release"),
+                            "latest-version", latestVersion.toString(),
+                            "current-version", currentVersion.toString());
+                    } else if (currentVersion.isAfter(latestVersion)) {
+                        logger.log(
+                            intl("update-checker-unsupported-release"),
+                            "latest-version", latestVersion.toString(),
+                            "current-version", currentVersion.toString());
+                    }
+                } catch (Exception e) {
+                    NetUtil.catchException(e, "dev.bukkit.org", logger);
+                    logger.log(intl("update-checker-failed"));
+                    MessageUtil.sendConsoleException(e);
                 }
             }, 0, SchedulerUtil.sToTicks(UPDATE_CHECK_INTERVAL));
         }
@@ -77,7 +72,8 @@ public class UpdateChecker {
      * @return whether an update is available
      */
     public static boolean isUpdateAvailable() {
-        if (latestVersion != null) return latestVersion.isAfter(currentVersion);
+        if (latestVersion != null)
+            return latestVersion.isAfter(currentVersion);
         return false;
     }
 
@@ -92,7 +88,7 @@ public class UpdateChecker {
 
     public Version getLatest() throws Exception {
         Request request = new Request.Builder()
-            .url("https://api.curseforge.com/servermods/files?projectids=" + BUKKIT_PROJECT_ID)
+            .url("https://api.curseforge.com/servermods/files?projectids=" + CURSE_PROJECT_ID)
             .build();
 
         Response response = DriveBackup.httpClient.newCall(request).execute();
@@ -104,7 +100,7 @@ public class UpdateChecker {
         }
 
         String versionTitle = pluginVersions.getJSONObject(pluginVersions.length() - 1).getString("name").replace("DriveBackupV2-", "").trim();
-        latestDownloadUrl = pluginVersions.getJSONObject(pluginVersions.length() - 1).getString("downloadUrl");
+        UpdateChecker.latestDownloadUrl = pluginVersions.getJSONObject(pluginVersions.length() - 1).getString("downloadUrl");
         return Version.parse(versionTitle);
     }
 }

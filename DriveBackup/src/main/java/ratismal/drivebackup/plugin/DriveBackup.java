@@ -54,8 +54,9 @@ public class DriveBackup extends JavaPlugin {
     /**
      * What to do when plugin is enabled (init)
      */
+    @Override
     public void onEnable() {
-        plugin = this;
+        DriveBackup.plugin = this;
 
         DriveBackup.httpClient = new OkHttpClient.Builder()
             .connectTimeout(1, TimeUnit.MINUTES)
@@ -69,17 +70,17 @@ public class DriveBackup extends JavaPlugin {
         List<CommandSender> configPlayers = Permissions.getPlayersWithPerm(Permissions.RELOAD_CONFIG);
 
         saveDefaultConfig();
-
-        localizationConfig = new CustomConfig("intl.yml");
-        localizationConfig.saveDefaultConfig();
-
-        localization = new Localization(localizationConfig.getConfig());
+    
+        DriveBackup.localizationConfig = new CustomConfig("intl.yml");
+        DriveBackup.localizationConfig.saveDefaultConfig();
+    
+        DriveBackup.localization = new Localization(localizationConfig.getConfig());
 
         ConfigMigrator configMigrator = new ConfigMigrator(getConfig(), localizationConfig.getConfig(), configPlayers);
         configMigrator.migrate();
-
-        config = new ConfigParser(getConfig());
-        config.reload(Permissions.getPlayersWithPerm(Permissions.RELOAD_CONFIG));
+    
+        DriveBackup.config = new ConfigParser(getConfig());
+        DriveBackup.config.reload(Permissions.getPlayersWithPerm(Permissions.RELOAD_CONFIG));
 
         MessageUtil.Builder()
             .to(configPlayers)
@@ -96,14 +97,15 @@ public class DriveBackup extends JavaPlugin {
         Scheduler.startBackupThread();
 
         BstatsMetrics.initMetrics();
-
-        updater = new Updater(this.getFile());
+    
+        DriveBackup.updater = new Updater(this.getFile());
         UpdateChecker.updateCheck();
     }
 
     /**
      * What to do when plugin is disabled
      */
+    @Override
     public void onDisable() {
         Scheduler.stopBackupThread();
 

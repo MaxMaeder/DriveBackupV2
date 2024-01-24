@@ -6,6 +6,8 @@ import java.util.List;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 import ratismal.drivebackup.config.configSections.Advanced;
 import ratismal.drivebackup.config.configSections.BackupList;
 import ratismal.drivebackup.config.configSections.BackupMethods;
@@ -81,9 +83,7 @@ public class ConfigParser {
      * Reloads the plugin's {@code config.yml}
      */
     public void reload(List<CommandSender> initiators) {
-        Logger logger = (input, placeholders) -> {
-            MessageUtil.Builder().mmText(input, placeholders).to(initiators).send();
-        };
+        Logger logger = (input, placeholders) -> MessageUtil.Builder().mmText(input, placeholders).to(initiators).send();
 
         parsedConfig = new Config(
             BackupStorage.parse(config, logger),
@@ -96,6 +96,7 @@ public class ConfigParser {
         );
     }
 
+    @NotNull
     public static Config defaultConfig() {
         FileConfiguration config = DriveBackup.getInstance().getConfig();
         Logger logger = (input, placeholders) -> {};
@@ -111,7 +112,9 @@ public class ConfigParser {
         );
     }
 
-    public static String verifyPath(String path) throws InvalidPathException {
+    @NotNull
+    @Contract ("_ -> param1")
+    public static String verifyPath(@NotNull String path) throws InvalidPathException {
         if (
             path.contains("\\")
         ) {

@@ -2,6 +2,7 @@ package ratismal.drivebackup.util;
 
 import java.io.IOException;
 
+import org.jetbrains.annotations.NotNull;
 import org.json.JSONObject;
 
 import okhttp3.Interceptor;
@@ -16,9 +17,10 @@ public class HttpLogger implements Interceptor {
   private static final MediaType jsonMediaType = MediaType.parse("application/json; charset=utf-8");
 
   @Override
-  public Response intercept(Interceptor.Chain chain) throws IOException {
+  public Response intercept(@NotNull Interceptor.Chain chain) throws IOException {
     Request request = chain.request();
-    if (!ConfigParser.getConfig().advanced.debugEnabled) return chain.proceed(request);
+    if (!ConfigParser.getConfig().advanced.debugEnabled)
+      return chain.proceed(request);
 
     long t1 = System.nanoTime();
     MessageUtil.Builder().text(String.format("Sending request %s", request.url())).toConsole(true).send();

@@ -1,5 +1,8 @@
 package ratismal.drivebackup.util;
 
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
+
 public class Version {
     public final int major;
     public final int minor;
@@ -11,7 +14,9 @@ public class Version {
         this.patch = patch;
     }
 
-    public static Version parse(String version) throws ArrayIndexOutOfBoundsException, NumberFormatException {
+    @NotNull
+    @Contract ("_ -> new")
+    public static Version parse(@NotNull String version) throws ArrayIndexOutOfBoundsException, NumberFormatException {
         String[] splitVersion = version.split("\\.");
 
         return new Version(
@@ -21,7 +26,7 @@ public class Version {
         );
     }
 
-    public boolean isAfter(Version other) {
+    public boolean isAfter(@NotNull Version other) {
         if (major != other.major) {
             return major > other.major;
         }
