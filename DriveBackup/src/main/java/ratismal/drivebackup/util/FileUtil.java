@@ -148,37 +148,43 @@ public class FileUtil {
      * @param formatter the format of the files name
      */
     public void pruneLocalBackups(String location, LocalDateTimeFormatter formatter) {
-        int localKeepCount = ConfigParser.getConfig().backupStorage.localKeepCount;
         location = escapeBackupLocation(location);
-
+        logger.log(intl("local-backup-pruning-start"), "location", location);
+        int localKeepCount = ConfigParser.getConfig().backupStorage.localKeepCount;
         if (localKeepCount != -1) {
             try {
                 TreeMap<Long, File> backupList = getLocalBackups(location, formatter);
-
+                String size = String.valueOf(backupList.size());
+                String keepCount = String.valueOf(localKeepCount);
                 if (backupList.size() > localKeepCount) {
-                    logger.info(
-                        intl("local-backup-limit-reached"),
-                        "backup-count", String.valueOf(backupList.size()),
-                        "backup-limit", String.valueOf(localKeepCount));
+                    logger.info(intl("local-backup-limit-reached"),
+                        "backup-count", size,
+                        "backup-limit", keepCount);
+                } else {
+                    logger.info(intl("local-backup-limit-not-reached"),
+                        "backup-count", size,
+                        "backup-limit", keepCount);
+                    return;
                 }
-                
-
                 while (backupList.size() > localKeepCount) {
                     File fileToDelete = backupList.descendingMap().lastEntry().getValue();
                     long dateOfFile = backupList.descendingMap().lastKey();
-
                     if (!fileToDelete.delete()) {
-                        logger.log(
-                            intl("local-backup-file-failed-to-delete"),
+                        logger.log(intl("local-backup-file-failed-to-delete"),
+                            "local-backup-name", fileToDelete.getName());
+                    } else {
+                        logger.info(intl("local-backup-file-deleted"),
                             "local-backup-name", fileToDelete.getName());
                     }
-                    
                     backupList.remove(dateOfFile);
                 }
+                logger.log(intl("local-backup-pruning-complete"), "location", location);
             } catch (Exception e) {
                 logger.log(intl("local-backup-failed-to-delete"));
                 MessageUtil.sendConsoleException(e);
             }
+        } else {
+            logger.info(intl("local-backup-no-limit"));
         }
     }
 

@@ -75,6 +75,12 @@ backup-already-running: |-
 backup-no-methods: "No backup method is enabled"
 backup-empty-list: "The backup list is empty"
 backup-start: "Creating backups, the server may lag for a little while..."
+backup-local-start: "Creating local backup(s) and compressing..."
+backup-local-complete: "Local backup(s) created and compressed"
+backup-upload-start: "Uploading backup(s)..."
+backup-upload-complete: "Backup(s) uploaded"
+upload-error-check: "Checking for upload errors..."
+upload-no-errors: "No upload errors found"
 external-ftp-backup-start: "Downloading files from a (S)FTP server (<socket-addr>) to include in backup"
 external-ftp-backup-blacklisted: "Didn't include <blacklisted-files> file(s) in the backup from the external (S)FTP server, as they are blacklisted by \"<glob-pattern>\""
 external-ftp-backup-failed: Failed to include files from a (S)FTP server (<socket-addr>) in the backup, please check the server credentials in the <gold>config.yml</gold>
@@ -96,7 +102,8 @@ local-backup-failed-permissions: |-
   Failed to create local backup, plugin does not have permission to write to the required file system location
   Even if local-keep-count is set to zero, the plugin needs to temporarily create a local backup
   Skipping backup location
-backup-location-start: "Doing backups for \"<location>\""
+backup-local-file-start: "Creating local backup for \"<location>\""
+backup-local-file-complete: "Local backup for \"<location>\" created"
 backup-failed-absolute-path: |-
   Failed to create a backup, path to folder to backup is absolute, expected a relative path
   An absolute path can overwrite sensitive files, see the docs for more information
@@ -105,6 +112,8 @@ backup-local-failed: |-
   Failed to create local backup
   Even if local-keep-count is set to zero, the plugin needs to temporarily create a local backup
   Skipping backup location
+backup-file-upload-start: "Starting upload(s) for file \"<file-name>\""
+backup-file-upload-complete: "Upload(s) for file \"<file-name>\" complete"
 backup-method-uploading: "Uploading file to <upload-method>"
 backup-method-limit-reached: "There are <file-count> file(s) for the current backup location in <upload-method> which exceeds the limit of <file-limit>, deleting"
 backup-method-prune-failed: "Failed to delete backups exceeding limit"
@@ -189,3 +198,10 @@ drivebackup-help-command: |-
   <gold><click:run_command:/drivebackup update>/drivebackup update</click></gold> - Updates the plugin if there is a newer version
 list-delimiter: ", "
 list-last-delimiter: " and "
+local-backup-pruning-complete: "Local backup pruning complete for \"<location>\""
+local-backup-no-limit: "Local backup limit is set to 0, skipping pruning"
+local-backup-pruning-start: "Pruning local backups for \"<location>\""
+local-backup-file-deleted: "Deleted local backup \"<local-backup-name>\""
+local-backup-limit-not-reached: "Local backup limit not reached, skipping pruning"
+backup-local-prune-start: "Pruning local backups"
+backup-local-prune-complete: "Local backup pruning complete"
