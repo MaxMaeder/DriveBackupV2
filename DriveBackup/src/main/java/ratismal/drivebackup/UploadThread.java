@@ -364,7 +364,7 @@ public class UploadThread implements Runnable {
             File file = fileUtil
                     .getLocalBackups(location, formatter)
                     .descendingMap().firstEntry().getValue();
-            String name = file.getParent().replace("\\", "/") + "/" + file.getName();
+            String name = file.getParent().replace("\\", "/").replace("./", "") + "/" + file.getName();
             logger.log(intl("backup-file-upload-start"), "file-name", name);
             Timer timer = new Timer();
             for (Uploader uploader : uploaders) {

@@ -116,6 +116,7 @@ public class DropboxUploader implements Uploader {
         long fileSize = file.length();
         MediaType OCTET_STREAM = MediaType.parse("application/octet-stream");
         String folder = type.replaceAll("\\.{1,2}\\/", "");
+        folder = folder.replace(".\\", "");
         try (DataInputStream dis = new DataInputStream(Files.newInputStream(file.toPath()))) {
             if (fileSize > 150000000L /* 150MB */) {
                 // Chunked upload
@@ -222,36 +223,31 @@ public class DropboxUploader implements Uploader {
      */
     private void pruneBackups(String type) throws Exception {
         Config config = ConfigParser.getConfig();
-
+        type = type.replace("./", "");
+        type = type.replace(".\\", "");
         String destination = config.backupStorage.remoteDirectory;
         int fileLimit = config.backupStorage.keepCount;
         if (fileLimit == -1) {
             return;
         }
-
         TreeMap<Instant, String> files = getZipFiles(destination, type);
-
         if (files.size() > fileLimit) {
-            logger.info(
-                intl("backup-method-limit-reached"), 
+            logger.info(intl("backup-method-limit-reached"),
                 "file-count", String.valueOf(files.size()),
                 "upload-method", getName(),
                 "file-limit", String.valueOf(fileLimit));
-
             while (files.size() > fileLimit) {
                 JSONObject deleteJson = new JSONObject();
                 deleteJson.put("path", "/" + destination + "/" + type + "/" + files.firstEntry().getValue());
-                RequestBody deleteRequestBody = RequestBody.create(deleteJson.toString(), MediaType.parse("application/json"));
-
+                RequestBody deleteRequestBody = RequestBody.create(deleteJson.toString(),
+                                                        MediaType.parse("application/json"));
                 Request deleteRequest = new Request.Builder()
                     .addHeader("Authorization", "Bearer " + accessToken)
                     .url("https://api.dropboxapi.com/2/files/delete_v2")
                     .post(deleteRequestBody)
                     .build();
-
                 Response deleteResponse = DriveBackup.httpClient.newCall(deleteRequest).execute();
                 deleteResponse.close();
-                
                 files.remove(files.firstKey());
             }
         }
@@ -265,29 +261,24 @@ public class DropboxUploader implements Uploader {
     @NotNull
     private TreeMap<Instant, String> getZipFiles(String destination, String type) throws Exception {
         TreeMap<Instant, String> files = new TreeMap<>();
-
         JSONObject json = new JSONObject();
         json.put("path", "/" + destination + "/" + type);
         RequestBody requestBody = RequestBody.create(json.toString(), MediaType.parse("application/json"));
-        
         Request request = new Request.Builder()
             .addHeader("Authorization", "Bearer " + accessToken)
             .url("https://api.dropboxapi.com/2/files/list_folder")
             .post(requestBody)
             .build();
-
         Response response = DriveBackup.httpClient.newCall(request).execute();
         JSONObject parsedResponse = new JSONObject(response.body().string());
         JSONArray resFiles = parsedResponse.getJSONArray("entries");
         response.close();
-
         for (int i = 0; i < resFiles.length(); i++) {
             JSONObject file = resFiles.getJSONObject(i);
             if (file.getString("name").endsWith(".zip")) {
                 files.put(Instant.parse(file.getString("server_modified")), file.getString("name"));
             }
         }
-
         return files;
     }
 
