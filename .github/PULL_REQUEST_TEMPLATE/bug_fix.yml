@@ -1,0 +1,45 @@
+name: Bug fix
+about: Create a pull request to help us fix a bug
+title: "[Bug Fix] "
+labels: ["Bug Fix"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping us fix a bug! Please fill out the following form to your best ability to help us understand your bug fix and significantly improve the chance of getting merged.
+  - type: checkboxes
+    attributes:
+      label: Checklist
+      description: |
+        Pull request will be closed if incomplete. These checks are required before submitting and by submitting this pull request you agree that you have actually completed these checks.
+      options:
+        - label: I've verified that this bug is not caused by misconfiguration
+          required: true
+        - label: I've tested this fix and can confirm that it works
+          description: |
+            If you have not tested this fix and can not provide evidence that it works, it may take significantly longer to get merged.
+          required: false
+  - type: textarea
+    attributes:
+      label: What bug does this fix?
+      description: A clear and concise description of what the bug is.
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: How does this fix the bug?
+      description: A clear and concise description of how this bug is fixed.
+    validations:
+      required: true
+  - type: input
+    attributes:
+      label: Does this fix fix or close any open issues?
+      description: |
+        Please link any relevant issues here.
+        Example `Fixes #12` or `Closes #12`
+  - type: textarea
+    attributes:
+      label: Screenshots / Videos / Logs
+      description: |
+        Please provide any relevant screenshots, videos or logs here that show that you have tested this fix.
+        For logs you can upload the log file to https://mclo.gs and paste the link here.
