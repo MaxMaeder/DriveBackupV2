@@ -1,0 +1,37 @@
+name: Feature Addition
+about: Create a pull request to help us add a new feature
+title: "[New Feature] "
+labels: ["New Feature"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping us add a new feature! Please fill out the following form to your best ability to help us understand your feature request and significantly improve the chance of getting merged.
+  - type: checkboxes
+    attributes:
+      label: Checklist
+      description: |
+        These checks are required before submitting and by submitting this pull request you agree that you have actually completed these checks.
+      options:
+        - label: I've tested this new feature and can confirm that it works
+          description: |
+            If you have not tested this new feature and can not provide evidence that it works, it may take significantly longer to get merged.
+          required: false
+  - type: textarea
+    attributes:
+      label: What does this feature do?
+      description: A clear and concise description of what the new feature does.
+    validations:
+      required: true
+  - type: input
+    attributes:
+      label: Does this feature close any open issues?
+      description: |
+        Please link any relevant issues here.
+        Example `Closes #12`
+  - type: textarea
+    attributes:
+      label: Screenshots / Videos / Logs
+      description: |
+        Please provide any relevant screenshots, videos or logs here that show that you have tested this feature.
+        For logs you can upload the log file to https://mclo.gs and paste the link here.
