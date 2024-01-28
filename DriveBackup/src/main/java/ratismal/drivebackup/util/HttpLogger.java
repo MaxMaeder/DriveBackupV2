@@ -17,7 +17,7 @@ public class HttpLogger implements Interceptor {
     private static final MediaType jsonMediaType = MediaType.parse("application/json; charset=utf-8");
     
     @Override
-    public Response intercept(@NotNull Interceptor.Chain chain) throws IOException {
+    public @NotNull Response intercept(@NotNull Interceptor.Chain chain) throws IOException {
         Request request = chain.request();
         if (!ConfigParser.getConfig().advanced.debugEnabled) {
             return chain.proceed(request);
