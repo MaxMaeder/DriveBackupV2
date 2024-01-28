@@ -31,50 +31,49 @@ public class CommandTabComplete implements TabCompleter {
     public List<String> onTabComplete(CommandSender player, @NotNull Command cmd, String label, String[] args) {
         if ("drivebackup".equalsIgnoreCase(cmd.getName())) {
             if (args.length == 1) {
-
                 List<String> commandList = new ArrayList<>(10);
                 commandList.add("v");
                 commandList.add("help");
-                if (player.hasPermission("drivebackup.linkAccounts"))
+                if (player.hasPermission("drivebackup.linkAccounts")) {
                     commandList.add("linkaccount");
-                if (player.hasPermission("drivebackup.reloadConfig"))
+                }
+                if (player.hasPermission("drivebackup.reloadConfig")) {
                     commandList.add("reloadconfig");
-                if (player.hasPermission("drivebackup.reloadConfig"))
+                }
+                if (player.hasPermission("drivebackup.reloadConfig")) {
                     commandList.add("debug");
-                if (player.hasPermission("drivebackup.getBackupStatus"))
+                }
+                if (player.hasPermission("drivebackup.getBackupStatus")) {
                     commandList.add("status");
-                if (player.hasPermission("drivebackup.getNextBackup"))
+                }
+                if (player.hasPermission("drivebackup.getNextBackup")) {
                     commandList.add("nextbackup");
-                if (player.hasPermission("drivebackup.backup"))
+                }
+                if (player.hasPermission("drivebackup.backup")) {
                     commandList.add("backup");
-                if (player.hasPermission("drivebackup.backup"))
+                }
+                if (player.hasPermission("drivebackup.backup")) {
                     commandList.add("test");
-                if (player.hasPermission("drivebackup.backup"))
+                }
+                if (player.hasPermission("drivebackup.backup")) {
                     commandList.add("update");
-                    
+                }
                 return commandList;
             } else if (args[0].equalsIgnoreCase("linkaccount") && args.length == 2) {
-
                 if (!player.hasPermission("drivebackup.linkAccounts")) {
                     return Collections.emptyList();
                 }
-                
                 List<String> commandList = new ArrayList<>(3);
                 commandList.add("googledrive");
                 commandList.add("onedrive");
                 commandList.add("dropbox");
-                
                 return commandList;
             } else if (args[0].equalsIgnoreCase("test") && args.length == 2) {
-
                 if (!player.hasPermission("drivebackup.backup")) {
                     return Collections.emptyList();
                 }
-                
                 List<String> commandList = new ArrayList<>(6);
-
                 BackupMethods methods = ConfigParser.getConfig().backupMethods;
-
                 if (methods.googleDrive.enabled) {
                     commandList.add("googledrive");
                 }
@@ -93,12 +92,9 @@ public class CommandTabComplete implements TabCompleter {
                 if (methods.ftp.enabled) {
                     commandList.add("ftp");
                 }
-                
                 return commandList;
             }
         }
-        
         return Collections.emptyList();
     }
-
 }
