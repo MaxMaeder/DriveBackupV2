@@ -9,7 +9,7 @@ class UploadException extends Exception {
      * detail message.
      */
     public UploadException() {
-        super();
+    
     }
 
     /**
