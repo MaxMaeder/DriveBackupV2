@@ -50,11 +50,9 @@ public class BasicCommands {
                 "server-software", Bukkit.getName(),
                 "server-version", Bukkit.getVersion()
                 );
-
         if (UpdateChecker.isUpdateAvailable()) {
             builder.mmText(intl("drivebackup-version-update"));
         }
-
         builder
             .to(player)
             .toConsole(false)
@@ -83,46 +81,36 @@ public class BasicCommands {
      */
     public static void sendBriefBackupList(CommandSender player) {
         Config config = ConfigParser.getConfig();
-
         Builder locationMessage = Component.text();
         List<String> backupLocations = new ArrayList<>();
-
         for (BackupListEntry entry : config.backupList.list) {
             backupLocations.add(entry.location.toString());
         }
-
         if (config.externalBackups.sources.length > 0) {
             backupLocations.add(intl("brief-backup-list-external-backups"));
         }
-
         if (backupLocations.isEmpty()) {
             locationMessage.append(
                 MiniMessage.miniMessage().deserialize(intl("brief-backup-list-empty")));
-
         } else {
             for (int i = 0; i < backupLocations.size(); i++) {
-    
                 String linkWord = null;
                 if (i == backupLocations.size() - 1) {
                     linkWord = intl("list-last-delimiter");
                 } else if (i != 0) {
                     linkWord = intl("list-delimiter");
                 }
-    
                 if (linkWord != null) {
                     locationMessage.append(
                         Component.text(linkWord)
                         .color(NamedTextColor.DARK_AQUA));
                 }
-    
                 locationMessage.append(
                     Component.text(backupLocations.get(i))
                     .color(NamedTextColor.GOLD));
             }
         }
-
         MessageUtil.Builder().mmText(intl("brief-backup-list"), "list", locationMessage.build()).toConsole(false).to(player).send();
-
         MessageUtil.Builder().mmText(intl("brief-backup-list-help")).toConsole(false).to(player).send();
     }
 
