@@ -135,15 +135,12 @@ public class BackupMethods {
             config.getBoolean("googledrive.enabled"),
             config.getString("googledrive.shared-drive-id").trim()
             );
-
         OneDriveBackupMethod oneDriveMethod = new OneDriveBackupMethod(
             config.getBoolean("onedrive.enabled")
             );
-
         DropboxBackupMethod dropboxMethod = new DropboxBackupMethod(
             config.getBoolean("dropbox.enabled")
             );
-
         WebDAVBackupMethod webdavMethod = new WebDAVBackupMethod(
             config.getBoolean("webdav.enabled"), 
             config.getString("webdav.hostname"),
@@ -151,7 +148,6 @@ public class BackupMethods {
             config.getString("webdav.password"),
             config.getString("webdav.remote-save-directory", config.getString("remote-save-directory"))
             );
-
         NextcloudBackupMethod nextcloudMethod = new NextcloudBackupMethod(
             config.getBoolean("nextcloud.enabled"), 
             config.getString("nextcloud.hostname"),
@@ -160,9 +156,7 @@ public class BackupMethods {
             config.getString("nextcloud.remote-save-directory", config.getString("remote-save-directory")),
             config.getInt("nextcloud.chunk-size", 10_000_000)
             );
-
         boolean ftpEnabled = config.getBoolean("ftp.enabled");
-
         String publicKey = "";
         if (!Strings.isNullOrEmpty(config.getString("ftp.sftp-public-key")) && ftpEnabled) {
             try {
@@ -171,7 +165,6 @@ public class BackupMethods {
                 logger.log(intl("ftp-method-pubic-key-invalid"));
             }
         }
-
         String baseDir = "";
         if (!Strings.isNullOrEmpty(config.getString("ftp.base-dir")) && ftpEnabled) {
             try {
@@ -180,7 +173,6 @@ public class BackupMethods {
                 logger.log(intl("ftp-method-passphrase-invalid"));
             }
         }
-
         FTPBackupMethod ftpMethod = new FTPBackupMethod(
             ftpEnabled, 
             config.getString("ftp.hostname"), 

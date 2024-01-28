@@ -26,7 +26,6 @@ public class Messages {
         boolean sendInChat = config.getBoolean("messages.send-in-chat");
         String prefix = config.getString("messages.prefix");
         String defaultColor = config.getString("messages.default-color");
-
         return new Messages(
             sendInChat,
             prefix,

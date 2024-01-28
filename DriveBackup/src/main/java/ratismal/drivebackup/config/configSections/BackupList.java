@@ -92,7 +92,6 @@ public class BackupList {
         ArrayList<BackupListEntry> list = new ArrayList<>();
         for (Map<?, ?> rawListEntry : rawList) {
             String entryIndex = String.valueOf(rawList.indexOf(rawListEntry) + 1);
-
             BackupLocation location;
             if (rawListEntry.containsKey("glob")) {
                 try {
@@ -112,7 +111,6 @@ public class BackupList {
                 logger.log(intl("backup-list-no-dest-specified"), "entry", entryIndex);
                 continue;
             }
-
             LocalDateTimeFormatter formatter;
             try {
                 formatter = LocalDateTimeFormatter.ofPattern((String) rawListEntry.get("format"));
@@ -120,14 +118,12 @@ public class BackupList {
                 logger.log(intl("backup-list-format-invalid"), "entry", entryIndex);
                 continue;
             }
-
             boolean create = true;
             try {
                 create = (Boolean) rawListEntry.get("create");
             } catch (ClassCastException e) {
                 // Do nothing, assume true
             }
-
             String[] blacklist = new String[0];
             if (rawListEntry.containsKey("blacklist")) {
                 try {
@@ -136,10 +132,8 @@ public class BackupList {
                     logger.log(intl("backup-list-blacklist-invalid"), "entry", entryIndex);
                 }
             }
-            
             list.add(new BackupListEntry(location, formatter, create, blacklist));
         }
-
         return new BackupList(list.toArray(new BackupListEntry[0]));
     }
 }

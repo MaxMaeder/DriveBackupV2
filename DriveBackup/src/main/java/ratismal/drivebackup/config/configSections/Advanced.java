@@ -48,7 +48,6 @@ public class Advanced {
         boolean suppressErrors = config.getBoolean("advanced.suppress-errors");
         boolean debugEnabled = config.getBoolean("advanced.debug");
         Locale dateLanguage = new Locale(config.getString("advanced.date-language"));
-        
         ZoneOffset dateTimezone;
         try {
             dateTimezone = ZoneOffset.of(config.getString("advanced.date-timezone"));
@@ -57,9 +56,7 @@ public class Advanced {
             //Fallback to UTC
             dateTimezone = ZoneOffset.of("Z");
         }
-
         String fileSeparator = config.getString("advanced.ftp-file-separator");
-
         return new Advanced(
             metrics, 
             updateCheck, 
