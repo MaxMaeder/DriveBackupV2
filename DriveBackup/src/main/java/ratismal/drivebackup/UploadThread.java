@@ -51,7 +51,7 @@ import static ratismal.drivebackup.config.Localization.intl;
 public class UploadThread implements Runnable {
     private CommandSender initiator;
     private final UploadLogger logger;
-    private FileUtil fileUtil;
+    private final FileUtil fileUtil;
 
     /**
      * The current status of the backup thread
@@ -132,6 +132,7 @@ public class UploadThread implements Runnable {
                     .send();
             }
         };
+        fileUtil = new FileUtil(logger);
     }
 
     /**
@@ -158,6 +159,7 @@ public class UploadThread implements Runnable {
                     .send();
             }
         };
+        fileUtil = new FileUtil(logger);
     }
 
     /**
@@ -186,7 +188,6 @@ public class UploadThread implements Runnable {
             return;
         }
         boolean errorOccurred = false;
-        fileUtil = new FileUtil(logger);
         List<ExternalBackupSource> externalBackupList = Arrays.asList(config.externalBackups.sources);
         backupList = new ArrayList<BackupListEntry>(Arrays.asList(config.backupList.list));
         if (externalBackupList.size() == 0 && backupList.size() == 0) {
