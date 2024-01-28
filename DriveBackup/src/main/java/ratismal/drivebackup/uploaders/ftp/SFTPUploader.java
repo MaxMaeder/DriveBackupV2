@@ -47,12 +47,9 @@ public class SFTPUploader {
      */
     public SFTPUploader(UploadLogger logger) throws Exception {
         this.logger = logger;
-
         Config config = ConfigParser.getConfig();
         FTPBackupMethod ftp = config.backupMethods.ftp;
-
         connect(ftp.hostname, ftp.port, ftp.username, ftp.password, ftp.publicKey, ftp.passphrase);
-
         _localBaseFolder = ".";
         if (Strings.isNullOrEmpty(ftp.remoteDirectory)) {
             _remoteBaseFolder = config.backupStorage.remoteDirectory;
@@ -76,7 +73,6 @@ public class SFTPUploader {
     public SFTPUploader(UploadLogger logger, String host, int port, String username, String password, String publicKey, String passphrase, String localBaseFolder, String remoteBaseFolder) throws Exception {
         this.logger = logger;
         connect(host, port, username, password, publicKey, passphrase);
-
         _localBaseFolder = localBaseFolder;
         _remoteBaseFolder = remoteBaseFolder;
     }
@@ -96,9 +92,7 @@ public class SFTPUploader {
         // Disable host checking
         sshClient.addHostKeyVerifier(new PromiscuousVerifier());
         sshClient.connect(host, port);
-
         ArrayList<AuthMethod> sshAuthMethods = new ArrayList<>();
-
         if (!Strings.isNullOrEmpty(password)) {
             sshAuthMethods.add(new AuthPassword(new PasswordFinder() {
                 @Override
@@ -112,7 +106,6 @@ public class SFTPUploader {
                 }
             }));
         }
-
         if (!Strings.isNullOrEmpty(publicKey)) {
             if (!Strings.isNullOrEmpty(passphrase)) {
                 sshAuthMethods.add(new AuthPublickey(sshClient.loadKeys(
@@ -123,10 +116,8 @@ public class SFTPUploader {
                     DriveBackup.getInstance().getDataFolder().getAbsolutePath() + "/" + publicKey)));
             }
         }
-
         sshClient.auth(username, sshAuthMethods);
         sftpClient = new StatefulSFTPClient(sshClient.newSFTPClient().getSFTPEngine());
-
         initialRemoteFolder = sftpClient.pwd();
     }
 
@@ -151,11 +142,8 @@ public class SFTPUploader {
         try (FileOutputStream fos = new FileOutputStream(testFile)) {
             resetWorkingDirectory();
             createThenEnter(_remoteBaseFolder);
-
             sftpClient.put(testFile.getAbsolutePath(), testFile.getName());
-
             TimeUnit.SECONDS.sleep(5);
-            
             sftpClient.rm(testFile.getName());
         } catch (Exception exception) {
             throw exception;
@@ -172,14 +160,11 @@ public class SFTPUploader {
         resetWorkingDirectory();
         createThenEnter(_remoteBaseFolder);
         createThenEnter(type);
-
         sftpClient.put(file.getAbsolutePath(), file.getName());
-        
         try {
             pruneBackups();
         } catch (Exception e) {
             logger.log(intl("backup-method-prune-failed"));
-            
             throw e;
         }
     }
@@ -193,12 +178,10 @@ public class SFTPUploader {
     public void downloadFile(String filePath, String type) throws Exception {
         resetWorkingDirectory();
         sftpClient.cd(_remoteBaseFolder);
-
         File outputFile = new File(_localBaseFolder + "/" + type);
         if (!outputFile.exists()) {
             outputFile.mkdirs();
         }
-
         sftpClient.get(filePath, _localBaseFolder + "/" + type + "/" + new File(filePath).getName());
     }
 
@@ -210,11 +193,9 @@ public class SFTPUploader {
      */
     public ArrayList<String> getFiles(String type) throws Exception {
         ArrayList<String> result = new ArrayList<>();
-
         resetWorkingDirectory();
         sftpClient.cd(_remoteBaseFolder);
         sftpClient.cd(type);
-
         for (RemoteResourceInfo file : sftpClient.ls()) {
             if (file.isDirectory()) {
                 result.addAll(prependToAll(getFiles(file.getPath()), file.getName() + "/"));
@@ -222,7 +203,6 @@ public class SFTPUploader {
                 result.add(file.getName());
             }
         }
-
         return result;
     }
 
@@ -238,14 +218,12 @@ public class SFTPUploader {
             return;
         }
         TreeMap<Date, RemoteResourceInfo> files = getZipFiles();
-
         if (files.size() > fileLimit) {
             logger.info(
                 intl("backup-method-limit-reached"), 
                 "file-count", String.valueOf(files.size()),
                 "upload-method", "(S)FTP",
                 "file-limit", String.valueOf(fileLimit));
-
             while (files.size() > fileLimit) {
                 sftpClient.rm(files.firstEntry().getValue().getName());
                 files.remove(files.firstEntry().getKey());
@@ -261,13 +239,11 @@ public class SFTPUploader {
     @NotNull
     private TreeMap<Date, RemoteResourceInfo> getZipFiles() throws Exception {
         TreeMap<Date, RemoteResourceInfo> files = new TreeMap<>();
-
         for (RemoteResourceInfo file : sftpClient.ls()) {
             if (file.getName().endsWith(".zip")) {
                 files.put(new Date(file.getAttributes().getMtime()), file);
             }
         }
-
         return files;
     }
 
@@ -304,7 +280,6 @@ public class SFTPUploader {
         for (int i = 0; i < list.size(); i++) {
             list.set(i, string + list.get(i));
         }
-
         return list;
     }
 }
