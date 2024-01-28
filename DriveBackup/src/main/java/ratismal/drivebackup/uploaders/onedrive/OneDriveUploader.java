@@ -44,7 +44,7 @@ public class OneDriveUploader implements Uploader {
     private String refreshToken;
 
     public static final String UPLOADER_NAME = "OneDrive";
-    public static final String UPLOADER_ID = "onedrive";
+    private static final String UPLOADER_ID = "onedrive";
 
     private static final MediaType zipMediaType = MediaType.parse("application/zip; charset=utf-8");
     private static final MediaType jsonMediaType = MediaType.parse("application/json; charset=utf-8");
@@ -64,7 +64,6 @@ public class OneDriveUploader implements Uploader {
      */
     public OneDriveUploader(UploadLogger logger) {
         this.logger = logger;
-
         try {
             refreshToken = Authenticator.getRefreshToken(AuthenticationProvider.ONEDRIVE);
             retrieveNewAccessToken();
@@ -86,18 +85,16 @@ public class OneDriveUploader implements Uploader {
             .add("grant_type", "refresh_token")
             .add("redirect_uri", "https://login.microsoftonline.com/common/oauth2/nativeclient")
             .build();
-
         Request request = new Request.Builder()
             .url("https://login.microsoftonline.com/common/oauth2/v2.0/token")
             .post(requestBody)
             .build();
-
         Response response = DriveBackup.httpClient.newCall(request).execute();
         JSONObject parsedResponse = new JSONObject(response.body().string());
         response.close();
-
-        if (!response.isSuccessful()) return;
-
+        if (!response.isSuccessful()) {
+            return;
+        }
         accessToken = parsedResponse.getString("access_token");
     }
 
@@ -112,33 +109,26 @@ public class OneDriveUploader implements Uploader {
     public void test(java.io.File testFile) {
         try {
             String destination = ConfigParser.getConfig().backupStorage.remoteDirectory;
-            
             Request request = new Request.Builder()
                 .addHeader("Authorization", "Bearer " + accessToken)
                 .url("https://graph.microsoft.com/v1.0/me/drive/root:/" + destination + "/" + testFile.getName() + ":/content")
                 .put(RequestBody.create(testFile, MediaType.parse("plain/txt")))
                 .build();
-
             Response response = DriveBackup.httpClient.newCall(request).execute();
             int statusCode = response.code();
             response.close();
-
             if (statusCode != 201) {
                 setErrorOccurred(true);
             }
-            
             TimeUnit.SECONDS.sleep(5);
-                
             request = new Request.Builder()
                 .addHeader("Authorization", "Bearer " + accessToken)
                 .url("https://graph.microsoft.com/v1.0/me/drive/root:/" + destination + "/" + testFile.getName() + ":/")
                 .delete()
                 .build();
-            
             response = DriveBackup.httpClient.newCall(request).execute();
             statusCode = response.code();
             response.close();
-
             if (statusCode != 204) {
                 setErrorOccurred(true);
             }
@@ -157,61 +147,45 @@ public class OneDriveUploader implements Uploader {
     public void uploadFile(java.io.File file, String type) throws IOException {
         try {
             resetRanges();
-
             String destination = ConfigParser.getConfig().backupStorage.remoteDirectory;
-            
             ArrayList<String> typeFolders = new ArrayList<>();
             Collections.addAll(typeFolders, destination.split("/"));
             Collections.addAll(typeFolders, type.split("[/\\\\]"));
-
             File folder = null;
-
             for (String typeFolder : typeFolders) {
                 if (typeFolder.equals(".") || typeFolder.equals("..")) {
                     continue;
                 }
-
                 if (folder == null) {
                     folder = createFolder(typeFolder);
                 } else {
                     folder = createFolder(typeFolder, folder);
                 }
             }
-
             Request request = new Request.Builder()
                 .addHeader("Authorization", "Bearer " + accessToken)
                 .url("https://graph.microsoft.com/v1.0/me/drive/root:/" + folder.getPath() + "/" + file.getName() + ":/createUploadSession")
                 .post(RequestBody.create("{}", jsonMediaType))
                 .build();
-
             Response response = DriveBackup.httpClient.newCall(request).execute();
             JSONObject parsedResponse = new JSONObject(response.body().string());
             response.close();
-
             String uploadURL = parsedResponse.getString("uploadUrl");
-
             //Assign our backup to Random Access File
             raf = new RandomAccessFile(file, "r");
-
             boolean isComplete = false;
-
             while (!isComplete) {
                 byte[] bytesToUpload = getChunk();
-
                 request = new Request.Builder()
                     .addHeader("Content-Range", String.format("bytes %d-%d/%d", getTotalUploaded(), getTotalUploaded() + bytesToUpload.length - 1, file.length()))
                     .url(uploadURL)
                     .put(RequestBody.create(bytesToUpload, zipMediaType))
                     .build();
-
                 response = DriveBackup.httpClient.newCall(request).execute();
-
                 if (getTotalUploaded() + bytesToUpload.length < file.length()) {
                     try {
                         parsedResponse = new JSONObject(response.body().string());
-
                         List<String> nextExpectedRanges = (List<String>) (Object) parsedResponse.getJSONArray("nextExpectedRanges").toList();
-
                         setRanges(nextExpectedRanges.toArray(new String[nextExpectedRanges.size()]));
                     } catch (Exception e) {
                         isComplete = true;
@@ -219,15 +193,12 @@ public class OneDriveUploader implements Uploader {
                 } else {
                     isComplete = true;
                 }
-
                 response.close();
             }
-
             try {
                 pruneBackups(folder);
             } catch (Exception e) {
                 logger.log(intl("backup-method-prune-failed"));
-                
                 throw e;
             }
         } catch (Exception exception) {
@@ -235,7 +206,6 @@ public class OneDriveUploader implements Uploader {
             MessageUtil.sendConsoleException(exception);
             setErrorOccurred(true);
         }
-
         raf.close();
     }
 
@@ -244,7 +214,7 @@ public class OneDriveUploader implements Uploader {
      * @return whether an error occurred
      */
     public boolean isErrorWhileUploading() {
-        return this.errorOccurred;
+        return errorOccurred;
     }
 
     /**
@@ -288,39 +258,31 @@ public class OneDriveUploader implements Uploader {
         if (file != null) {
             return file;
         }
-
         Request request = new Request.Builder()
             .addHeader("Authorization", "Bearer " + accessToken)
             .url("https://graph.microsoft.com/v1.0/me/drive/root:/" + parent.getPath())
             .build();
-
         Response response = DriveBackup.httpClient.newCall(request).execute();
         JSONObject parsedResponse = new JSONObject(response.body().string());
         response.close();
-
         String parentId = parsedResponse.getString("id");
-
         RequestBody requestBody = RequestBody.create(
             "{" +
             " \"name\": \"" + name + "\"," +
             " \"folder\": {}," +
             " \"@name.conflictBehavior\": \"fail\"" +
             "}", jsonMediaType);
-
         request = new Request.Builder()
             .addHeader("Authorization", "Bearer " + accessToken)
             .url("https://graph.microsoft.com/v1.0/me/drive/items/" + parentId + "/children")
             .post(requestBody)
             .build();
-
         response = DriveBackup.httpClient.newCall(request).execute();
         boolean folderCreated = response.isSuccessful();
         response.close();
-
         if (!folderCreated) {
             throw new IOException("Couldn't create folder " + name);
         }
-            
         return parent.add(name);
     }
 
@@ -336,28 +298,23 @@ public class OneDriveUploader implements Uploader {
         if (file != null) {
             return file;
         }
-
         RequestBody requestBody = RequestBody.create(
             "{" +
             " \"name\": \"" + name + "\"," +
             " \"folder\": {}," +
             " \"@name.conflictBehavior\": \"fail\"" +
             "}", jsonMediaType);
-
         Request request = new Request.Builder()
             .addHeader("Authorization", "Bearer " + accessToken)
             .url("https://graph.microsoft.com/v1.0/me/drive/root/children")
             .post(requestBody)
             .build();
-
         Response response = DriveBackup.httpClient.newCall(request).execute();
         boolean folderCreated = response.isSuccessful();
         response.close();
-
         if (!folderCreated) {
             throw new IOException("Couldn't create folder " + name);
         }
-
         return new File().add(name);
     }
 
@@ -374,23 +331,19 @@ public class OneDriveUploader implements Uploader {
                 .addHeader("Authorization", "Bearer " + accessToken)
                 .url("https://graph.microsoft.com/v1.0/me/drive/root:/" + parent.getPath() + ":/children")
                 .build();
-
             Response response = DriveBackup.httpClient.newCall(request).execute();
             JSONObject parsedResponse = new JSONObject(response.body().string());
             response.close();
-
             JSONArray jsonArray = parsedResponse.getJSONArray("value");
-
             for (int i = 0; i < jsonArray.length(); i++) {
                 String folderName = jsonArray.getJSONObject(i).getString("name");
-
                 if (name.equals(folderName)) {
                     return parent.add(name);
                 }
             }
-            
-        } catch (Exception exception) {}
-
+        } catch (Exception exception) {
+            return null;
+        }
         return null;
     }
 
@@ -406,23 +359,19 @@ public class OneDriveUploader implements Uploader {
                 .addHeader("Authorization", "Bearer " + accessToken)
                 .url("https://graph.microsoft.com/v1.0/me/drive/root/children")
                 .build();
-
             Response response = DriveBackup.httpClient.newCall(request).execute();
             JSONObject parsedResponse = new JSONObject(response.body().string());
             response.close();
-
             JSONArray jsonArray = parsedResponse.getJSONArray("value");
-
             for (int i = 0; i < jsonArray.length(); i++) {
                 String folderName = jsonArray.getJSONObject(i).getString("name");
-
                 if (name.equals(folderName)) {
                     return new File().add(name);
                 }
             }
-            
-        } catch (Exception exception) {}
-
+        } catch (Exception exception) {
+            return null;
+        }
         return null;
     }
 
@@ -435,27 +384,21 @@ public class OneDriveUploader implements Uploader {
      */
     private void pruneBackups(File parent) throws Exception {
         int fileLimit = ConfigParser.getConfig().backupStorage.keepCount;
-
         if (fileLimit == -1) {
             return;
         }
-
         Request request = new Request.Builder()
             .addHeader("Authorization", "Bearer " + accessToken)
             .url("https://graph.microsoft.com/v1.0/me/drive/root:/" + parent.getPath() + ":/children?sort_by=createdDateTime")
             .build();
-
         Response response = DriveBackup.httpClient.newCall(request).execute();
         JSONObject parsedResponse = new JSONObject(response.body().string());
         response.close();
-
         ArrayList<String> fileIDs = new ArrayList<>();
-
         JSONArray jsonArray = parsedResponse.getJSONArray("value");
         for (int i = 0; i < jsonArray.length(); i++) {
             fileIDs.add(jsonArray.getJSONObject(i).getString("id"));
         }
-
         if(fileLimit < fileIDs.size()){
             logger.info(
                 intl("backup-method-limit-reached"), 
@@ -463,7 +406,6 @@ public class OneDriveUploader implements Uploader {
                 "upload-method", getName(),
                 "file-limit", String.valueOf(fileLimit));
         }
-
         for (Iterator<String> iterator = fileIDs.listIterator(); iterator.hasNext(); ) {
             String fileIDValue = iterator.next();
             if (fileLimit < fileIDs.size()) {
@@ -472,12 +414,9 @@ public class OneDriveUploader implements Uploader {
                     .url("https://graph.microsoft.com/v1.0/me/drive/items/" + fileIDValue)
                     .delete()
                     .build();
-
                 DriveBackup.httpClient.newCall(request).execute().close();
-                    
                 iterator.remove();
             }
-
             if (fileIDs.size() <= fileLimit){
                 break;
             }
@@ -508,7 +447,6 @@ public class OneDriveUploader implements Uploader {
             } else {
                 childFile.setPath(getPath() + "/" + folder);
             }
-
             return childFile;
         }
 
@@ -546,7 +484,6 @@ public class OneDriveUploader implements Uploader {
         private String getParent() {
             ArrayList<String> parentPath = new ArrayList<>(filePath);
             parentPath.remove(parentPath.size() - 1);
-
             return String.join("/", parentPath);
         }
     }
@@ -586,17 +523,13 @@ public class OneDriveUploader implements Uploader {
         Range[] ranges = new Range[stringRanges.length];
         for (int i = 0; i < stringRanges.length; i++) {
             long start = Long.parseLong(stringRanges[i].substring(0, stringRanges[i].indexOf('-')));
-
             String s = stringRanges[i].substring(stringRanges[i].indexOf('-') + 1);
-
             long end = 0;
             if (!s.isEmpty()) {
                 end = Long.parseLong(s);
             }
-
             ranges[i] = new Range(start, end);
         }
-
         if (ranges.length > 0) {
             totalUploaded = ranges[0].start;
         }
@@ -608,16 +541,12 @@ public class OneDriveUploader implements Uploader {
      * @throws IOException
      */
     private byte[] getChunk() throws IOException {
-
         byte[] bytes = new byte[CHUNK_SIZE];
-
         raf.seek(totalUploaded);
         int read = raf.read(bytes);
-
         if (read < CHUNK_SIZE) {
             bytes = Arrays.copyOf(bytes, read);
         }
-
         return bytes;
     }
 
