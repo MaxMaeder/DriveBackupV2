@@ -15,7 +15,6 @@ class ResponseException extends Exception {
      * @param j the JSON response.
      */
     public ResponseException(JSONObject j) {
-        super();
         json = j;
     }
 
