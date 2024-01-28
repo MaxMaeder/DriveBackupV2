@@ -85,7 +85,7 @@ public class UploadThread implements Runnable {
     /**
      * The list of items to be backed up by the backup thread
      */
-    private static List<BackupListEntry> backupList;
+    private List<BackupListEntry> backupList;
 
     /**
      * The {@code BackupStatus} of the backup thread
