@@ -57,7 +57,7 @@ public class GoogleDriveUploader implements Uploader {
     private List<com.google.api.services.drive.model.Drive> drives;
 
     public static final String UPLOADER_NAME = "Google Drive";
-    public static final String UPLOADER_ID = "googledrive";
+    private static final String UPLOADER_ID = "googledrive";
 
     /**
      * A global instance of the HTTP transport
@@ -80,7 +80,6 @@ public class GoogleDriveUploader implements Uploader {
      */
     public GoogleDriveUploader(UploadLogger logger) {
         this.logger = logger;
-
         try {
             refreshToken = Authenticator.getRefreshToken(AuthenticationProvider.GOOGLE_DRIVE);
             retrieveNewAccessToken();
@@ -101,19 +100,15 @@ public class GoogleDriveUploader implements Uploader {
             .add("refresh_token", refreshToken)
             .add("grant_type", "refresh_token")
             .build();
-
         Request request = new Request.Builder()
             .url("https://oauth2.googleapis.com/token")
             .post(requestBody)
             .build();
-
         Response response = DriveBackup.httpClient.newCall(request).execute();
         JSONObject parsedResponse = new JSONObject(response.body().string());
         response.close();
-        
         if (!response.isSuccessful())
             return;
-
         service = new Drive.Builder(
             httpTransport, 
             JSON_FACTORY, 
@@ -153,29 +148,22 @@ public class GoogleDriveUploader implements Uploader {
         try {
             String sharedDriveId = ConfigParser.getConfig().backupMethods.googleDrive.sharedDriveId;
             String destination = ConfigParser.getConfig().backupStorage.remoteDirectory;
-
             File body = new File();
             body.setTitle(testFile.getName());
             body.setDescription("DriveBackupV2 test file");
-
             FileContent testContent = new FileContent("plain/txt", testFile);
-
             File folder;
             if (!sharedDriveId.isEmpty()) {
                 folder = createFolder(destination, sharedDriveId);
             } else {
                 folder = createFolder(destination);
             }
-
             ParentReference fileParent = new ParentReference();
             fileParent.setId(folder.getId());
             body.setParents(Collections.singletonList(fileParent));
-
             File uploadedFile = service.files().insert(body, testContent).setSupportsAllDrives(true).execute();
             String fileId = uploadedFile.getId();
-            
             TimeUnit.SECONDS.sleep(5);
-                
             service.files().delete(fileId).setSupportsAllDrives(true).execute();
         } catch (Exception exception) {
             NetUtil.catchException(exception, "www.googleapis.com", logger);
@@ -193,20 +181,15 @@ public class GoogleDriveUploader implements Uploader {
         try {
             String sharedDriveId = ConfigParser.getConfig().backupMethods.googleDrive.sharedDriveId;
             String destination = ConfigParser.getConfig().backupStorage.remoteDirectory;
-
             retrieveNewAccessToken();
-
             ArrayList<String> typeFolders = new ArrayList<>();
             Collections.addAll(typeFolders, destination.split("[/\\\\]"));
             Collections.addAll(typeFolders, type.split("[/\\\\]"));
-
             File folder = null;
-
             for (String typeFolder : typeFolders) {
                 if (typeFolder.equals(".") || typeFolder.equals("..")) {
                     continue;
                 }
-
                 if (folder == null && !sharedDriveId.isEmpty()) {
                     folder = createFolder(typeFolder, sharedDriveId);
                 } else if (folder == null) {
@@ -217,20 +200,15 @@ public class GoogleDriveUploader implements Uploader {
                     folder = createFolder(typeFolder, folder, false);
                 }
             }
-
             File fileMetadata = new File();
             fileMetadata.setTitle(file.getName());
             fileMetadata.setDescription("Uploaded by the DriveBackupV2 Minecraft plugin");
             fileMetadata.setMimeType("application/zip");
-
             ParentReference fileParent = new ParentReference();
             fileParent.setId(folder.getId());
             fileMetadata.setParents(Collections.singletonList(fileParent));
-
             FileContent fileContent = new FileContent("application/zip", file);
-
             service.files().insert(fileMetadata, fileContent).setSupportsAllDrives(true).execute();
-
             try {
                 pruneBackups(folder);
             } catch (Exception e) {
@@ -239,7 +217,6 @@ public class GoogleDriveUploader implements Uploader {
                 } else {
                     logger.log(intl("backup-method-prune-failed"));
                 }
-                
                 throw e;
             }
         } catch (Exception exception) {
@@ -291,13 +268,11 @@ public class GoogleDriveUploader implements Uploader {
     public void setupSharedDrives(CommandSender initiator) throws Exception {
         if (drives != null && !drives.isEmpty()) {
             logger.log(intl("google-pick-shared-drive"));
-
             logger.log(
                 intl("google-shared-drive-option"),
                 "select-command", "1",
                 "drive-num", "1",
-                "drive-name", intl("default-google-drive-name")); 
-
+                "drive-name", intl("default-google-drive-name"));
             int index = 1;
             for (com.google.api.services.drive.model.Drive drive : drives) {
                 logger.log(
@@ -318,36 +293,28 @@ public class GoogleDriveUploader implements Uploader {
     }
 
     public void finalizeSharedDrives(CommandSender initiator, String input) {
-        final DriveBackup instance = DriveBackup.getInstance();
+        DriveBackup instance = DriveBackup.getInstance();
         final String idKey = "googledrive.shared-drive-id";
-
         for (com.google.api.services.drive.model.Drive drive : drives) {
             if (input.equals(drive.getId())) {
-
                 instance.getConfig().set(idKey, input);
                 instance.saveConfig();
                 Authenticator.linkSuccess(initiator, getAuthProvider(), logger);
-
                 return;
             }
         }
-
         if ("1".equals(input)) {
-
             instance.getConfig().set(idKey, "");
             instance.saveConfig();
             Authenticator.linkSuccess(initiator, getAuthProvider(), logger);
-
             return;
         } else if (input.matches("[0-9]+")) {
-
             instance.getConfig().set(idKey, drives.get(Integer.parseInt(input) - 2).getId());
             instance.saveConfig();
             Authenticator.linkSuccess(initiator, getAuthProvider(), logger);
                         
             return;
         }
-
         // TODO: handle this better
         logger.log(intl("link-provider-failed"), "provider", getAuthProvider().getName());
     }
@@ -361,22 +328,17 @@ public class GoogleDriveUploader implements Uploader {
      */
     private File createFolder(String name, File parent, boolean sharedDrive) throws Exception {
         File folder = null;
-
         folder = getFolder(name, parent, sharedDrive);
         if (folder != null) {
             return folder;
         }
-
         ParentReference parentReference = new ParentReference();
         parentReference.setId(parent.getId());
-
         folder = new File();
         folder.setTitle(name);
         folder.setMimeType("application/vnd.google-apps.folder");
         folder.setParents(Collections.singletonList(parentReference));
-
         folder = service.files().insert(folder).setSupportsAllDrives(true).execute();
-
         return folder;
     }
 
@@ -389,22 +351,17 @@ public class GoogleDriveUploader implements Uploader {
      */
     private File createFolder(String name, String driveId) throws Exception {
         File folder = null;
-
         folder = getFolder(name, driveId);
         if (folder != null) {
             return folder;
         }
-
         ParentReference parentReference = new ParentReference();
         parentReference.setId(driveId);
-
         folder = new File();
         folder.setTitle(name);
         folder.setMimeType("application/vnd.google-apps.folder");
         folder.setParents(Collections.singletonList(parentReference));
-
         folder = service.files().insert(folder).setSupportsAllDrives(true).execute();
-
         return folder;
     }
 
@@ -416,18 +373,14 @@ public class GoogleDriveUploader implements Uploader {
      */
     private File createFolder(String name) throws Exception {
         File folder = null;
-
         folder = getFolder(name);
         if (folder != null) {
             return folder;
         }
-
         folder = new File();
         folder.setTitle(name);
         folder.setMimeType("application/vnd.google-apps.folder");
-
         folder = service.files().insert(folder).execute();
-
         return folder;
     }
 
@@ -475,11 +428,9 @@ public class GoogleDriveUploader implements Uploader {
                 .setIncludeItemsFromAllDrives(true)
                 .setCorpora("allDrives");
             }
-            
             FileList files = request.execute();
             for (File folderfiles : files.getItems()) {
                 if (folderfiles.getTitle().equals(name)) {
-
                     return folderfiles;
                 }
             }
@@ -521,10 +472,8 @@ public class GoogleDriveUploader implements Uploader {
      */
     @NotNull
     private List<ChildReference> getFiles(@NotNull File folder) throws Exception {
-
         //Create a List to store results
         List<ChildReference> result = new ArrayList<>();
-
         //Set up a request to query all files from all pages.
         //We are also making sure the files are sorted by created Date.
         //Oldest at the beginning of List.
@@ -543,7 +492,6 @@ public class GoogleDriveUploader implements Uploader {
             }
         } while (request.getPageToken() != null &&
                 request.getPageToken().length() > 0);
-
         return result;
     }
 
@@ -556,11 +504,9 @@ public class GoogleDriveUploader implements Uploader {
      */
     private void pruneBackups(File folder) throws Exception {
         int fileLimit = ConfigParser.getConfig().backupStorage.keepCount;
-
         if (fileLimit == -1) {
             return;
         }
-
         List<ChildReference> files = getFiles(folder);
         if (files.size() > fileLimit) {
             logger.info(
@@ -568,7 +514,6 @@ public class GoogleDriveUploader implements Uploader {
                 "file-count", String.valueOf(files.size()),
                 "upload-method", getName(),
                 "file-limit", String.valueOf(fileLimit));
-
             for (Iterator<ChildReference> iterator = files.iterator(); iterator.hasNext(); ) {
                 if (files.size() == fileLimit) {
                     break;
