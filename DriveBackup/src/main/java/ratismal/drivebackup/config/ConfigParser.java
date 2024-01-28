@@ -22,7 +22,6 @@ import ratismal.drivebackup.util.MessageUtil;
 public class ConfigParser {
     public static class Config {
         public static final int VERSION = 2;
-
         public final BackupStorage backupStorage;
         public final BackupScheduling backupScheduling;
         public final BackupList backupList;
@@ -120,7 +119,6 @@ public class ConfigParser {
         ) {
             throw new InvalidPathException(path, "Path must use the unix file separator, \"/\"");
         }
-
         return path;
     }
 }
