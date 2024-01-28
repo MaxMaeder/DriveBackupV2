@@ -19,6 +19,7 @@ import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver.Builder;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
+import org.intellij.lang.annotations.Subst;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ratismal.drivebackup.config.ConfigParser;
@@ -63,8 +64,8 @@ public class MessageUtil {
     }
 
     /**
-     * Parses & adds MiniMessage formatted text to the message
-     * @param input the MiniMessage text
+     * Parses & add MiniMessage formatted text to the message
+     * @param text the MiniMessage text
      * @return the calling MessageUtil's instance
      */
     public MessageUtil mmText(String text) {
@@ -81,8 +82,8 @@ public class MessageUtil {
     }
 
     /**
-     * Parses & adds MiniMessage formatted text to the message
-     * @param input the MiniMessage text
+     * Parses & add MiniMessage formatted text to the message
+     * @param text the MiniMessage text
      * @param placeholders optional MiniMessage placeholders
      * @return the calling MessageUtil's instance
      */
@@ -102,9 +103,10 @@ public class MessageUtil {
     }
 
     /**
-     * Parses & adds MiniMessage formatted text to the message
-     * @param input the MiniMessage text
-     * @param templates optional {@code Template}
+     * Parses & add MiniMessage formatted text to the message
+     * @param text the MiniMessage text
+     * @param title what to replace
+     * @param content what to replace with
      * @return the calling MessageUtil's instance
      */
     public MessageUtil mmText(String text, String title, Component content) {
@@ -145,7 +147,7 @@ public class MessageUtil {
     }
 
     /**
-     * Adds all online players with the specified permissions to the recipients
+     * Adds all online players with the specified permissions to the recipients.
      * @param permission the specified permission to be added to the recipients
      * @return the calling MessageUtil's instance
      */
@@ -159,7 +161,7 @@ public class MessageUtil {
     }
 
     /**
-     * Set whether or not if the message should be sent to console
+     * Set whether or not if the message should be sent to the console.
      * @param value boolean
      * @return the calling MessageUtil's instance
      */
@@ -204,7 +206,8 @@ public class MessageUtil {
     }
 
     /**
-     * Sends the stack trace corresponding to the specified exception to the console, only if suppress errors is disabled
+     * Sends the stack trace corresponding to the specified exception to the console,
+     * only if suppress errors are disabled.
      * <p>
      * Whether suppress errors is enabled is specified by the user in the {@code config.yml}
      * @param exception Exception to send the stack trace of
@@ -229,7 +232,7 @@ public class MessageUtil {
     }
 
     /**
-     * Translates the color codes in the specified message to the type used internally
+     * Translates the color codes in the specified message to the type used internally.
      * @param message the message to translate
      * @return the translated message
      */

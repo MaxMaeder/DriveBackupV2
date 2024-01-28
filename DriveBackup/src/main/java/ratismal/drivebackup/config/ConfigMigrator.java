@@ -15,7 +15,7 @@ public class ConfigMigrator {
     private static final String DEFAULT_TIMEZONE_STRING = "-00:00";
 
     // ConfigMigrator is called before localization is parsed, since ConfigMigrator
-    // may change the intl file. Therefore, we just hardcode any messages
+    // may change the intl file. Therefore, we just hardcode any messages.
     private static final String MIGRATING_MESSAGE = "Automatically migrating config to version <version>";
 
     private FileConfiguration config;
@@ -83,7 +83,7 @@ public class ConfigMigrator {
 
     /**
      * Migrates a setting from the specified old path in the config
-     * to the new path
+     * to the new path.
      * @param oldPath the old path
      * @param newPath the new path
      */
@@ -94,7 +94,7 @@ public class ConfigMigrator {
 
     /**
      * Migrates a setting from the specified old path in the config
-     * to the new path in the localization config
+     * to the new path in the localization config.
      * @param oldPath the old path
      * @param newPath the new path
      */

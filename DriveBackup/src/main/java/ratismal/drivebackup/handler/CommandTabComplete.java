@@ -21,11 +21,11 @@ public class CommandTabComplete implements TabCompleter {
     /**
      * Command tab completer
      *
-     * @param player Player who sent command
+     * @param player Player, who sent command
      * @param cmd    Command that was sent
      * @param label  Command alias that was used
      * @param args   Arguments that followed command
-     * @return List<String> of valid command tab options
+     * @return String list of possible tab completions
      */
     @Override
     public List<String> onTabComplete(CommandSender player, @NotNull Command cmd, String label, String[] args) {

@@ -37,7 +37,7 @@ public class FileUtil {
     }
 
     /**
-     * Gets the local backups in the specified folder as a {@code TreeMap} with their creation date and a reference to them
+     * Gets the local backups in the specified folder as a {@code TreeMap} with their creation date and a reference to them.
      * @param location the location of the folder containing the backups
      * @param formatter the format of the file name
      * @return The list of backups
@@ -58,7 +58,7 @@ public class FileUtil {
                 //     ZonedDateTime date = formatter.parse(fileName);
                 //     backupList.put(date.toEpochSecond(), file);
                 // } catch (Exception e) {
-                    // Fallback to using file creation date if the file name doesn't match the format
+                    // Fallback to using file creation date if the file name doesn't match the format.
                     backupList.put((file.lastModified() / 1000), file);
                 //     logger.log(intl("local-backup-date-format-invalid"), "file-name", fileName);
                 // }
@@ -69,10 +69,10 @@ public class FileUtil {
     }
 
     /**
-     * Creates a local backup zip file for the specified file/folder
+     * Creates a local backup zip file for the specified file/folder.
      * @param location the location of the file or folder
      * @param formatter the format of the file name
-     * @param blacklistGlobs a list of glob patterns of files/folders to not include in the backup
+     * @param blacklistGlobs a list of glob patterns of files/folders to not include in the backup.
      * @throws Exception
      */
     public void makeBackup(@NotNull String location, LocalDateTimeFormatter formatter, List<String> blacklistGlobs) throws Exception {
@@ -125,14 +125,14 @@ public class FileUtil {
                 intl("local-backup-in-backup-folder"), 
                 "files-in-backup-folder-count", String.valueOf(filesInBackupFolder));
         }
-        // Get the name of the last folder in the location path
+        // Get the name of the last folder in the location path.
         String lastFolderName = "";
         int lastSeparatorIndex = location.lastIndexOf('/');
         if (lastSeparatorIndex != -1) {
             lastFolderName = location.substring(lastSeparatorIndex + 1);
         }
 
-        // Replace the placeholder %NAME with the last folder name in the file name
+        // Replace the placeholder %NAME with the last folder name in the file name.
         String placeholder = "%NAME";
         if (fileName.contains(placeholder)) {
             fileName = fileName.replace(placeholder, lastFolderName);
@@ -141,11 +141,11 @@ public class FileUtil {
     }
 
     /**
-     * Deletes the oldest files in the specified folder past the number to retain locally
+     * Deletes the oldest files in the specified folder past the number to retain locally.
      * <p>
      * The number of files to retain locally is specified by the user in the {@code config.yml}
      * @param location the location of the folder containing the backups
-     * @param formatter the format of the files name
+     * @param formatter the format of the file name
      */
     public void pruneLocalBackups(String location, LocalDateTimeFormatter formatter) {
         location = escapeBackupLocation(location);
@@ -189,10 +189,10 @@ public class FileUtil {
     }
 
     /**
-     * Zips files in the specified folder into the specified file location
+     * Zips files in the specified folder into the specified file location.
      * @param inputFolderPath the path of the zip file to create
      * @param outputFilePath the path of the folder to put it in
-     * @param fileList
+     * @param fileList file to include in the zip
      */
     private void zipIt(String inputFolderPath, String outputFilePath, BackupFileList fileList) throws Exception {
         byte[] buffer = new byte[1024];
@@ -220,8 +220,8 @@ public class FileUtil {
                     }
                 } catch (Exception e) {
                     String filePath = new File(inputFolderPath, file).getPath();
-
-                    if (!filePath.endsWith(".lock")) { // Don't send warning for .lock files, they will always be locked
+                    // Don't send warning for .lock files, they will always be locked.
+                    if (!filePath.endsWith(".lock")) {
                         logger.info(
                             intl("local-backup-failed-to-include"),
                             "file-path", filePath);
@@ -243,7 +243,7 @@ public class FileUtil {
 
     /**
      * A list of files to put in a zip file
-     * Mutable
+     * Mutable.
      */
     private static class BackupFileList {
         int filesInBackupFolder;
@@ -278,7 +278,7 @@ public class FileUtil {
     }
 
     /**
-     * Generates a list of files to put in the zip created from the specified folder
+     * Generates a list of files to put in the zip created from the specified folder.
      * @param inputFolderPath The path of the folder to create the zip from
      * @throws Exception
      */
@@ -292,10 +292,10 @@ public class FileUtil {
     }
 
     /**
-     * Adds the specified file or folder to the list of files to put in the zip created from the specified folder
+     * Adds the specified file or folder to the list of files to put in the zip created from the specified folder.
      * @param file the file or folder to add
      * @param inputFolderPath the path of the folder to create the zip 
-     * @param fileList the list of files to add the specified file or folder to
+     * @param fileList the list of files to add the specified file or folder to.
      * @throws Exception
      */
     private void generateFileList(@NotNull File file, String inputFolderPath, BackupFileList fileList) throws Exception {
@@ -333,7 +333,7 @@ public class FileUtil {
     }
 
     /**
-     * Removes ".." from the location string in order to keep the location's backup folder within the local-save-directory
+     * Removes ".." from the location string to keep the location's backup folder within the local-save-directory.
      * @param location the unescaped location
      * @return the escaped location
      */
@@ -361,9 +361,9 @@ public class FileUtil {
     }
 
     /**
-     * Whether the specified folder is the base folder of the Minecraft server
+     * Whether the specified folder is the base folder of the Minecraft server.
      * <p>
-     * In other words, whether the folder is the folder containing the server jar
+     * In other words, whether the folder is the folder containing the server jar.
      * @param folderPath the path of the folder
      * @return whether the folder is the base folder
      * @throws Exception

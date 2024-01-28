@@ -69,8 +69,8 @@ public class SFTPUploader {
      * @param password the password (leave blank if none)
      * @param publicKey the path to the public key, relative to the "DriveBackupV2 folder" (leave blank if none)
      * @param passphrase the public key passphrase (leave blank if none)
-     * @param localBaseFolder the path to the folder which all local file paths are relative to
-     * @param remoteBaseFolder the path to the folder which all remote file paths are relative to 
+     * @param localBaseFolder the path to the folder, which all local file paths are relative to.
+     * @param remoteBaseFolder the path to the folder, which all remote file paths are relative to.
      * @throws Exception
      */
     public SFTPUploader(UploadLogger logger, String host, int port, String username, String password, String publicKey, String passphrase, String localBaseFolder, String remoteBaseFolder) throws Exception {
@@ -143,9 +143,8 @@ public class SFTPUploader {
     }
 
     /**
-     * Tests the connection to the (S)FTP server by connecting and uploading a small file
-     * @param testFileName name of the test file to upload during the test
-     * @param testFileSize the size (in bytes) of the file
+     * Tests the connection to the (S)FTP server by connecting and uploading a small file.
+     * @param testFile the file to upload
      * @throws Exception
      */
     public void test(File testFile) throws Exception {
@@ -164,7 +163,7 @@ public class SFTPUploader {
     }
 
     /**
-     * Uploads the specified file to the SFTP server inside a folder for the specified file type
+     * Uploads the specified file to the SFTP server inside a folder for the specified file type.
      * @param file the file
      * @param type the type of file (ex. plugins, world)
      * @throws Exception
@@ -186,7 +185,7 @@ public class SFTPUploader {
     }
 
     /**
-     * Downloads the specified file from the SFTP server into a folder for the specified file type
+     * Downloads the specified file from the SFTP server into a folder for the specified file type.
      * @param filePath the path of the file
      * @param type the type of file (ex. plugins, world)
      * @throws Exception
@@ -204,7 +203,7 @@ public class SFTPUploader {
     }
 
     /**
-     * Returns a list of the paths of the files inside the specified folder and subfolders
+     * Returns a list of the paths of the files inside the specified folder and any subfolders.
      * @param type the type of folder (ex. plugins, world)
      * @return the list of file paths
      * @throws Exception
@@ -228,7 +227,7 @@ public class SFTPUploader {
     }
 
     /**
-     * Deletes the oldest files past the number to retain from the SFTP server inside the current working directory
+     * Deletes the oldest files past the number to retain from the SFTP server inside the current working directory.
      * <p>
      * The number of files to retain is specified by the user in the {@code config.yml}
      * @throws Exception
@@ -255,8 +254,8 @@ public class SFTPUploader {
     }
 
     /**
-     * Returns a list of ZIP files and their modification dates inside the current working directory
-     * @return the list of files
+     * Returns a list of ZIP files, and their modification dates inside the current working directory.
+     * @return a map of the files and their modification dates
      * @throws Exception
      */
     @NotNull
@@ -273,7 +272,7 @@ public class SFTPUploader {
     }
 
     /**
-     * Creates a folder with the specified path inside the current working directory, then enters it
+     * Creates a folder with the specified path inside the current working directory, then enters it.
      * @param path the relative path of the folder to create
      * @throws Exception
      */
@@ -287,15 +286,15 @@ public class SFTPUploader {
     }
 
     /**
-     * Resets the current working directory to what it was when connection to the SFTP server was established
-     * @throws Exception
+     * Resets the current working directory to what it was when connection to the SFTP server was established.
+     * @throws IOException
      */
     private void resetWorkingDirectory() throws IOException {
         sftpClient.cd(initialRemoteFolder);
     }
 
     /**
-     * Prepends the specified String to each element in the specified ArrayList
+     * Prepends the specified String to each element in the specified ArrayList.
      * @param list the ArrayList
      * @param string the String
      * @return the new ArrayList

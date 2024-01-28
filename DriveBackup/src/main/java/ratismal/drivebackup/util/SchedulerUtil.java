@@ -15,7 +15,7 @@ public class SchedulerUtil {
 
     /**
      * Cancels the specified tasks
-     * @param taskList an List of the IDs of the tasks
+     * @param taskList a List of the IDs of the tasks
      */
     public static void cancelTasks(@NotNull List<Integer> taskList) {
         for (int task : taskList) {

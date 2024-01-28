@@ -24,7 +24,7 @@ public class Updater {
     /**
      * Initialize the updater.
      *
-     * @param plugin The plugin that is checking for an update.
+     * @param file The plugin jar file
      */
     public Updater(File file) {
         this.plugin = DriveBackup.getInstance();
@@ -33,7 +33,7 @@ public class Updater {
     }
 
     /**
-     * Download the latest plugin jar and save it to the plugins folder.
+     * Download the latest plugin jar and save it to the plugins' folder.
      */
     private void downloadFile() throws IOException  {
         File outputPath = new File(this.updateFolder, "DriveBackupV2.jar.temp");

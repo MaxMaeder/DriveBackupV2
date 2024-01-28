@@ -26,7 +26,7 @@ public final class LocalDateTimeFormatter {
 
         StringBuilder finalPatternBuilder = new StringBuilder(pattern);
 
-        // Escape non date format characters, if user specified %FORMAT in the pattern
+        // Escape non-date format characters, if user specified %FORMAT in the pattern.
         if (pattern.contains(FORMAT_KEYWORD)) {
             finalPatternBuilder.insert(0, "'");
             finalPatternBuilder.append("'");

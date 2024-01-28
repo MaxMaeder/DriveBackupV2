@@ -104,9 +104,9 @@ public class NextcloudUploader extends WebDAVUploader {
     }
 
     /**
-     * Gets the id of this upload service
+     * Gets the ID of this upload service
      * 
-     * @return id of upload service
+     * @return ID of upload service
      */
     @Override
     public String getId() {

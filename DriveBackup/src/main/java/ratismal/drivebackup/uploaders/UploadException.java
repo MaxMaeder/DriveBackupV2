@@ -1,7 +1,7 @@
 package ratismal.drivebackup.uploaders;
 
 /**
- * Thrown to indicate a upload-related issue
+ * Thrown to indicate an upload-related issue
  */
 class UploadException extends Exception {
     /**

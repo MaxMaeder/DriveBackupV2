@@ -106,7 +106,7 @@ public class DropboxUploader implements Uploader {
 
     /**
      * Uploads the specified file to the authenticated user's Dropbox inside a
-     * folder for the specified file type
+     * folder for the specified file type.
      *
      * @param file the file
      * @param type the type of file (ex. plugins, world)
@@ -213,7 +213,7 @@ public class DropboxUploader implements Uploader {
 
     /**
      * Deletes the oldest files past the number to retain from the FTP server inside
-     * the specified folder for the file type
+     * the specified folder for the file type.
      * <p>
      * The number of files to retain is specified by the user in the
      * {@code config.yml}
@@ -254,8 +254,8 @@ public class DropboxUploader implements Uploader {
     }
 
     /**
-     * Returns a list of ZIP files and their modification dates inside the given folder
-     * @return the list of files
+     * Returns a list of ZIP files, and their modification dates inside the given folder.
+     * @return a map of files, and their modification dates
      * @throws Exception
      */
     @NotNull
@@ -332,7 +332,7 @@ public class DropboxUploader implements Uploader {
     }
 
     /**
-     * closes any remaining connectionsretrieveNewAccessToken
+     * Closes any remaining connections retrieveNewAccessToken
      */
     public void close() {
         // nothing needs to be done
@@ -347,8 +347,8 @@ public class DropboxUploader implements Uploader {
     }
 
     /**
-     * Gets the id of this upload service
-     * @return id of upload service
+     * Gets the ID of this upload service
+     * @return ID of upload service
      */
     public String getId() {
         return UPLOADER_ID;
@@ -360,7 +360,7 @@ public class DropboxUploader implements Uploader {
 
     /**
      * Sets whether an error occurred while accessing the authenticated user's
-     * Dropbox
+     * Dropbox.
      * 
      * @param errorOccurredValue whether an error occurred
      */

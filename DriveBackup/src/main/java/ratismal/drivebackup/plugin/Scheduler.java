@@ -25,7 +25,7 @@ import static ratismal.drivebackup.config.Localization.intl;
 
 public class Scheduler {
     /**
-     * How often to run the schedule drift correction task, in seconds
+     * How often to run the schedule drift correction task, in seconds.
      */
     private static final long SCHEDULE_DRIFT_CORRECTION_INTERVAL = 1 * 60 * 60 * 24;
 
@@ -40,7 +40,7 @@ public class Scheduler {
     private static int scheduleDriftTask = -1;
 
     /**
-     * List of Dates representing each time a scheduled backup will occur
+     * List of Dates representing each time a scheduled backup will occur.
      */
     private static ArrayList<ZonedDateTime> backupDatesList = new ArrayList<>();
 
@@ -74,7 +74,9 @@ public class Scheduler {
                         .with(ChronoField.MINUTE_OF_HOUR, entry.time.get(ChronoField.MINUTE_OF_HOUR))
                         .with(ChronoField.SECOND_OF_MINUTE, 0);
 
-                    // Adjusts nextOccurrence date when it was set to earlier on same day, as the DayOfWeek TemporalAdjuster only takes into account the day, not the time
+                    // Adjusts nextOccurrence date when it was set to earlier on the same day,
+                    // as the DayOfWeek TemporalAdjuster only takes into account the day,
+                    // not the time.
                     ZonedDateTime startingOccurrence = nextOccurrence;
                     if (now.isAfter(startingOccurrence)) {
                         startingOccurrence = startingOccurrence.plusWeeks(1);
@@ -156,7 +158,7 @@ public class Scheduler {
     }
 
     /**
-     * Gets a list of Dates representing each time a scheduled backup will occur
+     * Gets a list of Dates representing each time a scheduled backup will occur.
      * @return the ArrayList of {@code ZonedDateTime} objects
      */
     public static List<ZonedDateTime> getBackupDatesList() {

@@ -52,7 +52,7 @@ public class GoogleDriveUploader implements Uploader {
     private String refreshToken;
 
     /**
-     * Cached instance of shared drives
+     * A cached instance of shared drives
      */
     private List<com.google.api.services.drive.model.Drive> drives;
 
@@ -60,12 +60,12 @@ public class GoogleDriveUploader implements Uploader {
     public static final String UPLOADER_ID = "googledrive";
 
     /**
-     * Global instance of the HTTP transport
+     * A global instance of the HTTP transport
      */
     private static final HttpTransport httpTransport = new NetHttpTransport();
 
     /**
-     * Global instance of the JSON factory
+     * A global instance of the JSON factory
      */
     private static final JsonFactory JSON_FACTORY = new JacksonFactory();
 
@@ -92,7 +92,7 @@ public class GoogleDriveUploader implements Uploader {
     }
 
     /**
-     * Gets a new Google Drive access token for the authenticated user
+     * Gets a new Google Drive access token for the authenticated user.
      */
     private void retrieveNewAccessToken() throws Exception {
         RequestBody requestBody = new FormBody.Builder()
@@ -138,8 +138,10 @@ public class GoogleDriveUploader implements Uploader {
     private static HttpRequestInitializer setTimeout(final HttpRequestInitializer requestInitializer) {
         return httpRequest -> {
             requestInitializer.initialize(httpRequest);
-            httpRequest.setConnectTimeout(1 * 60000); // 1 minute connect timeout
-            httpRequest.setReadTimeout(4 * 60 * 60000); // 4 hours read timeout
+            // 1 minute connect timeout
+            httpRequest.setConnectTimeout(1 * 60000);
+            // 4 hours read timeout
+            httpRequest.setReadTimeout(4 * 60 * 60000);
         };
     }
 
@@ -183,7 +185,7 @@ public class GoogleDriveUploader implements Uploader {
     }
 
     /**
-     * Uploads the specified file to the authenticated user's Google Drive inside a folder for the specified file type
+     * Uploads the specified file to the authenticated user's Google Drive inside a folder for the specified file type.
      * @param file the file
      * @param type the type of file (ex. plugins, world)
      */
@@ -248,7 +250,7 @@ public class GoogleDriveUploader implements Uploader {
     }
 
     /**
-     * Gets whether an error occurred while accessing the authenticated user's Google Drive
+     * Gets whether an error occurred while accessing the authenticated user's Google Drive.
      * @return whether an error occurred
      */
     public boolean isErrorWhileUploading() {
@@ -256,7 +258,7 @@ public class GoogleDriveUploader implements Uploader {
     }
 
     /**
-     * closes any remaining connectionsretrieveNewAccessToken
+     * Closes any remaining connections retrieveNewAccessToken
      */
     public void close() {
         // nothing needs to be done
@@ -271,8 +273,8 @@ public class GoogleDriveUploader implements Uploader {
     }
 
     /**
-     * Gets the id of this upload service
-     * @return id of upload service
+     * Gets the ID of this upload service
+     * @return ID of upload service
      */
     public String getId() {
         return UPLOADER_ID;
@@ -351,7 +353,7 @@ public class GoogleDriveUploader implements Uploader {
     }
 
     /**
-     * Creates a folder with the specified name in the specified parent folder in the authenticated user's Google Drive
+     * Creates a folder with the specified name in the specified parent folder in the authenticated user's Google Drive.
      * @param name the name of the folder
      * @param parent the parent folder
      * @return the created folder
@@ -379,7 +381,7 @@ public class GoogleDriveUploader implements Uploader {
     }
 
     /**
-     * Creates a folder with the specified name in the authenticated user's specified Shared Drive
+     * Creates a folder with the specified name in the authenticated user's specified Shared Drive.
      * @param name the name of the folder
      * @param driveId the parent folder
      * @return the created folder
@@ -407,7 +409,7 @@ public class GoogleDriveUploader implements Uploader {
     }
 
     /**
-     * Creates a folder with the specified name in the root of the authenticated user's Google Drive
+     * Creates a folder with the specified name in the root of the authenticated user's Google Drive.
      * @param name the name of the folder
      * @return the created folder
      * @throws Exception
@@ -430,9 +432,9 @@ public class GoogleDriveUploader implements Uploader {
     }
 
     /**
-     * Returns the folder in the specified Shared Drive of the authenticated user's Google Drive with the specified name
+     * Returns the folder in the specified Shared Drive of the authenticated user's Google Drive with the specified name.
      * @param name the name of the folder
-     * @param parent the parent folder
+     * @param driveId the ID of the drive to use
      * @return the folder or {@code null}
      */
     @Nullable
@@ -458,7 +460,7 @@ public class GoogleDriveUploader implements Uploader {
     }
 
     /**
-     * Returns the folder in the specified parent folder of the authenticated user's Google Drive with the specified name
+     * Returns the folder in the specified parent folder of the authenticated user's Google Drive with the specified name.
      * @param name the name of the folder
      * @param parent the parent folder
      * @return the folder or {@code null}
@@ -489,7 +491,7 @@ public class GoogleDriveUploader implements Uploader {
     }
 
     /**
-     * Returns the folder in the root of the authenticated user's Google Drive with the specified name
+     * Returns the folder in the root of the authenticated user's Google Drive with the specified name.
      * @param name the name of the folder
      * @return the folder or {@code null}
      */
@@ -512,7 +514,7 @@ public class GoogleDriveUploader implements Uploader {
     }
 
     /**
-     * Returns a list of files in the specified folder in the authenticated user's Google Drive, ordered by creation date
+     * Returns a list of files in the specified folder in the authenticated user's Google Drive, ordered by creation date.
      * @param folder the folder containing the files
      * @return a list of files
      * @throws Exception
@@ -524,7 +526,8 @@ public class GoogleDriveUploader implements Uploader {
         List<ChildReference> result = new ArrayList<>();
 
         //Set up a request to query all files from all pages.
-        //We are also making sure the files are sorted  by created Date. Oldest at the beginning of List.
+        //We are also making sure the files are sorted by created Date.
+        //Oldest at the beginning of List.
         //Drive.Files.List request = service.files().list().setOrderBy("createdDate");
         //folder.getId();
         Drive.Children.List request = service.children().list(folder.getId()).setOrderBy("createdDate");
@@ -545,7 +548,7 @@ public class GoogleDriveUploader implements Uploader {
     }
 
     /**
-     * Deletes the oldest files in the specified folder past the number to retain from the authenticated user's Google Drive
+     * Deletes the oldest files in the specified folder past the number to retain from the authenticated user's Google Drive.
      * <p>
      * The number of files to retain is specified by the user in the {@code config.yml}
      * @param folder the folder containing the files
@@ -579,7 +582,7 @@ public class GoogleDriveUploader implements Uploader {
     }
 
     /**
-     * Sets whether an error occurred while accessing the authenticated user's Google Drive
+     * Sets whether an error occurred while accessing the authenticated user's Google Drive.
      * @param errorOccurredValue whether an error occurred
      */
     private void setErrorOccurred(boolean errorOccurredValue) {

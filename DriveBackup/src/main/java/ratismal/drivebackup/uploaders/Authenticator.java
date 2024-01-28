@@ -85,7 +85,7 @@ public class Authenticator {
 
     /**
      * Attempt to authenticate a user with the specified authentication provider 
-     * using the OAuth 2.0 device authorization grant flow
+     * using the OAuth 2.0-device authorization grant flow.
      * 
      * @param provider an {@code AuthenticationProvider}
      * @param initiator user who initiated the authentication
@@ -291,7 +291,7 @@ public class Authenticator {
     }
 
     public static boolean hasRefreshToken(AuthenticationProvider provider) {
-        // what am i doing with my life
+        // what am I doing with my life?
         return !getRefreshToken(provider).isEmpty();
     }
 

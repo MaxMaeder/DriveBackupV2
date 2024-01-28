@@ -66,7 +66,7 @@ public class MySQLUploader {
     }
 
     /**
-     * Downloads the specified MySQL database with the specified name into a folder for the specified database type
+     * Downloads the specified MySQL database with the specified name into a folder for the specified database type.
      * @param name the name of the MySQL database
      * @param type the type of database (ex. users, purchases)
      */
@@ -75,7 +75,7 @@ public class MySQLUploader {
     }
 
     /**
-     * Downloads the specified MySQL database with the specified name into a folder for the specified database type, excluding the specified tables
+     * Downloads the specified MySQL database with the specified name into a folder for the specified database type, excluding the specified tables.
      * @param name the name of the MySQL database
      * @param type the type of database (ex. users, purchases)
      * @param blacklist a list of tables to not include
@@ -116,7 +116,7 @@ public class MySQLUploader {
     }
 
     /**
-     * Gets the names of all the tables in the remote database
+     * Gets the names of all the tables in the remote database.
      * @param name the database's name
      * @return a list of the table names
      * @throws SQLException
@@ -133,9 +133,9 @@ public class MySQLUploader {
     }
 
     /**
-     * Generate the SQL insert statement needed to create an empty table locally with the specified name
+     * Generate the SQL insert statement needed to create an empty table locally with the specified name.
+     * @param sql where to write the output to
      * @param name the table's name
-     * @return the SQL insert statement
      * @throws SQLException
      */
     private void getTableInsertStatement(OutputStreamWriter sql, String name) throws SQLException, IOException {
@@ -160,9 +160,9 @@ public class MySQLUploader {
 
 
     /**
-     * Generates the SQL insert statements needed to copy all of the specified remote table's data to the local table
+     * Generates the SQL insert statements needed to copy all of the specified remote table's data to the local table.
+     * @param sql where to write the output to
      * @param name the table's name
-     * @return the SQL insert statement
      * @throws SQLException exception
      */
     private void getDataInsertStatement(OutputStreamWriter sql, String name) throws SQLException, IOException {
@@ -205,7 +205,7 @@ public class MySQLUploader {
 
         sql.append(") VALUES \n");
 
-        //now we're going to build the values for data insertion
+        //now we're going to build the values for data insertion.
         rs.beforeFirst();
         while(rs.next()) {
             if (!rs.isFirst()) {
@@ -221,7 +221,7 @@ public class MySQLUploader {
                     sql.append(", ");
                 }
 
-                // this is the part where the values are processed based on their type
+                // this is the part where the values are processed based on their type.
                 if (rs.getObject(columnIndex) == null) {
                     sql.append("NULL");
                 } else {
@@ -272,8 +272,8 @@ public class MySQLUploader {
             sql.append(")");
         }
 
-        //now that we are done processing the entire row
-        //let's add the terminator
+        //now that we are done processing the entire row,
+        //let's add the terminator.
         sql.append(";");
 
         sql.append("\n--\n")
@@ -285,10 +285,10 @@ public class MySQLUploader {
     }
 
     /**
-     * Generates the SQL insert statements needed to recreate the specified remote database locally, excluding the specified tables
+     * Generates the SQL insert statements needed to recreate the specified remote database locally, excluding the specified tables.
+     * @param sql where to write the output to
      * @param name the database's name
      * @param blacklist a list of tables to not include
-     * @return the SQL insert statement
      * @throws SQLException exception
      */
     private void getInsertStatements(@NotNull OutputStreamWriter sql, String name, List<String> blacklist) throws SQLException, IOException {
@@ -309,7 +309,7 @@ public class MySQLUploader {
         List<String> tables = getAllTables(name);
 
         //for every table, get the table creation and data
-        // insert statement
+        // insert statement.
         for (String table: tables) {
             if (blacklist.contains(table)) {
                 continue;

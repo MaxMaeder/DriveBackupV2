@@ -150,7 +150,7 @@ public class OneDriveUploader implements Uploader {
     }
 
     /**
-     * Uploads the specified file to the authenticated user's OneDrive inside a folder for the specified file type
+     * Uploads the specified file to the authenticated user's OneDrive inside a folder for the specified file type.
      * @param file the file
      * @param type the type of file (ex. plugins, world)
      */
@@ -240,7 +240,7 @@ public class OneDriveUploader implements Uploader {
     }
 
     /**
-     * Gets whether an error occurred while accessing the authenticated user's OneDrive
+     * Gets whether an error occurred while accessing the authenticated user's OneDrive.
      * @return whether an error occurred
      */
     public boolean isErrorWhileUploading() {
@@ -248,7 +248,7 @@ public class OneDriveUploader implements Uploader {
     }
 
     /**
-    * closes any remaining connectionsretrieveNewAccessToken
+    * Closes any remaining connections retrieveNewAccessToken
     */
     public void close() {
         // nothing needs to be done
@@ -263,8 +263,8 @@ public class OneDriveUploader implements Uploader {
     }
 
     /**
-     * Gets the id of this upload service
-     * @return id of upload service
+     * Gets the ID of this upload service
+     * @return ID of upload service
      */
     public String getId() {
         return UPLOADER_ID;
@@ -276,11 +276,11 @@ public class OneDriveUploader implements Uploader {
 
 
     /**
-     * Creates a folder with the specified name in the specified parent folder in the authenticated user's OneDrive
+     * Creates a folder with the specified name in the specified parent folder in the authenticated user's OneDrive.
      * @param name the name of the folder
      * @param parent the parent folder
      * @return the created folder
-     * @throws Exception
+     * @throws IOException
      */
     @NotNull
     private File createFolder(String name, File parent) throws IOException {
@@ -325,10 +325,10 @@ public class OneDriveUploader implements Uploader {
     }
 
     /**
-     * Creates a folder with the specified name in the root of the authenticated user's OneDrive
+     * Creates a folder with the specified name in the root of the authenticated user's OneDrive.
      * @param name the name of the folder
      * @return the created folder
-     * @throws Exception
+     * @throws IOException
      */
     @NotNull
     private File createFolder(String name) throws IOException {
@@ -362,7 +362,7 @@ public class OneDriveUploader implements Uploader {
     }
 
     /**
-     * Returns the folder in the specified parent folder of the authenticated user's OneDrive with the specified name
+     * Returns the folder in the specified parent folder of the authenticated user's OneDrive with the specified name.
      * @param name the name of the folder
      * @param parent the parent folder
      * @return the folder or {@code null}
@@ -395,7 +395,7 @@ public class OneDriveUploader implements Uploader {
     }
 
     /**
-     * Returns the folder in the root of the authenticated user's OneDrive with the specified name
+     * Returns the folder in the root of the authenticated user's OneDrive with the specified name.
      * @param name the name of the folder
      * @return the folder or {@code null}
      */
@@ -427,10 +427,10 @@ public class OneDriveUploader implements Uploader {
     }
 
     /**
-     * Deletes the oldest files in the specified folder past the number to retain from the authenticated user's OneDrive
+     * Deletes the oldest files in the specified folder past the number to retain from the authenticated user's OneDrive.
      * <p>
      * The number of files to retain is specified by the user in the {@code config.yml}
-     * @param folder the folder containing the files
+     * @param parent the folder containing the files
      * @throws Exception
      */
     private void pruneBackups(File parent) throws Exception {
@@ -497,7 +497,7 @@ public class OneDriveUploader implements Uploader {
         }
 
         /**
-         * Returns a {@code File} with the specified folder added to the file path
+         * Returns a {@code File} with the specified folder added to the file path.
          * @param folder the {@code File}
          */
         @NotNull
@@ -539,7 +539,7 @@ public class OneDriveUploader implements Uploader {
         }
 
         /**
-         * Gets the path of the parent folder of the file/folder
+         * Gets the path of the parent folder of the file/folder.
          * @return the path, as a String
          */
         @NotNull
@@ -570,7 +570,7 @@ public class OneDriveUploader implements Uploader {
     }
 
     /**
-     * Resets the number of bytes uploaded in the last chunk and the number of bytes uploaded in total
+     * Resets the number of bytes uploaded in the last chunk, and the number of bytes uploaded in total.
      */
     private void resetRanges() {
         lastUploaded = 0;
@@ -578,7 +578,8 @@ public class OneDriveUploader implements Uploader {
     }
     
     /**
-     * Sets the number of bytes uploaded in the last chunk and the number of bytes uploaded in total from the ranges of bytes the OneDrive API requested to be uploaded last
+     * Sets the number of bytes uploaded in the last chunk,
+     * and the number of bytes uploaded in total from the ranges of bytes the OneDrive API requested to be uploaded last.
      * @param stringRanges the ranges of bytes requested
      */
     private void setRanges(@NotNull String[] stringRanges) {
@@ -602,7 +603,7 @@ public class OneDriveUploader implements Uploader {
     }
 
     /**
-     * Gets an array of bytes to upload next from the file buffer based on the number of bytes uploaded so far
+     * Gets an array of bytes to upload next from the file buffer based on the number of bytes uploaded so far.
      * @return the array of bytes
      * @throws IOException
      */
@@ -621,7 +622,7 @@ public class OneDriveUploader implements Uploader {
     }
 
     /**
-     * Sets whether an error occurred while accessing the authenticated user's OneDrive
+     * Sets whether an error occurred while accessing the authenticated user's OneDrive.
      * @param errorOccurredValue whether an error occurred
      */
     private void setErrorOccurred(boolean errorOccurredValue) {

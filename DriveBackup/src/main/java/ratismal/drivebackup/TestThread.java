@@ -62,8 +62,8 @@ public class TestThread implements Runnable {
         /**
          * Arguments:
          * 0) The backup method to test
-         * 1) The name of the test file to upload during the test
-         * 2) The size (in bytes) of the file
+         * 1) The name of the test file to upload during test
+         * 2) The size (in bytes) of the file.
          */
 
         if (args.length < 2) {

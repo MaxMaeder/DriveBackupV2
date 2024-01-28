@@ -47,7 +47,7 @@ public class DriveBackup extends JavaPlugin {
     public static List<CommandSender> chatInputPlayers;
 
     /**
-     * Global instance of OkHTTP client
+     * A global instance of OkHTTP client
      */
     public static OkHttpClient httpClient;
 

@@ -92,8 +92,8 @@ public class FTPUploader implements Uploader {
      * @param sftp whether FTP using SSH
      * @param publicKey the path to the SSH public key, relative to the "DriveBackupV2 folder" (leave blank if none)
      * @param passphrase the SSH public key passphrase (leave blank if none)
-     * @param localBaseFolder the path to the folder which all local file paths are relative to
-     * @param remoteBaseFolder the path to the folder which all remote file paths are relative to 
+     * @param localBaseFolder the path to the folder, which all local file paths are relative to.
+     * @param remoteBaseFolder the path to the folder, which all remote file paths are relative to.
      */
     public FTPUploader(UploadLogger logger, String host, int port, String username, String password, boolean ftps, boolean sftp, String publicKey, String passphrase, String localBaseFolder, String remoteBaseFolder) {
         this.logger = logger;
@@ -170,9 +170,8 @@ public class FTPUploader implements Uploader {
     }
 
     /**
-     * Tests the connection to the (S)FTP server by connecting and uploading a small file
-     * @param testFileName name of the test file to upload during the test
-     * @param testFileSize the size (in bytes) of the file
+     * Tests the connection to the (S)FTP server by connecting and uploading a small file.
+     * @param testFile the file to upload
      */
     public void test(File testFile) {
         try {
@@ -199,7 +198,7 @@ public class FTPUploader implements Uploader {
     }
 
     /**
-     * Uploads the specified file to the (S)FTP server inside a folder for the specified file type
+     * Uploads the specified file to the (S)FTP server inside a folder for the specified file type.
      * @param file the file
      * @param type the type of file (ex. plugins, world)
      */
@@ -235,7 +234,7 @@ public class FTPUploader implements Uploader {
     }
 
     /**
-     * Downloads the specifed file from the (S)FTP server into a folder for the specified file type
+     * Downloads the specifed file from the (S)FTP server into a folder for the specified file type.
      * @param filePath the path of the file
      * @param type the type of file (ex. plugins, world)
      */
@@ -266,7 +265,7 @@ public class FTPUploader implements Uploader {
     }
 
     /**
-     * Returns a list of the paths of the files inside the specified folder and subfolders
+     * Returns a list of the paths of the files inside the specified folder and subfolders.
      * @param folderPath the path of the folder
      * @return the list of file paths
      */
@@ -299,7 +298,7 @@ public class FTPUploader implements Uploader {
     }
 
     /**
-     * Gets whether an error occurred while accessing the (S)FTP server
+     * Gets whether an error occurred while accessing the (S)FTP server.
      * @return whether an error occurred
      */
     public boolean isErrorWhileUploading() {
@@ -315,8 +314,8 @@ public class FTPUploader implements Uploader {
     }
 
     /**
-     * Gets the id of this upload service
-     * @return id of upload service
+     * Gets the ID of this upload service
+     * @return ID of upload service
      */
     public String getId() {
         return UPLOADER_ID;
@@ -327,7 +326,7 @@ public class FTPUploader implements Uploader {
     }
 
     /**
-     * Deletes the oldest files past the number to retain from the FTP server inside the specified folder for the file type
+     * Deletes the oldest files past the number to retain from the FTP server inside the specified folder for the file type.
      * <p>
      * The number of files to retain is specified by the user in the {@code config.yml}
      * @param type the type of file (ex. plugins, world)
@@ -355,8 +354,8 @@ public class FTPUploader implements Uploader {
     }
 
     /**
-     * Returns a list of ZIP files and their modification dates inside the current working directory
-     * @return the list of files
+     * Returns a list of ZIP files, and their modification dates inside the current working directory.
+     * @return a map of ZIP files, and their modification dates
      * @throws Exception
      */
     @NotNull
@@ -372,8 +371,7 @@ public class FTPUploader implements Uploader {
     }
 
     /**
-     * Creates a folder with the specified path inside the current working directory, then enters it
-     * @param parentFolder the parent folder
+     * Creates a folder with the specified path inside the current working directory, then enters it.
      * @param path the relative path of the folder to create
      * @throws Exception
      */
@@ -385,7 +383,7 @@ public class FTPUploader implements Uploader {
     }
 
     /**
-     * Resets the current working directory to what it was when connection to the SFTP server was established
+     * Resets the current working directory to what it was when connection to the SFTP server was established.
      * @throws Exception
      */
     private void resetWorkingDirectory() throws Exception {
@@ -393,7 +391,7 @@ public class FTPUploader implements Uploader {
     }
 
     /**
-     * Prepends the specified String to each element in the specified ArrayList
+     * Prepends the specified String to each element in the specified ArrayList.
      * @param list the ArrayList
      * @param string the String
      * @return the new ArrayList

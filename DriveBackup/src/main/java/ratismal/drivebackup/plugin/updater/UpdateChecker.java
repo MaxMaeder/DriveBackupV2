@@ -46,7 +46,7 @@ public class UpdateChecker {
                     currentVersion = checker.getCurrent();
                     latestVersion = checker.getLatest();
 
-                    //check if current version is outdated
+                    //check if the current version is outdated
                     if (latestVersion.isAfter(currentVersion)) {
                         logger.log(
                             intl("update-checker-new-release"),

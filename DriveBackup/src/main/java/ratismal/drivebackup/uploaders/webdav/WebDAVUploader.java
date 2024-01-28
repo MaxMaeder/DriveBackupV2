@@ -70,9 +70,8 @@ public class WebDAVUploader implements Uploader {
     }
 
     /**
-     * Tests the connection to the WebDAV server by connecting and uploading a small file
-     * @param testFileName name of the test file to upload during the test
-     * @param testFileSize the size (in bytes) of the file
+     * Tests the connection to the WebDAV server by connecting and uploading a small file.
+     * @param testFile the file to upload
      */
     public void test(File testFile) {
         try {
@@ -97,7 +96,7 @@ public class WebDAVUploader implements Uploader {
     }
 
     /**
-     * Uploads the specified file to the WebDAV server inside a folder for the specified file type
+     * Uploads the specified file to the WebDAV server inside a folder for the specified file type.
      * @param file the file
      * @param type the type of file (ex. plugins, world)
      */
@@ -122,7 +121,7 @@ public class WebDAVUploader implements Uploader {
     }
 
     /**
-     * Returns a list of the paths of the files inside the specified folder and subfolders
+     * Returns a list of the paths of the files inside the specified folder and subfolders.
      * @param folderPath the path of the folder
      * @return the list of file paths
      */
@@ -164,8 +163,8 @@ public class WebDAVUploader implements Uploader {
     }
 
     /**
-     * Gets the id of this upload service
-     * @return id of upload service
+     * Gets the ID of this upload service
+     * @return ID of upload service
      */
     public String getId() {
         return UPLOADER_ID;
@@ -180,7 +179,7 @@ public class WebDAVUploader implements Uploader {
     }
 
     /**
-     * Deletes the oldest files past the number to retain from the FTP server inside the specified folder for the file type
+     * Deletes the oldest files past the number to retain from the FTP server inside the specified folder for the file type.
      * <p>
      * The number of files to retain is specified by the user in the {@code config.yml}
      * @param type the type of file (ex. plugins, world)
@@ -208,8 +207,8 @@ public class WebDAVUploader implements Uploader {
     }
 
     /**
-     * Returns a list of ZIP files and their modification dates inside the current working directory
-     * @return the list of files
+     * Returns a list of ZIP files, and their modification dates inside the current working directory.
+     * @return a map of ZIP files, and their modification dates
      * @throws Exception
      */
     @NotNull
@@ -233,10 +232,8 @@ public class WebDAVUploader implements Uploader {
     }
 
     /**
-     * Creates a folder with the specified path inside the current working directory, then enters it
-     * @param parentFolder the parent folder
+     * Creates a folder with the specified path inside the current working directory, then enters it.
      * @param path the relative path of the folder to create
-     * @throws Exception
      */
     private void createDirectory(String path) {
         path = rstrip(path, '/');
@@ -252,12 +249,12 @@ public class WebDAVUploader implements Uploader {
                 sardine.createDirectory(path);
             }
         } catch (IOException exception) {
-            //Sardine throws an error when the file exists instead of returning an boolean
+            //Sardine throws an error when the file exists instead of returning a boolean.
         }
     }
 
     /**
-     * Prepends the specified String to each element in the specified ArrayList
+     * Prepends the specified String to each element in the specified ArrayList.
      * @param list the ArrayList
      * @param string the String
      * @return the new ArrayList
