@@ -23,18 +23,14 @@ public final class LocalDateTimeFormatter {
     @Contract ("_ -> new")
     public static LocalDateTimeFormatter ofPattern(String pattern) throws IllegalArgumentException {
         verifyPattern(pattern);
-
         StringBuilder finalPatternBuilder = new StringBuilder(pattern);
-
         // Escape non-date format characters, if user specified %FORMAT in the pattern.
         if (pattern.contains(FORMAT_KEYWORD)) {
             finalPatternBuilder.insert(0, "'");
             finalPatternBuilder.append("'");
         }
-
         String finalPattern = finalPatternBuilder.toString();
-        finalPattern = finalPattern.replaceAll(Pattern.quote("%FORMAT"), "'yyyy-M-d--HH-mm'");
-
+        finalPattern = finalPattern.replaceAll(Pattern.quote(FORMAT_KEYWORD), "'yyyy-M-d--HH-mm'");
         return new LocalDateTimeFormatter(DateTimeFormatter.ofPattern(finalPattern));
     }
 
@@ -53,11 +49,9 @@ public final class LocalDateTimeFormatter {
 
     private static void verifyPattern(String pattern) throws IllegalArgumentException {
         boolean isInvalid = false;
-
         if (!VALID_FORMAT.matcher(pattern).find()) {
             isInvalid = true;
         }
-
         if (pattern.contains(FORMAT_KEYWORD)) {
             if (pattern.contains("'")) {
                 isInvalid = true;
@@ -67,7 +61,6 @@ public final class LocalDateTimeFormatter {
                 isInvalid = true;
             }
         }
-
         if (isInvalid)
             throw new IllegalArgumentException("Format pattern contains illegal characters");
     }
