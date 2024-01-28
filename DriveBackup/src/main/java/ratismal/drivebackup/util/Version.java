@@ -4,9 +4,9 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 public class Version {
-    public final int major;
-    public final int minor;
-    public final int patch;
+    private final int major;
+    private final int minor;
+    private final int patch;
 
     private Version(int major, int minor, int patch) {
         this.major = major;
