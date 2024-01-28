@@ -165,6 +165,9 @@ public class UploadThread implements Runnable {
      */
     @Override
     public void run() {
+        if (!locationsToBePruned.isEmpty()) {
+            locationsToBePruned.clear();
+        }
         Config config = ConfigParser.getConfig();
         if (initiator != null && backupStatus != BackupStatus.NOT_RUNNING) {
             logger.initiatorError(
