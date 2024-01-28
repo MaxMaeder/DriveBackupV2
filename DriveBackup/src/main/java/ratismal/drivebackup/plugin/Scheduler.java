@@ -50,30 +50,23 @@ public class Scheduler {
     public static void startBackupThread() {
         Config config = ConfigParser.getConfig();
         BukkitScheduler taskScheduler = Bukkit.getServer().getScheduler();
-
         if (config.backupScheduling.enabled) {
             SchedulerUtil.cancelTasks(backupTasks);
             backupDatesList.clear();
-
             for (BackupScheduleEntry entry : config.backupScheduling.schedule) {
-
                 ZoneOffset timezone = config.advanced.dateTimezone;
-
                 for (DayOfWeek day : entry.days) {
                     ZonedDateTime previousOccurrence = ZonedDateTime.now(timezone)
                         .with(TemporalAdjusters.previous(day))
                         .with(ChronoField.CLOCK_HOUR_OF_DAY, entry.time.get(ChronoField.CLOCK_HOUR_OF_DAY))
                         .with(ChronoField.MINUTE_OF_HOUR, entry.time.get(ChronoField.MINUTE_OF_HOUR))
                         .with(ChronoField.SECOND_OF_MINUTE, 0);
-
                     ZonedDateTime now = ZonedDateTime.now(timezone);
-                    
                     ZonedDateTime nextOccurrence = ZonedDateTime.now(timezone)
                         .with(TemporalAdjusters.nextOrSame(day))
                         .with(ChronoField.CLOCK_HOUR_OF_DAY, entry.time.get(ChronoField.CLOCK_HOUR_OF_DAY))
                         .with(ChronoField.MINUTE_OF_HOUR, entry.time.get(ChronoField.MINUTE_OF_HOUR))
                         .with(ChronoField.SECOND_OF_MINUTE, 0);
-
                     // Adjusts nextOccurrence date when it was set to earlier on the same day,
                     // as the DayOfWeek TemporalAdjuster only takes into account the day,
                     // not the time.
@@ -81,34 +74,27 @@ public class Scheduler {
                     if (now.isAfter(startingOccurrence)) {
                         startingOccurrence = startingOccurrence.plusWeeks(1);
                     }
-
                     backupTasks.add(taskScheduler.runTaskTimerAsynchronously(
                         DriveBackup.getInstance(), 
                         new UploadThread(),
                         SchedulerUtil.sToTicks(ChronoUnit.SECONDS.between(now, startingOccurrence)),
                         SchedulerUtil.sToTicks(ChronoUnit.SECONDS.between(previousOccurrence, nextOccurrence))
                     ).getTaskId());
-
                     backupDatesList.add(startingOccurrence);
                 }
-
                 ZonedDateTime scheduleMessageTime = ZonedDateTime.now(timezone)
                     .with(ChronoField.CLOCK_HOUR_OF_DAY, entry.time.get(ChronoField.CLOCK_HOUR_OF_DAY))
                     .with(ChronoField.MINUTE_OF_HOUR, entry.time.get(ChronoField.MINUTE_OF_HOUR));
-
                 StringBuilder scheduleDays = new StringBuilder();
-
                 for (int i = 0; i < entry.days.length; i++) {
                     if (i == entry.days.length - 1) {
                         scheduleDays.append(intl("list-last-delimiter"));
                     } else if (i != 0) {
                         scheduleDays.append(intl("list-delimiter"));
                     }
-
                     String dayName = entry.days[i].getDisplayName(TextStyle.FULL, config.advanced.dateLanguage);
                     scheduleDays.append(dayName);
                 }
-
                 MessageUtil.Builder()
                     .mmText(
                         intl("backups-scheduled"), 
@@ -117,34 +103,27 @@ public class Scheduler {
                     .toConsole(true)
                     .send();
             }
-
             if (scheduleDriftTask != -1) {
                 Bukkit.getScheduler().cancelTask(scheduleDriftTask);
             }
-
             long driftInt = SchedulerUtil.sToTicks(SCHEDULE_DRIFT_CORRECTION_INTERVAL);
             scheduleDriftTask = taskScheduler.runTaskTimer(DriveBackup.getInstance(), () -> startBackupThread(), driftInt, driftInt).getTaskId();
         } else if (config.backupStorage.delay != -1) {
             SchedulerUtil.cancelTasks(backupTasks);
-
             if (scheduleDriftTask != -1) {
                 Bukkit.getScheduler().cancelTask(scheduleDriftTask);
             }
-
             MessageUtil.Builder()
                 .mmText(intl("backups-interval-scheduled"), "delay", String.valueOf(config.backupStorage.delay))
                 .toConsole(true)
                 .send();
-
             long interval = SchedulerUtil.sToTicks(config.backupStorage.delay * 60);
-
             backupTasks.add(taskScheduler.runTaskTimerAsynchronously(
-                DriveBackup.getInstance(), 
-                new UploadThread(),
-                interval,
-                interval
+                    DriveBackup.getInstance(),
+                    new UploadThread(),
+                    interval,
+                    interval
             ).getTaskId());
-
             UploadThread.updateNextIntervalBackupTime();
         }
     }
