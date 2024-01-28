@@ -36,7 +36,7 @@ public class FTPUploader implements Uploader {
     private UploadLogger logger;
 
     public static final String UPLOADER_NAME = "(S)FTP";
-    public static final String UPLOADER_ID = "ftp";
+    private static final String UPLOADER_ID = "ftp";
 
     private FTPClient ftpClient;
     private SFTPUploader sftpClient;
@@ -52,7 +52,7 @@ public class FTPUploader implements Uploader {
      * Returns the configured FTP file separator
      * @return the separator
      */
-    public static String sep() {
+    private static String sep() {
         return ConfigParser.getConfig().advanced.fileSeparator;
     }
 
@@ -61,7 +61,6 @@ public class FTPUploader implements Uploader {
      */
     public FTPUploader(UploadLogger logger, FTPBackupMethod ftp) {
         this.logger = logger;
-
         try {
             if (ftp.sftp) {
                 sftpClient = new SFTPUploader(logger);
@@ -69,7 +68,6 @@ public class FTPUploader implements Uploader {
                 connect(ftp.hostname, ftp.port, ftp.username, ftp.password, ftp.ftps);
                 host = ftp.hostname;
             }
-
             _localBaseFolder = ".";
             if (Strings.isNullOrEmpty(ftp.remoteDirectory)) {
                 _remoteBaseFolder = ftp.remoteDirectory;
@@ -97,7 +95,6 @@ public class FTPUploader implements Uploader {
      */
     public FTPUploader(UploadLogger logger, String host, int port, String username, String password, boolean ftps, boolean sftp, String publicKey, String passphrase, String localBaseFolder, String remoteBaseFolder) {
         this.logger = logger;
-
         try {
             if (sftp) {
                 sftpClient = new SFTPUploader(logger, host, port, username, password, publicKey, passphrase, localBaseFolder, remoteBaseFolder);
@@ -105,7 +102,6 @@ public class FTPUploader implements Uploader {
                 connect(host, port, username, password, ftps);
                 this.host = host;
             }
-
             _localBaseFolder = localBaseFolder;
             _remoteBaseFolder = remoteBaseFolder;
         } catch (Exception e) {
@@ -128,20 +124,16 @@ public class FTPUploader implements Uploader {
         if (ftps) {
             ftpClient = new FTPSClient();
         }
-
         ftpClient.setConnectTimeout(10 * 1000);
         ftpClient.setDefaultTimeout(30 * 1000);
         ftpClient.setDataTimeout(30 * 1000);
         ftpClient.setControlKeepAliveTimeout(30 * 1000);
-
         ftpClient.connect(host, port);
         ftpClient.login(username, password);
-
         ftpClient.enterLocalPassiveMode();
         ftpClient.setFileType(FTP.BINARY_FILE_TYPE, FTP.BINARY_FILE_TYPE);
         ftpClient.setFileTransferMode(FTP.STREAM_TRANSFER_MODE);
         ftpClient.setListHiddenFiles(false);
-
         initialRemoteFolder = ftpClient.printWorkingDirectory();
     }
 
@@ -179,15 +171,11 @@ public class FTPUploader implements Uploader {
                 sftpClient.test(testFile);
                 return;
             }
-            
             try (FileInputStream fis = new FileInputStream(testFile)) {
                 resetWorkingDirectory();
                 createThenEnter(_remoteBaseFolder);
-                
                 ftpClient.storeFile(testFile.getName(), fis);
-
                 TimeUnit.SECONDS.sleep(5);
-                    
                 ftpClient.deleteFile(testFile.getName());
             }
         } catch (Exception exception) {
@@ -205,25 +193,20 @@ public class FTPUploader implements Uploader {
     public void uploadFile(File file, String type) {
         try {
             type = type.replace(".."  + sep(), "");
-
             if (sftpClient != null) {
                 sftpClient.uploadFile(file, type);
                 return;
             }
-
             resetWorkingDirectory();
             createThenEnter(_remoteBaseFolder);
             createThenEnter(type);
-            
             try (FileInputStream fs = new FileInputStream(file)) {
                 ftpClient.storeFile(file.getName(), fs);
             }
-
             try {
                 pruneBackups(type);
             } catch (Exception e) {
                 logger.log(intl("backup-method-prune-failed"));
-                
                 throw e;
             }
         } catch (Exception exception) {
@@ -244,18 +227,14 @@ public class FTPUploader implements Uploader {
                 sftpClient.downloadFile(filePath, type);
                 return;
             }
-
             resetWorkingDirectory();
             ftpClient.changeWorkingDirectory(_remoteBaseFolder);
-
             File outputFile = new File(_localBaseFolder + sep() + type);
             if (!outputFile.exists()) {
                 outputFile.mkdirs();
             }
-
             OutputStream outputStream = Files.newOutputStream(Paths.get(_localBaseFolder + "/" + type + "/" + new File(filePath).getName()));
             ftpClient.retrieveFile(filePath, outputStream);
-
             outputStream.flush();
             outputStream.close();
         } catch (Exception e) {
@@ -271,16 +250,13 @@ public class FTPUploader implements Uploader {
      */
     public ArrayList<String> getFiles(String folderPath) {
         ArrayList<String> filePaths = new ArrayList<>();
-
         try {
             if (sftpClient != null) {
                 return sftpClient.getFiles(folderPath);
             }
-
             resetWorkingDirectory();
             ftpClient.changeWorkingDirectory(_remoteBaseFolder);
             ftpClient.changeWorkingDirectory(folderPath);
-
             for (FTPFile file : ftpClient.mlistDir()) {
                 if (file.isDirectory()) {
                     // file.getName() = file path
@@ -293,7 +269,6 @@ public class FTPUploader implements Uploader {
             MessageUtil.sendConsoleException(e);
             setErrorOccurred(true);
         }
-
         return filePaths;
     }
 
@@ -302,7 +277,7 @@ public class FTPUploader implements Uploader {
      * @return whether an error occurred
      */
     public boolean isErrorWhileUploading() {
-        return this._errorOccurred;
+        return _errorOccurred;
     }
 
     /**
@@ -338,14 +313,12 @@ public class FTPUploader implements Uploader {
             return;
         }
         TreeMap<Date, FTPFile> files = getZipFiles();
-
         if (files.size() > fileLimit) {
             logger.info(
                 intl("backup-method-limit-reached"), 
                 "file-count", String.valueOf(files.size()),
                 "upload-method", getName(),
                 "file-limit", String.valueOf(fileLimit));
-
             while (files.size() > fileLimit) {
                 ftpClient.deleteFile(files.firstEntry().getValue().getName());
                 files.remove(files.firstKey());
@@ -361,12 +334,10 @@ public class FTPUploader implements Uploader {
     @NotNull
     private TreeMap<Date, FTPFile> getZipFiles() throws Exception {
         TreeMap<Date, FTPFile> files = new TreeMap<>();
-
         for (FTPFile file : ftpClient.mlistDir()) {
             if (file.getName().endsWith(".zip"))
                 files.put(file.getTimestamp().getTime(), file);
         }
-
         return files;
     }
 
@@ -401,7 +372,6 @@ public class FTPUploader implements Uploader {
         for (int i = 0; i < list.size(); i++) {
             list.set(i, string + list.get(i));
         }
-
         return list;
     }
 
