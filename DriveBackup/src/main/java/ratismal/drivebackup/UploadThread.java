@@ -50,7 +50,7 @@ import static ratismal.drivebackup.config.Localization.intl;
 
 public class UploadThread implements Runnable {
     private CommandSender initiator;
-    private UploadLogger logger;
+    private final UploadLogger logger;
     private FileUtil fileUtil;
 
     /**
@@ -80,7 +80,7 @@ public class UploadThread implements Runnable {
     /**
      * List of locations to be pruned that were successfully backed up
      */
-    private Map<String, LocalDateTimeFormatter> locationsToBePruned = new HashMap<>(10);
+    private final Map<String, LocalDateTimeFormatter> locationsToBePruned = new HashMap<>(10);
 
     /**
      * The list of items to be backed up by the backup thread
@@ -92,13 +92,13 @@ public class UploadThread implements Runnable {
      */
     private static BackupStatus backupStatus = BackupStatus.NOT_RUNNING;
     
-    private static LocalDateTime nextIntervalBackupTime = null;
+    private static LocalDateTime nextIntervalBackupTime;
     private static boolean lastBackupSuccessful = true;
 
     /**
      * The backup currently being backed up by the 
      */
-    private static int backupBackingUp = 0;
+    private static int backupBackingUp;
     
     public abstract static class UploadLogger implements Logger {
         public void broadcast(String input, String... placeholders) {
