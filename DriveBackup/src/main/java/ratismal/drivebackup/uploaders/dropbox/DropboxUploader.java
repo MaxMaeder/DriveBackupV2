@@ -36,7 +36,7 @@ public class DropboxUploader implements Uploader {
     private boolean errorOccurred;
 
     public static final String UPLOADER_NAME = "Dropbox";
-    public static final String UPLOADER_ID = "dropbox";
+    private static final String UPLOADER_ID = "dropbox";
 
     /**
      * Global Dropbox tokens
@@ -52,48 +52,37 @@ public class DropboxUploader implements Uploader {
         try (DataInputStream dis = new DataInputStream(Files.newInputStream(testFile.toPath()))) {
             byte[] content = new byte[(int) testFile.length()];
             dis.readFully(content);
-
             MediaType OCTET_STREAM = MediaType.parse("application/octet-stream");
             MediaType JSON = MediaType.parse("application/json; charset=utf-8");
-
             RequestBody requestBody = RequestBody.create(content, OCTET_STREAM);
             String destination = ConfigParser.getConfig().backupStorage.remoteDirectory;
-
             JSONObject dropbox_json = new JSONObject();
             dropbox_json.put("path", "/" + destination + "/" + testFile.getName());
             String dropbox_arg = dropbox_json.toString();
-
             Request request = new Request.Builder()
                 .addHeader("Authorization", "Bearer " + accessToken)
                 .addHeader("Dropbox-API-Arg", dropbox_arg)
                 .url("https://content.dropboxapi.com/2/files/upload")
                 .post(requestBody)
                 .build();
-
             Response response = DriveBackup.httpClient.newCall(request).execute();
             int statusCode = response.code();
             response.close();
-    
             if (statusCode != 200) {
                 setErrorOccurred(true);
             }
-            
             TimeUnit.SECONDS.sleep(5);
-
             JSONObject deleteJson = new JSONObject();
             deleteJson.put("path", "/" + destination + "/" + testFile.getName());
             RequestBody deleteRequestBody = RequestBody.create(deleteJson.toString(), JSON);
-
             request = new Request.Builder()
                 .addHeader("Authorization", "Bearer " + accessToken)
                 .url("https://api.dropboxapi.com/2/files/delete_v2")
                 .post(deleteRequestBody)
                 .build();
-
             response = DriveBackup.httpClient.newCall(request).execute();
             statusCode = response.code();
             response.close();
-        
             if (statusCode != 200) {
                 setErrorOccurred(true);
             }
@@ -120,7 +109,8 @@ public class DropboxUploader implements Uploader {
         try (DataInputStream dis = new DataInputStream(Files.newInputStream(file.toPath()))) {
             if (fileSize > 150000000L /* 150MB */) {
                 // Chunked upload
-                final int CHUNKED_UPLOAD_CHUNK_SIZE = (1024 * 1024 * 10); //10 MB chunk
+                // 10 MB chunk
+                final int CHUNKED_UPLOAD_CHUNK_SIZE = (1024 * 1024 * 10);
                 long uploaded = 0L;
                 byte[] buff = new byte[CHUNKED_UPLOAD_CHUNK_SIZE];
                 String sessionId = null;
@@ -287,11 +277,10 @@ public class DropboxUploader implements Uploader {
      */
     public DropboxUploader(UploadLogger logger) {
         this.logger = logger;
-
         try {
             refreshToken = Authenticator.getRefreshToken(AuthenticationProvider.DROPBOX);
             retrieveNewAccessToken();
-        } catch (final Exception e) {
+        } catch (Exception e) {
             MessageUtil.sendConsoleException(e);
             setErrorOccurred(true);
         }
@@ -307,19 +296,15 @@ public class DropboxUploader implements Uploader {
             .add("refresh_token", refreshToken)
             .add("grant_type", "refresh_token")
             .build();
-
         Request request = new Request.Builder()
             .url("https://api.dropbox.com/oauth2/token")
             .post(requestBody)
             .build();
-
         Response response = DriveBackup.httpClient.newCall(request).execute();
         JSONObject parsedResponse = new JSONObject(response.body().string());
         response.close();
-
         if (!response.isSuccessful())
             return;
-
         accessToken = parsedResponse.getString("access_token");
     }
 
@@ -328,7 +313,7 @@ public class DropboxUploader implements Uploader {
     }
 
     public boolean isErrorWhileUploading() {
-        return this.errorOccurred;
+        return errorOccurred;
     }
 
     /**
@@ -364,7 +349,7 @@ public class DropboxUploader implements Uploader {
      * 
      * @param errorOccurredValue whether an error occurred
      */
-    private void setErrorOccurred(final boolean errorOccurredValue) {
-        this.errorOccurred = errorOccurredValue;
+    private void setErrorOccurred(boolean errorOccurredValue) {
+        errorOccurred = errorOccurredValue;
     }
 }
