@@ -56,49 +56,36 @@ public class DriveBackup extends JavaPlugin {
      */
     @Override
     public void onEnable() {
-        DriveBackup.plugin = this;
-
-        DriveBackup.httpClient = new OkHttpClient.Builder()
+        plugin = this;
+        httpClient = new OkHttpClient.Builder()
             .connectTimeout(1, TimeUnit.MINUTES)
             .writeTimeout(3, TimeUnit.MINUTES)
             .readTimeout(3, TimeUnit.MINUTES)
             .addInterceptor(new HttpLogger())
             .build();
-        DriveBackup.adventure = BukkitAudiences.create(plugin);
-        DriveBackup.chatInputPlayers = new ArrayList<>();
-
+        adventure = BukkitAudiences.create(plugin);
+        chatInputPlayers = new ArrayList<>();
         List<CommandSender> configPlayers = Permissions.getPlayersWithPerm(Permissions.RELOAD_CONFIG);
-
         saveDefaultConfig();
-    
-        DriveBackup.localizationConfig = new CustomConfig("intl.yml");
-        DriveBackup.localizationConfig.saveDefaultConfig();
-    
-        DriveBackup.localization = new Localization(localizationConfig.getConfig());
-
+        localizationConfig = new CustomConfig("intl.yml");
+        localizationConfig.saveDefaultConfig();
+        localization = new Localization(localizationConfig.getConfig());
         ConfigMigrator configMigrator = new ConfigMigrator(getConfig(), localizationConfig.getConfig(), configPlayers);
         configMigrator.migrate();
-    
-        DriveBackup.config = new ConfigParser(getConfig());
-        DriveBackup.config.reload(Permissions.getPlayersWithPerm(Permissions.RELOAD_CONFIG));
-
+        config = new ConfigParser(getConfig());
+        config.reload(Permissions.getPlayersWithPerm(Permissions.RELOAD_CONFIG));
         MessageUtil.Builder()
             .to(configPlayers)
             .mmText(intl("config-loaded"))
             .send();
-
         getCommand(CommandHandler.CHAT_KEYWORD).setTabCompleter(new CommandTabComplete());
         getCommand(CommandHandler.CHAT_KEYWORD).setExecutor(new CommandHandler());
-
         PluginManager pm = getServer().getPluginManager();
         pm.registerEvents(new PlayerListener(), plugin);
         pm.registerEvents(new ChatInputListener(), plugin);
-
         Scheduler.startBackupThread();
-
         BstatsMetrics.initMetrics();
-    
-        DriveBackup.updater = new Updater(this.getFile());
+        updater = new Updater(getFile());
         UpdateChecker.updateCheck();
     }
 
@@ -108,7 +95,6 @@ public class DriveBackup extends JavaPlugin {
     @Override
     public void onDisable() {
         Scheduler.stopBackupThread();
-
         MessageUtil.Builder().mmText(intl("plugin-stop")).send();
     }
 
@@ -130,18 +116,13 @@ public class DriveBackup extends JavaPlugin {
      */
     public static void reloadLocalConfig() {
         Scheduler.stopBackupThread();
-
         List<CommandSender> players = Permissions.getPlayersWithPerm(Permissions.RELOAD_CONFIG);
-        
         getInstance().reloadConfig();
         FileConfiguration configFile = getInstance().getConfig();
-        
         localizationConfig.reloadConfig();
         FileConfiguration localizationFile = localizationConfig.getConfig();
-
         config.reload(configFile, players);
         localization.reload(localizationFile);
-
         Scheduler.startBackupThread();
     }
 }
