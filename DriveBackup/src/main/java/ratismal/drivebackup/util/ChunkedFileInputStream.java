@@ -22,13 +22,10 @@ public class ChunkedFileInputStream extends InputStream {
         if (position >= chunksize) {
             return -1;
         }
-
         int data = input.read();
-
         if (0 <= data) {
             position++;
         }
-
         return data;
     }
 
