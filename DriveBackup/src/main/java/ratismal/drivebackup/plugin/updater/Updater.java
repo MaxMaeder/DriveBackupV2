@@ -27,9 +27,9 @@ public class Updater {
      * @param file The plugin jar file
      */
     public Updater(File file) {
-        this.plugin = DriveBackup.getInstance();
+        plugin = DriveBackup.getInstance();
         this.file = file;
-        this.updateFolder = this.plugin.getDataFolder().getParentFile();
+        updateFolder = plugin.getDataFolder().getParentFile();
     }
 
     /**
@@ -37,7 +37,6 @@ public class Updater {
      */
     private void downloadFile() throws IOException  {
         File outputPath = new File(this.updateFolder, "DriveBackupV2.jar.temp");
-
         Request request = new Request.Builder().url(UpdateChecker.getLatestDownloadUrl()).build();
         try (Response response = DriveBackup.httpClient.newCall(request).execute()) {
             if (!response.isSuccessful()) {
@@ -52,7 +51,6 @@ public class Updater {
 
     public void runUpdater(CommandSender initiator) {
         Logger logger = (input, placeholders) -> MessageUtil.Builder().mmText(input, placeholders).to(initiator).send();
-
         if (UpdateChecker.isUpdateAvailable()) {
             if (UpdateChecker.getLatestDownloadUrl() != null) {
                 try {
