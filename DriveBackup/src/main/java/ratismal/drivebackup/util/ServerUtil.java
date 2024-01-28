@@ -20,8 +20,10 @@ public class ServerUtil {
                 for (World world : Bukkit.getWorlds()) {
                     world.setAutoSave(autoSave);
                 }
-                return true;
+                return Boolean.TRUE;
             }).get();
-        } catch (Exception ignored) { }
+        } catch (Exception ignored) {
+        
+        }
     }
 }
