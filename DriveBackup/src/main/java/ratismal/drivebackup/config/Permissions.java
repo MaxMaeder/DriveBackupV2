@@ -39,13 +39,11 @@ public class Permissions {
     @NotNull
     public static List<CommandSender> getPlayersWithPerm(String permission) {
         ArrayList<CommandSender> players = new ArrayList<>();
-
         for (Player player : Bukkit.getServer().getOnlinePlayers()) {
             if (player.hasPermission(permission)) {
                 players.add(player);
             }
         }
-
         return players;
     }
 }
