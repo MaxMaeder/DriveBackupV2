@@ -26,26 +26,22 @@ public class UpdateChecker {
     private static Version latestVersion;
     private static String latestDownloadUrl;
 
-    private static boolean hasSentStartMessage = false;
+    private static boolean hasSentStartMessage;
 
     public static void updateCheck() {
         DriveBackup plugin = DriveBackup.getInstance();
         UpdateChecker checker = new UpdateChecker();
-
         if (ConfigParser.getConfig().advanced.updateCheckEnabled) {
             plugin.getServer().getScheduler().runTaskTimerAsynchronously(plugin, () -> {
                 Logger logger = (input, placeholders) -> MessageUtil.Builder().mmText(input, placeholders).send();
-
                 try {
                     if (!hasSentStartMessage) {
                         logger.log(intl("update-checker-started"));
                         hasSentStartMessage = true;
                     }
-
                     //get versions
                     currentVersion = checker.getCurrent();
                     latestVersion = checker.getLatest();
-
                     //check if the current version is outdated
                     if (latestVersion.isAfter(currentVersion)) {
                         logger.log(
@@ -72,8 +68,9 @@ public class UpdateChecker {
      * @return whether an update is available
      */
     public static boolean isUpdateAvailable() {
-        if (latestVersion != null)
+        if (latestVersion != null) {
             return latestVersion.isAfter(currentVersion);
+        }
         return false;
     }
 
@@ -90,17 +87,14 @@ public class UpdateChecker {
         Request request = new Request.Builder()
             .url("https://api.curseforge.com/servermods/files?projectids=" + CURSE_PROJECT_ID)
             .build();
-
         Response response = DriveBackup.httpClient.newCall(request).execute();
         JSONArray pluginVersions = new JSONArray(response.body().string());
         response.close();
-
         if (pluginVersions.length() == 0) {
             throw new NumberFormatException();
         }
-
         String versionTitle = pluginVersions.getJSONObject(pluginVersions.length() - 1).getString("name").replace("DriveBackupV2-", "").trim();
-        UpdateChecker.latestDownloadUrl = pluginVersions.getJSONObject(pluginVersions.length() - 1).getString("downloadUrl");
+        latestDownloadUrl = pluginVersions.getJSONObject(pluginVersions.length() - 1).getString("downloadUrl");
         return Version.parse(versionTitle);
     }
 }
