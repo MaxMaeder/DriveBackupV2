@@ -218,7 +218,7 @@ public class UploadThread implements Runnable {
         logger.log(intl("backup-local-complete"));
         logger.log(intl("backup-upload-start"));
         backupStatus = BackupStatus.UPLOADING;
-        uploaders = new ArrayList<>();
+        uploaders = new ArrayList<>(5);
         if (config.backupMethods.googleDrive.enabled) {
             uploaders.add(new GoogleDriveUploader(logger));
         }
