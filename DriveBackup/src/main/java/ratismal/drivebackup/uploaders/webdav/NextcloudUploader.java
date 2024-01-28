@@ -17,7 +17,7 @@ import ratismal.drivebackup.util.ChunkedFileInputStream;
 public class NextcloudUploader extends WebDAVUploader {
 
     public static String UPLOADER_NAME = "Nextcloud";
-    public static String UPLOADER_ID = "nextcloud";
+    private static String UPLOADER_ID = "nextcloud";
 
     private NextcloudBackupMethod nextcloud;
 
@@ -26,7 +26,6 @@ public class NextcloudUploader extends WebDAVUploader {
     public NextcloudUploader(UploadLogger logger, NextcloudBackupMethod nextcloud) {
         super(logger, nextcloud);
         this.nextcloud = nextcloud;
-
         try {
             findUploadDir();
         } catch (IOException e) {
@@ -38,19 +37,15 @@ public class NextcloudUploader extends WebDAVUploader {
         URL url = new URL(nextcloud.hostname);
         StringBuilder host = new StringBuilder(url.toString());
         host = new StringBuilder(host.substring(0, host.indexOf(url.getPath())));
-
         if (sardine.exists(host + "/remote.php/dav/uploads/" + nextcloud.username)) {
             magic_upload_dir = host + "/remote.php/dav/uploads/" + nextcloud.username;
             return;
         }
-
         if (sardine.exists(host + "/uploads/" + nextcloud.username)) {
             magic_upload_dir = host + "/uploads/" + nextcloud.username;
             return;
         }
-
         String[] exploded = url.getPath().split("/");
-
         for (int i = 0; i < Array.getLength(exploded); i++) {
             host.append("/").append(exploded[i]);
             if (sardine.exists(host + "/uploads/" + nextcloud.username)) {
@@ -66,13 +61,11 @@ public class NextcloudUploader extends WebDAVUploader {
         if (file.length() > chunksize && magic_upload_dir != null) {
             String tempdir = magic_upload_dir + "/" + UUID.randomUUID().toString();
             sardine.createDirectory(tempdir);
-
             try (FileInputStream _fis = new FileInputStream(file)) {
                 ChunkedFileInputStream fis = new ChunkedFileInputStream(chunksize, _fis);
                 do {
                     sardine.put(tempdir + String.format("/%020d", fis.getCurrentOffset()), fis, (String) null, true, fis.available());
                 } while (fis.next());
-
                 try {
                     sardine.move(tempdir + "/.file", target.toString());
                 } catch (SardineException e) {

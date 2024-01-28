@@ -29,7 +29,7 @@ public class WebDAVUploader implements Uploader {
     public static String UPLOADER_NAME = "WebDAV";
     private static String UPLOADER_ID = "webdav";
 
-    private Sardine sardine;
+    Sardine sardine;
 
     private boolean _errorOccurred;
     private URL _remoteBaseFolder;
