@@ -27,9 +27,9 @@ public class WebDAVUploader implements Uploader {
     private UploadLogger logger;
 
     public static String UPLOADER_NAME = "WebDAV";
-    public static String UPLOADER_ID = "webdav";
+    private static String UPLOADER_ID = "webdav";
 
-    public Sardine sardine;
+    private Sardine sardine;
 
     private boolean _errorOccurred;
     private URL _remoteBaseFolder;
@@ -39,11 +39,8 @@ public class WebDAVUploader implements Uploader {
      */
     public WebDAVUploader(UploadLogger logger, WebDAVBackupMethod webdav) {
         this.logger = logger;
-
         try {
-
             _remoteBaseFolder = new URL(webdav.hostname + "/" + webdav.remoteDirectory);
-
             sardine = SardineFactory.begin(webdav.username, webdav.password);
             sardine.enablePreemptiveAuthentication(_remoteBaseFolder.getHost());
             createDirectory(_remoteBaseFolder.toString());
@@ -76,11 +73,8 @@ public class WebDAVUploader implements Uploader {
     public void test(File testFile) {
         try {
             URL target = new URL(_remoteBaseFolder + "/" + testFile.getName());
-
             realUploadFile(testFile, target);
-
             TimeUnit.SECONDS.sleep(5);
-
             sardine.delete(target.toString());
         } catch (Exception exception) {
             NetUtil.catchException(exception, _remoteBaseFolder.getHost(), logger);
@@ -127,7 +121,6 @@ public class WebDAVUploader implements Uploader {
      */
     public ArrayList<String> getFiles(String folderPath) {
         ArrayList<String> filePaths = new ArrayList<>();
-
         try {
             //TODO path
             List<DavResource> resources = sardine.list(new URL(_remoteBaseFolder + "/" + folderPath).toString());
@@ -142,7 +135,6 @@ public class WebDAVUploader implements Uploader {
             MessageUtil.sendConsoleException(e);
             setErrorOccurred(true);
         }
-
         return filePaths;
     }
 
@@ -191,14 +183,12 @@ public class WebDAVUploader implements Uploader {
             return;
         }
         TreeMap<Date, DavResource> files = getZipFiles(type);
-
         if (files.size() > fileLimit) {
             logger.info(
                 intl("backup-method-limit-reached"), 
                 "file-count", String.valueOf(files.size()),
                 "upload-method", getName(),
                 "file-limit", String.valueOf(fileLimit));
-
             while (files.size() > fileLimit) {
                 sardine.delete(new URL(_remoteBaseFolder + "/" + type + "/" + files.firstEntry().getValue().getName()).toString());
                 files.remove(files.firstKey());
@@ -214,13 +204,11 @@ public class WebDAVUploader implements Uploader {
     @NotNull
     private TreeMap<Date, DavResource> getZipFiles(String type) throws Exception {
         TreeMap<Date, DavResource> files = new TreeMap<>();
-
         List<DavResource> resources = sardine.list(new URL(_remoteBaseFolder + "/" + type).toString());
         for (DavResource resource : resources) {
             if (resource.getName().endsWith(".zip"))
                 files.put(resource.getModified(), resource);
         }
-
         return files;
     }
 
@@ -264,7 +252,6 @@ public class WebDAVUploader implements Uploader {
         for (int i = 0; i < list.size(); i++) {
             list.set(i, string + list.get(i));
         }
-
         return list;
     }
 
