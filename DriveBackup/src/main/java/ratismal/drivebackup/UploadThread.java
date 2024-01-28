@@ -49,6 +49,8 @@ import static ratismal.drivebackup.config.Localization.intl;
  */
 
 public class UploadThread implements Runnable {
+    
+    private static final String LINK_COMMAND = "/drivebackup linkaccount ";
     private CommandSender initiator;
     private final UploadLogger logger;
     private final FileUtil fileUtil;
@@ -284,11 +286,10 @@ public class UploadThread implements Runnable {
         while (iterator.hasNext()) {
             Uploader uploader = iterator.next();
             AuthenticationProvider provider = uploader.getAuthProvider();
-            String linkCommand = "/drivebackup linkaccount ";
             if (provider != null && !Authenticator.hasRefreshToken(provider)) {
                 logger.log(
                     intl("backup-method-not-linked"),
-                    "link-command", linkCommand + provider.getId(),
+                    "link-command", LINK_COMMAND + provider.getId(),
                     "upload-method", provider.getName());
                 iterator.remove();
                 continue;
@@ -301,7 +302,7 @@ public class UploadThread implements Runnable {
                 } else {
                     logger.log(
                         intl("backup-method-not-auth-authenticator"),
-                        "link-command", linkCommand + provider.getId(),
+                        "link-command", LINK_COMMAND + provider.getId(),
                         "upload-method", uploader.getName());
                 }
                 iterator.remove();
