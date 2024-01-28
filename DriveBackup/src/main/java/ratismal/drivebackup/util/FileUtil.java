@@ -44,27 +44,22 @@ public class FileUtil {
      */
     public TreeMap<Long, File> getLocalBackups(String location, LocalDateTimeFormatter formatter) {
         location = escapeBackupLocation(location);
-
         TreeMap<Long, File> backupList = new TreeMap<>();
         String path = new File(ConfigParser.getConfig().backupStorage.localDirectory).getAbsolutePath() + "/" + location;
         File[] files = new File(path).listFiles();
-
         for (File file : files) {
             if (file.getName().endsWith(".zip")) {
-
                 //String fileName = file.getName();
-
                 // try {
                 //     ZonedDateTime date = formatter.parse(fileName);
                 //     backupList.put(date.toEpochSecond(), file);
                 // } catch (Exception e) {
-                    // Fallback to using file creation date if the file name doesn't match the format.
-                    backupList.put((file.lastModified() / 1000), file);
+                // Fallback to using file creation date if the file name doesn't match the format.
+                backupList.put((file.lastModified() / 1000), file);
                 //     logger.log(intl("local-backup-date-format-invalid"), "file-name", fileName);
                 // }
             }
         }
-
         return backupList;
     }
 
@@ -77,40 +72,31 @@ public class FileUtil {
      */
     public void makeBackup(@NotNull String location, LocalDateTimeFormatter formatter, List<String> blacklistGlobs) throws Exception {
         Config config = ConfigParser.getConfig();
-
         if (location.charAt(0) == '/') {
             throw new IllegalArgumentException("Location cannot start with a slash");
         }
-
         ZonedDateTime now = ZonedDateTime.now(config.advanced.dateTimezone);
         String fileName = formatter.format(now);
-
         String subFolderName = location;
         if (isBaseFolder(subFolderName)) {
             subFolderName = "root";
         }
-
         File path = new File(escapeBackupLocation(config.backupStorage.localDirectory + "/" + subFolderName));
         if (!path.exists()) {
             path.mkdirs();
         }
-
         List<BlacklistEntry> blacklist = new ArrayList<>();
         for (String blacklistGlob : blacklistGlobs) {
             BlacklistEntry blacklistEntry = new BlacklistEntry(
                 blacklistGlob, 
                 FileSystems.getDefault().getPathMatcher("glob:" + blacklistGlob)
                 );
-
             blacklist.add(blacklistEntry);
         }
-
         BackupFileList fileList = generateFileList(location, blacklist);
-
         for (BlacklistEntry blacklistEntry : fileList.getBlacklist()) {
             String globPattern = blacklistEntry.getGlobPattern();
             int blacklistedFiles = blacklistEntry.getBlacklistedFiles();
-
             if (blacklistedFiles > 0) {
                 logger.info(
                     intl("local-backup-backlisted"),
@@ -118,7 +104,6 @@ public class FileUtil {
                     "glob-pattern", globPattern);
             }
         }
-
         int filesInBackupFolder = fileList.getFilesInBackupFolder();
         if (filesInBackupFolder > 0) {
             logger.info(
@@ -131,7 +116,6 @@ public class FileUtil {
         if (lastSeparatorIndex != -1) {
             lastFolderName = location.substring(lastSeparatorIndex + 1);
         }
-
         // Replace the placeholder %NAME with the last folder name in the file name.
         String placeholder = "%NAME";
         if (fileName.contains(placeholder)) {
@@ -198,22 +182,17 @@ public class FileUtil {
         byte[] buffer = new byte[1024];
         FileOutputStream fileOutputStream;
         ZipOutputStream zipOutputStream = null;
-
         String formattedInputFolderPath = new File(inputFolderPath).getName();
         if (isBaseFolder(inputFolderPath)) {
             formattedInputFolderPath = "root";
         }
-
         try {
             fileOutputStream = new FileOutputStream(outputFilePath);
             zipOutputStream = new ZipOutputStream(fileOutputStream);
             zipOutputStream.setLevel(ConfigParser.getConfig().backupStorage.zipCompression);
-
             for (String file : fileList.getList()) {
                 zipOutputStream.putNextEntry(new ZipEntry(formattedInputFolderPath + "/" + file));
-
                 try (FileInputStream fileInputStream = new FileInputStream(inputFolderPath + "/" + file)) {
-                    
                     int len;
                     while ((len = fileInputStream.read(buffer)) > 0) {
                         zipOutputStream.write(buffer, 0, len);
@@ -227,16 +206,13 @@ public class FileUtil {
                             "file-path", filePath);
                     }
                 }
-
                 zipOutputStream.closeEntry();
             }
-            
             zipOutputStream.close();
         } catch (Exception exception) {
             if (zipOutputStream != null) {
                 zipOutputStream.close();
             }
-
             throw exception; 
         }
     }
@@ -246,11 +222,12 @@ public class FileUtil {
      * Mutable.
      */
     private static class BackupFileList {
-        int filesInBackupFolder;
-        List<String> fileList;
-        List<BlacklistEntry> blacklist;
-
-        BackupFileList(List<BlacklistEntry> blacklist) {
+        private int filesInBackupFolder;
+        private List<String> fileList;
+        private List<BlacklistEntry> blacklist;
+        
+        @Contract (pure = true)
+        private BackupFileList(List<BlacklistEntry> blacklist) {
             this.filesInBackupFolder = 0;
             this.fileList = new ArrayList<>();
             this.blacklist = blacklist;
@@ -260,7 +237,7 @@ public class FileUtil {
             filesInBackupFolder++;
         }
 
-        public int getFilesInBackupFolder() {
+        int getFilesInBackupFolder() {
             return filesInBackupFolder;
         }
 
@@ -285,9 +262,7 @@ public class FileUtil {
     @NotNull
     private BackupFileList generateFileList(String inputFolderPath, List<BlacklistEntry> blacklist) throws Exception {
         BackupFileList fileList = new BackupFileList(blacklist);
-
         generateFileList(new File(inputFolderPath), inputFolderPath, fileList);
-
         return fileList;
     }
 
@@ -299,18 +274,14 @@ public class FileUtil {
      * @throws Exception
      */
     private void generateFileList(@NotNull File file, String inputFolderPath, BackupFileList fileList) throws Exception {
-        
         BasicFileAttributes fileAttributes = Files.readAttributes(file.toPath(), BasicFileAttributes.class);
         if (fileAttributes.isRegularFile()) {
             // Verify not backing up previous backups
             if (file.getCanonicalPath().startsWith(new File(ConfigParser.getConfig().backupStorage.localDirectory).getCanonicalPath())) {
                 fileList.incFilesInBackupFolder();
-
                 return;
             }
-
             Path relativePath = Paths.get(inputFolderPath).relativize(file.toPath());
-
             for (BlacklistEntry blacklistEntry : fileList.getBlacklist()) {
                 if (blacklistEntry.getPathMatcher().matches(relativePath)) {
                     blacklistEntry.incBlacklistedFiles();
@@ -318,15 +289,13 @@ public class FileUtil {
                     return;
                 }
             }
-
             fileList.appendToList(relativePath.toString());
         } else if (fileAttributes.isDirectory()) {
             for (String filename : file.list()) {
                 generateFileList(new File(file, filename), inputFolderPath, fileList);
             }
         } else {
-            logger.info(
-                intl("local-backup-failed-to-include"),
+            logger.info(intl("local-backup-failed-to-include"),
                 "file-path", file.getAbsolutePath()
                 );
         }
