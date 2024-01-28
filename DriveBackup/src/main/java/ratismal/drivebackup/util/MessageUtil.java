@@ -29,8 +29,8 @@ import ratismal.drivebackup.plugin.DriveBackup;
 public class MessageUtil {
 
     private boolean addPrefix = true;
-    private List<Component> message = new ArrayList<Component>();
-    private Set<CommandSender> recipients = new HashSet<CommandSender>();
+    private final List<Component> message = new ArrayList<>();
+    private final Set<CommandSender> recipients = new HashSet<>();
     private Boolean sendToConsole = true;
     
 
