@@ -5,6 +5,7 @@ import org.bukkit.command.CommandSender;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import ratismal.drivebackup.constants.Permission;
 import ratismal.drivebackup.uploaders.Authenticator;
 import ratismal.drivebackup.uploaders.Uploader;
 import ratismal.drivebackup.uploaders.Authenticator.AuthenticationProvider;
@@ -16,7 +17,6 @@ import ratismal.drivebackup.uploaders.webdav.NextcloudUploader;
 import ratismal.drivebackup.uploaders.webdav.WebDAVUploader;
 import ratismal.drivebackup.uploaders.mysql.MySQLUploader;
 import ratismal.drivebackup.config.ConfigParser;
-import ratismal.drivebackup.config.Permissions;
 import ratismal.drivebackup.config.ConfigParser.Config;
 import ratismal.drivebackup.config.configSections.BackupList.BackupListEntry;
 import ratismal.drivebackup.config.configSections.BackupList.BackupListEntry.PathBackupLocation;
@@ -130,7 +130,7 @@ public class UploadThread implements Runnable {
             public void log(String input, String... placeholders) {
                 MessageUtil.Builder()
                     .mmText(input, placeholders)
-                    .toPerm(Permissions.BACKUP)
+                    .toPerm(Permission.BACKUP.getPermission())
                     .send();
             }
         };
@@ -149,7 +149,7 @@ public class UploadThread implements Runnable {
                 MessageUtil.Builder()
                     .mmText(input, placeholders)
                     .to(initiator)
-                    .toPerm(Permissions.BACKUP)
+                    .toPerm(Permission.BACKUP.getPermission())
                     .send();
             }
             @Override

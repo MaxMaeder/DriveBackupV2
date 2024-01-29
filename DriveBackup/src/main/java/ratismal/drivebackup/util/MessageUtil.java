@@ -19,11 +19,12 @@ import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver.Builder;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
-import org.intellij.lang.annotations.Subst;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ratismal.drivebackup.config.ConfigParser;
 import ratismal.drivebackup.config.ConfigParser.Config;
+import ratismal.drivebackup.config.PermissionHandler;
+import ratismal.drivebackup.constants.Permission;
 import ratismal.drivebackup.plugin.DriveBackup;
 
 public class MessageUtil {
@@ -153,7 +154,7 @@ public class MessageUtil {
      */
     public MessageUtil toPerm(String permission) {
         for (Player player : Bukkit.getServer().getOnlinePlayers()) {
-            if (player.hasPermission("drivebackup.linkAccounts") && !recipients.contains(player)) {
+            if (PermissionHandler.hasPerm(player, Permission.LINK_ACCOUNTS) && !recipients.contains(player)) {
                 recipients.add(player);
             }
         }

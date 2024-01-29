@@ -14,7 +14,8 @@ import okhttp3.OkHttpClient;
 import ratismal.drivebackup.config.ConfigMigrator;
 import ratismal.drivebackup.config.ConfigParser;
 import ratismal.drivebackup.config.Localization;
-import ratismal.drivebackup.config.Permissions;
+import ratismal.drivebackup.config.PermissionHandler;
+import ratismal.drivebackup.constants.Permission;
 import ratismal.drivebackup.handler.CommandTabComplete;
 import ratismal.drivebackup.handler.commandHandler.CommandHandler;
 import ratismal.drivebackup.handler.listeners.*;
@@ -65,7 +66,7 @@ public class DriveBackup extends JavaPlugin {
             .build();
         adventure = BukkitAudiences.create(plugin);
         chatInputPlayers = new ArrayList<>();
-        List<CommandSender> configPlayers = Permissions.getPlayersWithPerm(Permissions.RELOAD_CONFIG);
+        List<CommandSender> configPlayers = PermissionHandler.getPlayersWithPerm(Permission.RELOAD_CONFIG);
         saveDefaultConfig();
         localizationConfig = new CustomConfig("intl.yml");
         localizationConfig.saveDefaultConfig();
@@ -73,7 +74,7 @@ public class DriveBackup extends JavaPlugin {
         ConfigMigrator configMigrator = new ConfigMigrator(getConfig(), localizationConfig.getConfig(), configPlayers);
         configMigrator.migrate();
         config = new ConfigParser(getConfig());
-        config.reload(Permissions.getPlayersWithPerm(Permissions.RELOAD_CONFIG));
+        config.reload(PermissionHandler.getPlayersWithPerm(Permission.RELOAD_CONFIG));
         MessageUtil.Builder()
             .to(configPlayers)
             .mmText(intl("config-loaded"))
@@ -116,7 +117,7 @@ public class DriveBackup extends JavaPlugin {
      */
     public static void reloadLocalConfig() {
         Scheduler.stopBackupThread();
-        List<CommandSender> players = Permissions.getPlayersWithPerm(Permissions.RELOAD_CONFIG);
+        List<CommandSender> players = PermissionHandler.getPlayersWithPerm(Permission.RELOAD_CONFIG);
         getInstance().reloadConfig();
         FileConfiguration configFile = getInstance().getConfig();
         localizationConfig.reloadConfig();

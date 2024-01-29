@@ -1,22 +1,29 @@
 package ratismal.drivebackup.handler;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
-
 import org.jetbrains.annotations.NotNull;
 import ratismal.drivebackup.config.ConfigParser;
 import ratismal.drivebackup.config.configSections.BackupMethods;
+import ratismal.drivebackup.constants.Permission;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Created by Ratismal on 2016-01-20.
  */
 
 public class CommandTabComplete implements TabCompleter {
+    
+    public static boolean hasPerm(CommandSender player, Permission permission) {
+        if (player.hasPermission(permission.getPermission())) {
+            return true;
+        }
+        return false;
+    }
 
     /**
      * Command tab completer
@@ -34,33 +41,33 @@ public class CommandTabComplete implements TabCompleter {
                 List<String> commandList = new ArrayList<>(10);
                 commandList.add("v");
                 commandList.add("help");
-                if (player.hasPermission("drivebackup.linkAccounts")) {
+                if (hasPerm(player, Permission.LINK_ACCOUNTS)) {
                     commandList.add("linkaccount");
                 }
-                if (player.hasPermission("drivebackup.reloadConfig")) {
+                if (hasPerm(player, Permission.RELOAD_CONFIG)) {
                     commandList.add("reloadconfig");
                 }
-                if (player.hasPermission("drivebackup.reloadConfig")) {
+                if (hasPerm(player, Permission.RELOAD_CONFIG)) {
                     commandList.add("debug");
                 }
-                if (player.hasPermission("drivebackup.getBackupStatus")) {
+                if (hasPerm(player, Permission.GET_BACKUP_STATUS)) {
                     commandList.add("status");
                 }
-                if (player.hasPermission("drivebackup.getNextBackup")) {
+                if (hasPerm(player, Permission.GET_NEXT_BACKUP)) {
                     commandList.add("nextbackup");
                 }
-                if (player.hasPermission("drivebackup.backup")) {
+                if (hasPerm(player, Permission.BACKUP)) {
                     commandList.add("backup");
                 }
-                if (player.hasPermission("drivebackup.backup")) {
+                if (hasPerm(player, Permission.BACKUP)) {
                     commandList.add("test");
                 }
-                if (player.hasPermission("drivebackup.backup")) {
+                if (hasPerm(player, Permission.BACKUP)) {
                     commandList.add("update");
                 }
                 return commandList;
             } else if (args[0].equalsIgnoreCase("linkaccount") && args.length == 2) {
-                if (!player.hasPermission("drivebackup.linkAccounts")) {
+                if (!hasPerm(player, Permission.LINK_ACCOUNTS)) {
                     return Collections.emptyList();
                 }
                 List<String> commandList = new ArrayList<>(3);
@@ -69,7 +76,7 @@ public class CommandTabComplete implements TabCompleter {
                 commandList.add("dropbox");
                 return commandList;
             } else if (args[0].equalsIgnoreCase("test") && args.length == 2) {
-                if (!player.hasPermission("drivebackup.backup")) {
+                if (!hasPerm(player, Permission.BACKUP)) {
                     return Collections.emptyList();
                 }
                 List<String> commandList = new ArrayList<>(6);
