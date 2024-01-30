@@ -65,7 +65,7 @@ public class DriveBackup extends JavaPlugin {
             .addInterceptor(new HttpLogger())
             .build();
         adventure = BukkitAudiences.create(plugin);
-        chatInputPlayers = new ArrayList<>();
+        chatInputPlayers = new ArrayList<>(1);
         List<CommandSender> configPlayers = PermissionHandler.getPlayersWithPerm(Permission.RELOAD_CONFIG);
         saveDefaultConfig();
         localizationConfig = new CustomConfig("intl.yml");
