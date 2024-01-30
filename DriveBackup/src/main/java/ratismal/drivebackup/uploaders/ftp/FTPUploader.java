@@ -1,30 +1,28 @@
 package ratismal.drivebackup.uploaders.ftp;
 
+import com.google.api.client.util.Strings;
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
 import org.apache.commons.net.ftp.FTPSClient;
-
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import ratismal.drivebackup.uploaders.Uploader;
-import ratismal.drivebackup.uploaders.Authenticator.AuthenticationProvider;
 import ratismal.drivebackup.UploadThread.UploadLogger;
 import ratismal.drivebackup.config.ConfigParser;
 import ratismal.drivebackup.config.configSections.BackupMethods.FTPBackupMethod;
+import ratismal.drivebackup.uploaders.Uploader;
 import ratismal.drivebackup.util.MessageUtil;
 import ratismal.drivebackup.util.NetUtil;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
-
-import com.google.api.client.util.Strings;
 
 import static ratismal.drivebackup.config.Localization.intl;
 
@@ -32,16 +30,12 @@ import static ratismal.drivebackup.config.Localization.intl;
  * Created by Ratismal on 2016-03-30.
  */
 
-public class FTPUploader implements Uploader {
-    private UploadLogger logger;
+public class FTPUploader extends Uploader {
 
     public static final String UPLOADER_NAME = "(S)FTP";
-    private static final String UPLOADER_ID = "ftp";
 
     private FTPClient ftpClient;
     private SFTPUploader sftpClient;
-
-    private boolean _errorOccurred;
 
     private String initialRemoteFolder;
     private String _localBaseFolder;
@@ -60,7 +54,9 @@ public class FTPUploader implements Uploader {
      * Creates an instance of the {@code FTPUploader} object using the server credentials specified by the user in the {@code config.yml}
      */
     public FTPUploader(UploadLogger logger, FTPBackupMethod ftp) {
+        super(UPLOADER_NAME, "ftp");
         this.logger = logger;
+        setAuthProvider(null);
         try {
             if (ftp.sftp) {
                 sftpClient = new SFTPUploader(logger);
@@ -94,9 +90,11 @@ public class FTPUploader implements Uploader {
      * @param remoteBaseFolder the path to the folder, which all remote file paths are relative to.
      */
     public FTPUploader(UploadLogger logger, String host, int port, String username, String password, boolean ftps, boolean sftp, String publicKey, String passphrase, String localBaseFolder, String remoteBaseFolder) {
+        super(UPLOADER_NAME, "ftp");
         this.logger = logger;
         try {
             if (sftp) {
+                setId("sftp");
                 sftpClient = new SFTPUploader(logger, host, port, username, password, publicKey, passphrase, localBaseFolder, remoteBaseFolder);
             } else {
                 connect(host, port, username, password, ftps);
@@ -122,6 +120,7 @@ public class FTPUploader implements Uploader {
     private void connect(String host, int port, String username, String password, boolean ftps) throws Exception {
         ftpClient = new FTPClient();
         if (ftps) {
+            setId("ftps");
             ftpClient = new FTPSClient();
         }
         ftpClient.setConnectTimeout(10 * 1000);
@@ -136,7 +135,8 @@ public class FTPUploader implements Uploader {
         ftpClient.setListHiddenFiles(false);
         initialRemoteFolder = ftpClient.printWorkingDirectory();
     }
-
+    
+    @Override
     public boolean isAuthenticated() {
         if (sftpClient != null) {
             return sftpClient.isAuthenticated();
@@ -273,34 +273,6 @@ public class FTPUploader implements Uploader {
     }
 
     /**
-     * Gets whether an error occurred while accessing the (S)FTP server.
-     * @return whether an error occurred
-     */
-    public boolean isErrorWhileUploading() {
-        return _errorOccurred;
-    }
-
-    /**
-     * Gets the name of this upload service
-     * @return name of upload service
-     */
-    public String getName() {
-        return UPLOADER_NAME;
-    }
-
-    /**
-     * Gets the ID of this upload service
-     * @return ID of upload service
-     */
-    public String getId() {
-        return UPLOADER_ID;
-    }
-
-    public AuthenticationProvider getAuthProvider() {
-        return null;
-    }
-
-    /**
      * Deletes the oldest files past the number to retain from the FTP server inside the specified folder for the file type.
      * <p>
      * The number of files to retain is specified by the user in the {@code config.yml}
@@ -335,8 +307,9 @@ public class FTPUploader implements Uploader {
     private TreeMap<Date, FTPFile> getZipFiles() throws Exception {
         TreeMap<Date, FTPFile> files = new TreeMap<>();
         for (FTPFile file : ftpClient.mlistDir()) {
-            if (file.getName().endsWith(".zip"))
+            if (file.getName().endsWith(".zip")) {
                 files.put(file.getTimestamp().getTime(), file);
+            }
         }
         return files;
     }
@@ -373,13 +346,5 @@ public class FTPUploader implements Uploader {
             list.set(i, string + list.get(i));
         }
         return list;
-    }
-
-    /**
-     * Sets whether an error occurred while accessing the FTP server
-     * @param errorOccurred whether an error occurred
-     */
-    private void setErrorOccurred(boolean errorOccurred) {
-        _errorOccurred = errorOccurred;
     }
 }

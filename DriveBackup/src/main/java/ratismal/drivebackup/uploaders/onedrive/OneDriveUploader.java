@@ -34,17 +34,15 @@ import static ratismal.drivebackup.config.Localization.intl;
 /**
  * Created by Redemption on 2/24/2016.
  */
-public class OneDriveUploader implements Uploader {
+public class OneDriveUploader extends Uploader {
     private UploadLogger logger;
-
-    private boolean errorOccurred;
+    
     private long totalUploaded;
     private long lastUploaded;
     private String accessToken = "";
     private String refreshToken;
 
     public static final String UPLOADER_NAME = "OneDrive";
-    private static final String UPLOADER_ID = "onedrive";
 
     private static final MediaType zipMediaType = MediaType.parse("application/zip; charset=utf-8");
     private static final MediaType jsonMediaType = MediaType.parse("application/json; charset=utf-8");
@@ -63,7 +61,9 @@ public class OneDriveUploader implements Uploader {
      * Creates an instance of the {@code OneDriveUploader} object
      */
     public OneDriveUploader(UploadLogger logger) {
+        super(UPLOADER_NAME, "onedrive");
         this.logger = logger;
+        setAuthProvider(AuthenticationProvider.ONEDRIVE);
         try {
             refreshToken = Authenticator.getRefreshToken(AuthenticationProvider.ONEDRIVE);
             retrieveNewAccessToken();
@@ -97,7 +97,7 @@ public class OneDriveUploader implements Uploader {
         }
         accessToken = parsedResponse.getString("access_token");
     }
-
+    @Override
     public boolean isAuthenticated() {
         return !accessToken.isEmpty();
     }
@@ -210,41 +210,12 @@ public class OneDriveUploader implements Uploader {
     }
 
     /**
-     * Gets whether an error occurred while accessing the authenticated user's OneDrive.
-     * @return whether an error occurred
-     */
-    public boolean isErrorWhileUploading() {
-        return errorOccurred;
-    }
-
-    /**
     * Closes any remaining connections retrieveNewAccessToken
     */
     public void close() {
         // nothing needs to be done
     }
-
-    /**
-     * Gets the name of this upload service
-     * @return name of upload service
-     */
-    public String getName() {
-        return UPLOADER_NAME;
-    }
-
-    /**
-     * Gets the ID of this upload service
-     * @return ID of upload service
-     */
-    public String getId() {
-        return UPLOADER_ID;
-    }
-
-    public AuthenticationProvider getAuthProvider() {
-        return AuthenticationProvider.ONEDRIVE;
-    }
-
-
+    
     /**
      * Creates a folder with the specified name in the specified parent folder in the authenticated user's OneDrive.
      * @param name the name of the folder
@@ -548,14 +519,6 @@ public class OneDriveUploader implements Uploader {
             bytes = Arrays.copyOf(bytes, read);
         }
         return bytes;
-    }
-
-    /**
-     * Sets whether an error occurred while accessing the authenticated user's OneDrive.
-     * @param errorOccurredValue whether an error occurred
-     */
-    private void setErrorOccurred(boolean errorOccurredValue) {
-        this.errorOccurred = errorOccurredValue;
     }
 
     /**

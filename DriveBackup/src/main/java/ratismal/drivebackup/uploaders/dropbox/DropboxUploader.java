@@ -31,12 +31,9 @@ import okhttp3.Response;
 
 import static ratismal.drivebackup.config.Localization.intl;
 
-public class DropboxUploader implements Uploader {
-    private UploadLogger logger;
-    private boolean errorOccurred;
+public class DropboxUploader extends Uploader {
 
     public static final String UPLOADER_NAME = "Dropbox";
-    private static final String UPLOADER_ID = "dropbox";
 
     /**
      * Global Dropbox tokens
@@ -276,6 +273,8 @@ public class DropboxUploader implements Uploader {
      * Creates an instance of the {@code DropboxUploader} object
      */
     public DropboxUploader(UploadLogger logger) {
+        super(UPLOADER_NAME, "dropbox");
+        setAuthProvider(AuthenticationProvider.DROPBOX);
         this.logger = logger;
         try {
             refreshToken = Authenticator.getRefreshToken(AuthenticationProvider.DROPBOX);
@@ -308,48 +307,10 @@ public class DropboxUploader implements Uploader {
         accessToken = parsedResponse.getString("access_token");
     }
 
-    public boolean isAuthenticated() {
-        return !accessToken.isEmpty();
-    }
-
-    public boolean isErrorWhileUploading() {
-        return errorOccurred;
-    }
-
     /**
      * Closes any remaining connections retrieveNewAccessToken
      */
     public void close() {
         // nothing needs to be done
-    }
-
-    /**
-     * Gets the name of this upload service
-     * @return name of upload service
-     */
-    public String getName() {
-        return UPLOADER_NAME;
-    }
-
-    /**
-     * Gets the ID of this upload service
-     * @return ID of upload service
-     */
-    public String getId() {
-        return UPLOADER_ID;
-    }
-
-    public AuthenticationProvider getAuthProvider() {
-        return AuthenticationProvider.DROPBOX;
-    }
-
-    /**
-     * Sets whether an error occurred while accessing the authenticated user's
-     * Dropbox.
-     * 
-     * @param errorOccurredValue whether an error occurred
-     */
-    private void setErrorOccurred(boolean errorOccurredValue) {
-        errorOccurred = errorOccurredValue;
     }
 }

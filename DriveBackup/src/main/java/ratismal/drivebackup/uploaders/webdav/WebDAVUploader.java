@@ -23,21 +23,17 @@ import com.github.sardine.SardineFactory;
 
 import static ratismal.drivebackup.config.Localization.intl;
 
-public class WebDAVUploader implements Uploader {
-    private UploadLogger logger;
-
-    public static String UPLOADER_NAME = "WebDAV";
-    private static String UPLOADER_ID = "webdav";
+public class WebDAVUploader extends Uploader {
 
     Sardine sardine;
-
-    private boolean _errorOccurred;
     private URL _remoteBaseFolder;
+    public static final String UPLOADER_NAME = "WebDAV";
 
     /**
      * Creates an instance of the {@code WebDAVUploader} object using the server credentials specified by the user in the {@code config.yml}
      */
     public WebDAVUploader(UploadLogger logger, WebDAVBackupMethod webdav) {
+        super(UPLOADER_NAME, "webdav");
         this.logger = logger;
         try {
             _remoteBaseFolder = new URL(webdav.hostname + "/" + webdav.remoteDirectory);
@@ -48,10 +44,8 @@ public class WebDAVUploader implements Uploader {
             MessageUtil.sendConsoleException(e);
             setErrorOccurred(true);
         }
-    }
-
-    public boolean isAuthenticated() {
-        return true;
+        setAuthenticated(true);
+        setAuthProvider(null);
     }
 
     /**
@@ -139,38 +133,6 @@ public class WebDAVUploader implements Uploader {
     }
 
     /**
-     * Gets whether an error occurred while accessing the WebDAV server
-     * @return whether an error occurred
-     */
-    public boolean isErrorWhileUploading() {
-        return this._errorOccurred;
-    }
-
-    /**
-     * Gets the name of this upload service
-     * @return name of upload service
-     */
-    public String getName() {
-        return UPLOADER_NAME;
-    }
-
-    /**
-     * Gets the ID of this upload service
-     * @return ID of upload service
-     */
-    public String getId() {
-        return UPLOADER_ID;
-    }
-
-    /**
-     * Gets the authentication provider for this upload service
-     * @return authentication provider for this upload service
-     */
-    public AuthenticationProvider getAuthProvider() {
-        return null;
-    }
-
-    /**
      * Deletes the oldest files past the number to retain from the FTP server inside the specified folder for the file type.
      * <p>
      * The number of files to retain is specified by the user in the {@code config.yml}
@@ -206,8 +168,9 @@ public class WebDAVUploader implements Uploader {
         TreeMap<Date, DavResource> files = new TreeMap<>();
         List<DavResource> resources = sardine.list(new URL(_remoteBaseFolder + "/" + type).toString());
         for (DavResource resource : resources) {
-            if (resource.getName().endsWith(".zip"))
+            if (resource.getName().endsWith(".zip")) {
                 files.put(resource.getModified(), resource);
+            }
         }
         return files;
     }
@@ -253,13 +216,5 @@ public class WebDAVUploader implements Uploader {
             list.set(i, string + list.get(i));
         }
         return list;
-    }
-
-    /**
-     * Sets whether an error occurred while accessing the FTP server
-     * @param errorOccurred whether an error occurred
-     */
-    public void setErrorOccurred(boolean errorOccurred) {
-        _errorOccurred = errorOccurred;
     }
 }

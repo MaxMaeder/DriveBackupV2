@@ -46,9 +46,7 @@ import static ratismal.drivebackup.config.Localization.intl;
  * Created by Ratismal on 2016-01-20.
  */
 
-public class GoogleDriveUploader implements Uploader {
-    private UploadLogger logger;
-    private boolean errorOccurred;
+public class GoogleDriveUploader extends Uploader {
     private String refreshToken;
 
     /**
@@ -57,7 +55,6 @@ public class GoogleDriveUploader implements Uploader {
     private List<com.google.api.services.drive.model.Drive> drives;
 
     public static final String UPLOADER_NAME = "Google Drive";
-    private static final String UPLOADER_ID = "googledrive";
 
     /**
      * A global instance of the HTTP transport
@@ -79,7 +76,9 @@ public class GoogleDriveUploader implements Uploader {
      * Creates an instance of the {@code GoogleDriveUploader} object
      */
     public GoogleDriveUploader(UploadLogger logger) {
+        super(UPLOADER_NAME, "googledrive");
         this.logger = logger;
+        setAuthProvider(AuthenticationProvider.GOOGLE_DRIVE);
         try {
             refreshToken = Authenticator.getRefreshToken(AuthenticationProvider.GOOGLE_DRIVE);
             retrieveNewAccessToken();
@@ -227,38 +226,10 @@ public class GoogleDriveUploader implements Uploader {
     }
 
     /**
-     * Gets whether an error occurred while accessing the authenticated user's Google Drive.
-     * @return whether an error occurred
-     */
-    public boolean isErrorWhileUploading() {
-        return this.errorOccurred;
-    }
-
-    /**
      * Closes any remaining connections retrieveNewAccessToken
      */
     public void close() {
         // nothing needs to be done
-    }
-
-    /**
-     * Gets the name of this upload service
-     * @return name of upload service
-     */
-    public String getName() {
-        return UPLOADER_NAME;
-    }
-
-    /**
-     * Gets the ID of this upload service
-     * @return ID of upload service
-     */
-    public String getId() {
-        return UPLOADER_ID;
-    }
-
-    public AuthenticationProvider getAuthProvider() {
-        return AuthenticationProvider.GOOGLE_DRIVE;
     }
 
     /**
@@ -524,13 +495,5 @@ public class GoogleDriveUploader implements Uploader {
                 iterator.remove();
             }
         }
-    }
-
-    /**
-     * Sets whether an error occurred while accessing the authenticated user's Google Drive.
-     * @param errorOccurredValue whether an error occurred
-     */
-    private void setErrorOccurred(boolean errorOccurredValue) {
-        this.errorOccurred = errorOccurredValue;
     }
 }

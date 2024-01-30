@@ -17,7 +17,6 @@ import ratismal.drivebackup.util.ChunkedFileInputStream;
 public class NextcloudUploader extends WebDAVUploader {
 
     public static String UPLOADER_NAME = "Nextcloud";
-    private static String UPLOADER_ID = "nextcloud";
 
     private NextcloudBackupMethod nextcloud;
 
@@ -25,6 +24,8 @@ public class NextcloudUploader extends WebDAVUploader {
 
     public NextcloudUploader(UploadLogger logger, NextcloudBackupMethod nextcloud) {
         super(logger, nextcloud);
+        setName(UPLOADER_NAME);
+        setId("nextcloud");
         this.nextcloud = nextcloud;
         try {
             findUploadDir();
@@ -84,25 +85,5 @@ public class NextcloudUploader extends WebDAVUploader {
                 sardine.put(target.toString(), fis, (String) null, true, file.length());
             }
         }
-    }
-
-    /**
-     * Gets the name of this upload service
-     * 
-     * @return name of upload service
-     */
-    @Override
-    public String getName() {
-        return UPLOADER_NAME;
-    }
-
-    /**
-     * Gets the ID of this upload service
-     * 
-     * @return ID of upload service
-     */
-    @Override
-    public String getId() {
-        return UPLOADER_ID;
     }
 }
