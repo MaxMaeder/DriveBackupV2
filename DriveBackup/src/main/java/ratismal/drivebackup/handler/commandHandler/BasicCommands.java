@@ -19,7 +19,11 @@ import static ratismal.drivebackup.config.Localization.intl;
 import java.util.ArrayList;
 import java.util.List;
 
-public class BasicCommands {
+public final class BasicCommands {
+    
+    private BasicCommands() {
+        throw new IllegalStateException("Utility class");
+    }
     /**
      * Sends a list of links to help resources to the specified player.
      * @param player the player to send the message to
