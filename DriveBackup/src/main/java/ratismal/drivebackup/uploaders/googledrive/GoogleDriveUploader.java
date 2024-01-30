@@ -47,6 +47,8 @@ import static ratismal.drivebackup.config.Localization.intl;
  */
 
 public class GoogleDriveUploader extends Uploader {
+    
+    public static final String APPLICATION_VND_GOOGLE_APPS_FOLDER = "application/vnd.google-apps.folder";
     private String refreshToken;
 
     /**
@@ -309,7 +311,7 @@ public class GoogleDriveUploader extends Uploader {
         parentReference.setId(parent.getId());
         folder = new File();
         folder.setTitle(name);
-        folder.setMimeType("application/vnd.google-apps.folder");
+        folder.setMimeType(APPLICATION_VND_GOOGLE_APPS_FOLDER);
         folder.setParents(Collections.singletonList(parentReference));
         folder = service.files().insert(folder).setSupportsAllDrives(true).execute();
         return folder;
@@ -332,7 +334,7 @@ public class GoogleDriveUploader extends Uploader {
         parentReference.setId(driveId);
         folder = new File();
         folder.setTitle(name);
-        folder.setMimeType("application/vnd.google-apps.folder");
+        folder.setMimeType(APPLICATION_VND_GOOGLE_APPS_FOLDER);
         folder.setParents(Collections.singletonList(parentReference));
         folder = service.files().insert(folder).setSupportsAllDrives(true).execute();
         return folder;
@@ -352,7 +354,7 @@ public class GoogleDriveUploader extends Uploader {
         }
         folder = new File();
         folder.setTitle(name);
-        folder.setMimeType("application/vnd.google-apps.folder");
+        folder.setMimeType(APPLICATION_VND_GOOGLE_APPS_FOLDER);
         folder = service.files().insert(folder).execute();
         return folder;
     }
