@@ -38,7 +38,6 @@ public class DebugCollector {
         this.configInfo = new ConfigInfo();
         this.plugins = new ArrayList<>();
         this.ramInfo = new RamInfo();
-
         for (Plugin pinfo : plugin.getServer().getPluginManager().getPlugins()) {
             this.plugins.add(new PluginInfo(pinfo.getDescription().getName(), pinfo.getDescription().getVersion(), pinfo.getDescription().getMain(), pinfo.getDescription().getAuthors()));
         }
@@ -47,22 +46,18 @@ public class DebugCollector {
     public String publish(DriveBackup plugin) {
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         String jsonInString = gson.toJson(this);
-
         RequestBody formBody = new FormBody.Builder()
             .add("content", jsonInString)
             .build();
-
         Request request = new Request.Builder()
             .url(PASTEBIN_UPLOAD_URL)
             .post(formBody)
             .build();
-
         try (Response response = DriveBackup.httpClient.newCall(request).execute()) {
-            if (!response.isSuccessful())
+            if (!response.isSuccessful()) {
                 throw new Exception("Unexpected code " + response);
-
+            }
             JSONObject responseJson = new JSONObject(response.body().string());
-    
             return responseJson.getString("url");
         } catch (UnknownHostException e) {
             return "Network error, check your connection";
@@ -77,7 +72,6 @@ public class DebugCollector {
         private final String version;
         private final String main;
         private final List<String> authors;
-
         private PluginInfo(String name2, String version2, String main2, List<String> authors2) {
             this.name = name2;
             this.version = version2;
@@ -103,18 +97,14 @@ public class DebugCollector {
 
         private ConfigInfo() {
             Config config = ConfigParser.getConfig();
-
             this.backupsRequirePlayers = config.backupStorage.backupsRequirePlayers;
             this.disableSavingDuringBackups = config.backupStorage.disableSavingDuringBackups;
-
             this.scheduleBackups = config.backupScheduling;
             this.backupList = config.backupList;
-
             this.googleDriveEnabled = config.backupMethods.googleDrive.enabled;
             this.oneDriveEnabled = config.backupMethods.oneDrive.enabled;
             this.dropboxEnabled = config.backupMethods.dropbox.enabled;
             this.ftpEnabled = config.backupMethods.ftp.enabled;
-
             if (ftpEnabled) {
                 if (config.backupMethods.ftp.sftp) {
                     this.ftpType = "SFTP";
@@ -126,7 +116,6 @@ public class DebugCollector {
             } else {
                 this.ftpType = "none";
             }
-
             this.timezone = config.advanced.dateTimezone;
         }
     }
