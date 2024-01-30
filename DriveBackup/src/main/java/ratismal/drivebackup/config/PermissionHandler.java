@@ -11,7 +11,11 @@ import org.jetbrains.annotations.NotNull;
 import ratismal.drivebackup.constants.Permission;
 import ratismal.drivebackup.handler.commandHandler.BasicCommands;
 
-public class PermissionHandler {
+public final class PermissionHandler {
+    
+    private PermissionHandler() {
+        throw new IllegalStateException("Utility class");
+    }
     
     /**
      * Checks if the specified player has the specified permission
