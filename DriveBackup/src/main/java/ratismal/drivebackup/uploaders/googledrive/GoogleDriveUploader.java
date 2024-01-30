@@ -106,8 +106,9 @@ public class GoogleDriveUploader extends Uploader {
         Response response = DriveBackup.httpClient.newCall(request).execute();
         JSONObject parsedResponse = new JSONObject(response.body().string());
         response.close();
-        if (!response.isSuccessful())
+        if (!response.isSuccessful()) {
             return;
+        }
         service = new Drive.Builder(
             httpTransport, 
             JSON_FACTORY, 
