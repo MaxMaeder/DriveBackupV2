@@ -19,6 +19,9 @@ import ratismal.drivebackup.util.LocalDateTimeFormatter;
 import static ratismal.drivebackup.config.Localization.intl;
 
 public class BackupList {
+    
+    public static final String ENTRY = "entry";
+    
     public static class BackupListEntry {
         public interface BackupLocation {
             List<Path> getPaths();
@@ -97,25 +100,25 @@ public class BackupList {
                 try {
                     location = new BackupListEntry.GlobBackupLocation((String) rawListEntry.get("glob"));
                 } catch (ClassCastException e) {
-                    logger.log(intl("backup-list-glob-invalid"), "entry", entryIndex);
+                    logger.log(intl("backup-list-glob-invalid"), ENTRY, entryIndex);
                     continue;
                 }
             } else if (rawListEntry.containsKey("path")) {
                 try {
                     location = new BackupListEntry.PathBackupLocation((String) rawListEntry.get("path"));
                 } catch (ClassCastException e) {
-                    logger.log(intl("backup-list-path-invalid"), "entry", entryIndex);
+                    logger.log(intl("backup-list-path-invalid"), ENTRY, entryIndex);
                     continue;
                 }
             } else {
-                logger.log(intl("backup-list-no-dest-specified"), "entry", entryIndex);
+                logger.log(intl("backup-list-no-dest-specified"), ENTRY, entryIndex);
                 continue;
             }
             LocalDateTimeFormatter formatter;
             try {
                 formatter = LocalDateTimeFormatter.ofPattern((String) rawListEntry.get("format"));
             } catch (IllegalArgumentException | ClassCastException e) {
-                logger.log(intl("backup-list-format-invalid"), "entry", entryIndex);
+                logger.log(intl("backup-list-format-invalid"), ENTRY, entryIndex);
                 continue;
             }
             boolean create = true;
@@ -129,7 +132,7 @@ public class BackupList {
                 try {
                     blacklist = ((List<String>) rawListEntry.get("blacklist")).toArray(new String[0]);
                 } catch (ClassCastException | ArrayStoreException e) {
-                    logger.log(intl("backup-list-blacklist-invalid"), "entry", entryIndex);
+                    logger.log(intl("backup-list-blacklist-invalid"), ENTRY, entryIndex);
                 }
             }
             list.add(new BackupListEntry(location, formatter, create, blacklist));
