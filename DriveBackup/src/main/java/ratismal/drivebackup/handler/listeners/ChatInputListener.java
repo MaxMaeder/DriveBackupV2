@@ -33,7 +33,7 @@ public class ChatInputListener implements Listener {
      * @param input the input
      * @return whether the input was handled
      */
-    private boolean handleInput(CommandSender sender, String input) {
+    private static boolean handleInput(CommandSender sender, String input) {
         if (DriveBackup.chatInputPlayers.contains(sender)) {
             UploadLogger uploadLogger = new UploadLogger() {
                 @Override
