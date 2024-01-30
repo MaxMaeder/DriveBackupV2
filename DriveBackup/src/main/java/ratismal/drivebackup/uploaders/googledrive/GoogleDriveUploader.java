@@ -118,6 +118,7 @@ public class GoogleDriveUploader extends Uploader {
             .build();
     }
 
+    @Override
     public boolean isAuthenticated() {
         return service != null;
     }
