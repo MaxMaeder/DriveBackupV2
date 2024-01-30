@@ -302,8 +302,9 @@ public class DropboxUploader extends Uploader {
         Response response = DriveBackup.httpClient.newCall(request).execute();
         JSONObject parsedResponse = new JSONObject(response.body().string());
         response.close();
-        if (!response.isSuccessful())
+        if (!response.isSuccessful()) {
             return;
+        }
         accessToken = parsedResponse.getString("access_token");
     }
 
