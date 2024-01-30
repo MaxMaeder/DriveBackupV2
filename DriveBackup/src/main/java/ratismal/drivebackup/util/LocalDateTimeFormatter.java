@@ -61,7 +61,8 @@ public final class LocalDateTimeFormatter {
                 isInvalid = true;
             }
         }
-        if (isInvalid)
+        if (isInvalid) {
             throw new IllegalArgumentException("Format pattern contains illegal characters");
+        }
     }
 }
