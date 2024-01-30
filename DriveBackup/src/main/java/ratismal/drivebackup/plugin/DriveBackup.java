@@ -33,7 +33,6 @@ public class DriveBackup extends JavaPlugin {
     private static ConfigParser config;
 
     private static CustomConfig localizationConfig;
-    private static Localization localization;
 
     public static Updater updater;
 
@@ -70,7 +69,7 @@ public class DriveBackup extends JavaPlugin {
         saveDefaultConfig();
         localizationConfig = new CustomConfig("intl.yml");
         localizationConfig.saveDefaultConfig();
-        localization = new Localization(localizationConfig.getConfig());
+        Localization.set(localizationConfig.getConfig());
         ConfigMigrator configMigrator = new ConfigMigrator(getConfig(), localizationConfig.getConfig(), configPlayers);
         configMigrator.migrate();
         config = new ConfigParser(getConfig());
@@ -123,7 +122,7 @@ public class DriveBackup extends JavaPlugin {
         localizationConfig.reloadConfig();
         FileConfiguration localizationFile = localizationConfig.getConfig();
         config.reload(configFile, players);
-        localization.reload(localizationFile);
+        Localization.set(localizationFile);
         Scheduler.startBackupThread();
     }
 }
