@@ -191,28 +191,30 @@ public class FileUtil {
             zipOutputStream = new ZipOutputStream(fileOutputStream);
             zipOutputStream.setLevel(ConfigParser.getConfig().backupStorage.zipCompression);
             for (String file : fileList.getList()) {
-                FileInputStream fileInputStream = null;
                 ZipEntry entry = new ZipEntry(formattedInputFolderPath + "/" + file);
                 String filePath = inputFolderPath + "/" + file;
+                BasicFileAttributes fileAttributes = null;
                 try {
-                    BasicFileAttributes fileAttributes = Files.readAttributes(Paths.get(filePath), BasicFileAttributes.class);
-                    if (fileAttributes != null) {
-                        entry.setCreationTime(fileAttributes.creationTime());
-                        entry.setLastAccessTime(fileAttributes.lastAccessTime());
-                        entry.setLastModifiedTime(fileAttributes.lastModifiedTime());
-                        entry.setSize(fileAttributes.size());
-                    }
-                    zipOutputStream.putNextEntry(entry);
-                    fileInputStream = new FileInputStream(filePath);
+                    fileAttributes = Files.readAttributes(Paths.get(filePath), BasicFileAttributes.class);
+                } catch(Exception e) { }
+                if (fileAttributes == null) {
+                    // TODO intl
+                    logger.info(
+                        intl("Failed to read attributes for \"<file-path>\". Do you have permission to access it?"),
+                        "file-path", filePath);
+                } else {
+                    entry.setCreationTime(fileAttributes.creationTime());
+                    entry.setLastAccessTime(fileAttributes.lastAccessTime());
+                    entry.setLastModifiedTime(fileAttributes.lastModifiedTime());
+                    entry.setSize(fileAttributes.size());
+                }
+                zipOutputStream.putNextEntry(entry);
+                try (FileInputStream fileInputStream = new FileInputStream(filePath)){
                     int len;
                     while ((len = fileInputStream.read(buffer)) > 0) {
                         zipOutputStream.write(buffer, 0, len);
                     }
-                    fileInputStream.close();
                 } catch (Exception e) {
-                    if (fileInputStream != null) {
-                        fileInputStream.close();
-                    }
                     // Don't send warning for .lock files, they will always be locked.
                     if (!filePath.endsWith(".lock")) {
                         logger.info(
