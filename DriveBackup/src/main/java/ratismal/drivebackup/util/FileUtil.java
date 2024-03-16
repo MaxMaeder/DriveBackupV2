@@ -198,9 +198,8 @@ public class FileUtil {
                     fileAttributes = Files.readAttributes(Paths.get(filePath), BasicFileAttributes.class);
                 } catch(Exception e) { }
                 if (fileAttributes == null) {
-                    // TODO intl
                     logger.info(
-                        intl("Failed to read attributes for \"<file-path>\". Do you have permission to access it?"),
+                        intl("local-backup-failed-attributes"),
                         "file-path", filePath);
                 } else {
                     entry.setCreationTime(fileAttributes.creationTime());
