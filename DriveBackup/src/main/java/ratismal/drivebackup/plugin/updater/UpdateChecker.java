@@ -1,6 +1,5 @@
 package ratismal.drivebackup.plugin.updater;
 
-import org.apache.http.client.HttpResponseException;
 import org.json.JSONArray;
 
 import okhttp3.Request;
@@ -93,7 +92,7 @@ public class UpdateChecker {
         JSONArray pluginVersions;
         try (Response response = DriveBackup.httpClient.newCall(request).execute()) {
             if (response.code() != 200) {
-                throw new HttpResponseException(response.code(), response.message());
+                throw new Exception("Unexpected response: " + response.code() + " : " + response.message());
             }
             pluginVersions = new JSONArray(response.body().string());
         }
