@@ -38,6 +38,7 @@ public class OneDriveUploader extends Uploader {
     public static final int EXPONENTIAL_BACKOFF_MILLIS_DEFAULT = 1;
     public static final int EXPONENTIAL_BACKOFF_FACTOR = 5;
     public static final int MAX_RETRY_ATTEMPTS = 3;
+
     private UploadLogger logger;
     
     private long totalUploaded;
@@ -170,11 +171,11 @@ public class OneDriveUploader extends Uploader {
                 .url("https://graph.microsoft.com/v1.0/me/drive/root:/" + folder.getPath() + "/" + file.getName() + ":/createUploadSession")
                 .post(RequestBody.create("{}", jsonMediaType))
                 .build();
-            Response response = DriveBackup.httpClient.newCall(request).execute();
-            JSONObject parsedResponse = new JSONObject(response.body().string());
-            response.close();
+            JSONObject parsedResponse;
+            try (Response response = DriveBackup.httpClient.newCall(request).execute()) {
+                parsedResponse = new JSONObject(response.body().string());
+            }
             String uploadURL = parsedResponse.getString("uploadUrl");
-            //Assign our backup to Random Access File
             raf = new RandomAccessFile(file, "r");
             int exponentialBackoff = EXPONENTIAL_BACKOFF_MILLIS_DEFAULT;
             int retryCount = 0;
@@ -188,8 +189,8 @@ public class OneDriveUploader extends Uploader {
                 try (Response uploadResponse = DriveBackup.httpClient.newCall(request).execute()) {
                     if (uploadResponse.code() == 202) {
                         parsedResponse = new JSONObject(uploadResponse.body().string());
-                        List<String> nextExpectedRanges = (List<String>) (Object) parsedResponse.getJSONArray("nextExpectedRanges").toList();
-                        setRanges(nextExpectedRanges.toArray(new String[nextExpectedRanges.size()]));
+                        List<Object> nextExpectedRanges = parsedResponse.getJSONArray("nextExpectedRanges").toList();
+                        setRanges(nextExpectedRanges.toArray(new String[0]));
                         exponentialBackoff = EXPONENTIAL_BACKOFF_MILLIS_DEFAULT;
                         retryCount = 0;
                     } else if (uploadResponse.code() == 201 || uploadResponse.code() == 200) {
