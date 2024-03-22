@@ -35,6 +35,9 @@ import static ratismal.drivebackup.config.Localization.intl;
  * Created by Redemption on 2/24/2016.
  */
 public class OneDriveUploader extends Uploader {
+    public static final int EXPONENTIAL_BACKOFF_MILLIS_DEFAULT = 1;
+    public static final int EXPONENTIAL_BACKOFF_FACTOR = 5;
+    public static final int MAX_RETRY_ATTEMPTS = 3;
     private UploadLogger logger;
     
     private long totalUploaded;
@@ -173,27 +176,36 @@ public class OneDriveUploader extends Uploader {
             String uploadURL = parsedResponse.getString("uploadUrl");
             //Assign our backup to Random Access File
             raf = new RandomAccessFile(file, "r");
-            boolean isComplete = false;
-            while (!isComplete) {
+            int exponentialBackoff = EXPONENTIAL_BACKOFF_MILLIS_DEFAULT;
+            int retryCount = 0;
+            while (true) {
                 byte[] bytesToUpload = getChunk();
                 request = new Request.Builder()
                     .addHeader("Content-Range", String.format("bytes %d-%d/%d", getTotalUploaded(), getTotalUploaded() + bytesToUpload.length - 1, file.length()))
                     .url(uploadURL)
                     .put(RequestBody.create(bytesToUpload, zipMediaType))
                     .build();
-                response = DriveBackup.httpClient.newCall(request).execute();
-                if (getTotalUploaded() + bytesToUpload.length < file.length()) {
-                    try {
-                        parsedResponse = new JSONObject(response.body().string());
+                try (Response uploadResponse = DriveBackup.httpClient.newCall(request).execute()) {
+                    if (uploadResponse.code() == 202) {
+                        parsedResponse = new JSONObject(uploadResponse.body().string());
                         List<String> nextExpectedRanges = (List<String>) (Object) parsedResponse.getJSONArray("nextExpectedRanges").toList();
                         setRanges(nextExpectedRanges.toArray(new String[nextExpectedRanges.size()]));
-                    } catch (Exception e) {
-                        isComplete = true;
-                    } 
-                } else {
-                    isComplete = true;
+                        exponentialBackoff = EXPONENTIAL_BACKOFF_MILLIS_DEFAULT;
+                        retryCount = 0;
+                    } else if (uploadResponse.code() == 201 || uploadResponse.code() == 200) {
+                        break;
+                    } else {
+                        if (retryCount > MAX_RETRY_ATTEMPTS) {
+                            // TODO cancel
+                            throw new IOException("Too many retries");
+                        }
+                        if (uploadResponse.code() >= 500 && uploadResponse.code() < 600) {
+                            Thread.sleep(exponentialBackoff);
+                            exponentialBackoff *= EXPONENTIAL_BACKOFF_FACTOR;
+                        }
+                        retryCount++;
+                    }
                 }
-                response.close();
             }
             try {
                 pruneBackups(folder);
