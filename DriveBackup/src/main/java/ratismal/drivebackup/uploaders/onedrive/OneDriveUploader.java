@@ -194,10 +194,11 @@ public class OneDriveUploader extends Uploader {
                         retryCount = 0;
                     } else if (uploadResponse.code() == 201 || uploadResponse.code() == 200) {
                         break;
-                    } else {
+                    } else { // conflict after successful upload not handled
                         if (retryCount > MAX_RETRY_ATTEMPTS) {
-                            // TODO cancel
-                            throw new IOException("Too many retries");
+                            request = new Request.Builder().url(uploadURL).delete().build();
+                            DriveBackup.httpClient.newCall(request).execute().close();
+                            throw new IOException(String.format("Upload failed after %d retries. %d %s", MAX_RETRY_ATTEMPTS, uploadResponse.code(), uploadResponse.message()));
                         }
                         if (uploadResponse.code() >= 500 && uploadResponse.code() < 600) {
                             Thread.sleep(exponentialBackoff);
