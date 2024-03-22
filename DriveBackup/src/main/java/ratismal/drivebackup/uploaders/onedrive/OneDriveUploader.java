@@ -35,7 +35,7 @@ import static ratismal.drivebackup.config.Localization.intl;
  * Created by Redemption on 2/24/2016.
  */
 public class OneDriveUploader extends Uploader {
-    public static final int EXPONENTIAL_BACKOFF_MILLIS_DEFAULT = 1;
+    public static final int EXPONENTIAL_BACKOFF_MILLIS_DEFAULT = 1000;
     public static final int EXPONENTIAL_BACKOFF_FACTOR = 5;
     public static final int MAX_RETRY_ATTEMPTS = 3;
 
@@ -177,7 +177,7 @@ public class OneDriveUploader extends Uploader {
             }
             String uploadURL = parsedResponse.getString("uploadUrl");
             raf = new RandomAccessFile(file, "r");
-            int exponentialBackoff = EXPONENTIAL_BACKOFF_MILLIS_DEFAULT;
+            int exponentialBackoffMillis = EXPONENTIAL_BACKOFF_MILLIS_DEFAULT;
             int retryCount = 0;
             while (true) {
                 byte[] bytesToUpload = getChunk();
@@ -191,7 +191,7 @@ public class OneDriveUploader extends Uploader {
                         parsedResponse = new JSONObject(uploadResponse.body().string());
                         List<Object> nextExpectedRanges = parsedResponse.getJSONArray("nextExpectedRanges").toList();
                         setRanges(nextExpectedRanges.toArray(new String[0]));
-                        exponentialBackoff = EXPONENTIAL_BACKOFF_MILLIS_DEFAULT;
+                        exponentialBackoffMillis = EXPONENTIAL_BACKOFF_MILLIS_DEFAULT;
                         retryCount = 0;
                     } else if (uploadResponse.code() == 201 || uploadResponse.code() == 200) {
                         break;
@@ -202,8 +202,8 @@ public class OneDriveUploader extends Uploader {
                             throw new IOException(String.format("Upload failed after %d retries. %d %s", MAX_RETRY_ATTEMPTS, uploadResponse.code(), uploadResponse.message()));
                         }
                         if (uploadResponse.code() >= 500 && uploadResponse.code() < 600) {
-                            Thread.sleep(exponentialBackoff);
-                            exponentialBackoff *= EXPONENTIAL_BACKOFF_FACTOR;
+                            Thread.sleep(exponentialBackoffMillis);
+                            exponentialBackoffMillis *= EXPONENTIAL_BACKOFF_FACTOR;
                         }
                         retryCount++;
                     }
