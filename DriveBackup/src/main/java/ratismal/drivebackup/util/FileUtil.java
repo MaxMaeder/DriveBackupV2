@@ -30,6 +30,8 @@ import static ratismal.drivebackup.config.Localization.intl;
  */
 
 public class FileUtil {
+    private static final String NAME_KEYWORD = "%NAME";
+
     private UploadLogger logger;
 
     public FileUtil(UploadLogger logger) {
@@ -110,16 +112,10 @@ public class FileUtil {
                 intl("local-backup-in-backup-folder"), 
                 "files-in-backup-folder-count", String.valueOf(filesInBackupFolder));
         }
-        // Get the name of the last folder in the location path.
-        String lastFolderName = "";
-        int lastSeparatorIndex = location.lastIndexOf('/');
-        if (lastSeparatorIndex != -1) {
-            lastFolderName = location.substring(lastSeparatorIndex + 1);
-        }
-        // Replace the placeholder %NAME with the last folder name in the file name.
-        String placeholder = "%NAME";
-        if (fileName.contains(placeholder)) {
-            fileName = fileName.replace(placeholder, lastFolderName);
+        if (fileName.contains(NAME_KEYWORD)) {
+            int lastSeparatorIndex = Math.max(location.lastIndexOf('/'), location.lastIndexOf('\\'));
+            String lastFolderName = location.substring(lastSeparatorIndex + 1);
+            fileName = fileName.replace(NAME_KEYWORD, lastFolderName);
         }
         zipIt(location, path.getPath() + "/" + fileName, fileList);
     }
