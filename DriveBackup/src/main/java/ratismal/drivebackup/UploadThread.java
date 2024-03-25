@@ -1,33 +1,38 @@
 package ratismal.drivebackup;
 
+import com.google.api.client.util.Strings;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
-
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import ratismal.drivebackup.constants.Permission;
-import ratismal.drivebackup.uploaders.Authenticator;
-import ratismal.drivebackup.uploaders.Uploader;
-import ratismal.drivebackup.uploaders.Authenticator.AuthenticationProvider;
-import ratismal.drivebackup.uploaders.dropbox.DropboxUploader;
-import ratismal.drivebackup.uploaders.ftp.FTPUploader;
-import ratismal.drivebackup.uploaders.googledrive.GoogleDriveUploader;
-import ratismal.drivebackup.uploaders.onedrive.OneDriveUploader;
-import ratismal.drivebackup.uploaders.webdav.NextcloudUploader;
-import ratismal.drivebackup.uploaders.webdav.WebDAVUploader;
-import ratismal.drivebackup.uploaders.mysql.MySQLUploader;
 import ratismal.drivebackup.config.ConfigParser;
 import ratismal.drivebackup.config.ConfigParser.Config;
 import ratismal.drivebackup.config.configSections.BackupList.BackupListEntry;
 import ratismal.drivebackup.config.configSections.BackupList.BackupListEntry.PathBackupLocation;
 import ratismal.drivebackup.config.configSections.ExternalBackups.ExternalBackupSource;
 import ratismal.drivebackup.config.configSections.ExternalBackups.ExternalFTPSource;
-import ratismal.drivebackup.config.configSections.ExternalBackups.ExternalMySQLSource;
 import ratismal.drivebackup.config.configSections.ExternalBackups.ExternalFTPSource.ExternalBackupListEntry;
+import ratismal.drivebackup.config.configSections.ExternalBackups.ExternalMySQLSource;
 import ratismal.drivebackup.config.configSections.ExternalBackups.ExternalMySQLSource.MySQLDatabaseBackup;
+import ratismal.drivebackup.constants.Permission;
 import ratismal.drivebackup.handler.listeners.PlayerListener;
 import ratismal.drivebackup.plugin.Scheduler;
-import ratismal.drivebackup.util.*;
+import ratismal.drivebackup.uploaders.Authenticator;
+import ratismal.drivebackup.uploaders.Authenticator.AuthenticationProvider;
+import ratismal.drivebackup.uploaders.Uploader;
+import ratismal.drivebackup.uploaders.dropbox.DropboxUploader;
+import ratismal.drivebackup.uploaders.ftp.FTPUploader;
+import ratismal.drivebackup.uploaders.googledrive.GoogleDriveUploader;
+import ratismal.drivebackup.uploaders.mysql.MySQLUploader;
+import ratismal.drivebackup.uploaders.onedrive.OneDriveUploader;
+import ratismal.drivebackup.uploaders.webdav.NextcloudUploader;
+import ratismal.drivebackup.uploaders.webdav.WebDAVUploader;
+import ratismal.drivebackup.util.BlacklistEntry;
+import ratismal.drivebackup.util.FileUtil;
+import ratismal.drivebackup.util.LocalDateTimeFormatter;
+import ratismal.drivebackup.util.Logger;
+import ratismal.drivebackup.util.MessageUtil;
+import ratismal.drivebackup.util.ServerUtil;
 import ratismal.drivebackup.util.Timer;
 
 import java.io.File;
@@ -38,9 +43,15 @@ import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
-import java.util.*;
-
-import com.google.api.client.util.Strings;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 import static ratismal.drivebackup.config.Localization.intl;
 
@@ -364,9 +375,12 @@ public class UploadThread implements Runnable {
             if (FileUtil.isBaseFolder(location)) {
                 location = "root";
             }
-            File file = fileUtil
-                    .getLocalBackups(location, formatter)
-                    .descendingMap().firstEntry().getValue();
+            TreeMap<Long, File> localBackups = fileUtil.getLocalBackups(location, formatter);
+            if (localBackups.isEmpty()) {
+                logger.log(intl("backup-file-not-found"), "location", location);
+                return;
+            }
+            File file = localBackups.descendingMap().firstEntry().getValue();
             String name = file.getParent().replace("\\", "/").replace("./", "") + "/" + file.getName();
             logger.log(intl("backup-file-upload-start"), "file-name", name);
             Timer timer = new Timer();
