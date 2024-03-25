@@ -57,7 +57,7 @@ public final class LocalDateTimeFormatter {
                 isInvalid = true;
             }
         } else {
-            if (pattern.contains("%")) {
+            if (pattern.contains("%") && !pattern.contains("%NAME")) {
                 isInvalid = true;
             }
         }
