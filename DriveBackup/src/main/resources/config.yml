@@ -17,6 +17,13 @@ disable-saving-during-backups: true
 
 scheduled-backups: false
 backup-schedule-list:
+- days:
+  - "sunday"
+  - "wednesday"
+  time: "05:00"
+- days:
+  - "everyday"
+  time: "02:30"
 
 backup-list:
 - glob: "world*"
