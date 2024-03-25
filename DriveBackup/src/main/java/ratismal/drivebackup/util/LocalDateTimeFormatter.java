@@ -1,13 +1,13 @@
 package ratismal.drivebackup.util;
 
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
+import ratismal.drivebackup.config.ConfigParser;
+
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.regex.Pattern;
-
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
-import ratismal.drivebackup.config.ConfigParser;
 
 public final class LocalDateTimeFormatter {
     private static final String FORMAT_KEYWORD = "%FORMAT";
@@ -57,7 +57,7 @@ public final class LocalDateTimeFormatter {
                 isInvalid = true;
             }
         } else {
-            if (pattern.contains("%")) {
+            if (pattern.contains("%") && !pattern.contains("%NAME")) {
                 isInvalid = true;
             }
         }
