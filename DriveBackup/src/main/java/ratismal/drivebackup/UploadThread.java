@@ -306,6 +306,12 @@ public class UploadThread implements Runnable {
                 continue;
             }
             if (!uploader.isAuthenticated()) {
+                /*
+                workaround since authencated boolean appears to never be set in dropbox uploader
+                 */
+                if (uploader instanceof DropboxUploader) {
+                    continue;
+                }
                 if (provider == null) {
                     logger.log(
                         intl("backup-method-not-auth"),
