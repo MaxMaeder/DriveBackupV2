@@ -1,12 +1,12 @@
 package ratismal.drivebackup.uploaders;
 
-import org.bukkit.command.CommandSender;
-import org.jetbrains.annotations.NotNull;
-import org.json.JSONObject;
-
 import okhttp3.FormBody;
 import okhttp3.Request;
 import okhttp3.Response;
+import org.bukkit.Bukkit;
+import org.bukkit.command.CommandSender;
+import org.jetbrains.annotations.NotNull;
+import org.json.JSONObject;
 import ratismal.drivebackup.UploadThread.UploadLogger;
 import ratismal.drivebackup.handler.commandHandler.BasicCommands;
 import ratismal.drivebackup.plugin.DriveBackup;
@@ -15,8 +15,6 @@ import ratismal.drivebackup.util.Logger;
 import ratismal.drivebackup.util.MessageUtil;
 import ratismal.drivebackup.util.NetUtil;
 import ratismal.drivebackup.util.SchedulerUtil;
-
-import org.bukkit.Bukkit;
 
 import java.io.BufferedReader;
 import java.io.File;
