@@ -1,16 +1,11 @@
 package ratismal.drivebackup.plugin;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
-
+import net.kyori.adventure.platform.bukkit.BukkitAudiences;
+import okhttp3.OkHttpClient;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
-
-import net.kyori.adventure.platform.bukkit.BukkitAudiences;
-import okhttp3.OkHttpClient;
 import ratismal.drivebackup.config.ConfigMigrator;
 import ratismal.drivebackup.config.ConfigParser;
 import ratismal.drivebackup.config.Localization;
@@ -18,11 +13,17 @@ import ratismal.drivebackup.config.PermissionHandler;
 import ratismal.drivebackup.constants.Permission;
 import ratismal.drivebackup.handler.CommandTabComplete;
 import ratismal.drivebackup.handler.commandHandler.CommandHandler;
-import ratismal.drivebackup.handler.listeners.*;
-import ratismal.drivebackup.plugin.updater.*;
+import ratismal.drivebackup.handler.listeners.ChatInputListener;
+import ratismal.drivebackup.handler.listeners.PlayerListener;
+import ratismal.drivebackup.plugin.updater.UpdateChecker;
+import ratismal.drivebackup.plugin.updater.Updater;
 import ratismal.drivebackup.util.CustomConfig;
 import ratismal.drivebackup.util.HttpLogger;
 import ratismal.drivebackup.util.MessageUtil;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import static ratismal.drivebackup.config.Localization.intl;
 
@@ -73,7 +74,7 @@ public class DriveBackup extends JavaPlugin {
         ConfigMigrator configMigrator = new ConfigMigrator(getConfig(), localizationConfig.getConfig(), configPlayers);
         configMigrator.migrate();
         config = new ConfigParser(getConfig());
-        config.reload(PermissionHandler.getPlayersWithPerm(Permission.RELOAD_CONFIG));
+        config.reload(configPlayers);
         MessageUtil.Builder()
             .to(configPlayers)
             .mmText(intl("config-loaded"))
