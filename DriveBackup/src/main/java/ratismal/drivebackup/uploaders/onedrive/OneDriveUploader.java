@@ -5,23 +5,22 @@ import okhttp3.MediaType;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
-
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.json.JSONArray;
 import org.json.JSONObject;
-
-import ratismal.drivebackup.uploaders.Authenticator;
-import ratismal.drivebackup.uploaders.Obfusticate;
-import ratismal.drivebackup.uploaders.Uploader;
-import ratismal.drivebackup.uploaders.Authenticator.AuthenticationProvider;
 import ratismal.drivebackup.UploadThread.UploadLogger;
 import ratismal.drivebackup.config.ConfigParser;
 import ratismal.drivebackup.plugin.DriveBackup;
+import ratismal.drivebackup.uploaders.Authenticator;
+import ratismal.drivebackup.uploaders.Authenticator.AuthenticationProvider;
+import ratismal.drivebackup.uploaders.Obfusticate;
+import ratismal.drivebackup.uploaders.Uploader;
 import ratismal.drivebackup.util.MessageUtil;
 import ratismal.drivebackup.util.NetUtil;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
