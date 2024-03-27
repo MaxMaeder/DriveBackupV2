@@ -1,5 +1,6 @@
 package ratismal.drivebackup.platforms.bukkit;
 
+import org.jetbrains.annotations.Contract;
 import ratismal.drivebackup.handler.task.TaskHandler;
 
 import java.util.concurrent.TimeUnit;
@@ -8,6 +9,7 @@ public final class BukkitTaskHandler implements TaskHandler {
     
     private final BukkitPlugin instance;
     
+    @Contract (pure = true)
     public BukkitTaskHandler(BukkitPlugin instance) {
         this.instance = instance;
     }
@@ -37,4 +39,5 @@ public final class BukkitTaskHandler implements TaskHandler {
     public void cancelAllTasks() {
         instance.getServer().getScheduler().cancelTasks(instance);
     }
+    
 }

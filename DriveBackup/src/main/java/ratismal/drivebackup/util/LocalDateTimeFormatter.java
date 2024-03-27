@@ -1,13 +1,13 @@
 package ratismal.drivebackup.util;
 
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
+import ratismal.drivebackup.config.ConfigParser;
+
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.regex.Pattern;
-
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
-import ratismal.drivebackup.config.ConfigParser;
 
 public final class LocalDateTimeFormatter {
     private static final String FORMAT_KEYWORD = "%FORMAT";
@@ -15,6 +15,7 @@ public final class LocalDateTimeFormatter {
 
     private final DateTimeFormatter formatter;
 
+    @Contract (pure = true)
     private LocalDateTimeFormatter(DateTimeFormatter formatter) {
         this.formatter = formatter;
     }
@@ -34,11 +35,11 @@ public final class LocalDateTimeFormatter {
         return new LocalDateTimeFormatter(DateTimeFormatter.ofPattern(finalPattern));
     }
 
-    public String format(@NotNull ZonedDateTime timeDate) {
+    public @NotNull String format(@NotNull ZonedDateTime timeDate) {
         return timeDate.format(getFormatter());
     }
 
-    public ZonedDateTime parse(String text) throws DateTimeParseException {
+    public @NotNull ZonedDateTime parse(String text) throws DateTimeParseException {
         return ZonedDateTime.parse(text, getFormatter());
     }
 
@@ -48,20 +49,20 @@ public final class LocalDateTimeFormatter {
     }
 
     private static void verifyPattern(String pattern) throws IllegalArgumentException {
-        boolean isInvalid = false;
+        boolean isValid = true;
         if (!VALID_FORMAT.matcher(pattern).find()) {
-            isInvalid = true;
+            isValid = false;
         }
         if (pattern.contains(FORMAT_KEYWORD)) {
             if (pattern.contains("'")) {
-                isInvalid = true;
+                isValid = false;
             }
         } else {
             if (pattern.contains("%") && !pattern.contains("%NAME")) {
-                isInvalid = true;
+                isValid = false;
             }
         }
-        if (isInvalid) {
+        if (!isValid) {
             throw new IllegalArgumentException("Format pattern contains illegal characters");
         }
     }

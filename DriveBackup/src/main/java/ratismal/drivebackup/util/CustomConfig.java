@@ -1,5 +1,9 @@
 package ratismal.drivebackup.util;
 
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
+import ratismal.drivebackup.plugin.DriveBackup;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -7,13 +11,7 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.logging.Level;
 
-import com.google.common.base.Charsets;
-
-import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.configuration.file.YamlConfiguration;
-
-import ratismal.drivebackup.plugin.DriveBackup;
-
+@Deprecated
 public class CustomConfig {
     private String configName;
     private File configFile;

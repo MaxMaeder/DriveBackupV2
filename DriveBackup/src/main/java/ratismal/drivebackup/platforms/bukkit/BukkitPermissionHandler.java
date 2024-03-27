@@ -1,6 +1,7 @@
 package ratismal.drivebackup.platforms.bukkit;
 
 import org.bukkit.Server;
+import org.jetbrains.annotations.Contract;
 import ratismal.drivebackup.constants.Permission;
 import ratismal.drivebackup.handler.permission.PermissionHandler;
 import ratismal.drivebackup.objects.Player;
@@ -16,6 +17,7 @@ public class BukkitPermissionHandler implements PermissionHandler {
     
     private final Server server;
     
+    @Contract (pure = true)
     public BukkitPermissionHandler(Server server) {
         this.server = server;
     }

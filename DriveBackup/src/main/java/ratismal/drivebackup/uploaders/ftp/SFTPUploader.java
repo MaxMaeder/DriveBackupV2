@@ -1,5 +1,15 @@
 package ratismal.drivebackup.uploaders.ftp;
 
+import com.google.api.client.util.Strings;
+import net.schmizz.sshj.SSHClient;
+import net.schmizz.sshj.sftp.RemoteResourceInfo;
+import net.schmizz.sshj.sftp.StatefulSFTPClient;
+import net.schmizz.sshj.transport.verification.PromiscuousVerifier;
+import net.schmizz.sshj.userauth.method.AuthMethod;
+import net.schmizz.sshj.userauth.method.AuthPassword;
+import net.schmizz.sshj.userauth.method.AuthPublickey;
+import net.schmizz.sshj.userauth.password.PasswordFinder;
+import net.schmizz.sshj.userauth.password.Resource;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ratismal.drivebackup.UploadThread.UploadLogger;
@@ -11,19 +21,10 @@ import ratismal.drivebackup.plugin.DriveBackup;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
-
-import com.google.api.client.util.Strings;
-
-import net.schmizz.sshj.SSHClient;
-import net.schmizz.sshj.sftp.RemoteResourceInfo;
-import net.schmizz.sshj.sftp.StatefulSFTPClient;
-import net.schmizz.sshj.transport.verification.PromiscuousVerifier;
-import net.schmizz.sshj.userauth.password.*;
-import net.schmizz.sshj.userauth.method.AuthMethod;
-import net.schmizz.sshj.userauth.method.AuthPassword;
-import net.schmizz.sshj.userauth.method.AuthPublickey;
 
 import static ratismal.drivebackup.config.Localization.intl;
 
@@ -31,7 +32,7 @@ import static ratismal.drivebackup.config.Localization.intl;
  * Created by Ratismal on 2016-03-30.
  */
 
-public class SFTPUploader {
+public final class SFTPUploader {
     private UploadLogger logger;
 
     private SSHClient sshClient;
@@ -129,7 +130,7 @@ public class SFTPUploader {
      * Closes the connection to the SFTP server
      * @throws Exception
      */
-    public void close() throws Exception {
+    public void close() throws IOException {
         sshClient.close();
     }
 
@@ -138,15 +139,13 @@ public class SFTPUploader {
      * @param testFile the file to upload
      * @throws Exception
      */
-    public void test(File testFile) throws Exception {
+    public void test(@NotNull File testFile) throws Exception {
         try (FileOutputStream fos = new FileOutputStream(testFile)) {
             resetWorkingDirectory();
             createThenEnter(_remoteBaseFolder);
             sftpClient.put(testFile.getAbsolutePath(), testFile.getName());
             TimeUnit.SECONDS.sleep(5);
             sftpClient.rm(testFile.getName());
-        } catch (Exception exception) {
-            throw exception;
         }
     }
 
@@ -156,7 +155,7 @@ public class SFTPUploader {
      * @param type the type of file (ex. plugins, world)
      * @throws Exception
      */
-    public void uploadFile(File file, String type) throws Exception {
+    public void uploadFile(@NotNull File file, String type) throws Exception {
         resetWorkingDirectory();
         createThenEnter(_remoteBaseFolder);
         createThenEnter(type);
@@ -191,7 +190,7 @@ public class SFTPUploader {
      * @return the list of file paths
      * @throws Exception
      */
-    public ArrayList<String> getFiles(String type) throws Exception {
+    public @NotNull ArrayList<String> getFiles(String type) throws Exception {
         ArrayList<String> result = new ArrayList<>();
         resetWorkingDirectory();
         sftpClient.cd(_remoteBaseFolder);
@@ -276,10 +275,8 @@ public class SFTPUploader {
      * @return the new ArrayList
      */
     @Contract ("_, _ -> param1")
-    private static ArrayList<String> prependToAll(@NotNull ArrayList<String> list, String string) {
-        for (int i = 0; i < list.size(); i++) {
-            list.set(i, string + list.get(i));
-        }
+    private static @NotNull ArrayList<String> prependToAll(@NotNull ArrayList<String> list, String string) {
+        list.replaceAll(s -> string + s);
         return list;
     }
 }

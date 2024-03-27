@@ -18,16 +18,20 @@ import ratismal.drivebackup.util.LocalDateTimeFormatter;
 
 import static ratismal.drivebackup.config.Localization.intl;
 
+@Deprecated
 public class BackupList {
     
     public static final String ENTRY = "entry";
     
+    @Deprecated
     public static class BackupListEntry {
+        @Deprecated
         public interface BackupLocation {
             List<Path> getPaths();
             String toString();
         }
 
+        @Deprecated
         public static class PathBackupLocation implements BackupLocation {
             private final Path path;
 
@@ -44,6 +48,7 @@ public class BackupList {
             }
         }
 
+        @Deprecated
         public static class GlobBackupLocation implements BackupLocation {
             private final String glob;
 
@@ -65,6 +70,7 @@ public class BackupList {
         public final boolean create;
         public final String[] blacklist;
         
+        @Contract (pure = true)
         public BackupListEntry(
             BackupLocation location,
             LocalDateTimeFormatter formatter, 
@@ -81,6 +87,7 @@ public class BackupList {
 
     public final BackupListEntry[] list;
 
+    @Contract (pure = true)
     public BackupList(
         BackupListEntry[] list
         ) {

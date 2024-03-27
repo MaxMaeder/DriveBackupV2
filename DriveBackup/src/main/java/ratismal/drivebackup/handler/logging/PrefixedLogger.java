@@ -1,10 +1,13 @@
 package ratismal.drivebackup.handler.logging;
 
+import org.jetbrains.annotations.Contract;
+
 public final class PrefixedLogger implements LoggingInterface {
     
     private final String prefix;
     private final LoggingHandler loggingHandler;
     
+    @Contract (pure = true)
     public PrefixedLogger(String prefix, LoggingHandler loggingHandler) {
         this.prefix = "{" + prefix + "}";
         this.loggingHandler = loggingHandler;
@@ -44,4 +47,5 @@ public final class PrefixedLogger implements LoggingInterface {
     public void debug(String message, Throwable throwable) {
         loggingHandler.debug(prefix + " " + message, throwable);
     }
+    
 }

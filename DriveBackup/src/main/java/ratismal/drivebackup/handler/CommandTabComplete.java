@@ -15,7 +15,7 @@ import java.util.List;
 /**
  * Created by Ratismal on 2016-01-20.
  */
-
+@Deprecated
 public class CommandTabComplete implements TabCompleter {
     
     public static boolean hasPerm(CommandSender player, Permission permission) {

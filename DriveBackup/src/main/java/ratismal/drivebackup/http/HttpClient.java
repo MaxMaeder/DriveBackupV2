@@ -1,6 +1,7 @@
 package ratismal.drivebackup.http;
 
 import okhttp3.OkHttpClient;
+import org.jetbrains.annotations.Contract;
 import ratismal.drivebackup.util.HttpLogger;
 
 import java.util.concurrent.TimeUnit;
@@ -14,10 +15,13 @@ public final class HttpClient {
             .addInterceptor(new HttpLogger())
             .build();
     
+    @Contract (pure = true)
     private HttpClient() {
     }
     
+    @Contract (pure = true)
     public static OkHttpClient getHttpClient() {
         return httpClient;
     }
+    
 }

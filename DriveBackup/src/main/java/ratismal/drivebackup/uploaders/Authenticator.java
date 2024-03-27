@@ -1,12 +1,14 @@
 package ratismal.drivebackup.uploaders;
 
-import org.bukkit.command.CommandSender;
-import org.jetbrains.annotations.NotNull;
-import org.json.JSONObject;
-
 import okhttp3.FormBody;
 import okhttp3.Request;
 import okhttp3.Response;
+import org.bukkit.Bukkit;
+import org.bukkit.command.CommandSender;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
+import org.json.JSONException;
+import org.json.JSONObject;
 import ratismal.drivebackup.UploadThread.UploadLogger;
 import ratismal.drivebackup.handler.commandHandler.BasicCommands;
 import ratismal.drivebackup.plugin.DriveBackup;
@@ -15,8 +17,6 @@ import ratismal.drivebackup.util.Logger;
 import ratismal.drivebackup.util.MessageUtil;
 import ratismal.drivebackup.util.NetUtil;
 import ratismal.drivebackup.util.SchedulerUtil;
-
-import org.bukkit.Bukkit;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -30,16 +30,16 @@ public class Authenticator {
     /**
      * Endpoints
      */
-    private static String AUTH_URL = "https://auth.drivebackupv2.com";
-    private static String REQUEST_CODE_ENDPOINT = AUTH_URL + "/pin";
-    private static String POLL_VERIFICATION_ENDPOINT = AUTH_URL + "/token";
-    private static String ONEDRIVE_REQUEST_CODE_ENDPOINT = "https://login.microsoftonline.com/common/oauth2/v2.0/devicecode";
-    private static String ONEDRIVE_POLL_VERIFICATION_ENDPOINT = "https://login.microsoftonline.com/common/oauth2/v2.0/token";
+    private static final String AUTH_URL = "https://auth.drivebackupv2.com";
+    private static final String REQUEST_CODE_ENDPOINT = AUTH_URL + "/pin";
+    private static final String POLL_VERIFICATION_ENDPOINT = AUTH_URL + "/token";
+    private static final String ONEDRIVE_REQUEST_CODE_ENDPOINT = "https://login.microsoftonline.com/common/oauth2/v2.0/devicecode";
+    private static final String ONEDRIVE_POLL_VERIFICATION_ENDPOINT = "https://login.microsoftonline.com/common/oauth2/v2.0/token";
 
     /**
      * Authenticator client secret
      */
-    private static String CLIENT_SECRET = "fyKCRZRyJeHW5PzGJvQkL4dr2zRHRmwTaOutG7BBhQM=";
+    private static final String CLIENT_SECRET = "fyKCRZRyJeHW5PzGJvQkL4dr2zRHRmwTaOutG7BBhQM=";
 
     private static int taskId = -1;
 
@@ -54,6 +54,7 @@ public class Authenticator {
         private final String clientId;
         private final String clientSecret;
 
+        @Contract (pure = true)
         AuthenticationProvider(String name, String id, String credStoreLocation, String clientId, String clientSecret) {
             this.name = name;
             this.id = id;
@@ -62,10 +63,12 @@ public class Authenticator {
             this.clientSecret = clientSecret;
         }
 
+        @Contract (pure = true)
         public String getName() {
             return name;
         }
 
+        @Contract (pure = true)
         public String getId() {
             return id;
         }
@@ -74,10 +77,12 @@ public class Authenticator {
             return DriveBackup.getInstance().getDataFolder().getAbsolutePath() + credStoreLocation;
         }
 
+        @Contract (pure = true)
         public String getClientId() {
             return clientId;
         }
 
+        @Contract (pure = true)
         public String getClientSecret() {
             return clientSecret;
         }
@@ -90,7 +95,7 @@ public class Authenticator {
      * @param provider an {@code AuthenticationProvider}
      * @param initiator user who initiated the authentication
      */
-    public static void authenticateUser(final AuthenticationProvider provider, final CommandSender initiator) {
+    public static void authenticateUser(AuthenticationProvider provider, CommandSender initiator) {
         DriveBackup plugin = DriveBackup.getInstance();
         Logger logger = (input, placeholders) -> MessageUtil.Builder().mmText(input, placeholders).to(initiator).toConsole(false).send();
         cancelPollTask();
@@ -184,7 +189,7 @@ public class Authenticator {
         }
     }
 
-    public static void unauthenticateUser(final AuthenticationProvider provider, final CommandSender initiator) {
+    public static void unauthenticateUser(AuthenticationProvider provider, CommandSender initiator) {
         Logger logger = (input, placeholders) -> MessageUtil.Builder().mmText(input, placeholders).to(initiator).send();
         disableBackupMethod(provider, logger);
         try {
@@ -246,10 +251,10 @@ public class Authenticator {
             JSONObject clientJsonObject = new JSONObject(clientJSON);
             String readRefreshToken = (String) clientJsonObject.get("refresh_token");
             if (readRefreshToken == null || readRefreshToken.isEmpty()) {
-                throw new Exception();
+                return "";
             }
             return readRefreshToken;
-        } catch (Exception e) {
+        } catch (IOException | JSONException e) {
             return "";
         }
     }

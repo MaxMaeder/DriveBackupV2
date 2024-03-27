@@ -19,7 +19,7 @@ import static ratismal.drivebackup.config.Localization.intl;
 /**
  * Created by Ratismal on 2016-01-20.
  */
-
+@Deprecated
 public class CommandHandler implements CommandExecutor {
     public static final String CHAT_KEYWORD = "drivebackup";
 

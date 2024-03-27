@@ -12,6 +12,7 @@ import ratismal.drivebackup.util.Logger;
 
 import static ratismal.drivebackup.config.Localization.intl;
 
+@Deprecated
 public class Advanced {
     public final boolean metricsEnabled;
     public final boolean updateCheckEnabled;
@@ -21,6 +22,7 @@ public class Advanced {
     public final ZoneOffset dateTimezone;
     public final String fileSeparator;
 
+    @Contract (pure = true)
     public Advanced(
         boolean metricsEnabled, 
         boolean updateCheckEnabled, 

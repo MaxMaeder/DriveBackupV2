@@ -1,12 +1,14 @@
 package ratismal.drivebackup.uploaders.webdav;
 
+import com.github.sardine.DavResource;
+import com.github.sardine.Sardine;
+import com.github.sardine.SardineFactory;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import ratismal.drivebackup.uploaders.Uploader;
-import ratismal.drivebackup.uploaders.Authenticator.AuthenticationProvider;
 import ratismal.drivebackup.UploadThread.UploadLogger;
 import ratismal.drivebackup.config.ConfigParser;
 import ratismal.drivebackup.config.configSections.BackupMethods.WebDAVBackupMethod;
+import ratismal.drivebackup.uploaders.Uploader;
 import ratismal.drivebackup.util.MessageUtil;
 import ratismal.drivebackup.util.NetUtil;
 
@@ -14,12 +16,11 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URL;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
-
-import com.github.sardine.DavResource;
-import com.github.sardine.Sardine;
-import com.github.sardine.SardineFactory;
 
 import static ratismal.drivebackup.config.Localization.intl;
 
@@ -98,7 +99,6 @@ public class WebDAVUploader extends Uploader {
                 pruneBackups(type);
             } catch (Exception e) {
                 logger.log(intl("backup-method-prune-failed"));
-                
                 throw e;
             }
         } catch (Exception exception) {
@@ -212,9 +212,7 @@ public class WebDAVUploader extends Uploader {
      */
     @Contract ("_, _ -> param1")
     private static ArrayList<String> prependToAll(@NotNull ArrayList<String> list, String string) {
-        for (int i = 0; i < list.size(); i++) {
-            list.set(i, string + list.get(i));
-        }
+        list.replaceAll(s -> string + s);
         return list;
     }
 }

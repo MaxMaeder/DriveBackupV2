@@ -17,11 +17,12 @@ public class BackupMethods {
     public static class BackupMethod {
         public final boolean enabled;
 
+        @Contract (pure = true)
         public BackupMethod(boolean enabled) {
             this.enabled = enabled;
         }
     }
-
+    
     public static class GoogleDriveBackupMethod extends BackupMethod {
         public final String sharedDriveId;
 

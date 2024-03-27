@@ -11,6 +11,7 @@ import ratismal.drivebackup.plugin.DriveBackup;
 import ratismal.drivebackup.uploaders.googledrive.GoogleDriveUploader;
 import ratismal.drivebackup.util.MessageUtil;
 
+@Deprecated
 public class ChatInputListener implements Listener {
 
     @EventHandler

@@ -1,5 +1,6 @@
 package ratismal.drivebackup.platforms.bukkit;
 
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ratismal.drivebackup.handler.logging.LoggingHandler;
 import ratismal.drivebackup.handler.logging.PrefixedLogger;
@@ -17,6 +18,7 @@ public class BukkitLoggingHandler implements LoggingHandler {
     private final Logger logger;
     private final Map<String, PrefixedLogger> prefixedLoggers;
     
+    @Contract (pure = true)
     public BukkitLoggingHandler(DriveBackupInstance driveBackupInstance, Logger logger) {
         this.logger = logger;
         this.driveBackupInstance = driveBackupInstance;

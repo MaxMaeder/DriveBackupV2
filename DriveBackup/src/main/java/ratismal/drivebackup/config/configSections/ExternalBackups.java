@@ -1,23 +1,22 @@
 package ratismal.drivebackup.config.configSections;
 
-import java.nio.file.InvalidPathException;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
+import ratismal.drivebackup.config.ConfigParser;
+import ratismal.drivebackup.config.configSections.ExternalBackups.ExternalFTPSource.ExternalBackupListEntry;
+import ratismal.drivebackup.config.configSections.ExternalBackups.ExternalMySQLSource.MySQLDatabaseBackup;
+import ratismal.drivebackup.util.LocalDateTimeFormatter;
+import ratismal.drivebackup.util.Logger;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import org.bukkit.configuration.file.FileConfiguration;
-
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
-import ratismal.drivebackup.config.ConfigParser;
-import ratismal.drivebackup.util.Logger;
-import ratismal.drivebackup.config.configSections.ExternalBackups.ExternalFTPSource.ExternalBackupListEntry;
-import ratismal.drivebackup.config.configSections.ExternalBackups.ExternalMySQLSource.MySQLDatabaseBackup;
-import ratismal.drivebackup.util.LocalDateTimeFormatter;
-
 import static ratismal.drivebackup.config.Localization.intl;
 
+@Deprecated
 public class ExternalBackups {
     public static class ExternalBackupSource {
         public final String hostname;
@@ -26,6 +25,7 @@ public class ExternalBackups {
         public final String password;
         public final LocalDateTimeFormatter format;
 
+        @Contract (pure = true)
         private ExternalBackupSource(String hostname, int port, String username, String password, LocalDateTimeFormatter formatter) {
             this.hostname = hostname;
             this.port = port;
@@ -35,11 +35,13 @@ public class ExternalBackups {
         }
     }
 
+    @Deprecated
     public static class ExternalFTPSource extends ExternalBackupSource {
         public static class ExternalBackupListEntry {
             public final String path;
             public final String[] blacklist;
 
+            @Contract (pure = true)
             private ExternalBackupListEntry(String path, String[] blacklist) {
                 this.path = path;
                 this.blacklist = blacklist;
@@ -77,6 +79,7 @@ public class ExternalBackups {
         }
     }
 
+    @Deprecated
     public static class ExternalMySQLSource extends ExternalBackupSource {
         public static class MySQLDatabaseBackup {
             public final String name;
@@ -109,6 +112,7 @@ public class ExternalBackups {
 
     public final ExternalBackupSource[] sources;
 
+    @Contract (pure = true)
     private ExternalBackups(
         ExternalBackupSource[] sources
         ) {

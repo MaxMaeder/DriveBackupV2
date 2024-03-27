@@ -12,3 +12,5 @@ lib/*
 dependency-reduced-pom.xml
 node_modules
 /testing/
+/.idea/
+/package-lock.json

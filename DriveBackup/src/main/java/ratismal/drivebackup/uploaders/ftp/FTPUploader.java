@@ -30,7 +30,7 @@ import static ratismal.drivebackup.config.Localization.intl;
  * Created by Ratismal on 2016-03-30.
  */
 
-public class FTPUploader extends Uploader {
+public final class FTPUploader extends Uploader {
 
     public static final String UPLOADER_NAME = "(S)FTP";
 
@@ -46,6 +46,7 @@ public class FTPUploader extends Uploader {
      * Returns the configured FTP file separator
      * @return the separator
      */
+    @Contract (pure = true)
     private static String sep() {
         return ConfigParser.getConfig().advanced.fileSeparator;
     }
@@ -248,8 +249,8 @@ public class FTPUploader extends Uploader {
      * @param folderPath the path of the folder
      * @return the list of file paths
      */
-    public ArrayList<String> getFiles(String folderPath) {
-        ArrayList<String> filePaths = new ArrayList<>();
+    public @NotNull ArrayList<String> getFiles(String folderPath) {
+        ArrayList<String> filePaths = new ArrayList<>(10);
         try {
             if (sftpClient != null) {
                 return sftpClient.getFiles(folderPath);
@@ -341,10 +342,8 @@ public class FTPUploader extends Uploader {
      * @return the new ArrayList
      */
     @Contract ("_, _ -> param1")
-    private static ArrayList<String> prependToAll(@NotNull ArrayList<String> list, String string) {
-        for (int i = 0; i < list.size(); i++) {
-            list.set(i, string + list.get(i));
-        }
+    private static @NotNull ArrayList<String> prependToAll(@NotNull ArrayList<String> list, String string) {
+        list.replaceAll(s -> string + s);
         return list;
     }
 }

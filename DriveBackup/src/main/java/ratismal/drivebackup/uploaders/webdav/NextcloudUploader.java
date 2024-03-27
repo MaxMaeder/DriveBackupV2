@@ -1,5 +1,11 @@
 package ratismal.drivebackup.uploaders.webdav;
 
+import com.github.sardine.impl.SardineException;
+import org.jetbrains.annotations.NotNull;
+import ratismal.drivebackup.UploadThread.UploadLogger;
+import ratismal.drivebackup.config.configSections.BackupMethods.NextcloudBackupMethod;
+import ratismal.drivebackup.util.ChunkedFileInputStream;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -7,14 +13,7 @@ import java.lang.reflect.Array;
 import java.net.URL;
 import java.util.UUID;
 
-import com.github.sardine.impl.SardineException;
-
-import org.jetbrains.annotations.NotNull;
-import ratismal.drivebackup.UploadThread.UploadLogger;
-import ratismal.drivebackup.config.configSections.BackupMethods.NextcloudBackupMethod;
-import ratismal.drivebackup.util.ChunkedFileInputStream;
-
-public class NextcloudUploader extends WebDAVUploader {
+public final class NextcloudUploader extends WebDAVUploader {
 
     public static String UPLOADER_NAME = "Nextcloud";
 

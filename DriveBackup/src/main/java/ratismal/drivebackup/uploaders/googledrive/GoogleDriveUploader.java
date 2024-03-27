@@ -3,29 +3,34 @@ package ratismal.drivebackup.uploaders.googledrive;
 import com.google.api.client.auth.oauth2.BearerToken;
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.http.FileContent;
-import com.google.api.client.http.HttpRequest;
 import com.google.api.client.http.HttpRequestInitializer;
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.services.drive.Drive;
-import com.google.api.services.drive.model.*;
+import com.google.api.services.drive.model.ChildList;
+import com.google.api.services.drive.model.ChildReference;
+import com.google.api.services.drive.model.File;
+import com.google.api.services.drive.model.FileList;
+import com.google.api.services.drive.model.ParentReference;
 import okhttp3.FormBody;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
-
+import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import ratismal.drivebackup.uploaders.Uploader;
-import ratismal.drivebackup.uploaders.Authenticator;
-import ratismal.drivebackup.uploaders.Obfusticate;
-import ratismal.drivebackup.uploaders.Authenticator.AuthenticationProvider;
+import org.json.JSONObject;
 import ratismal.drivebackup.UploadThread.UploadLogger;
 import ratismal.drivebackup.config.ConfigParser;
 import ratismal.drivebackup.plugin.DriveBackup;
+import ratismal.drivebackup.uploaders.Authenticator;
+import ratismal.drivebackup.uploaders.Authenticator.AuthenticationProvider;
+import ratismal.drivebackup.uploaders.Obfusticate;
+import ratismal.drivebackup.uploaders.Uploader;
 import ratismal.drivebackup.util.MessageUtil;
 import ratismal.drivebackup.util.NetUtil;
 
@@ -36,19 +41,15 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
-import org.json.JSONObject;
-
 import static ratismal.drivebackup.config.Localization.intl;
 
 /**
  * Created by Ratismal on 2016-01-20.
  */
 
-public class GoogleDriveUploader extends Uploader {
+public final class GoogleDriveUploader extends Uploader {
     
-    public static final String APPLICATION_VND_GOOGLE_APPS_FOLDER = "application/vnd.google-apps.folder";
+    private static final String APPLICATION_VND_GOOGLE_APPS_FOLDER = "application/vnd.google-apps.folder";
     private String refreshToken;
 
     /**
@@ -121,6 +122,7 @@ public class GoogleDriveUploader extends Uploader {
             .build();
     }
 
+    @Contract (pure = true)
     @Override
     public boolean isAuthenticated() {
         return service != null;
@@ -137,9 +139,9 @@ public class GoogleDriveUploader extends Uploader {
         return httpRequest -> {
             requestInitializer.initialize(httpRequest);
             // 1 minute connect timeout
-            httpRequest.setConnectTimeout(1 * 60000);
+            httpRequest.setConnectTimeout((int) TimeUnit.MINUTES.toMillis(1));
             // 4 hours read timeout
-            httpRequest.setReadTimeout(4 * 60 * 60000);
+            httpRequest.setReadTimeout((int) TimeUnit.HOURS.toMillis(4));
         };
     }
 
@@ -232,6 +234,7 @@ public class GoogleDriveUploader extends Uploader {
     /**
      * Closes any remaining connections retrieveNewAccessToken
      */
+    @Contract (pure = true)
     public void close() {
         // nothing needs to be done
     }
@@ -287,7 +290,6 @@ public class GoogleDriveUploader extends Uploader {
             instance.getConfig().set(idKey, drives.get(Integer.parseInt(input) - 2).getId());
             instance.saveConfig();
             Authenticator.linkSuccess(initiator, getAuthProvider(), logger);
-                        
             return;
         }
         // TODO: handle this better

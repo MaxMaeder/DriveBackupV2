@@ -130,4 +130,5 @@ public final class UpdateHandler {
     private void getCurrentVersion() {
         currentVersion = instance.getCurrentVersion();
     }
+    
 }

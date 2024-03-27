@@ -1,9 +1,9 @@
 package ratismal.drivebackup.plugin.updater;
 
-import org.json.JSONArray;
-
 import okhttp3.Request;
 import okhttp3.Response;
+import org.jetbrains.annotations.Contract;
+import org.json.JSONArray;
 import ratismal.drivebackup.config.ConfigParser;
 import ratismal.drivebackup.plugin.DriveBackup;
 import ratismal.drivebackup.util.Logger;
@@ -11,6 +11,8 @@ import ratismal.drivebackup.util.MessageUtil;
 import ratismal.drivebackup.util.NetUtil;
 import ratismal.drivebackup.util.SchedulerUtil;
 import ratismal.drivebackup.util.Version;
+
+import java.util.concurrent.TimeUnit;
 
 import static ratismal.drivebackup.config.Localization.intl;
 
@@ -20,7 +22,7 @@ public class UpdateChecker {
     /**
      * How often to check for updates, in seconds
      */
-    private static final long UPDATE_CHECK_INTERVAL = 60 * 60 * 4;
+    private static final long UPDATE_CHECK_INTERVAL = TimeUnit.HOURS.toSeconds(4);
 
     private static Version currentVersion;
     private static Version latestVersion;
@@ -67,6 +69,7 @@ public class UpdateChecker {
      * Gets whether an update is available for the plugin
      * @return whether an update is available
      */
+    @Contract (pure = true)
     public static boolean isUpdateAvailable() {
         if (latestVersion != null) {
             return latestVersion.isAfter(currentVersion);
@@ -74,6 +77,7 @@ public class UpdateChecker {
         return false;
     }
 
+    @Contract (pure = true)
     public static String getLatestDownloadUrl() {
         return latestDownloadUrl;
     }
@@ -90,7 +94,7 @@ public class UpdateChecker {
         Response response = DriveBackup.httpClient.newCall(request).execute();
         JSONArray pluginVersions = new JSONArray(response.body().string());
         response.close();
-        if (pluginVersions.length() == 0) {
+        if (pluginVersions.isEmpty()) {
             throw new NumberFormatException();
         }
         String versionTitle = pluginVersions.getJSONObject(pluginVersions.length() - 1).getString("name").replace("DriveBackupV2-", "").trim();

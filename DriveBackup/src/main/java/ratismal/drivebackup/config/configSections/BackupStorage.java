@@ -11,6 +11,7 @@ import ratismal.drivebackup.util.Logger;
 
 import static ratismal.drivebackup.config.Localization.intl;
 
+@Deprecated
 public class BackupStorage {
     public final long delay;
     public final int threadPriority;
@@ -22,6 +23,7 @@ public class BackupStorage {
     public final String localDirectory;
     public final String remoteDirectory;
 
+    @Contract (pure = true)
     public BackupStorage(
         long delay, 
         int threadPriority, 

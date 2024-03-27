@@ -18,11 +18,14 @@ import ratismal.drivebackup.util.SchedulerUtil;
 
 import static ratismal.drivebackup.config.Localization.intl;
 
+@Deprecated
 public class BackupScheduling {
+    @Deprecated
     public static class BackupScheduleEntry {
         public final DayOfWeek[] days;
         public final TemporalAccessor time;
 
+        @Contract (pure = true)
         public BackupScheduleEntry(DayOfWeek[] days, TemporalAccessor time) {
             this.days = days;
             this.time = time;
@@ -32,6 +35,7 @@ public class BackupScheduling {
     public final boolean enabled;
     public final BackupScheduleEntry[] schedule;
 
+    @Contract (pure = true)
     public BackupScheduling(
         boolean enabled, 
         BackupScheduleEntry[] schedule

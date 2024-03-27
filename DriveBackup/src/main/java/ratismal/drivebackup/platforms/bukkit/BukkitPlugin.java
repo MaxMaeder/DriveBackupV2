@@ -4,6 +4,8 @@ import net.kyori.adventure.platform.bukkit.BukkitAudiences;
 import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 import org.spongepowered.configurate.ConfigurateException;
 import ratismal.drivebackup.configuration.ConfigHandler;
 import ratismal.drivebackup.configuration.ConfigMigrator;
@@ -37,6 +39,7 @@ public final class BukkitPlugin extends JavaPlugin implements DriveBackupInstanc
     private Version currentVersion;
     
     
+    @Contract (pure = true)
     @Override
     public PermissionHandler getPermissionHandler() {
         return permissionHandler;
@@ -47,26 +50,31 @@ public final class BukkitPlugin extends JavaPlugin implements DriveBackupInstanc
         return getFile();
     }
     
+    @Contract (pure = true)
     @Override
     public File getDataDirectory() {
         return getDataFolder();
     }
     
+    @Contract (pure = true)
     @Override
     public LoggingHandler getLoggingHandler() {
         return loggingHandler;
     }
     
+    @Contract (pure = true)
     @Override
     public BukkitMessageHandler getMessageHandler() {
         return bukkitMessageHandler;
     }
     
+    @Contract (pure = true)
     @Override
     public ConfigHandler getConfigHandler() {
         return configHandler;
     }
     
+    @Contract (pure = true)
     @Override
     public LangConfigHandler getLangConfigHandler() {
         return langConfigHandler;
@@ -81,6 +89,7 @@ public final class BukkitPlugin extends JavaPlugin implements DriveBackupInstanc
         BukkitPlugin.instance = instance;
     }
     
+    @Contract (pure = true)
     public static BukkitPlugin getInstance() {
         if (instance == null) {
             throw new IllegalStateException("Plugin has not been initialized yet");
@@ -88,6 +97,7 @@ public final class BukkitPlugin extends JavaPlugin implements DriveBackupInstanc
         return instance;
     }
     
+    @Contract (pure = true)
     @Override
     public void onLoad() {
         //do nothing
@@ -123,20 +133,24 @@ public final class BukkitPlugin extends JavaPlugin implements DriveBackupInstanc
         updateHandler = new UpdateHandler(this);
     }
     
+    @Contract (pure = true)
     @Override
     public void onDisable() {
     }
     
+    @Contract (" -> new")
     @Override
-    public Version getCurrentVersion() {
+    public @NotNull Version getCurrentVersion() {
         return Version.parse(getDescription().getVersion().split("-")[0]);
     }
     
+    @Contract (value = " -> new", pure = true)
     @Override
-    public TaskHandler getTaskHandler() {
+    public @NotNull TaskHandler getTaskHandler() {
         return new BukkitTaskHandler(this);
     }
     
+    @Contract (pure = true)
     public BukkitAudiences getAudiences() {
         return adventure;
     }

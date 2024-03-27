@@ -5,6 +5,10 @@
 
 package ratismal.drivebackup.uploaders.mysql;
 
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
+import ratismal.drivebackup.util.MessageUtil;
+
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -24,10 +28,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
-import org.jetbrains.annotations.NotNull;
-import ratismal.drivebackup.util.MessageUtil;
-
-public class MySQLUploader {
+public final class MySQLUploader {
     private String host;
     private int port;
     private String username;
@@ -49,6 +50,7 @@ public class MySQLUploader {
      * @param password the password (leave blank if none)
      * @param useSsl whether to connect to the server using SSL/TLS
      */
+    @Contract (pure = true)
     public MySQLUploader(String host, int port, String username, String password, boolean useSsl) {
         this.host = host;
         this.port = port;
@@ -119,7 +121,7 @@ public class MySQLUploader {
      */
     @NotNull
     private List<String> getAllTables(String name) throws SQLException {
-        List<String> table = new ArrayList<>();
+        List<String> table = new ArrayList<>(10);
         ResultSet rs;
         rs = stmt.executeQuery("SHOW TABLE STATUS FROM `" + name + "`;");
         while ( rs.next() ) {

@@ -6,11 +6,13 @@ import java.time.temporal.TemporalAccessor;
 import java.util.List;
 
 import org.bukkit.Bukkit;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
-public class SchedulerUtil {
+public final class SchedulerUtil {
     private static final int TICKS_PER_SECOND = 20;
     
+    @Contract (pure = true)
     private SchedulerUtil() {}
 
     /**
@@ -21,7 +23,6 @@ public class SchedulerUtil {
         for (int task : taskList) {
             Bukkit.getScheduler().cancelTask(task);
         }
-
         taskList.clear();
     }
 
@@ -30,6 +31,7 @@ public class SchedulerUtil {
      * @param seconds the number of seconds
      * @return the number of game ticks
      */
+    @Contract (pure = true)
     public static long sToTicks(long seconds) {
         return seconds * TICKS_PER_SECOND;
     }
@@ -45,7 +47,6 @@ public class SchedulerUtil {
             .appendOptional(DateTimeFormatter.ofPattern("kk:mm"))
             .appendOptional(DateTimeFormatter.ofPattern("k:mm"))
             .toFormatter();
-
         return formatter.parse(time);
     }
 }

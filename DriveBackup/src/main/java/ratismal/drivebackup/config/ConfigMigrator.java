@@ -6,11 +6,13 @@ import org.apache.commons.lang.ObjectUtils;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 
+import org.jetbrains.annotations.Contract;
 import ratismal.drivebackup.config.ConfigParser.Config;
 import ratismal.drivebackup.util.Logger;
 import ratismal.drivebackup.plugin.DriveBackup;
 import ratismal.drivebackup.util.MessageUtil;
 
+@Deprecated
 public class ConfigMigrator {
     private static final String DEFAULT_TIMEZONE_STRING = "-00:00";
 
@@ -22,8 +24,8 @@ public class ConfigMigrator {
     private FileConfiguration localizationConfig;
     private List<CommandSender> initiators;
 
-    public ConfigMigrator(FileConfiguration config, FileConfiguration localizationConfig,
-            List<CommandSender> initiators) {
+    @Contract (pure = true)
+    public ConfigMigrator(FileConfiguration config, FileConfiguration localizationConfig, List<CommandSender> initiators) {
         this.config = config;
         this.localizationConfig = localizationConfig;
         this.initiators = initiators;

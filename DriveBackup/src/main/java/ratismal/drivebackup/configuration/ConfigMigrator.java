@@ -1,6 +1,7 @@
 package ratismal.drivebackup.configuration;
 
 import org.apache.commons.lang.ObjectUtils;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.spongepowered.configurate.CommentedConfigurationNode;
 import org.spongepowered.configurate.ConfigurateException;
@@ -12,6 +13,7 @@ public final class ConfigMigrator {
     private static final String newerVersionMessage = "Your config is a newer unknown version.";
     private static final String invalidConfigMessage = "Your config is invalid. Generating a new one.";
     
+    @Contract (pure = true)
     private ConfigMigrator() {
     }
     

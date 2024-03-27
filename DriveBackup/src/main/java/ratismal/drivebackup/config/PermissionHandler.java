@@ -7,12 +7,15 @@ import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ratismal.drivebackup.constants.Permission;
 import ratismal.drivebackup.handler.commandHandler.BasicCommands;
 
+@Deprecated
 public final class PermissionHandler {
     
+    @Contract (value = " -> fail", pure = true)
     private PermissionHandler() {
         throw new IllegalStateException("Utility class");
     }
@@ -38,7 +41,7 @@ public final class PermissionHandler {
      */
     @NotNull
     public static List<CommandSender> getPlayersWithPerm(Permission permission) {
-        ArrayList<CommandSender> players = new ArrayList<>();
+        ArrayList<CommandSender> players = new ArrayList<>(10);
         for (Player player : Bukkit.getServer().getOnlinePlayers()) {
             if (player.hasPermission(permission.getPermission())) {
                 players.add(player);

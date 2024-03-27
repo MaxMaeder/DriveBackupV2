@@ -18,6 +18,7 @@ import java.util.Set;
 
 public final class ConfigurationUtils {
     
+    @Contract (pure = true)
     private ConfigurationUtils() {
     }
     

@@ -5,6 +5,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 
+import org.jetbrains.annotations.Contract;
 import ratismal.drivebackup.UploadThread;
 import ratismal.drivebackup.config.Localization;
 import ratismal.drivebackup.config.PermissionHandler;
@@ -12,6 +13,7 @@ import ratismal.drivebackup.constants.Permission;
 import ratismal.drivebackup.plugin.updater.UpdateChecker;
 import ratismal.drivebackup.util.MessageUtil;
 
+@Deprecated
 public class PlayerListener implements Listener {
     private static boolean autoBackupsActive;
 
@@ -30,6 +32,7 @@ public class PlayerListener implements Listener {
         }
     }
 
+    @Contract (pure = true)
     public static boolean isAutoBackupsActive() {
         return autoBackupsActive;
     }

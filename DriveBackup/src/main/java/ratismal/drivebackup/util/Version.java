@@ -3,7 +3,11 @@ package ratismal.drivebackup.util;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.regex.Pattern;
+
 public final class Version {
+    
+    private static final Pattern VERSION_STRING = Pattern.compile("^\\d+\\.\\d+\\.\\d+");
     private final int major;
     private final int minor;
     private final int patch;
@@ -17,8 +21,22 @@ public final class Version {
     
     @NotNull
     @Contract ("_ -> new")
-    public static Version parse(@NotNull String version) throws NumberFormatException {
-        String[] splitVersion = version.split("\\.");
+    public static Version parse(String version) throws NumberFormatException {
+        if (version == null) {
+            throw new IllegalArgumentException("Version string cannot be null");
+        }
+        String trimmed = version.trim();
+        if (trimmed.contains("-")) {
+            trimmed = trimmed.split("-")[0];
+        }
+        if (trimmed.contains("_")) {
+            trimmed = trimmed.split("_")[0];
+        }
+        if (trimmed.isEmpty()) {
+            throw new IllegalArgumentException("Version string cannot be empty");
+        }
+        verifyVersionString(trimmed);
+        String[] splitVersion = trimmed.split("\\.");
         return new Version(
             Integer.parseInt(splitVersion[0]),
             Integer.parseInt(splitVersion[1]),
@@ -26,6 +44,13 @@ public final class Version {
         );
     }
     
+    private static void verifyVersionString(String version) {
+        if (!VERSION_STRING.matcher(version).matches()) {
+            throw new IllegalArgumentException("Invalid version string: " + version);
+        }
+    }
+    
+    @Contract (pure = true)
     @Deprecated
     public boolean isAfter(@NotNull Version other) {
         if (major != other.major) {
@@ -73,4 +98,5 @@ public final class Version {
     public @NotNull String toString() {
         return major + "." + minor + "." + patch;
     }
+    
 }

@@ -1,5 +1,15 @@
 package ratismal.drivebackup.plugin;
 
+import org.bukkit.Bukkit;
+import org.bukkit.scheduler.BukkitScheduler;
+import org.jetbrains.annotations.Contract;
+import ratismal.drivebackup.UploadThread;
+import ratismal.drivebackup.config.ConfigParser;
+import ratismal.drivebackup.config.ConfigParser.Config;
+import ratismal.drivebackup.config.configSections.BackupScheduling.BackupScheduleEntry;
+import ratismal.drivebackup.util.MessageUtil;
+import ratismal.drivebackup.util.SchedulerUtil;
+
 import java.time.DayOfWeek;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
@@ -10,16 +20,7 @@ import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
 import java.util.List;
-
-import org.bukkit.Bukkit;
-import org.bukkit.scheduler.BukkitScheduler;
-
-import ratismal.drivebackup.UploadThread;
-import ratismal.drivebackup.config.ConfigParser;
-import ratismal.drivebackup.config.ConfigParser.Config;
-import ratismal.drivebackup.config.configSections.BackupScheduling.BackupScheduleEntry;
-import ratismal.drivebackup.util.MessageUtil;
-import ratismal.drivebackup.util.SchedulerUtil;
+import java.util.concurrent.TimeUnit;
 
 import static ratismal.drivebackup.config.Localization.intl;
 
@@ -27,12 +28,12 @@ public class Scheduler {
     /**
      * How often to run the schedule drift correction task, in seconds.
      */
-    private static final long SCHEDULE_DRIFT_CORRECTION_INTERVAL = 1 * 60 * 60 * 24;
+    private static final long SCHEDULE_DRIFT_CORRECTION_INTERVAL = TimeUnit.DAYS.toSeconds(1);
 
     /**
      * List of the IDs of the scheduled backup tasks
      */
-    private static ArrayList<Integer> backupTasks = new ArrayList<>();
+    private static final List<Integer> backupTasks = new ArrayList<>(2);
 
     /**
      * ID of the schedule drift correction task
@@ -42,7 +43,7 @@ public class Scheduler {
     /**
      * List of Dates representing each time a scheduled backup will occur.
      */
-    private static ArrayList<ZonedDateTime> backupDatesList = new ArrayList<>();
+    private static final List<ZonedDateTime> backupDatesList = new ArrayList<>(10);
 
     /**
      * Starts the backup thread
@@ -140,6 +141,7 @@ public class Scheduler {
      * Gets a list of Dates representing each time a scheduled backup will occur.
      * @return the ArrayList of {@code ZonedDateTime} objects
      */
+    @Contract (pure = true)
     public static List<ZonedDateTime> getBackupDatesList() {
         return backupDatesList;
     }

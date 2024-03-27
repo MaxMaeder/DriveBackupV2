@@ -19,7 +19,9 @@ import ratismal.drivebackup.plugin.DriveBackup;
 import ratismal.drivebackup.util.Logger;
 import ratismal.drivebackup.util.MessageUtil;
 
+@Deprecated
 public class ConfigParser {
+    @Deprecated
     public static class Config {
         public static final int VERSION = 2;
         public final BackupStorage backupStorage;
@@ -30,6 +32,7 @@ public class ConfigParser {
         public final Messages messages;
         public final Advanced advanced;
     
+        @Contract (pure = true)
         private Config(
             BackupStorage backupStorage, 
             BackupScheduling backupScheduling, 
@@ -57,6 +60,7 @@ public class ConfigParser {
      * Creates an instance of the {@code Config} object
      * @param config A reference to the plugin's {@code config.yml}
      */
+    @Contract (pure = true)
     public ConfigParser(FileConfiguration config) {
         this.config = config;
     }
@@ -74,6 +78,7 @@ public class ConfigParser {
      * Gets the plugin's parsed config
      * @return the config
      */
+    @Contract (pure = true)
     public static Config getConfig() {
         return parsedConfig;
     }

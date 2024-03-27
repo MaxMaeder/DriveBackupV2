@@ -1,5 +1,7 @@
 package ratismal.drivebackup.constants;
 
+import org.jetbrains.annotations.Contract;
+
 public enum Permission {
     
     BACKUP("drivebackup.backup"),
@@ -10,16 +12,20 @@ public enum Permission {
     
     private final String permission;
     
+    @Contract (pure = true)
     Permission(String permission) {
         this.permission = permission;
     }
     
+    @Contract (pure = true)
     public String getPermission() {
         return permission;
     }
     
+    @Contract (pure = true)
     @Override
     public String toString() {
         return permission;
     }
+    
 }

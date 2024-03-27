@@ -2,14 +2,17 @@ package ratismal.drivebackup.config.configSections;
 
 import org.bukkit.configuration.file.FileConfiguration;
 
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ratismal.drivebackup.util.Logger;
 
+@Deprecated
 public class Messages {
     public final boolean sendInChat;
     public final String prefix;
     public final String defaultColor;
 
+    @Contract (pure = true)
     public Messages(
         boolean sendInChat,
         String prefix, 

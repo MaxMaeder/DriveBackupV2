@@ -19,6 +19,7 @@ import static ratismal.drivebackup.config.Localization.intl;
 import java.util.ArrayList;
 import java.util.List;
 
+@Deprecated
 public final class BasicCommands {
     
     private BasicCommands() {
