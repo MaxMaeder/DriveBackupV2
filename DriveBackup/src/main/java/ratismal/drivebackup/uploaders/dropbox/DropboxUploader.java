@@ -1,33 +1,31 @@
 package ratismal.drivebackup.uploaders.dropbox;
 
-import org.jetbrains.annotations.NotNull;
-import ratismal.drivebackup.util.MessageUtil;
-import ratismal.drivebackup.util.NetUtil;
-import ratismal.drivebackup.uploaders.Authenticator;
-import ratismal.drivebackup.uploaders.Obfusticate;
-import ratismal.drivebackup.uploaders.Uploader;
-import ratismal.drivebackup.uploaders.Authenticator.AuthenticationProvider;
-import ratismal.drivebackup.UploadThread.UploadLogger;
-import ratismal.drivebackup.config.ConfigParser;
-import ratismal.drivebackup.config.ConfigParser.Config;
-import ratismal.drivebackup.plugin.DriveBackup;
-
-import java.io.DataInputStream;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.time.Instant;
-import java.util.TreeMap;
-import java.util.concurrent.TimeUnit;
-
-import org.json.JSONArray;
-import org.json.JSONObject;
-
 import okhttp3.FormBody;
 import okhttp3.MediaType;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
+import org.json.JSONArray;
+import org.json.JSONObject;
+import ratismal.drivebackup.UploadThread.UploadLogger;
+import ratismal.drivebackup.config.ConfigParser;
+import ratismal.drivebackup.config.ConfigParser.Config;
+import ratismal.drivebackup.plugin.DriveBackup;
+import ratismal.drivebackup.uploaders.Authenticator;
+import ratismal.drivebackup.uploaders.Authenticator.AuthenticationProvider;
+import ratismal.drivebackup.uploaders.Obfusticate;
+import ratismal.drivebackup.uploaders.Uploader;
+import ratismal.drivebackup.util.MessageUtil;
+import ratismal.drivebackup.util.NetUtil;
+
+import java.io.DataInputStream;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.time.Instant;
+import java.util.TreeMap;
+import java.util.concurrent.TimeUnit;
 
 import static ratismal.drivebackup.config.Localization.intl;
 
@@ -88,6 +86,12 @@ public class DropboxUploader extends Uploader {
             MessageUtil.sendConsoleException(exception);
             setErrorOccurred(true);
         }
+    }
+    
+    @Contract (pure = true)
+    @Override
+    public boolean isAuthenticated() {
+        return !accessToken.isEmpty();
     }
 
     /**
