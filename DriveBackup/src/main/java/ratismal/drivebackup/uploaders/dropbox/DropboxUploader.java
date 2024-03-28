@@ -87,6 +87,12 @@ public final class DropboxUploader extends Uploader {
             setErrorOccurred(true);
         }
     }
+    
+    @Contract (pure = true)
+    @Override
+    public boolean isAuthenticated() {
+        return !accessToken.isEmpty();
+    }
 
     /**
      * Uploads the specified file to the authenticated user's Dropbox inside a
