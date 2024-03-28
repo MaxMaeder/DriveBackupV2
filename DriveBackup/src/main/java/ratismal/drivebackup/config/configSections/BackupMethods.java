@@ -1,9 +1,7 @@
 package ratismal.drivebackup.config.configSections;
 
 import com.google.api.client.util.Strings;
-
 import org.bukkit.configuration.file.FileConfiguration;
-
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ratismal.drivebackup.config.ConfigParser;
@@ -13,6 +11,7 @@ import java.nio.file.InvalidPathException;
 
 import static ratismal.drivebackup.config.Localization.intl;
 
+@Deprecated
 public class BackupMethods {
     public static class BackupMethod {
         public final boolean enabled;

@@ -14,3 +14,4 @@ node_modules
 /testing/
 /.idea/
 /package-lock.json
+/DriveBackup/src/test/

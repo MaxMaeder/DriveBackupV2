@@ -37,6 +37,7 @@ public class ExternalBackups {
 
     @Deprecated
     public static class ExternalFTPSource extends ExternalBackupSource {
+        @Deprecated
         public static class ExternalBackupListEntry {
             public final String path;
             public final String[] blacklist;
@@ -81,6 +82,7 @@ public class ExternalBackups {
 
     @Deprecated
     public static class ExternalMySQLSource extends ExternalBackupSource {
+        @Deprecated
         public static class MySQLDatabaseBackup {
             public final String name;
             public final String[] blacklist;

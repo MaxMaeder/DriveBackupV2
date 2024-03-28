@@ -72,6 +72,7 @@ public final class UpdateHandler {
         }
     }
     
+    @Contract (pure = true)
     public boolean hasUpdate() {
         if (latestVersion == null) {
             return false;
