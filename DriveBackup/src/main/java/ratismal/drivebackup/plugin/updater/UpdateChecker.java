@@ -16,6 +16,7 @@ import java.util.concurrent.TimeUnit;
 
 import static ratismal.drivebackup.config.Localization.intl;
 
+@Deprecated
 public class UpdateChecker {
     private static final int CURSE_PROJECT_ID = 383461;
 

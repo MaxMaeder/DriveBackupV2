@@ -13,6 +13,7 @@ import java.io.IOException;
 
 import static ratismal.drivebackup.config.Localization.intl;
 
+@Deprecated
 public class Updater {
     // Plugin running Updater
     private DriveBackup plugin;
