@@ -5,30 +5,31 @@ import org.jetbrains.annotations.NotNull;
 import org.spongepowered.configurate.CommentedConfigurationNode;
 import org.spongepowered.configurate.ConfigurateException;
 import org.spongepowered.configurate.serialize.SerializationException;
+import ratismal.drivebackup.handler.logging.PrefixedLogger;
 import ratismal.drivebackup.platforms.DriveBackupInstance;
 
 public final class LangConfigHandler {
     private static final String LANG_FILE_NAME = "lang";
-    private static final String FAILED_TO_LOAD = "Failed to load intl";
+    private static final String FAILED_TO_LOAD = "Failed to load intl, using defaults";
     
     private final DriveBackupInstance instance;
-    private CommentedConfigurationNode langConfig;
     private ConfigurationObject configurationObject;
+    private final PrefixedLogger logger;
     
-    public LangConfigHandler(DriveBackupInstance instance) {
+    public LangConfigHandler(@NotNull DriveBackupInstance instance) {
         this.instance = instance;
+        logger = instance.getLoggingHandler().getPrefixedLogger("LangConfigHandler");
         try {
-            configurationObject = new ConfigurationObject(instance.getDataDirectory(), LANG_FILE_NAME, instance, getDefaults());
+            configurationObject = new ConfigurationObject(logger, instance.getDataDirectory(), LANG_FILE_NAME, instance, getDefaults());
             ConfigurationUtils.loadConfig(configurationObject);
-            langConfig = configurationObject.getConfig();
         } catch (ConfigurateException e) {
-            instance.getLoggingHandler().error(FAILED_TO_LOAD, e);
+            logger.error(FAILED_TO_LOAD, e);
         }
     }
     
     @Contract (pure = true)
-    public CommentedConfigurationNode getConfig() {
-        return langConfig;
+    public ConfigurationObject getConfig() {
+        return configurationObject;
     }
     
     public void generateNewConfig() {

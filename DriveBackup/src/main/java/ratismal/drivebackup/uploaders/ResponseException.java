@@ -2,10 +2,12 @@ package ratismal.drivebackup.uploaders;
 
 import org.json.JSONObject;
 
+import java.io.IOException;
+
 /**
  * Thrown to indicate an error with the response of an http request.
  */
-class ResponseException extends Exception {
+class ResponseException extends IOException {
     JSONObject json;
 
     /**

@@ -1,18 +1,18 @@
 package ratismal.drivebackup.util;
 
-import java.io.IOException;
-
-import org.jetbrains.annotations.NotNull;
-import org.json.JSONObject;
-
 import okhttp3.Interceptor;
 import okhttp3.MediaType;
 import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
 import okio.Buffer;
+import org.jetbrains.annotations.NotNull;
+import org.json.JSONObject;
 import ratismal.drivebackup.config.ConfigParser;
 
+import java.io.IOException;
+
+@Deprecated
 public class HttpLogger implements Interceptor {
     private static final MediaType jsonMediaType = MediaType.parse("application/json; charset=utf-8");
     

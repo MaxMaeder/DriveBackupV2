@@ -1,9 +1,11 @@
 package ratismal.drivebackup.uploaders;
 
+import java.io.IOException;
+
 /**
  * Thrown to indicate an upload-related issue
  */
-class UploadException extends Exception {
+class UploadException extends IOException {
     /**
      * Constructs an {@code UploadException} with no
      * detail message.

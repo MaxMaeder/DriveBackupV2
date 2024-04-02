@@ -24,6 +24,7 @@ import java.util.concurrent.TimeUnit;
 
 import static ratismal.drivebackup.config.Localization.intl;
 
+@Deprecated
 public class Scheduler {
     /**
      * How often to run the schedule drift correction task, in seconds.

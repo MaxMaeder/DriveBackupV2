@@ -20,6 +20,7 @@ import ratismal.drivebackup.objects.Player;
 import ratismal.drivebackup.platforms.DriveBackupInstance;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,6 +31,7 @@ public abstract class MessageHandler {
             ANSIComponentSerializer.builder().colorLevel(ColorLevel.TRUE_COLOR).build();
     private static final JoinConfiguration JOIN_CONFIGURATION = JoinConfiguration.separator(Component.text(""));
     private boolean sendToConsole = true;
+    private ConsoleLogLevel consoleLogLevel = ConsoleLogLevel.INFO;
     protected final List<Component> message = new ArrayList<>(5);
     protected final ArrayList<Player> recipients = new ArrayList<>(5);
     protected final DriveBackupInstance instance;
@@ -55,7 +57,7 @@ public abstract class MessageHandler {
     
     
     private TextColor getColor() {
-        String colorString = configHandler.getConfig().node("messages", "default-color").getString();
+        String colorString = configHandler.getConfig().getValue("messages", "default-color").getString();
         TextColor color = null;
         if (colorString != null) {
             color = LegacyComponentSerializer.legacyAmpersand().deserialize(colorString).color();
@@ -73,17 +75,19 @@ public abstract class MessageHandler {
     public abstract MessageHandler Builder();
     
     private @NotNull Component getMMLang(String key) {
-        return MiniMessage.miniMessage().deserialize(getMMColor() + langConfigHandler.getConfig().node(key).getString());
+        return MiniMessage.miniMessage().deserialize(getMMColor() + langConfigHandler.getConfig().getValue(key).getString());
     }
     
     private @NotNull Component getMMLang(String key, TagResolver resolver) {
-        return MiniMessage.miniMessage().deserialize(getMMColor() + langConfigHandler.getConfig().node(key).getString(), resolver);
+        return MiniMessage.miniMessage().deserialize(getMMColor() + langConfigHandler.getConfig().getValue(key).getString(), resolver);
     }
     
     public MessageHandler getLang(String key) {
         message.add(getMMLang(key));
         return this;
     }
+    
+    @Deprecated
     public MessageHandler getLang(String key, String @NotNull ... placeholders) {
         int length = placeholders.length;
         Map<String, String> map = new HashMap<>(length / 2);
@@ -95,10 +99,21 @@ public abstract class MessageHandler {
         }
         return getLang(key, map);
     }
+    
+    public MessageHandler getLang(String key, String placeholder, String value) {
+        TagResolver.Builder builder = TagResolver.builder();
+        builder.resolver(Placeholder.parsed(placeholder, value));
+        message.add(getMMLang(key, builder.build()));
+        return this;
+    }
+    
     public MessageHandler getLang(String key, @NotNull Map<String, String> placeholders) {
         TagResolver.Builder builder = TagResolver.builder();
         for (Map.Entry<String, String> entry : placeholders.entrySet()) {
             if (entry.getKey() == null || entry.getValue() == null) {
+                continue;
+            }
+            if (entry.getKey().isEmpty() || entry.getValue().isEmpty()) {
                 continue;
             }
             builder.resolver(Placeholder.parsed(entry.getKey(), entry.getValue()));
@@ -106,26 +121,30 @@ public abstract class MessageHandler {
         message.add(getMMLang(key, builder.build()));
         return this;
     }
+    
     public MessageHandler notAddPrefix() {
         addPrefix = false;
         return this;
     }
+    
     public MessageHandler text(String text) {
         message.add(Component.text(text, getColor()));
         return this;
     }
+    
     @Deprecated
     public MessageHandler mmText(String text) {
-        message.add(MiniMessage.miniMessage().deserialize("<color:" + getColor().asHexString() + ">" + text));
+        message.add(MiniMessage.miniMessage().deserialize(getMMColor() + text));
         return this;
     }
+    
     @Deprecated
     public MessageHandler mmText(String text, String @NotNull ... placeholders) {
         TagResolver.Builder builder = TagResolver.builder();
         for (int i = 0; i < placeholders.length; i += 2) {
             builder.resolver(Placeholder.parsed(placeholders[i], placeholders[i + 1]));
         }
-        message.add(MiniMessage.miniMessage().deserialize("<color:" + getColor().asHexString() + ">" + text, builder.build()));
+        message.add(MiniMessage.miniMessage().deserialize(getMMColor() + text, builder.build()));
         return this;
     }
     @Deprecated
@@ -134,58 +153,85 @@ public abstract class MessageHandler {
         for (Map.Entry<String, String> entry : placeholders.entrySet()) {
             builder.resolver(Placeholder.parsed(entry.getKey(), entry.getValue()));
         }
-        message.add(MiniMessage.miniMessage().deserialize("<color:" + getColor().asHexString() + ">" + text, builder.build()));
+        message.add(MiniMessage.miniMessage().deserialize(getMMColor() + text, builder.build()));
         return this;
     }
     @Deprecated
     public MessageHandler mmText(String text, String title, Component content) {
-        message.add(MiniMessage.miniMessage().deserialize("<color:" + getColor().asHexString() + ">" + text,
+        message.add(MiniMessage.miniMessage().deserialize(getMMColor()+ text,
                                                             TagResolver.resolver(Placeholder.component(title, content))));
         return this;
     }
+    
     public MessageHandler to(Player player) {
         recipients.add(player);
         return this;
     }
-    public MessageHandler to(List<Player> players) {
+    
+    public MessageHandler to(Collection<Player> players) {
         recipients.addAll(players);
         return this;
     }
+    
     public abstract MessageHandler toAll();
+    
     public MessageHandler toConsole() {
         sendToConsole = true;
         return this;
     }
-    public MessageHandler notToConsole() {
-        sendToConsole = false;
+    
+    public MessageHandler toConsole(ConsoleLogLevel level) {
+        sendToConsole = true;
+        consoleLogLevel = level;
         return this;
     }
+    
+    public MessageHandler notToConsole() {
+        sendToConsole = false;
+        consoleLogLevel = ConsoleLogLevel.INFO;
+        return this;
+    }
+    
     public MessageHandler toPerm(Permission perm) {
         List<Player> players = permissionHandler.getPlayersWithPermission(perm);
         recipients.addAll(players);
         return this;
     }
+    
     public void send() {
         if (addPrefix) {
             TextComponent prefix = LegacyComponentSerializer.legacyAmpersand().deserialize(
-                    configHandler.getConfig().node("advanced", "prefix").getString());
+                    configHandler.getConfig().getValue("advanced", "prefix").getString());
             message.add(0, prefix);
         }
         if (sendToConsole) {
             sendConsole();
         }
-        if (configHandler.getConfig().node("messages", "send-in-chat").getBoolean(true)) {
+        if (configHandler.getConfig().getValue("messages", "send-in-chat").getBoolean()) {
             for (Player player : recipients) {
                 sendPlayer(player);
             }
         }
     }
+    
     public Component getMessage() {
         return Component.join(JOIN_CONFIGURATION, message);
     }
+    
     private void sendConsole() {
-        instance.getLoggingHandler().info(
-                ANSI_COMPONENT_SERIALIZER.serialize(getMessage()));
+        String message = ANSI_COMPONENT_SERIALIZER.serialize(getMessage());
+        switch (consoleLogLevel) {
+            case INFO:
+                instance.getLoggingHandler().info(message);
+                break;
+            case WARNING:
+                instance.getLoggingHandler().warn(message);
+                break;
+            case ERROR:
+                instance.getLoggingHandler().error(message);
+                break;
+        }
     }
+    
     public abstract void sendPlayer(Player player);
 }

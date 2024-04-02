@@ -1,14 +1,15 @@
 package ratismal.drivebackup.util;
 
+import org.bukkit.Bukkit;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
+
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.temporal.TemporalAccessor;
 import java.util.List;
 
-import org.bukkit.Bukkit;
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
-
+@Deprecated
 public final class SchedulerUtil {
     private static final int TICKS_PER_SECOND = 20;
     

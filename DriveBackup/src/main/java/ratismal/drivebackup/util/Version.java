@@ -8,6 +8,7 @@ import java.util.regex.Pattern;
 public final class Version {
     
     private static final Pattern VERSION_STRING = Pattern.compile("^\\d+\\.\\d+\\.\\d+");
+    private static final Pattern NAME_PATTERN = Pattern.compile("DriveBackupV2-", Pattern.LITERAL);
     private final int major;
     private final int minor;
     private final int patch;
@@ -25,12 +26,16 @@ public final class Version {
         if (version == null) {
             throw new IllegalArgumentException("Version string cannot be null");
         }
+        if (version.contains("SNAPSHOT") || version.contains("snapshot")) {
+            throw new IllegalArgumentException("Snapshot version is not supported for auto updating");
+        }
         String trimmed = version.trim();
+        trimmed = NAME_PATTERN.matcher(trimmed).replaceAll("");
         if (trimmed.contains("-")) {
-            trimmed = trimmed.split("-")[0];
+            trimmed = trimmed.replace("-", "");
         }
         if (trimmed.contains("_")) {
-            trimmed = trimmed.split("_")[0];
+            trimmed = trimmed.replace("_", "");
         }
         if (trimmed.isEmpty()) {
             throw new IllegalArgumentException("Version string cannot be empty");

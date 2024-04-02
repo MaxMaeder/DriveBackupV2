@@ -5,6 +5,7 @@ import org.bukkit.World;
 import ratismal.drivebackup.config.ConfigParser;
 import ratismal.drivebackup.plugin.DriveBackup;
 
+@Deprecated
 public final class ServerUtil {
     /**
      * Turns the server auto save on/off

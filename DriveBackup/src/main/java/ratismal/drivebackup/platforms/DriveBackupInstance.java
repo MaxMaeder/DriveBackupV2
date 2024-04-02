@@ -9,6 +9,7 @@ import ratismal.drivebackup.handler.task.TaskHandler;
 import ratismal.drivebackup.util.Version;
 
 import java.io.File;
+import java.util.concurrent.ExecutionException;
 
 public interface DriveBackupInstance {
     
@@ -22,4 +23,12 @@ public interface DriveBackupInstance {
     void disable();
     Version getCurrentVersion();
     TaskHandler getTaskHandler();
+    /*
+    Disable autosave for worlds that have it enabled
+     */
+    void preBackupAutoSave() throws InterruptedException, ExecutionException;
+    /*
+    Re-enable autosave for worlds that had it enabled
+     */
+    void postBackupAutoSave() throws InterruptedException, ExecutionException;
 }
