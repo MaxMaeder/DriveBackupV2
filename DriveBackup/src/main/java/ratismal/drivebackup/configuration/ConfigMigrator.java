@@ -18,7 +18,7 @@ public final class ConfigMigrator {
     }
     
     public static boolean isMigrationRequired(@NotNull ConfigHandler config) {
-        int version = config.getConfig().node("version").getInt();
+        int version = config.getConfig().getConfig().node("version").getInt();
         if (version == 0) {
             config.getLogger().error(invalidConfigMessage);
             config.generateNewConfig();
@@ -32,7 +32,7 @@ public final class ConfigMigrator {
     }
     
     public static void migrateConfig(@NotNull ConfigHandler configHandler, @NotNull LangConfigHandler langConfigHandler) throws ConfigurateException {
-        int currentVersion = configHandler.getConfig().node("version").getInt();
+        int currentVersion = configHandler.getConfig().getConfig().node("version").getInt();
         if (currentVersion == 1) {
             migrate1to2(configHandler, langConfigHandler);
         }

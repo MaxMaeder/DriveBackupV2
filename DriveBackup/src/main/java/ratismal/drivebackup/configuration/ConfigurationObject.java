@@ -1,7 +1,9 @@
 package ratismal.drivebackup.configuration;
 
 import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 import org.spongepowered.configurate.CommentedConfigurationNode;
+import ratismal.drivebackup.handler.logging.LoggingInterface;
 import ratismal.drivebackup.platforms.DriveBackupInstance;
 
 import java.io.File;
@@ -17,8 +19,10 @@ public final class ConfigurationObject {
     private final DriveBackupInstance instance;
     private CommentedConfigurationNode config = CommentedConfigurationNode.root();
     private CommentedConfigurationNode defaults;
+    private final LoggingInterface logger;
     
-    public ConfigurationObject(File folder, String fileName, String extension, DriveBackupInstance instance, CommentedConfigurationNode config, CommentedConfigurationNode defaults) {
+    public ConfigurationObject(LoggingInterface logger, File folder, String fileName, String extension, DriveBackupInstance instance, CommentedConfigurationNode config, CommentedConfigurationNode defaults) {
+        this.logger = logger;
         this.folder = folder;
         this.fileName = fileName;
         this.extension = extension;
@@ -27,12 +31,17 @@ public final class ConfigurationObject {
         this.defaults = defaults;
     }
     
-    public ConfigurationObject(File folder, String fileName, String extension, DriveBackupInstance instance, CommentedConfigurationNode defaults) {
-        this(folder, fileName, extension, instance, null, defaults);
+    public ConfigurationObject(LoggingInterface logger, File folder, String fileName, String extension, DriveBackupInstance instance, CommentedConfigurationNode defaults) {
+        this(logger, folder, fileName, extension, instance, null, defaults);
     }
     
-    public ConfigurationObject(File folder, String fileName, DriveBackupInstance instance, CommentedConfigurationNode defaults) {
-        this(folder, fileName, null, instance, defaults);
+    public ConfigurationObject(LoggingInterface logger, File folder, String fileName, DriveBackupInstance instance, CommentedConfigurationNode defaults) {
+        this(logger, folder, fileName, null, instance, defaults);
+    }
+    
+    @Contract (pure = true)
+    public LoggingInterface getLogger() {
+        return logger;
     }
     
     @Contract (pure = true)
@@ -102,5 +111,15 @@ public final class ConfigurationObject {
             return false;
         }
         return true;
+    }
+    
+    @Contract ("_ -> new")
+    public @NotNull ConfigurationValue getValue(String... path) {
+        return new ConfigurationValue(this, path);
+    }
+    
+    @Contract (value = "_ -> new", pure = true)
+    public @NotNull ConfigurationSection getSection(String... path) {
+        return new ConfigurationSection(this, path);
     }
 }

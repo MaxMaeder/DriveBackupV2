@@ -129,7 +129,7 @@ public final class ConfigurationUtils {
         }
         renameConfig(configObject.getFolder(), configObject.getFileName(), configObject.getExtension());
         saveDefaultConfig(configObject.getFolder(), configObject.getFileName(), configObject.getExtension(), configObject.getDefaults());
-        ConfigurationObject newConfigObject = new ConfigurationObject(
+        ConfigurationObject newConfigObject = new ConfigurationObject(configObject.getLogger(),
                 configObject.getFolder(), configObject.getFileName(), configObject.getExtension(), configObject.getInstance(), configObject.getDefaults());
         loadConfig(newConfigObject);
         return newConfigObject;

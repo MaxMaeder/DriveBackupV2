@@ -13,9 +13,9 @@ import java.util.Collections;
 public final class ConfigHandler {
     
     private static final String CONFIG_FILE_NAME = "config";
+    private static final String FAILED_TO_LOAD = "Failed to load config.yml";
     
     private final DriveBackupInstance instance;
-    private CommentedConfigurationNode config = CommentedConfigurationNode.root();
     private ConfigurationObject configurationObject;
     private final PrefixedLogger logger;
     
@@ -23,11 +23,10 @@ public final class ConfigHandler {
         this.instance = instance;
         logger = instance.getLoggingHandler().getPrefixedLogger("ConfigHandler");
         try {
-            configurationObject = new ConfigurationObject(instance.getDataDirectory(), CONFIG_FILE_NAME, instance, getDefaults());
+            configurationObject = new ConfigurationObject(logger, instance.getDataDirectory(), CONFIG_FILE_NAME, instance, getDefaults());
             ConfigurationUtils.loadConfig(configurationObject);
-            config = configurationObject.getConfig();
         } catch (ConfigurateException e) {
-            logger.error("Failed to load config.yml", e);
+            logger.error(FAILED_TO_LOAD, e);
             instance.disable();
         }
     }
@@ -36,15 +35,15 @@ public final class ConfigHandler {
         return logger;
     }
     
-    public CommentedConfigurationNode getConfig() {
-        return config;
+    public ConfigurationObject getConfig() {
+        return configurationObject;
     }
     
     public void generateNewConfig() {
         try {
             configurationObject = ConfigurationUtils.generateNewConfig(configurationObject);
         } catch (ConfigurateException e) {
-            logger.error("Failed to load config.yml", e);
+            logger.error(FAILED_TO_LOAD, e);
             instance.disable();
         }
     }
