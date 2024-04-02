@@ -13,7 +13,8 @@
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
         <configurate.version>4.1.2</configurate.version>
-        <adventure.version>4.15.0</adventure.version>
+        <adventure.version>4.16.0</adventure.version>
+        <adventure.platform.version>4.3.2</adventure.platform.version>
     </properties>
     <build>
         <finalName>${project.artifactId}</finalName>
@@ -183,6 +184,11 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
+            <groupId>org.jetbrains</groupId>
+            <artifactId>annotations</artifactId>
+            <version>24.1.0</version>
+        </dependency>
+        <dependency>
             <groupId>com.google.apis</groupId>
             <artifactId>google-api-services-drive</artifactId>
             <version>v2-rev393-1.25.0</version>
@@ -200,7 +206,7 @@
         <dependency>
             <groupId>org.json</groupId>
             <artifactId>json</artifactId>
-            <version>20231013</version>
+            <version>20240303</version>
         </dependency>
         <dependency>
             <groupId>commons-net</groupId>
@@ -220,17 +226,17 @@
         <dependency>
             <groupId>commons-codec</groupId>
             <artifactId>commons-codec</artifactId>
-            <version>1.16.0</version>
+            <version>1.16.1</version>
         </dependency>
         <dependency>
             <groupId>net.kyori</groupId>
             <artifactId>adventure-platform-bukkit</artifactId>
-            <version>4.3.2</version>
+            <version>${adventure.platform.version}</version>
         </dependency>
         <dependency>
             <groupId>net.kyori</groupId>
             <artifactId>adventure-platform-bungeecord</artifactId>
-            <version>4.3.2</version>
+            <version>${adventure.platform.version}</version>
         </dependency>
         <dependency>
             <groupId>net.kyori</groupId>
