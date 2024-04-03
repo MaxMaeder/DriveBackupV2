@@ -24,11 +24,11 @@ public interface DriveBackupInstance {
     Version getCurrentVersion();
     TaskHandler getTaskHandler();
     /*
-    Disable autosave for worlds that have it enabled
+    Disable auto saving for worlds that have it enabled
      */
     void preBackupAutoSave() throws InterruptedException, ExecutionException;
     /*
-    Re-enable autosave for worlds that had it enabled
+    Re-enable auto saving for worlds that had it enabled
      */
     void postBackupAutoSave() throws InterruptedException, ExecutionException;
 }

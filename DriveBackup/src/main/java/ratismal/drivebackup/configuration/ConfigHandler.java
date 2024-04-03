@@ -99,7 +99,7 @@ public final class ConfigHandler {
         defaults.node("dropbox").node("enable").set(Boolean.FALSE);
         CommentedConfigurationNode webdev = defaults.node("webdev");
         webdev.node("enable").set(Boolean.FALSE);
-        webdev.node("hostname").set("http://example.com/directory");
+        webdev.node("hostname").set("https:///example.com/directory");
         webdev.node("username").set("username");
         webdev.node("password").set("password");
         CommentedConfigurationNode nextcloud = defaults.node("nextcloud");
