@@ -7,8 +7,8 @@ import java.io.IOException;
 /**
  * Thrown to indicate an error with the response of an http request.
  */
-class ResponseException extends IOException {
-    JSONObject json;
+public class ResponseException extends IOException {
+    private final JSONObject json;
 
     /**
      * Constructs an {@code ResponseException} with the
