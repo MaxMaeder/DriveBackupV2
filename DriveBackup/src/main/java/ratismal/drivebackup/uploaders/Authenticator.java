@@ -11,6 +11,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import ratismal.drivebackup.UploadThread.UploadLogger;
 import ratismal.drivebackup.handler.commandHandler.BasicCommands;
+import ratismal.drivebackup.http.HttpClient;
 import ratismal.drivebackup.plugin.DriveBackup;
 import ratismal.drivebackup.uploaders.googledrive.GoogleDriveUploader;
 import ratismal.drivebackup.util.Logger;
@@ -115,7 +116,7 @@ public class Authenticator {
                 .url(requestEndpoint)
                 .post(requestBody.build())
                 .build();
-            Response response = DriveBackup.httpClient.newCall(request).execute();
+            Response response = HttpClient.getHttpClient().newCall(request).execute();
             JSONObject parsedResponse = new JSONObject(response.body().string());
             response.close();
             String userCode = parsedResponse.getString("user_code");
@@ -147,7 +148,7 @@ public class Authenticator {
                             .url(requestEndpoint)
                             .post(requestBody.build())
                             .build();
-                        Response response = DriveBackup.httpClient.newCall(request).execute();
+                        Response response = HttpClient.getHttpClient().newCall(request).execute();
                         JSONObject parsedResponse = new JSONObject(response.body().string());
                         response.close();
                         if (parsedResponse.has("refresh_token")) {

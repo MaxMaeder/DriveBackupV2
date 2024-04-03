@@ -1,25 +1,25 @@
 package ratismal.drivebackup.handler;
 
-import java.net.UnknownHostException;
-import java.time.ZoneOffset;
-import java.util.ArrayList;
-import java.util.List;
-
-import org.bukkit.plugin.Plugin;
-import org.jetbrains.annotations.NotNull;
-import org.json.JSONObject;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-
 import okhttp3.FormBody;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+import org.bukkit.plugin.Plugin;
+import org.jetbrains.annotations.NotNull;
+import org.json.JSONObject;
 import ratismal.drivebackup.config.ConfigParser;
 import ratismal.drivebackup.config.ConfigParser.Config;
 import ratismal.drivebackup.config.configSections.BackupList;
 import ratismal.drivebackup.config.configSections.BackupScheduling;
+import ratismal.drivebackup.http.HttpClient;
 import ratismal.drivebackup.plugin.DriveBackup;
+
+import java.net.UnknownHostException;
+import java.time.ZoneOffset;
+import java.util.ArrayList;
+import java.util.List;
 
 public class DebugCollector {
     private static final String PASTEBIN_UPLOAD_URL = "https://api.mclo.gs/1/log";
@@ -53,7 +53,7 @@ public class DebugCollector {
             .url(PASTEBIN_UPLOAD_URL)
             .post(formBody)
             .build();
-        try (Response response = DriveBackup.httpClient.newCall(request).execute()) {
+        try (Response response = HttpClient.getHttpClient().newCall(request).execute()) {
             if (!response.isSuccessful()) {
                 throw new Exception("Unexpected code " + response);
             }

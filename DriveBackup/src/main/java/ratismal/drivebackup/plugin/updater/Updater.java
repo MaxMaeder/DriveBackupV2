@@ -3,6 +3,7 @@ package ratismal.drivebackup.plugin.updater;
 import okhttp3.Request;
 import okhttp3.Response;
 import org.bukkit.command.CommandSender;
+import ratismal.drivebackup.http.HttpClient;
 import ratismal.drivebackup.plugin.DriveBackup;
 import ratismal.drivebackup.util.Logger;
 import ratismal.drivebackup.util.MessageUtil;
@@ -39,7 +40,7 @@ public class Updater {
     private void downloadFile() throws IOException  {
         File outputPath = new File(updateFolder, "DriveBackupV2.jar.temp");
         Request request = new Request.Builder().url(UpdateChecker.getLatestDownloadUrl()).build();
-        try (Response response = DriveBackup.httpClient.newCall(request).execute()) {
+        try (Response response = HttpClient.getHttpClient().newCall(request).execute()) {
             if (!response.isSuccessful()) {
                 throw new IOException("Failed to download file: " + response);
             }

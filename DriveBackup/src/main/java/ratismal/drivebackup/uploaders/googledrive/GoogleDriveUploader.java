@@ -26,6 +26,7 @@ import org.jetbrains.annotations.Nullable;
 import org.json.JSONObject;
 import ratismal.drivebackup.UploadThread.UploadLogger;
 import ratismal.drivebackup.config.ConfigParser;
+import ratismal.drivebackup.http.HttpClient;
 import ratismal.drivebackup.plugin.DriveBackup;
 import ratismal.drivebackup.uploaders.Authenticator;
 import ratismal.drivebackup.uploaders.Authenticator.AuthenticationProvider;
@@ -106,7 +107,7 @@ public final class GoogleDriveUploader extends Uploader {
             .url("https://oauth2.googleapis.com/token")
             .post(requestBody)
             .build();
-        Response response = DriveBackup.httpClient.newCall(request).execute();
+        Response response = HttpClient.getHttpClient().newCall(request).execute();
         JSONObject parsedResponse = new JSONObject(response.body().string());
         response.close();
         if (!response.isSuccessful()) {
@@ -122,7 +123,7 @@ public final class GoogleDriveUploader extends Uploader {
             .build();
     }
 
-    @Contract (pure = true)
+    @Contract(pure = true)
     @Override
     public boolean isAuthenticated() {
         return service != null;
@@ -140,7 +141,7 @@ public final class GoogleDriveUploader extends Uploader {
             requestInitializer.initialize(httpRequest);
             // 1 minute connect timeout
             httpRequest.setConnectTimeout((int) TimeUnit.MINUTES.toMillis(1));
-            // 4 hours read timeout
+            // 4-hour read timeout
             httpRequest.setReadTimeout((int) TimeUnit.HOURS.toMillis(4));
         };
     }

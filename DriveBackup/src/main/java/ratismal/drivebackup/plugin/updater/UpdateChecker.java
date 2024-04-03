@@ -5,14 +5,16 @@ import okhttp3.Response;
 import org.jetbrains.annotations.Contract;
 import org.json.JSONArray;
 import ratismal.drivebackup.config.ConfigParser;
+import ratismal.drivebackup.http.HttpClient;
 import ratismal.drivebackup.plugin.DriveBackup;
 import ratismal.drivebackup.util.Logger;
 import ratismal.drivebackup.util.MessageUtil;
 import ratismal.drivebackup.util.NetUtil;
 import ratismal.drivebackup.util.SchedulerUtil;
 import ratismal.drivebackup.util.Version;
-import java.util.concurrent.TimeUnit;
+
 import java.util.NoSuchElementException;
+import java.util.concurrent.TimeUnit;
 
 import static ratismal.drivebackup.config.Localization.intl;
 
@@ -93,7 +95,7 @@ public class UpdateChecker {
             .url("https://api.curseforge.com/servermods/files?projectids=" + CURSE_PROJECT_ID)
             .build();
         JSONArray pluginVersions;
-        try (Response response = DriveBackup.httpClient.newCall(request).execute()) {
+        try (Response response = HttpClient.getHttpClient().newCall(request).execute()) {
             if (response.code() != 200) {
                 throw new Exception("Unexpected response: " + response.code() + " : " + response.message());
             }

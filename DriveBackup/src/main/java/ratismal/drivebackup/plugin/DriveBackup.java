@@ -1,7 +1,6 @@
 package ratismal.drivebackup.plugin;
 
 import net.kyori.adventure.platform.bukkit.BukkitAudiences;
-import okhttp3.OkHttpClient;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.PluginManager;
@@ -18,12 +17,10 @@ import ratismal.drivebackup.handler.listeners.PlayerListener;
 import ratismal.drivebackup.plugin.updater.UpdateChecker;
 import ratismal.drivebackup.plugin.updater.Updater;
 import ratismal.drivebackup.util.CustomConfig;
-import ratismal.drivebackup.util.HttpLogger;
 import ratismal.drivebackup.util.MessageUtil;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 import static ratismal.drivebackup.config.Localization.intl;
 
@@ -49,22 +46,11 @@ public class DriveBackup extends JavaPlugin {
     public static List<CommandSender> chatInputPlayers;
 
     /**
-     * A global instance of OkHTTP client
-     */
-    public static OkHttpClient httpClient;
-
-    /**
      * What to do when plugin is enabled (init)
      */
     @Override
     public void onEnable() {
         plugin = this;
-        httpClient = new OkHttpClient.Builder()
-            .connectTimeout(1, TimeUnit.MINUTES)
-            .writeTimeout(3, TimeUnit.MINUTES)
-            .readTimeout(3, TimeUnit.MINUTES)
-            .addInterceptor(new HttpLogger())
-            .build();
         adventure = BukkitAudiences.create(plugin);
         chatInputPlayers = new ArrayList<>(1);
         List<CommandSender> configPlayers = PermissionHandler.getPlayersWithPerm(Permission.RELOAD_CONFIG);
