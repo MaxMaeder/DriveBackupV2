@@ -200,7 +200,7 @@ public class WebDAVUploader extends Uploader {
                 sardine.createDirectory(path);
             }
         } catch (IOException exception) {
-            //Sardine throws an error when the file exists instead of returning a boolean.
+            //Sardine throws an error when the file exists instead of returning a boolean value.
         }
     }
 
