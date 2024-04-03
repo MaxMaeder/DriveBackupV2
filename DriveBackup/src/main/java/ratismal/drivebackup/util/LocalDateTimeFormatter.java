@@ -11,6 +11,7 @@ import java.util.regex.Pattern;
 
 public final class LocalDateTimeFormatter {
     private static final String FORMAT_KEYWORD = "%FORMAT";
+    private static final String FORMAT_REPLACEMENT = "'yyyy-M-d--HH-mm'";
     private static final Pattern VALID_FORMAT = Pattern.compile("^[\\w\\-.'% ]+$");
 
     private final DateTimeFormatter formatter;
@@ -24,15 +25,13 @@ public final class LocalDateTimeFormatter {
     @Contract ("_ -> new")
     public static LocalDateTimeFormatter ofPattern(String pattern) throws IllegalArgumentException {
         verifyPattern(pattern);
-        StringBuilder finalPatternBuilder = new StringBuilder(pattern);
-        // Escape non-date format characters, if user specified %FORMAT in the pattern.
         if (pattern.contains(FORMAT_KEYWORD)) {
-            finalPatternBuilder.insert(0, "'");
-            finalPatternBuilder.append("'");
+            int frontOffset = pattern.startsWith(FORMAT_KEYWORD) ? 2 : 0;
+            int backOffset = pattern.endsWith(FORMAT_KEYWORD) ? 2 : 0;
+            pattern = "'" + pattern.replace(FORMAT_KEYWORD, FORMAT_REPLACEMENT) + "'";
+            pattern = pattern.substring(frontOffset, pattern.length() - backOffset);
         }
-        String finalPattern = finalPatternBuilder.toString();
-        finalPattern = finalPattern.replaceAll(Pattern.quote(FORMAT_KEYWORD), "'yyyy-M-d--HH-mm'");
-        return new LocalDateTimeFormatter(DateTimeFormatter.ofPattern(finalPattern));
+        return new LocalDateTimeFormatter(DateTimeFormatter.ofPattern(pattern));
     }
 
     public @NotNull String format(@NotNull ZonedDateTime timeDate) {

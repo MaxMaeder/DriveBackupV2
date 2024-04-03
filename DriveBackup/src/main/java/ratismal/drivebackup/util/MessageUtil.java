@@ -50,12 +50,7 @@ public class MessageUtil {
     }
     
     public MessageUtil text(String text) {
-        Config config = ConfigParser.getConfig();
-        TextColor color = LegacyComponentSerializer.legacyAmpersand().deserialize(config.messages.defaultColor).color();
-        if (color == null) {
-            color = NamedTextColor.DARK_AQUA;
-        }
-        message.add(Component.text(text, color));
+        message.add(Component.text(text, getColor()));
         return this;
     }
 
@@ -70,15 +65,7 @@ public class MessageUtil {
      * @return the calling MessageUtil's instance
      */
     public MessageUtil mmText(String text) {
-        Config config = ConfigParser.getConfig();
-        if (config == null) {
-            config = ConfigParser.defaultConfig();
-        }
-        TextColor color = LegacyComponentSerializer.legacyAmpersand().deserialize(config.messages.defaultColor).color();
-        if (color == null) {
-            color = NamedTextColor.DARK_AQUA;
-        }
-        message.add(MiniMessage.miniMessage().deserialize("<color:" + color.asHexString() + ">" + text));
+        message.add(MiniMessage.miniMessage().deserialize("<color:" + getColor().asHexString() + ">" + text));
         return this;
     }
 
@@ -93,13 +80,7 @@ public class MessageUtil {
         for (int i = 0; i < placeholders.length; i += 2) {
             builder.resolver(Placeholder.parsed(placeholders[i], placeholders[i + 1]));
         }
-
-        Config config = ConfigParser.getConfig();
-        TextColor color = LegacyComponentSerializer.legacyAmpersand().deserialize(config.messages.defaultColor).color();
-        if (color == null) {
-            color = NamedTextColor.DARK_AQUA;
-        }
-        message.add(MiniMessage.miniMessage().deserialize("<color:" + color.asHexString() + ">" + text, builder.build()));
+        message.add(MiniMessage.miniMessage().deserialize("<color:" + getColor().asHexString() + ">" + text, builder.build()));
         return this;
     }
 
@@ -111,12 +92,7 @@ public class MessageUtil {
      * @return the calling MessageUtil's instance
      */
     public MessageUtil mmText(String text, String title, Component content) {
-        Config config = ConfigParser.getConfig();
-        TextColor color = LegacyComponentSerializer.legacyAmpersand().deserialize(config.messages.defaultColor).color();
-        if (color == null) {
-            color = NamedTextColor.DARK_AQUA;
-        }
-        message.add(MiniMessage.miniMessage().deserialize("<color:" + color.asHexString() + ">" + text, TagResolver.resolver(Placeholder.component(title, content))));
+        message.add(MiniMessage.miniMessage().deserialize("<color:" + getColor().asHexString() + ">" + text, TagResolver.resolver(Placeholder.component(title, content))));
         return this;
     }
 
@@ -191,17 +167,13 @@ public class MessageUtil {
         if (addPrefix) {
             builtComponent = prefixMessage(builtComponent);
         }
-
-        if (sendToConsole)
+        if (sendToConsole) {
             recipients.add(Bukkit.getConsoleSender());
-
-        Config config = (ConfigParser.getConfig() != null) ? ConfigParser.getConfig() : ConfigParser.defaultConfig();
-
+        }
         for (CommandSender player : recipients) {
-            if (player == null || (!config.messages.sendInChat && player instanceof Player)) {
+            if (player == null || (!getConfig().messages.sendInChat && player instanceof Player)) {
                 continue;
             }
-
             DriveBackup.adventure.sender(player).sendMessage(builtComponent);
         }
     }
@@ -214,8 +186,7 @@ public class MessageUtil {
      * @param exception Exception to send the stack trace of
      */
     public static void sendConsoleException(Exception exception) {
-        Config config = (ConfigParser.getConfig() != null) ? ConfigParser.getConfig() : ConfigParser.defaultConfig();
-        if (!config.advanced.suppressErrors) {
+        if (!getConfig().advanced.suppressErrors) {
             exception.printStackTrace();
         }
     }
@@ -227,9 +198,7 @@ public class MessageUtil {
      */
     @NotNull
     private static Component prefixMessage(Component message) {
-        Config config = (Config) ((ConfigParser.getConfig() != null) ? ConfigParser.getConfig() : ConfigParser.defaultConfig());
-
-        return Component.text(translateMessageColors(config.messages.prefix)).append(message);
+        return Component.text(translateMessageColors(getConfig().messages.prefix)).append(message);
     }
 
     /**
@@ -241,5 +210,21 @@ public class MessageUtil {
     @Contract ("_ -> new")
     public static String translateMessageColors(String message) {
         return ChatColor.translateAlternateColorCodes('&', message);
+    }
+    
+    private static @NotNull Config getConfig() {
+        Config config = ConfigParser.getConfig();
+        if (config == null) {
+            config = ConfigParser.defaultConfig();
+        }
+        return config;
+    }
+    
+    private static @NotNull TextColor getColor() {
+        TextColor color = LegacyComponentSerializer.legacyAmpersand().deserialize(getConfig().messages.defaultColor).color();
+        if (color == null) {
+            color = NamedTextColor.DARK_AQUA;
+        }
+        return color;
     }
 }

@@ -30,6 +30,8 @@ import static ratismal.drivebackup.config.Localization.intl;
  */
 
 public class FileUtil {
+    private static final String NAME_KEYWORD = "%NAME";
+
     private UploadLogger logger;
 
     public FileUtil(UploadLogger logger) {
@@ -110,16 +112,10 @@ public class FileUtil {
                 intl("local-backup-in-backup-folder"), 
                 "files-in-backup-folder-count", String.valueOf(filesInBackupFolder));
         }
-        // Get the name of the last folder in the location path.
-        String lastFolderName = "";
-        int lastSeparatorIndex = location.lastIndexOf('/');
-        if (lastSeparatorIndex != -1) {
-            lastFolderName = location.substring(lastSeparatorIndex + 1);
-        }
-        // Replace the placeholder %NAME with the last folder name in the file name.
-        String placeholder = "%NAME";
-        if (fileName.contains(placeholder)) {
-            fileName = fileName.replace(placeholder, lastFolderName);
+        if (fileName.contains(NAME_KEYWORD)) {
+            int lastSeparatorIndex = Math.max(location.lastIndexOf('/'), location.lastIndexOf('\\'));
+            String lastFolderName = location.substring(lastSeparatorIndex + 1);
+            fileName = fileName.replace(NAME_KEYWORD, lastFolderName);
         }
         zipIt(location, path.getPath() + "/" + fileName, fileList);
     }
@@ -191,14 +187,29 @@ public class FileUtil {
             zipOutputStream = new ZipOutputStream(fileOutputStream);
             zipOutputStream.setLevel(ConfigParser.getConfig().backupStorage.zipCompression);
             for (String file : fileList.getList()) {
-                zipOutputStream.putNextEntry(new ZipEntry(formattedInputFolderPath + "/" + file));
-                try (FileInputStream fileInputStream = new FileInputStream(inputFolderPath + "/" + file)) {
+                ZipEntry entry = new ZipEntry(formattedInputFolderPath + "/" + file);
+                String filePath = inputFolderPath + "/" + file;
+                BasicFileAttributes fileAttributes = null;
+                try {
+                    fileAttributes = Files.readAttributes(Paths.get(filePath), BasicFileAttributes.class);
+                } catch(Exception e) { }
+                if (fileAttributes == null) {
+                    logger.info(
+                        intl("local-backup-failed-attributes"),
+                        "file-path", filePath);
+                } else {
+                    entry.setCreationTime(fileAttributes.creationTime());
+                    entry.setLastAccessTime(fileAttributes.lastAccessTime());
+                    entry.setLastModifiedTime(fileAttributes.lastModifiedTime());
+                    entry.setSize(fileAttributes.size());
+                }
+                zipOutputStream.putNextEntry(entry);
+                try (FileInputStream fileInputStream = new FileInputStream(filePath)){
                     int len;
                     while ((len = fileInputStream.read(buffer)) > 0) {
                         zipOutputStream.write(buffer, 0, len);
                     }
                 } catch (Exception e) {
-                    String filePath = new File(inputFolderPath, file).getPath();
                     // Don't send warning for .lock files, they will always be locked.
                     if (!filePath.endsWith(".lock")) {
                         logger.info(

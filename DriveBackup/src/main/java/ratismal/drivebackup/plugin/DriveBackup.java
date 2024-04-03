@@ -75,7 +75,7 @@ public class DriveBackup extends JavaPlugin {
         ConfigMigrator configMigrator = new ConfigMigrator(getConfig(), localizationConfig.getConfig(), configPlayers);
         configMigrator.migrate();
         config = new ConfigParser(getConfig());
-        config.reload(PermissionHandler.getPlayersWithPerm(Permission.RELOAD_CONFIG));
+        config.reload(configPlayers);
         MessageUtil.Builder()
             .to(configPlayers)
             .mmText(intl("config-loaded"))

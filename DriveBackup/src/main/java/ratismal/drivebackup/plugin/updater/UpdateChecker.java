@@ -11,8 +11,8 @@ import ratismal.drivebackup.util.MessageUtil;
 import ratismal.drivebackup.util.NetUtil;
 import ratismal.drivebackup.util.SchedulerUtil;
 import ratismal.drivebackup.util.Version;
-
 import java.util.concurrent.TimeUnit;
+import java.util.NoSuchElementException;
 
 import static ratismal.drivebackup.config.Localization.intl;
 
@@ -92,11 +92,15 @@ public class UpdateChecker {
         Request request = new Request.Builder()
             .url("https://api.curseforge.com/servermods/files?projectids=" + CURSE_PROJECT_ID)
             .build();
-        Response response = DriveBackup.httpClient.newCall(request).execute();
-        JSONArray pluginVersions = new JSONArray(response.body().string());
-        response.close();
+        JSONArray pluginVersions;
+        try (Response response = DriveBackup.httpClient.newCall(request).execute()) {
+            if (response.code() != 200) {
+                throw new Exception("Unexpected response: " + response.code() + " : " + response.message());
+            }
+            pluginVersions = new JSONArray(response.body().string());
+        }
         if (pluginVersions.isEmpty()) {
-            throw new NumberFormatException();
+            throw new NoSuchElementException("No plugin versions received");
         }
         String versionTitle = pluginVersions.getJSONObject(pluginVersions.length() - 1).getString("name").replace("DriveBackupV2-", "").trim();
         latestDownloadUrl = pluginVersions.getJSONObject(pluginVersions.length() - 1).getString("downloadUrl");

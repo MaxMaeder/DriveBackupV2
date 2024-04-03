@@ -377,7 +377,7 @@ public class UploadThread implements Runnable {
             }
             TreeMap<Long, File> localBackups = fileUtil.getLocalBackups(location, formatter);
             if (localBackups.isEmpty()) {
-                logger.log(intl("backup-file-not-found"), "location", location);
+                logger.log(intl("location-empty"), "location", location);
                 return;
             }
             File file = localBackups.descendingMap().firstEntry().getValue();
