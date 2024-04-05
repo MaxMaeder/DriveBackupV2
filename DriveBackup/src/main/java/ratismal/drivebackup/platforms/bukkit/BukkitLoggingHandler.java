@@ -67,7 +67,7 @@ public class BukkitLoggingHandler implements LoggingHandler {
     
     @Override
     public void debug(String message, Throwable throwable) {
-        if (driveBackupInstance.getConfigHandler().getConfig().node("advanced", "debug").getBoolean(false)) {
+        if (driveBackupInstance.getConfigHandler().getConfig().getValue("advanced", "debug").getBoolean()) {
             logger.info(() -> handleError(message, throwable));
         }
     }
