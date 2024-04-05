@@ -12,6 +12,7 @@ import org.spongepowered.configurate.ConfigurateException;
 import ratismal.drivebackup.configuration.ConfigHandler;
 import ratismal.drivebackup.configuration.ConfigMigrator;
 import ratismal.drivebackup.configuration.LangConfigHandler;
+import ratismal.drivebackup.handler.debug.ServerInformation;
 import ratismal.drivebackup.handler.logging.LoggingHandler;
 import ratismal.drivebackup.handler.permission.PermissionHandler;
 import ratismal.drivebackup.handler.task.TaskHandler;
@@ -186,6 +187,12 @@ public final class BukkitPlugin extends JavaPlugin implements DriveBackupInstanc
     @Contract (pure = true)
     public BukkitAudiences getAudiences() {
         return adventure;
+    }
+    
+    @Contract (pure = true)
+    @Override
+    public @NotNull ServerInformation getServerInfo() {
+        return new BukkitServerInformation(this);
     }
     
 }

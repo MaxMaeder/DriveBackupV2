@@ -2,6 +2,7 @@ package ratismal.drivebackup.platforms;
 
 import ratismal.drivebackup.configuration.ConfigHandler;
 import ratismal.drivebackup.configuration.LangConfigHandler;
+import ratismal.drivebackup.handler.debug.ServerInformation;
 import ratismal.drivebackup.handler.logging.LoggingHandler;
 import ratismal.drivebackup.handler.messages.MessageHandler;
 import ratismal.drivebackup.handler.permission.PermissionHandler;
@@ -31,4 +32,5 @@ public interface DriveBackupInstance {
     Re-enable auto saving for worlds that had it enabled
      */
     void postBackupAutoSave() throws InterruptedException, ExecutionException;
+    ServerInformation getServerInfo();
 }

@@ -122,4 +122,12 @@ public final class ConfigurationObject {
     public @NotNull ConfigurationSection getSection(String... path) {
         return new ConfigurationSection(this, path);
     }
+    
+    @Contract (" -> new")
+    public @NotNull File getConfigFile() throws IllegalStateException {
+        if (extension == null || extension.isEmpty()) {
+            throw new IllegalStateException("Extension is not set");
+        }
+        return new File(folder, fileName + extension);
+    }
 }
