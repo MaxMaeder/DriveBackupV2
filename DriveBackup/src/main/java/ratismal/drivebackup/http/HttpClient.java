@@ -9,9 +9,9 @@ import java.util.concurrent.TimeUnit;
 public final class HttpClient {
     
     private static final OkHttpClient httpClient = new OkHttpClient.Builder()
-            .connectTimeout(1, TimeUnit.MINUTES)
-            .writeTimeout(3, TimeUnit.MINUTES)
-            .readTimeout(3, TimeUnit.MINUTES)
+            .connectTimeout(1L, TimeUnit.MINUTES)
+            .writeTimeout(3L, TimeUnit.MINUTES)
+            .readTimeout(3L, TimeUnit.MINUTES)
             .addInterceptor(new HttpLogger())
             .build();
     

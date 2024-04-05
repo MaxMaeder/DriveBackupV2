@@ -1,16 +1,14 @@
 package ratismal.drivebackup.plugin;
 
-import java.io.IOException;
-import java.util.concurrent.Callable;
-
 import org.bstats.bukkit.Metrics;
 import org.bstats.charts.SimplePie;
-
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ratismal.drivebackup.config.ConfigParser;
 import ratismal.drivebackup.config.ConfigParser.Config;
 import ratismal.drivebackup.util.MessageUtil;
+
+import java.io.IOException;
 
 import static ratismal.drivebackup.config.Localization.intl;
 
@@ -35,12 +33,12 @@ public class BstatsMetrics {
         metrics = new Metrics(plugin, METRICS_ID);
     }
 
-    public void updateMetrics() throws IOException {
+    public void updateMetrics() {
         Config config = ConfigParser.getConfig();
         metrics.addCustomChart(new SimplePie("automaticBackupType", () -> {
             if (config.backupScheduling.enabled) {
                 return "Schedule Based";
-            } else if (config.backupStorage.delay != -1) {
+            } else if (config.backupStorage.delay != -1L) {
                 return "Interval Based";
             } else {
                 return "Not Enabled";
@@ -77,7 +75,7 @@ public class BstatsMetrics {
 
     @NotNull
     @Contract (pure = true)
-    private String enabled(boolean enabled) {
+    private static String enabled(boolean enabled) {
         if (enabled) {
             return "Enabled";
         }

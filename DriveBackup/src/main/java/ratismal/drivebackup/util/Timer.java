@@ -52,8 +52,8 @@ public class Timer {
         df.setDecimalFormatSymbols(DecimalFormatSymbols.getInstance(Locale.ENGLISH));
 
         double difference = getTime();
-        double length = difference / 1000;
-        double speed = ( ((double) file.length()) / 1024) / length;
+        double length = difference / 1000.0;
+        double speed = (((double) file.length()) / 1024.0) / length;
         
         return intl("file-upload-message")
             .replace("<length>", df.format(length))

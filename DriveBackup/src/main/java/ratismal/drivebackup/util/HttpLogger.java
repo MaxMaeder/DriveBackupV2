@@ -26,7 +26,7 @@ public class HttpLogger implements Interceptor {
         MessageUtil.Builder().text(String.format("Sending request %s", request.url())).toConsole(true).send();
         Response response = chain.proceed(request);
         long t2 = System.nanoTime();
-        MessageUtil.Builder().text(String.format("Received response for %s in %.1fms", response.request().url(), (t2 - t1) / 1e6d)).toConsole(true).send();
+        MessageUtil.Builder().text(String.format("Received response for %s in %.1fms", response.request().url(), (t2 - t1) / 1.0e6d)).toConsole(true).send();
         try {
             if (request.body().contentType().equals(jsonMediaType)) {
                 Buffer requestBody = new Buffer();

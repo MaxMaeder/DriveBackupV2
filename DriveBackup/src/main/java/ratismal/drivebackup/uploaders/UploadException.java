@@ -18,9 +18,9 @@ class UploadException extends IOException {
      * Constructs an {@code UploadException} with the
      * specified detail message.
      *
-     * @param s the detail message.
+     * @param message the detail message.
      */
-    public UploadException(String s) {
-        super(s);
+    public UploadException(String message) {
+        super(message);
     }
 }

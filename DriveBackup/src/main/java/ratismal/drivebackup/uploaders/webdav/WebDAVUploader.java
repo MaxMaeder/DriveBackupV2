@@ -69,7 +69,7 @@ public class WebDAVUploader extends Uploader {
         try {
             URL target = new URL(_remoteBaseFolder + "/" + testFile.getName());
             realUploadFile(testFile, target);
-            TimeUnit.SECONDS.sleep(5);
+            TimeUnit.SECONDS.sleep(5L);
             sardine.delete(target.toString());
         } catch (Exception exception) {
             NetUtil.catchException(exception, _remoteBaseFolder.getHost(), logger);
@@ -80,7 +80,7 @@ public class WebDAVUploader extends Uploader {
 
     public void realUploadFile(@NotNull File file, @NotNull URL target) throws IOException {
         try (FileInputStream fis = new FileInputStream(file)) {
-            sardine.put(target.toString(), fis, (String)null, true, file.length());
+            sardine.put(target.toString(), fis, null, true, file.length());
         }
     }
 

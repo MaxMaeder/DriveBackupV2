@@ -31,7 +31,7 @@ public class ExternalBackups {
             this.port = port;
             this.username = username;
             this.password = password;
-            this.format = formatter;
+            format = formatter;
         }
     }
 
@@ -134,7 +134,7 @@ public class ExternalBackups {
             try {
                 type = (String) rawListEntry.get("type");
                 if (!Arrays.asList(validTypes).contains(type)) {
-                    throw new Exception();
+                    throw new IllegalArgumentException("Unsupported type");
                 }
             } catch (Exception e) {
                 logger.log(intl("external-backup-type-invalid"), "entry", entryIndex);

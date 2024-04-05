@@ -10,7 +10,7 @@ public class BlacklistEntry {
     public BlacklistEntry(String globPattern, PathMatcher pathMatcher) {
         this.globPattern = globPattern;
         this.pathMatcher = pathMatcher;
-        this.blacklistedFiles = 0;
+        blacklistedFiles = 0;
     }
 
     public void incBlacklistedFiles() {

@@ -1,6 +1,7 @@
 package ratismal.drivebackup;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -13,17 +14,19 @@ import ratismal.drivebackup.plugin.DriveBackup;
 import ratismal.drivebackup.util.MessageUtil;
 
 public class DriveBackupApi {
-    private static ArrayList<Callable<Boolean>> beforeBackupStartCallables = new ArrayList<>();
-    private static ArrayList<Runnable> onBackupDoneRunnables = new ArrayList<>();
-    private static ArrayList<Runnable> onBackupErrorRunnables = new ArrayList<>();
-
+    private static final List<Callable<Boolean>> beforeBackupStartCallables = new ArrayList<>(2);
+    private static final List<Runnable> onBackupDoneRunnables = new ArrayList<>(2);
+    private static final List<Runnable> onBackupErrorRunnables = new ArrayList<>(2);
+    
+    private DriveBackupApi() {}
+    
     /**
      * Gets whether to proceed with the backup by executing the {@code Callable}s specified by API users.
      * @return whether to proceed
      */
     static boolean shouldStartBackup() {
         ExecutorService executor = Executors.newFixedThreadPool(10);
-        ArrayList<Future<Boolean>> futures = new ArrayList<>();
+        List<Future<Boolean>> futures = new ArrayList<>();
 
         for (Callable<Boolean> callable : beforeBackupStartCallables) {
             futures.add(executor.submit(callable));
@@ -34,7 +37,7 @@ public class DriveBackupApi {
         for (Future<Boolean> future : futures){
             try {
 
-                if (Boolean.FALSE.equals(future.get(10, TimeUnit.SECONDS))) {
+                if (Boolean.FALSE.equals(future.get(10L, TimeUnit.SECONDS))) {
                     shouldStartBackup = false;
                     MessageUtil.Builder().text("Not starting a backup due to a beforeBackupStart() Callable returning false").toConsole(true).send();
 

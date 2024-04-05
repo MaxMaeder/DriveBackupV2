@@ -22,7 +22,7 @@ import ratismal.drivebackup.util.MessageUtil;
 @Deprecated
 public class ConfigParser {
     @Deprecated
-    public static class Config {
+    public static final class Config {
         public static final int VERSION = 2;
         public final BackupStorage backupStorage;
         public final BackupScheduling backupScheduling;

@@ -7,11 +7,11 @@ import org.jetbrains.annotations.NotNull;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.temporal.TemporalAccessor;
-import java.util.List;
+import java.util.Collection;
 
 @Deprecated
 public final class SchedulerUtil {
-    private static final int TICKS_PER_SECOND = 20;
+    private static final long TICKS_PER_SECOND = 20;
     
     @Contract (pure = true)
     private SchedulerUtil() {}
@@ -20,7 +20,7 @@ public final class SchedulerUtil {
      * Cancels the specified tasks
      * @param taskList a List of the IDs of the tasks
      */
-    public static void cancelTasks(@NotNull List<Integer> taskList) {
+    public static void cancelTasks(@NotNull Collection<Integer> taskList) {
         for (int task : taskList) {
             Bukkit.getScheduler().cancelTask(task);
         }

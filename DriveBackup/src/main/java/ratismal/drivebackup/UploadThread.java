@@ -120,8 +120,6 @@ public class UploadThread implements Runnable {
                 .all()
                 .send();
         }
-
-        public abstract void log(String input, String... placeholders);
         
         public void initiatorError(String input, String... placeholders) {}
 
@@ -202,7 +200,7 @@ public class UploadThread implements Runnable {
         }
         boolean errorOccurred = false;
         List<ExternalBackupSource> externalBackupList = Arrays.asList(config.externalBackups.sources);
-        backupList = new ArrayList<BackupListEntry>(Arrays.asList(config.backupList.list));
+        backupList = new ArrayList<>(Arrays.asList(config.backupList.list));
         if (externalBackupList.isEmpty() && backupList.isEmpty()) {
             logger.log(intl("backup-empty-list"));
             return;
@@ -370,7 +368,7 @@ public class UploadThread implements Runnable {
      * @param formatter save format configuration
      * @param uploaders services to upload to
      */
-    private void uploadFile(String location, LocalDateTimeFormatter formatter, List<Uploader> uploaders) {
+    private void uploadFile(String location, LocalDateTimeFormatter formatter, Iterable<Uploader> uploaders) {
         try {
             if (FileUtil.isBaseFolder(location)) {
                 location = "root";
@@ -392,10 +390,10 @@ public class UploadThread implements Runnable {
                 timer.start();
                 uploader.uploadFile(file, location);
                 timer.end();
-                if (!uploader.isErrorWhileUploading()) {
-                    logger.info(timer.getUploadTimeMessage(file));
-                } else {
+                if (uploader.isErrorWhileUploading()) {
                     logger.info(intl("backup-method-upload-failed"));
+                } else {
+                    logger.info(timer.getUploadTimeMessage(file));
                 }
             }
             logger.log(intl("backup-file-upload-complete"), "file-name", file.getName());
@@ -426,7 +424,7 @@ public class UploadThread implements Runnable {
                 "external-backups",
                 ".");
         for (ExternalBackupListEntry backup : externalBackup.backupList) {
-            ArrayList<BlacklistEntry> blacklist = new ArrayList<>();
+            List<BlacklistEntry> blacklist = new ArrayList<>(2);
             for (String blacklistGlob : backup.blacklist) {
                 BlacklistEntry blacklistEntry = new BlacklistEntry(
                     blacklistGlob, 
@@ -560,16 +558,14 @@ public class UploadThread implements Runnable {
         Config config = ConfigParser.getConfig();
         if (config.backupScheduling.enabled) {
             long now = ZonedDateTime.now(config.advanced.dateTimezone).toEpochSecond();
-            ZonedDateTime nextBackupDate = Collections.min(Scheduler.getBackupDatesList(), new Comparator<ZonedDateTime>() {
-                public int compare(ZonedDateTime d1, ZonedDateTime d2) {
-                    long diff1 = Math.abs(d1.toEpochSecond() - now);
-                    long diff2 = Math.abs(d2.toEpochSecond() - now);
-                    return Long.compare(diff1, diff2);
-                }
+            ZonedDateTime nextBackupDate = Collections.min(Scheduler.getBackupDatesList(), (d1, d2) -> {
+                long diff1 = Math.abs(d1.toEpochSecond() - now);
+                long diff2 = Math.abs(d2.toEpochSecond() - now);
+                return Long.compare(diff1, diff2);
             });
             DateTimeFormatter backupDateFormatter = DateTimeFormatter.ofPattern(intl("next-schedule-backup-format"), config.advanced.dateLanguage);
             return intl("next-schedule-backup").replaceAll("%DATE", nextBackupDate.format(backupDateFormatter));
-        } else if (config.backupStorage.delay != -1) {
+        } else if (config.backupStorage.delay != -1L) {
             return intl("next-backup").replaceAll("%TIME", String.valueOf(LocalDateTime.now().until(nextIntervalBackupTime, ChronoUnit.MINUTES)));
         } else {
             return intl("auto-backups-disabled");
@@ -580,7 +576,7 @@ public class UploadThread implements Runnable {
      * Sets the time of the next interval-based backup to the current time + the configured interval.
      */
     public static void updateNextIntervalBackupTime() {
-        nextIntervalBackupTime = LocalDateTime.now().plus(ConfigParser.getConfig().backupStorage.delay, ChronoUnit.MINUTES);
+        nextIntervalBackupTime = LocalDateTime.now().plusMinutes(ConfigParser.getConfig().backupStorage.delay);
     }
 
     public static boolean wasLastBackupSuccessful() {

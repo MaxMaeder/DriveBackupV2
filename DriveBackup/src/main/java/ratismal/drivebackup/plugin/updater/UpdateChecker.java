@@ -15,6 +15,7 @@ import ratismal.drivebackup.util.Version;
 
 import java.util.NoSuchElementException;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
 
 import static ratismal.drivebackup.config.Localization.intl;
 
@@ -25,8 +26,9 @@ public class UpdateChecker {
     /**
      * How often to check for updates, in seconds
      */
-    private static final long UPDATE_CHECK_INTERVAL = TimeUnit.HOURS.toSeconds(4);
-
+    private static final long UPDATE_CHECK_INTERVAL = TimeUnit.HOURS.toSeconds((long) 4L);
+    private static final Pattern NAME_DASH = Pattern.compile("DriveBackupV2-", Pattern.LITERAL);
+    
     private static Version currentVersion;
     private static Version latestVersion;
     private static String latestDownloadUrl;
@@ -64,7 +66,7 @@ public class UpdateChecker {
                     logger.log(intl("update-checker-failed"));
                     MessageUtil.sendConsoleException(e);
                 }
-            }, 0, SchedulerUtil.sToTicks(UPDATE_CHECK_INTERVAL));
+            }, (long) 0L, SchedulerUtil.sToTicks(UPDATE_CHECK_INTERVAL));
         }
     }
 
@@ -85,7 +87,7 @@ public class UpdateChecker {
         return latestDownloadUrl;
     }
 
-    public Version getCurrent() throws Exception {
+    public Version getCurrent() {
         String versionTitle = DriveBackup.getInstance().getDescription().getVersion().split("-")[0];
         return Version.parse(versionTitle);
     }
@@ -104,7 +106,7 @@ public class UpdateChecker {
         if (pluginVersions.isEmpty()) {
             throw new NoSuchElementException("No plugin versions received");
         }
-        String versionTitle = pluginVersions.getJSONObject(pluginVersions.length() - 1).getString("name").replace("DriveBackupV2-", "").trim();
+        String versionTitle = NAME_DASH.matcher(pluginVersions.getJSONObject(pluginVersions.length() - 1).getString("name")).replaceAll("").trim();
         latestDownloadUrl = pluginVersions.getJSONObject(pluginVersions.length() - 1).getString("downloadUrl");
         return Version.parse(versionTitle);
     }

@@ -6,6 +6,9 @@ import static ratismal.drivebackup.config.Localization.intl;
 
 @Deprecated
 public final class NetUtil {
+    
+    private NetUtil() {}
+    
     public static void catchException(Exception exception, String domain) {
         Logger logger = (input, placeholders) -> MessageUtil.Builder()
             .mmText(input, placeholders)

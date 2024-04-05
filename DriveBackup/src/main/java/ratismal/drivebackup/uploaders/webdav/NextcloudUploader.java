@@ -56,7 +56,7 @@ public final class NextcloudUploader extends WebDAVUploader {
     }
 
     @Override
-    public void realUploadFile(@NotNull File file, URL target) throws IOException {
+    public void realUploadFile(@NotNull File file, @NotNull URL target) throws IOException {
         int chunksize = nextcloud.chunkSize;
         if (file.length() > chunksize && magic_upload_dir != null) {
             String tempdir = magic_upload_dir + "/" + UUID.randomUUID().toString();
@@ -64,7 +64,7 @@ public final class NextcloudUploader extends WebDAVUploader {
             try (FileInputStream _fis = new FileInputStream(file)) {
                 ChunkedFileInputStream fis = new ChunkedFileInputStream(chunksize, _fis);
                 do {
-                    sardine.put(tempdir + String.format("/%020d", fis.getCurrentOffset()), fis, (String) null, true, fis.available());
+                    sardine.put(tempdir + String.format("/%020d", fis.getCurrentOffset()), fis, null, true, fis.available());
                 } while (fis.next());
                 try {
                     sardine.move(tempdir + "/.file", target.toString());
@@ -81,7 +81,7 @@ public final class NextcloudUploader extends WebDAVUploader {
             }
         } else {
             try (FileInputStream fis = new FileInputStream(file)) {
-                sardine.put(target.toString(), fis, (String) null, true, file.length());
+                sardine.put(target.toString(), fis, null, true, file.length());
             }
         }
     }

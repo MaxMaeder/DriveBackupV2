@@ -5,6 +5,7 @@ import okhttp3.MediaType;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.json.JSONArray;
@@ -23,6 +24,7 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -123,7 +125,7 @@ public final class OneDriveUploader extends Uploader {
             if (statusCode != 201) {
                 setErrorOccurred(true);
             }
-            TimeUnit.SECONDS.sleep(5);
+            TimeUnit.SECONDS.sleep(5L);
             request = new Request.Builder()
                 .addHeader("Authorization", "Bearer " + accessToken)
                 .url("https://graph.microsoft.com/v1.0/me/drive/root:/" + destination + "/" + testFile.getName() + ":/")
@@ -151,7 +153,7 @@ public final class OneDriveUploader extends Uploader {
         try {
             resetRanges();
             String destination = ConfigParser.getConfig().backupStorage.remoteDirectory;
-            ArrayList<String> typeFolders = new ArrayList<>();
+            Collection<String> typeFolders = new ArrayList<>();
             Collections.addAll(typeFolders, destination.split("/"));
             Collections.addAll(typeFolders, type.split("[/\\\\]"));
             File folder = null;
@@ -181,7 +183,7 @@ public final class OneDriveUploader extends Uploader {
             while (true) {
                 byte[] bytesToUpload = getChunk();
                 request = new Request.Builder()
-                    .addHeader("Content-Range", String.format("bytes %d-%d/%d", getTotalUploaded(), getTotalUploaded() + bytesToUpload.length - 1, file.length()))
+                    .addHeader("Content-Range", String.format("bytes %d-%d/%d", getTotalUploaded(), getTotalUploaded() + bytesToUpload.length - 1L, file.length()))
                     .url(uploadURL)
                     .put(RequestBody.create(bytesToUpload, zipMediaType))
                     .build();
@@ -194,7 +196,8 @@ public final class OneDriveUploader extends Uploader {
                         retryCount = 0;
                     } else if (uploadResponse.code() == 201 || uploadResponse.code() == 200) {
                         break;
-                    } else { // conflict after successful upload not handled
+                    } else {
+                        // conflict after successful upload not handled
                         if (retryCount > MAX_RETRY_ATTEMPTS) {
                             request = new Request.Builder().url(uploadURL).delete().build();
                             HttpClient.getHttpClient().newCall(request).execute().close();
@@ -225,6 +228,7 @@ public final class OneDriveUploader extends Uploader {
     /**
     * Closes any remaining connections retrieveNewAccessToken
     */
+    @Contract (pure = true)
     public void close() {
         // nothing needs to be done
     }
@@ -378,7 +382,7 @@ public final class OneDriveUploader extends Uploader {
         Response response = HttpClient.getHttpClient().newCall(request).execute();
         JSONObject parsedResponse = new JSONObject(response.body().string());
         response.close();
-        ArrayList<String> fileIDs = new ArrayList<>();
+        List<String> fileIDs = new ArrayList<>();
         JSONArray jsonArray = parsedResponse.getJSONArray("value");
         for (int i = 0; i < jsonArray.length(); i++) {
             fileIDs.add(jsonArray.getJSONObject(i).getString("id"));
@@ -466,7 +470,7 @@ public final class OneDriveUploader extends Uploader {
          */
         @NotNull
         private String getParent() {
-            ArrayList<String> parentPath = new ArrayList<>(filePath);
+            List<String> parentPath = new ArrayList<>(filePath);
             parentPath.remove(parentPath.size() - 1);
             return String.join("/", parentPath);
         }
@@ -494,8 +498,8 @@ public final class OneDriveUploader extends Uploader {
      * Resets the number of bytes uploaded in the last chunk, and the number of bytes uploaded in total.
      */
     private void resetRanges() {
-        lastUploaded = 0;
-        totalUploaded = 0;
+        lastUploaded = 0L;
+        totalUploaded = 0L;
     }
     
     /**
@@ -508,7 +512,7 @@ public final class OneDriveUploader extends Uploader {
         for (int i = 0; i < stringRanges.length; i++) {
             long start = Long.parseLong(stringRanges[i].substring(0, stringRanges[i].indexOf('-')));
             String s = stringRanges[i].substring(stringRanges[i].indexOf('-') + 1);
-            long end = 0;
+            long end = 0L;
             if (!s.isEmpty()) {
                 end = Long.parseLong(s);
             }

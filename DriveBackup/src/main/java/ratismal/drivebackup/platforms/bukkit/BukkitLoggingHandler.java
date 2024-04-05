@@ -51,7 +51,7 @@ public class BukkitLoggingHandler implements LoggingHandler {
     }
     
     private String handleError(String message, Throwable throwable) {
-        boolean suppress = driveBackupInstance.getConfigHandler().getConfig().node("advanced", "suppress-errors").getBoolean(false);
+        boolean suppress = driveBackupInstance.getConfigHandler().getConfig().getValue("advanced", "suppress-errors").getBoolean();
         if (suppress) {
             return message;
         }
@@ -60,7 +60,7 @@ public class BukkitLoggingHandler implements LoggingHandler {
     
     @Override
     public void debug(String message) {
-        if (driveBackupInstance.getConfigHandler().getConfig().node("advanced", "debug").getBoolean(false)) {
+        if (driveBackupInstance.getConfigHandler().getConfig().getValue("advanced", "debug").getBoolean()) {
             logger.info(message);
         }
     }

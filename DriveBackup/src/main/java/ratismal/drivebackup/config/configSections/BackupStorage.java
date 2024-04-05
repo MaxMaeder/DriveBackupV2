@@ -52,7 +52,7 @@ public class BackupStorage {
     public static BackupStorage parse(@NotNull FileConfiguration config, Logger logger) {
         Configuration defaultConfig = config.getDefaults();
         long delay = config.getLong("delay");
-        if (delay < 5 && delay != -1) {
+        if (delay < 5L && delay != -1L) {
             logger.log(intl("invalid-backup-delay"));
             delay = defaultConfig.getLong("delay");
         }

@@ -37,6 +37,7 @@ import ratismal.drivebackup.util.NetUtil;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -136,13 +137,13 @@ public final class GoogleDriveUploader extends Uploader {
      */
     @NotNull
     @Contract (value = "_ -> new", pure = true)
-    private static HttpRequestInitializer setTimeout(final HttpRequestInitializer requestInitializer) {
+    private static HttpRequestInitializer setTimeout(HttpRequestInitializer requestInitializer) {
         return httpRequest -> {
             requestInitializer.initialize(httpRequest);
             // 1 minute connect timeout
-            httpRequest.setConnectTimeout((int) TimeUnit.MINUTES.toMillis(1));
+            httpRequest.setConnectTimeout((int) TimeUnit.MINUTES.toMillis(1L));
             // 4-hour read timeout
-            httpRequest.setReadTimeout((int) TimeUnit.HOURS.toMillis(4));
+            httpRequest.setReadTimeout((int) TimeUnit.HOURS.toMillis(4L));
         };
     }
 
@@ -169,7 +170,7 @@ public final class GoogleDriveUploader extends Uploader {
             body.setParents(Collections.singletonList(fileParent));
             File uploadedFile = service.files().insert(body, testContent).setSupportsAllDrives(true).execute();
             String fileId = uploadedFile.getId();
-            TimeUnit.SECONDS.sleep(5);
+            TimeUnit.SECONDS.sleep(5L);
             service.files().delete(fileId).setSupportsAllDrives(true).execute();
         } catch (Exception exception) {
             NetUtil.catchException(exception, "www.googleapis.com", logger);
@@ -188,7 +189,7 @@ public final class GoogleDriveUploader extends Uploader {
             String sharedDriveId = ConfigParser.getConfig().backupMethods.googleDrive.sharedDriveId;
             String destination = ConfigParser.getConfig().backupStorage.remoteDirectory;
             retrieveNewAccessToken();
-            ArrayList<String> typeFolders = new ArrayList<>();
+            Collection<String> typeFolders = new ArrayList<>();
             Collections.addAll(typeFolders, destination.split("[/\\\\]"));
             Collections.addAll(typeFolders, type.split("[/\\\\]"));
             File folder = null;
@@ -242,9 +243,8 @@ public final class GoogleDriveUploader extends Uploader {
 
     /**
      * Setup for authenticated user that has access to one or more shared drives.
-     * @throws Exception
      */
-    public void setupSharedDrives(CommandSender initiator) throws Exception {
+    public void setupSharedDrives(CommandSender initiator) {
         if (drives != null && !drives.isEmpty()) {
             logger.log(intl("google-pick-shared-drive"));
             logger.log(
@@ -305,7 +305,7 @@ public final class GoogleDriveUploader extends Uploader {
      * @throws Exception
      */
     private File createFolder(String name, File parent, boolean sharedDrive) throws Exception {
-        File folder = null;
+        File folder;
         folder = getFolder(name, parent, sharedDrive);
         if (folder != null) {
             return folder;
@@ -328,7 +328,7 @@ public final class GoogleDriveUploader extends Uploader {
      * @throws Exception
      */
     private File createFolder(String name, String driveId) throws Exception {
-        File folder = null;
+        File folder;
         folder = getFolder(name, driveId);
         if (folder != null) {
             return folder;
@@ -350,7 +350,7 @@ public final class GoogleDriveUploader extends Uploader {
      * @throws Exception
      */
     private File createFolder(String name) throws Exception {
-        File folder = null;
+        File folder;
         folder = getFolder(name);
         if (folder != null) {
             return folder;
@@ -429,7 +429,7 @@ public final class GoogleDriveUploader extends Uploader {
         try {
             Drive.Files.List request = service.files().list()
                 .setQ("mimeType='application/vnd.google-apps.folder' and trashed=false and 'root' in parents");
-            FileList files = request.execute();;
+            FileList files = request.execute();
             for (File folderfiles : files.getItems()) {
                 if (folderfiles.getTitle().equals(name)) {
                     return folderfiles;
@@ -468,8 +468,7 @@ public final class GoogleDriveUploader extends Uploader {
                 MessageUtil.sendConsoleException(e);
                 request.setPageToken(null);
             }
-        } while (request.getPageToken() != null &&
-                request.getPageToken().length() > 0);
+        } while (request.getPageToken() != null && !request.getPageToken().isEmpty());
         return result;
     }
 

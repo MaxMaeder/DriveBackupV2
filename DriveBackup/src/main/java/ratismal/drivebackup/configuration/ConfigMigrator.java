@@ -40,7 +40,7 @@ public final class ConfigMigrator {
     
     private static void migrate1to2(@NotNull ConfigHandler configHandler, @NotNull LangConfigHandler langConfigHandler) throws ConfigurateException {
         configHandler.getLogger().info("Automatically migrating config to version 2");
-        CommentedConfigurationNode config = configHandler.getConfig();
+        CommentedConfigurationNode config = configHandler.getConfig().getConfig();
         int backupThreadPriority = config.node("backup-thread-priority").getInt();
         if (backupThreadPriority < 1) {
             config.node("backup-thread-priority").set(1);
@@ -65,7 +65,7 @@ public final class ConfigMigrator {
         move(config, "advanced.default-message-color", "messages.default-color");
         
         //lang config
-        CommentedConfigurationNode langConfig = langConfigHandler.getConfig();
+        CommentedConfigurationNode langConfig = langConfigHandler.getConfig().getConfig();
         moveLang(langConfig, config, "messages.no-perm", "no-perm");
         moveLang(langConfig, config, "messages.backup-start", "backup-start");
         moveLang(langConfig, config, "messages.backup-complete", "backup-complete");

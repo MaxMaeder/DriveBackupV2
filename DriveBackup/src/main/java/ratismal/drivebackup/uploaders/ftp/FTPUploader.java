@@ -176,7 +176,7 @@ public final class FTPUploader extends Uploader {
                 resetWorkingDirectory();
                 createThenEnter(_remoteBaseFolder);
                 ftpClient.storeFile(testFile.getName(), fis);
-                TimeUnit.SECONDS.sleep(5);
+                TimeUnit.SECONDS.sleep(5L);
                 ftpClient.deleteFile(testFile.getName());
             }
         } catch (Exception exception) {

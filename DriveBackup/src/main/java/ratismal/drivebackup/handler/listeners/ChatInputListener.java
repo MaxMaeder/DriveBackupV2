@@ -32,7 +32,7 @@ public class ChatInputListener implements Listener {
      * Handles input from a player
      * @param sender the player who sent the input
      * @param input the input
-     * @return whether the input was handled
+     * @return true if the input was handled, false otherwise
      */
     private static boolean handleInput(CommandSender sender, String input) {
         if (DriveBackup.chatInputPlayers.contains(sender)) {

@@ -19,10 +19,7 @@ import java.util.List;
 public class CommandTabComplete implements TabCompleter {
     
     public static boolean hasPerm(CommandSender player, Permission permission) {
-        if (player.hasPermission(permission.getPermission())) {
-            return true;
-        }
-        return false;
+        return player.hasPermission(permission.getPermission());
     }
 
     /**

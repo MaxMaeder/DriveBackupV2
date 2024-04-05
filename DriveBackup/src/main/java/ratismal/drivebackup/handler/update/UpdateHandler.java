@@ -85,17 +85,18 @@ public class UpdateHandler {
         try {
             File tempFile = new File(instance.getJarFile().getParentFile(), "DriveBackupV2.jar.temp");
             Request request = new Request.Builder().url(latestDownloadUrl).build();
-            Response response = HttpClient.getHttpClient().newCall(request).execute();
-            if (!response.isSuccessful()) {
-                throw new IOException("Failed to download file: " + response);
-            }
-            try (ResponseBody body = response.body()) {
-                if (body == null) {
-                    throw new IOException("Response body is null");
+            try (Response response = HttpClient.getHttpClient().newCall(request).execute()) {
+                if (!response.isSuccessful()) {
+                    throw new IOException("Failed to download file: " + response);
                 }
-                try (FileOutputStream fos = new FileOutputStream(tempFile)) {
-                    fos.write(body.bytes());
-                    logger.info("Update downloaded successfully");
+                try (ResponseBody body = response.body()) {
+                    if (body == null) {
+                        throw new IOException("Response body is null");
+                    }
+                    try (FileOutputStream fos = new FileOutputStream(tempFile)) {
+                        fos.write(body.bytes());
+                        logger.info("Update downloaded successfully");
+                    }
                 }
             }
             Files.move(tempFile.toPath(), instance.getJarFile().toPath(), StandardCopyOption.REPLACE_EXISTING);

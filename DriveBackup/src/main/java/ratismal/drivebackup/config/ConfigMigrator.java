@@ -20,9 +20,9 @@ public class ConfigMigrator {
     // may change the intl file. Therefore, we just hardcode any messages.
     private static final String MIGRATING_MESSAGE = "Automatically migrating config to version <version>";
 
-    private FileConfiguration config;
-    private FileConfiguration localizationConfig;
-    private List<CommandSender> initiators;
+    private final FileConfiguration config;
+    private final FileConfiguration localizationConfig;
+    private final List<CommandSender> initiators;
 
     @Contract (pure = true)
     public ConfigMigrator(FileConfiguration config, FileConfiguration localizationConfig, List<CommandSender> initiators) {
@@ -70,7 +70,7 @@ public class ConfigMigrator {
         migrateIntl("messages.next-schedule-backup-format", "next-schedule-backup-format");
         migrateIntl("messages.auto-backups-disabled", "auto-backups-disabled");
         DriveBackup.getInstance().saveConfig();
-        DriveBackup.getInstance().saveIntlConfig();
+        DriveBackup.saveIntlConfig();
     }
 
     /**

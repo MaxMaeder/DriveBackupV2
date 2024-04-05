@@ -9,6 +9,7 @@ import ratismal.drivebackup.platforms.DriveBackupInstance;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 
 public final class ConfigHandler {
     
@@ -73,11 +74,11 @@ public final class ConfigHandler {
         defaults.node("scheduled-backups").comment("Whether to enable scheduled backups");
         CommentedConfigurationNode backupScheduleList = defaults.node("backup-schedule-list");
         backupScheduleList.comment("The list of scheduled backups");
-        ArrayList<String> days = new ArrayList<>(2);
+        List<String> days = new ArrayList<>(2);
         days.add("Sunday");
         days.add("Wednesday");
         backupScheduleList.node(0).node("days").setList(String.class, days);
-        ArrayList<String> times = new ArrayList<>(2);
+        List<String> times = new ArrayList<>(2);
         times.add("6:00");
         times.add("18:00");
         backupScheduleList.node(0).node("time").set(times);

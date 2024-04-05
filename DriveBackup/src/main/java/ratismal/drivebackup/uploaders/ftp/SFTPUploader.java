@@ -23,6 +23,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
 
@@ -88,12 +89,12 @@ public final class SFTPUploader {
      * @param passphrase the public key passphrase (leave blank if none)
      * @throws Exception
      */
-    private void connect(String host, int port, String username, final String password, String publicKey, String passphrase) throws Exception {
+    private void connect(String host, int port, String username, String password, String publicKey, String passphrase) throws Exception {
         sshClient = new SSHClient();
         // Disable host checking
         sshClient.addHostKeyVerifier(new PromiscuousVerifier());
         sshClient.connect(host, port);
-        ArrayList<AuthMethod> sshAuthMethods = new ArrayList<>();
+        List<AuthMethod> sshAuthMethods = new ArrayList<>(2);
         if (!Strings.isNullOrEmpty(password)) {
             sshAuthMethods.add(new AuthPassword(new PasswordFinder() {
                 @Override

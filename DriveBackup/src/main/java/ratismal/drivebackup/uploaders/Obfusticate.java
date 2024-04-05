@@ -12,6 +12,8 @@ import java.util.Base64;
 public class Obfusticate {
     private static final byte[] keyValue = "kYVcmTxrWHUEk3K2ezM6Uu5a".getBytes(StandardCharsets.UTF_8);
     
+    private Obfusticate() {}
+    
     public static void main(String[] args) {
         try {
             String encrypted = encrypt(args[0]);
@@ -46,7 +48,7 @@ public class Obfusticate {
 
     @NotNull
     @Contract (value = " -> new", pure = true)
-    private static Key generateKey() throws Exception {
+    private static Key generateKey() {
         return new SecretKeySpec(keyValue, "AES");
     }
 }

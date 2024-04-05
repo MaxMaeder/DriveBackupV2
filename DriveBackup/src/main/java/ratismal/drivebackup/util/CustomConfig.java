@@ -13,7 +13,7 @@ import java.util.logging.Level;
 
 @Deprecated
 public class CustomConfig {
-    private String configName;
+    private final String configName;
     private File configFile;
     private FileConfiguration config;
     

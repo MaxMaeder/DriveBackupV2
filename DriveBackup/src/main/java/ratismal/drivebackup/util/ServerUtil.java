@@ -7,6 +7,9 @@ import ratismal.drivebackup.plugin.DriveBackup;
 
 @Deprecated
 public final class ServerUtil {
+    
+    private ServerUtil() {}
+    
     /**
      * Turns the server auto save on/off
      * @param autoSave whether to save automatically

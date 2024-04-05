@@ -66,7 +66,7 @@ public final class DropboxUploader extends Uploader {
             if (statusCode != 200) {
                 setErrorOccurred(true);
             }
-            TimeUnit.SECONDS.sleep(5);
+            TimeUnit.SECONDS.sleep(5L);
             JSONObject deleteJson = new JSONObject();
             deleteJson.put("path", "/" + destination + "/" + testFile.getName());
             RequestBody deleteRequestBody = RequestBody.create(deleteJson.toString(), JSON);

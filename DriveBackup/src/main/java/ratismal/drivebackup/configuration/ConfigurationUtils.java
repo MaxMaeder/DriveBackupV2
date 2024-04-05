@@ -274,7 +274,7 @@ public final class ConfigurationUtils {
      * @return the value(s) from the node
      * @throws SerializationException if an error occurs while getting the value(s)
      */
-    public static @NotNull Set<String> getVaules(@NotNull CommentedConfigurationNode node) throws SerializationException {
+    public static @NotNull Set<String> getValues(@NotNull CommentedConfigurationNode node) throws SerializationException {
         Set<String> set = new HashSet<>(10);
         if (node.isList()) {
             set.addAll(node.getList(String.class));

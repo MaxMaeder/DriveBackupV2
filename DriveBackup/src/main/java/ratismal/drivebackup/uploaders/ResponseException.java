@@ -25,10 +25,10 @@ public class ResponseException extends IOException {
      * specified JSON response and detail message.
      *
      * @param j the JSON response.
-     * @param s the detail message.
+     * @param message the detail message.
      */
-    public ResponseException(JSONObject j, String s) {
-        super(s);
+    public ResponseException(JSONObject j, String message) {
+        super(message);
         json = j;
     }
 

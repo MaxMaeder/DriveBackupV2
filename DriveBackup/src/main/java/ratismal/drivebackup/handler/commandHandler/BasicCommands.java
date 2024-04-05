@@ -41,7 +41,7 @@ public final class BasicCommands {
     }
 
     /**
-     * Sends a message with the current plugin, java, and server software version to the specified player.
+     * Sends a message with the current plugin, java and server software version to the specified player.
      * @param player the player to send the message to
      */
     public static void sendVersion(CommandSender player) {

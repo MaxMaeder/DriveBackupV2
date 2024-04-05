@@ -17,7 +17,7 @@ import ratismal.drivebackup.util.MessageUtil;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.util.Random;
+import java.security.SecureRandom;
 
 import static ratismal.drivebackup.config.Localization.intl;
 
@@ -57,7 +57,7 @@ public class TestThread implements Runnable {
      */
     @Override
     public void run() {
-        /**
+        /*
          * Arguments:
          * 0) The backup method to test
          * 1) The name of the test file to upload during test
@@ -146,7 +146,7 @@ public class TestThread implements Runnable {
                 }
                 break;
             default:
-                throw new Exception();
+                throw new IllegalArgumentException("Invalid method");
         }
         logger.log(
             intl("test-method-begin"), 
@@ -154,7 +154,7 @@ public class TestThread implements Runnable {
         String localTestFilePath = config.backupStorage.localDirectory + File.separator + testFileName;
         new File(config.backupStorage.localDirectory).mkdirs();
         try (FileOutputStream fos = new FileOutputStream(localTestFilePath)) {
-            Random byteGenerator = new Random();
+            SecureRandom byteGenerator = new SecureRandom();
             byte[] randomBytes = new byte[testFileSize];
             byteGenerator.nextBytes(randomBytes);
             fos.write(randomBytes);
@@ -178,7 +178,7 @@ public class TestThread implements Runnable {
         uploadMethod.close();
     }
 
-    private void sendMethodDisabled(@NotNull UploadLogger logger, String methodName) {
+    private static void sendMethodDisabled(@NotNull UploadLogger logger, String methodName) {
         logger.log(
             intl("test-method-not-enabled"), 
             "upload-method", methodName);

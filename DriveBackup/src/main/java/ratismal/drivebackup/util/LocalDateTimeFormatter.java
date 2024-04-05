@@ -13,7 +13,8 @@ public final class LocalDateTimeFormatter {
     private static final String FORMAT_KEYWORD = "%FORMAT";
     private static final String FORMAT_REPLACEMENT = "'yyyy-M-d--HH-mm'";
     private static final Pattern VALID_FORMAT = Pattern.compile("^[\\w\\-.'% ]+$");
-
+    private static final Pattern FORMAT = Pattern.compile(FORMAT_KEYWORD, Pattern.LITERAL);
+    
     private final DateTimeFormatter formatter;
 
     @Contract (pure = true)
@@ -28,7 +29,7 @@ public final class LocalDateTimeFormatter {
         if (pattern.contains(FORMAT_KEYWORD)) {
             int frontOffset = pattern.startsWith(FORMAT_KEYWORD) ? 2 : 0;
             int backOffset = pattern.endsWith(FORMAT_KEYWORD) ? 2 : 0;
-            pattern = "'" + pattern.replace(FORMAT_KEYWORD, FORMAT_REPLACEMENT) + "'";
+            pattern = "'" + FORMAT.matcher(pattern).replaceAll(FORMAT_REPLACEMENT) + "'";
             pattern = pattern.substring(frontOffset, pattern.length() - backOffset);
         }
         return new LocalDateTimeFormatter(DateTimeFormatter.ofPattern(pattern));

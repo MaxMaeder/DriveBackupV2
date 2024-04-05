@@ -3,6 +3,7 @@ package ratismal.drivebackup.config.configSections;
 import java.time.DayOfWeek;
 import java.time.temporal.TemporalAccessor;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -60,7 +61,7 @@ public class BackupScheduling {
                 logger.log(intl("backup-schedule-days-invalid"), "entry", entryIndex);
                 continue;
             }
-            Set<DayOfWeek> days = new HashSet<>();
+            Set<DayOfWeek> days = EnumSet.noneOf(DayOfWeek.class);
             for (String rawDay : rawDays) {
                 try {
                     boolean isDayGroup = false;

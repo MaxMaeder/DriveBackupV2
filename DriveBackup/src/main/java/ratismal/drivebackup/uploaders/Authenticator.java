@@ -3,6 +3,7 @@ package ratismal.drivebackup.uploaders;
 import okhttp3.FormBody;
 import okhttp3.Request;
 import okhttp3.Response;
+import okhttp3.ResponseBody;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.Contract;
@@ -43,7 +44,9 @@ public class Authenticator {
     private static final String CLIENT_SECRET = "fyKCRZRyJeHW5PzGJvQkL4dr2zRHRmwTaOutG7BBhQM=";
 
     private static int taskId = -1;
-
+    
+    private Authenticator() {}
+    
     public enum AuthenticationProvider {
         GOOGLE_DRIVE("Google Drive", "googledrive", "/GoogleDriveCredential.json", "qWd2xXC/ORzdZvUotXoWhHC0POkMNuO/xuwcKWc9s1LLodayZXvkdKimmpOQqWYS6I+qGSrYNb8UCJWMhrgDXhIWEbDvytkQTwq+uNcnfw8=", "pasQz0KvtyC7o6CrlLPSMVV9Y0RMX76cXzsAbBoCBxI="),
         ONEDRIVE("OneDrive", "onedrive", "/OneDriveCredential.json", "Ktj7Jd1h0oYNVicuyTBk5fU+gHS+QYReZxZKNZNO9CDxxHaf8bXlw0SKO9jnwc81", ""),
@@ -117,7 +120,11 @@ public class Authenticator {
                 .post(requestBody.build())
                 .build();
             Response response = HttpClient.getHttpClient().newCall(request).execute();
-            JSONObject parsedResponse = new JSONObject(response.body().string());
+            ResponseBody body = response.body();
+            if (body == null) {
+                return;
+            }
+            JSONObject parsedResponse = new JSONObject(body.string());
             response.close();
             String userCode = parsedResponse.getString("user_code");
             String deviceCode = parsedResponse.getString("device_code");
@@ -128,59 +135,56 @@ public class Authenticator {
                 "link-url", verificationUri,
                 "link-code", userCode,
                 "provider", provider.getName());
-            taskId = plugin.getServer().getScheduler().scheduleSyncRepeatingTask(plugin, new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        FormBody.Builder requestBody = new FormBody.Builder()
-                            .add("device_code", deviceCode)
-                            .add("user_code", userCode);
-                        String requestEndpoint;
-                        if (provider == AuthenticationProvider.ONEDRIVE) {
-                            requestBody.add("client_id", Obfusticate.decrypt(provider.getClientId()));
-                            requestBody.add("grant_type", "urn:ietf:params:oauth:grant-type:device_code");
-                            requestEndpoint = ONEDRIVE_POLL_VERIFICATION_ENDPOINT;
-                        } else {
-                            requestBody.add("client_secret", Obfusticate.decrypt(CLIENT_SECRET));
-                            requestEndpoint = POLL_VERIFICATION_ENDPOINT;
-                        }
-                        Request request = new Request.Builder()
-                            .url(requestEndpoint)
-                            .post(requestBody.build())
-                            .build();
-                        Response response = HttpClient.getHttpClient().newCall(request).execute();
-                        JSONObject parsedResponse = new JSONObject(response.body().string());
-                        response.close();
-                        if (parsedResponse.has("refresh_token")) {
-                            saveRefreshToken(provider, (String) parsedResponse.get("refresh_token"));
-                            if (provider.getId() == "googledrive") {
-                                UploadLogger uploadLogger = new UploadLogger() {
-                                    @Override
-                                    public void log(String input, String... placeholders) {
-                                        MessageUtil.Builder()
-                                                .mmText(input, placeholders)
-                                                .to(initiator)
-                                                .send();
-                                    }
-                                };
-                                new GoogleDriveUploader(uploadLogger).setupSharedDrives(initiator);
-                            } else {
-                                linkSuccess(initiator, provider, logger);
-                            }
-                            cancelPollTask();
-                        } else if (
-                            (provider == AuthenticationProvider.ONEDRIVE && !parsedResponse.getString("error").equals("authorization_pending")) ||
-                            (provider != AuthenticationProvider.ONEDRIVE && !parsedResponse.get("msg").equals("code_not_authenticated"))
-                            ) {
-                            MessageUtil.Builder().text(parsedResponse.toString()).send();
-                            throw new UploadException();
-                        }
-                    } catch (Exception exception) {
-                        NetUtil.catchException(exception, AUTH_URL, logger);
-                        logger.log(intl("link-provider-failed"), "provider", provider.getName());
-                        MessageUtil.sendConsoleException(exception);
-                        cancelPollTask();
+            taskId = plugin.getServer().getScheduler().scheduleSyncRepeatingTask(plugin, () -> {
+                try {
+                    FormBody.Builder requestBody1 = new FormBody.Builder()
+                        .add("device_code", deviceCode)
+                        .add("user_code", userCode);
+                    String requestEndpoint1;
+                    if (provider == AuthenticationProvider.ONEDRIVE) {
+                        requestBody1.add("client_id", Obfusticate.decrypt(provider.getClientId()));
+                        requestBody1.add("grant_type", "urn:ietf:params:oauth:grant-type:device_code");
+                        requestEndpoint1 = ONEDRIVE_POLL_VERIFICATION_ENDPOINT;
+                    } else {
+                        requestBody1.add("client_secret", Obfusticate.decrypt(CLIENT_SECRET));
+                        requestEndpoint1 = POLL_VERIFICATION_ENDPOINT;
                     }
+                    Request request1 = new Request.Builder()
+                        .url(requestEndpoint1)
+                        .post(requestBody1.build())
+                        .build();
+                    Response response1 = HttpClient.getHttpClient().newCall(request1).execute();
+                    JSONObject parsedResponse1 = new JSONObject(response1.body().string());
+                    response1.close();
+                    if (parsedResponse1.has("refresh_token")) {
+                        saveRefreshToken(provider, (String) parsedResponse1.get("refresh_token"));
+                        if (provider.getId() == "googledrive") {
+                            UploadLogger uploadLogger = new UploadLogger() {
+                                @Override
+                                public void log(String input, String... placeholders) {
+                                    MessageUtil.Builder()
+                                            .mmText(input, placeholders)
+                                            .to(initiator)
+                                            .send();
+                                }
+                            };
+                            new GoogleDriveUploader(uploadLogger).setupSharedDrives(initiator);
+                        } else {
+                            linkSuccess(initiator, provider, logger);
+                        }
+                        cancelPollTask();
+                    } else if (
+                            (provider == AuthenticationProvider.ONEDRIVE && !parsedResponse1.getString("error").equals("authorization_pending")) ||
+                            (provider != AuthenticationProvider.ONEDRIVE && !parsedResponse1.get("msg").equals("code_not_authenticated"))
+                        ) {
+                        MessageUtil.Builder().text(parsedResponse1.toString()).send();
+                        throw new UploadException();
+                    }
+                } catch (Exception exception) {
+                    NetUtil.catchException(exception, AUTH_URL, logger);
+                    logger.log(intl("link-provider-failed"), "provider", provider.getName());
+                    MessageUtil.sendConsoleException(exception);
+                    cancelPollTask();
                 }
             }, responseCheckDelay, responseCheckDelay);
         } catch (Exception exception) {
@@ -267,8 +271,8 @@ public class Authenticator {
 
     @NotNull
     private static String processCredentialJsonFile(@NotNull AuthenticationProvider provider) throws IOException {
-        try (BufferedReader br = new BufferedReader(new FileReader(provider.getCredStoreLocation()));) {
-            StringBuilder sb = new StringBuilder();
+        try (BufferedReader br = new BufferedReader(new FileReader(provider.getCredStoreLocation()))) {
+            StringBuilder sb = new StringBuilder(1_000);
             String line = br.readLine();
             while (line != null) {
                 sb.append(line);

@@ -14,6 +14,8 @@ import ratismal.drivebackup.uploaders.Authenticator.AuthenticationProvider;
 import ratismal.drivebackup.plugin.DriveBackup;
 import ratismal.drivebackup.util.MessageUtil;
 
+import java.util.Locale;
+
 import static ratismal.drivebackup.config.Localization.intl;
 
 /**
@@ -29,7 +31,7 @@ public class CommandHandler implements CommandExecutor {
      * @param command  the command that was sent
      * @param label the command alias that was used
      * @param args any arguments that followed the command
-     * @return whether the command was handled
+     * @return true if the command was handled, false otherwise
      */
     public boolean onCommand(CommandSender sender, @NotNull Command command, String label, String[] args) {
         if (!command.getName().equalsIgnoreCase(CHAT_KEYWORD)) {
@@ -39,7 +41,7 @@ public class CommandHandler implements CommandExecutor {
             BasicCommands.sendHelp(sender);
             return true;
         }
-        switch (args[0].toLowerCase()) {
+        switch (args[0].toLowerCase(Locale.ROOT)) {
             case "help":
                 BasicCommands.sendDocs(sender);
                 break;
@@ -76,7 +78,7 @@ public class CommandHandler implements CommandExecutor {
                 if (!PermissionHandler.hasPerm(sender, Permission.LINK_ACCOUNTS)) {
                     break;
                 }
-                switch (args[1].toLowerCase()) {
+                switch (args[1].toLowerCase(Locale.ROOT)) {
                     case "googledrive":
                         Authenticator.authenticateUser(AuthenticationProvider.GOOGLE_DRIVE, sender);
                         break;
@@ -100,7 +102,7 @@ public class CommandHandler implements CommandExecutor {
                 if (!PermissionHandler.hasPerm(sender, Permission.LINK_ACCOUNTS)) {
                     break;
                 }
-                switch (args[1].toLowerCase()) {
+                switch (args[1].toLowerCase(Locale.ROOT)) {
                     case "googledrive":
                         Authenticator.unauthenticateUser(AuthenticationProvider.GOOGLE_DRIVE, sender);
                         break;

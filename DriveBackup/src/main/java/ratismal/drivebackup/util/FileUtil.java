@@ -18,6 +18,8 @@ import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.time.ZonedDateTime;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
@@ -31,7 +33,8 @@ import static ratismal.drivebackup.config.Localization.intl;
 
 public class FileUtil {
     private static final String NAME_KEYWORD = "%NAME";
-
+    private static final Pattern NAME = Pattern.compile(NAME_KEYWORD, Pattern.LITERAL);
+    
     private UploadLogger logger;
 
     public FileUtil(UploadLogger logger) {
@@ -57,7 +60,7 @@ public class FileUtil {
                 //     backupList.put(date.toEpochSecond(), file);
                 // } catch (Exception e) {
                 // Fallback to using file creation date if the file name doesn't match the format.
-                backupList.put((file.lastModified() / 1000), file);
+                backupList.put((file.lastModified() / 1000L), file);
                 //     logger.log(intl("local-backup-date-format-invalid"), "file-name", fileName);
                 // }
             }
@@ -115,7 +118,7 @@ public class FileUtil {
         if (fileName.contains(NAME_KEYWORD)) {
             int lastSeparatorIndex = Math.max(location.lastIndexOf('/'), location.lastIndexOf('\\'));
             String lastFolderName = location.substring(lastSeparatorIndex + 1);
-            fileName = fileName.replace(NAME_KEYWORD, lastFolderName);
+            fileName = NAME.matcher(fileName).replaceAll(Matcher.quoteReplacement(lastFolderName));
         }
         zipIt(location, path.getPath() + "/" + fileName, fileList);
     }
@@ -192,7 +195,7 @@ public class FileUtil {
                 BasicFileAttributes fileAttributes = null;
                 try {
                     fileAttributes = Files.readAttributes(Paths.get(filePath), BasicFileAttributes.class);
-                } catch(Exception e) { }
+                } catch(Exception ignored) { }
                 if (fileAttributes == null) {
                     logger.info(
                         intl("local-backup-failed-attributes"),
@@ -239,8 +242,8 @@ public class FileUtil {
         
         @Contract (pure = true)
         private BackupFileList(List<BlacklistEntry> blacklist) {
-            this.filesInBackupFolder = 0;
-            this.fileList = new ArrayList<>();
+            filesInBackupFolder = 0;
+            fileList = new ArrayList<>();
             this.blacklist = blacklist;
         }
 
@@ -331,7 +334,7 @@ public class FileUtil {
      */
     public static List<Path> generateGlobFolderList(String glob, String rootPath) {
         PathMatcher pathMatcher = FileSystems.getDefault().getPathMatcher("glob:./" + glob);
-        List<Path> list = new ArrayList<Path>();
+        List<Path> list = new ArrayList<>();
         try (Stream<Path> walk = Files.walk(Paths.get(rootPath))) {
             list = walk.filter(pathMatcher::matches).filter(Files::isDirectory).collect(Collectors.toList());
         } catch (IOException exception) {
@@ -346,9 +349,8 @@ public class FileUtil {
      * In other words, whether the folder is the folder containing the server jar.
      * @param folderPath the path of the folder
      * @return whether the folder is the base folder
-     * @throws Exception
      */
-    public static boolean isBaseFolder(String folderPath) throws Exception {
+    public static boolean isBaseFolder(String folderPath) {
         return new File(folderPath).getPath().equals(".");
     }
 

@@ -23,6 +23,7 @@ import ratismal.drivebackup.util.Version;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
@@ -39,7 +40,7 @@ public final class BukkitPlugin extends JavaPlugin implements DriveBackupInstanc
     private BukkitAudiences adventure;
     private ArrayList<CommandSender> chatInputPlayers;
     private Version currentVersion;
-    private List<String> autoSaveWorlds = new ArrayList<>(3);
+    private final Collection<String> autoSaveWorlds = new ArrayList<>(3);
     
     
     @Contract (pure = true)

@@ -17,7 +17,7 @@ public final class ConfigurationObject {
     private final String fileName;
     private String extension;
     private final DriveBackupInstance instance;
-    private CommentedConfigurationNode config = CommentedConfigurationNode.root();
+    private CommentedConfigurationNode config;
     private CommentedConfigurationNode defaults;
     private final LoggingInterface logger;
     

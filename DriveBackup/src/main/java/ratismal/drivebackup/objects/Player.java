@@ -5,7 +5,7 @@ import org.jetbrains.annotations.Contract;
 import java.util.UUID;
 
 public final class Player {
-    private String name;
+    private final String name;
     private final UUID uuid;
 
     @Contract (pure = true)

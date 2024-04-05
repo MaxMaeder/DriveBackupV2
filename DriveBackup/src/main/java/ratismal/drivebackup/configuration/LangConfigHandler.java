@@ -114,7 +114,7 @@ public final class LangConfigHandler {
         defaults.node("brief-backup-list-empty").set("nothing");
         defaults.node("brief-backup-list-external-backups").set("some external backups");
         defaults.node("brief-backup-list-help").set("Want to back up something else? See\n"
-                                                    + "<gold><click:open_url:https://bit.ly/3xoHRAs>http://bit.ly/3xoHRAs</click></gold>");
+                                                    + "<gold><click:open_url:https://bit.ly/3xoHRAs>https://bit.ly/3xoHRAs</click></gold>");
         defaults.node("config-loaded").set("Config loaded!");
         defaults.node("config-reloaded").set("Config reloaded!");
         defaults.node("connection-error").set("Failed to connect to <domain>, check your network connection\n"
@@ -126,8 +126,8 @@ public final class LangConfigHandler {
         defaults.node("drivebackup-command-header").set("<gold>|====== <dark_red>DriveBackupV2</dark_red> ======|</gold>");
         String driveBackupDocsCommand = "<header>\n"
                                         + "Need help? Check out these helpful resources!\n"
-                                        + "Wiki: <gold><click:open_url:https://bit.ly/3dDdmwK>http://bit.ly/3dDdmwK</click></gold>\n"
-                                        + "Discord: <gold><click:open_url:https://bit.ly/3f4VuuT>http://bit.ly/3f4VuuT</click></gold>";
+                                        + "Wiki: <gold><click:open_url:https://bit.ly/3dDdmwK>https://bit.ly/3dDdmwK</click></gold>\n"
+                                        + "Discord: <gold><click:open_url:https://bit.ly/3f4VuuT>https://bit.ly/3f4VuuT</click></gold>";
         defaults.node("drivebackup-docs-command").set(driveBackupDocsCommand);
         String driveBackupHelpCommand = "<header>\n"
                                         + "<gold><click:run_command:/drivebackup>/drivebackup</click></gold> - Displays this menu\n"
@@ -243,7 +243,7 @@ public final class LangConfigHandler {
         String playerJoinBackupFailed = "<red>The last backup failed!<red>\n"
                                         + "Check the console for more info";
         defaults.node("player-join-backup-failed").set(playerJoinBackupFailed);
-        String playerJoinUpdateAvailable = "An update is available, get it here: <gold><click:open_url:https://bit.ly/2M14uVD>http://bit.ly/2M14uVD</click></gold>\n"
+        String playerJoinUpdateAvailable = "An update is available, get it here: <gold><click:open_url:https://bit.ly/2M14uVD>https://bit.ly/2M14uVD</click></gold>\n"
                                            + "or by running <gold><click:run_command:/drivebackup update>/drivebackup update</click></gold>";
         defaults.node("player-join-update-available").set(playerJoinUpdateAvailable);
         defaults.node("plugin-stop").set("Stopping plugin!");
@@ -262,7 +262,7 @@ public final class LangConfigHandler {
         defaults.node("unlink-provider-failed").set("Failed to unlink your <provider> account, please try again");
         defaults.node("update-checker-failed").set("There was an issue attempting to check for the latest DriveBackupV2 release");
         String updateCheckerNewRelease = "DriveBackup version <latest-version> has been released, You are currently running version <current-version>\n"
-                                         + "Update at: <gold><click:open_url:https://bit.ly/2VGtF7L>http://bit.ly/2VGtF7L</click></gold>\" or with <gold><click:run_command:/drivebackup update>/drivebackup update</click></gold>";
+                                         + "Update at: <gold><click:open_url:https://bit.ly/2VGtF7L>https://bit.ly/2VGtF7L</click></gold>\" or with <gold><click:run_command:/drivebackup update>/drivebackup update</click></gold>";
         defaults.node("update-checker-new-release").set(updateCheckerNewRelease);
         defaults.node("update-checker-started").set("Checking for updates...");
         String updateCheckerUnsupportedRelease = "You are running an unsupported release!\n"

@@ -28,18 +28,18 @@ public class DebugCollector {
     private final String serverVersion;
     private final boolean onlineMode;
     private final ConfigInfo configInfo;
-    private List<PluginInfo> plugins;
+    private final List<PluginInfo> plugins;
     private final RamInfo ramInfo;
 
     public DebugCollector(@NotNull DriveBackup plugin) {
-        this.serverType = plugin.getServer().getName();
-        this.serverVersion = plugin.getServer().getVersion();
-        this.onlineMode = plugin.getServer().getOnlineMode();
-        this.configInfo = new ConfigInfo();
-        this.plugins = new ArrayList<>();
-        this.ramInfo = new RamInfo();
+        serverType = plugin.getServer().getName();
+        serverVersion = plugin.getServer().getVersion();
+        onlineMode = plugin.getServer().getOnlineMode();
+        configInfo = new ConfigInfo();
+        plugins = new ArrayList<>();
+        ramInfo = new RamInfo();
         for (Plugin pinfo : plugin.getServer().getPluginManager().getPlugins()) {
-            this.plugins.add(new PluginInfo(pinfo.getDescription().getName(), pinfo.getDescription().getVersion(), pinfo.getDescription().getMain(), pinfo.getDescription().getAuthors()));
+            plugins.add(new PluginInfo(pinfo.getDescription().getName(), pinfo.getDescription().getVersion(), pinfo.getDescription().getMain(), pinfo.getDescription().getAuthors()));
         }
     }
 
@@ -73,10 +73,10 @@ public class DebugCollector {
         private final String main;
         private final List<String> authors;
         private PluginInfo(String name2, String version2, String main2, List<String> authors2) {
-            this.name = name2;
-            this.version = version2;
-            this.main = main2;
-            this.authors = authors2;
+            name = name2;
+            version = version2;
+            main = main2;
+            authors = authors2;
         }
     }
 
@@ -97,26 +97,26 @@ public class DebugCollector {
 
         private ConfigInfo() {
             Config config = ConfigParser.getConfig();
-            this.backupsRequirePlayers = config.backupStorage.backupsRequirePlayers;
-            this.disableSavingDuringBackups = config.backupStorage.disableSavingDuringBackups;
-            this.scheduleBackups = config.backupScheduling;
-            this.backupList = config.backupList;
-            this.googleDriveEnabled = config.backupMethods.googleDrive.enabled;
-            this.oneDriveEnabled = config.backupMethods.oneDrive.enabled;
-            this.dropboxEnabled = config.backupMethods.dropbox.enabled;
-            this.ftpEnabled = config.backupMethods.ftp.enabled;
+            backupsRequirePlayers = config.backupStorage.backupsRequirePlayers;
+            disableSavingDuringBackups = config.backupStorage.disableSavingDuringBackups;
+            scheduleBackups = config.backupScheduling;
+            backupList = config.backupList;
+            googleDriveEnabled = config.backupMethods.googleDrive.enabled;
+            oneDriveEnabled = config.backupMethods.oneDrive.enabled;
+            dropboxEnabled = config.backupMethods.dropbox.enabled;
+            ftpEnabled = config.backupMethods.ftp.enabled;
             if (ftpEnabled) {
                 if (config.backupMethods.ftp.sftp) {
-                    this.ftpType = "SFTP";
+                    ftpType = "SFTP";
                 } else if (config.backupMethods.ftp.ftps) {
-                    this.ftpType = "FTPS";
+                    ftpType = "FTPS";
                 } else {
-                    this.ftpType = "FTP";
+                    ftpType = "FTP";
                 }
             } else {
-                this.ftpType = "none";
+                ftpType = "none";
             }
-            this.timezone = config.advanced.dateTimezone;
+            timezone = config.advanced.dateTimezone;
         }
     }
 
@@ -128,9 +128,9 @@ public class DebugCollector {
         private final long max;
 
         private RamInfo() {
-            this.free = Runtime.getRuntime().freeMemory() / MEGABYTE;
-            this.total = Runtime.getRuntime().totalMemory() / MEGABYTE;
-            this.max = Runtime.getRuntime().maxMemory() / MEGABYTE;
+            free = Runtime.getRuntime().freeMemory() / MEGABYTE;
+            total = Runtime.getRuntime().totalMemory() / MEGABYTE;
+            max = Runtime.getRuntime().maxMemory() / MEGABYTE;
         }
     }
 }

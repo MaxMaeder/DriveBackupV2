@@ -117,9 +117,7 @@ public class MessageUtil {
      * @return the calling MessageUtil's instance
      */
     public MessageUtil to(@NotNull List<CommandSender> players) {
-        for (CommandSender player : players) {
-            recipients.add(player);
-        }
+        recipients.addAll(players);
         return this;
     }
 
@@ -130,7 +128,7 @@ public class MessageUtil {
      */
     public MessageUtil toPerm(String permission) {
         for (Player player : Bukkit.getServer().getOnlinePlayers()) {
-            if (PermissionHandler.hasPerm(player, Permission.LINK_ACCOUNTS) && !recipients.contains(player)) {
+            if (PermissionHandler.hasPerm(player, Permission.LINK_ACCOUNTS)) {
                 recipients.add(player);
             }
         }
@@ -152,9 +150,7 @@ public class MessageUtil {
      * @return the calling MessageUtil's instance
      */
     public MessageUtil all() {
-        for (Player p : Bukkit.getOnlinePlayers()) {
-            recipients.add(p);
-        }
+        recipients.addAll(Bukkit.getOnlinePlayers());
         return this;
     }
 
