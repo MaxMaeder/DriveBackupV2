@@ -6,6 +6,7 @@ import ratismal.drivebackup.handler.debug.ServerInformation;
 import ratismal.drivebackup.handler.logging.LoggingHandler;
 import ratismal.drivebackup.handler.messages.MessageHandler;
 import ratismal.drivebackup.handler.permission.PermissionHandler;
+import ratismal.drivebackup.handler.player.PlayerHandler;
 import ratismal.drivebackup.handler.task.TaskHandler;
 import ratismal.drivebackup.util.Version;
 
@@ -24,6 +25,7 @@ public interface DriveBackupInstance {
     void disable();
     Version getCurrentVersion();
     TaskHandler getTaskHandler();
+    PlayerHandler getPlayerHandler();
     /*
     Disable auto saving for worlds that have it enabled
      */

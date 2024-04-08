@@ -15,6 +15,7 @@ import ratismal.drivebackup.configuration.LangConfigHandler;
 import ratismal.drivebackup.handler.debug.ServerInformation;
 import ratismal.drivebackup.handler.logging.LoggingHandler;
 import ratismal.drivebackup.handler.permission.PermissionHandler;
+import ratismal.drivebackup.handler.player.PlayerHandler;
 import ratismal.drivebackup.handler.task.TaskHandler;
 import ratismal.drivebackup.handler.update.UpdateHandler;
 import ratismal.drivebackup.platforms.DriveBackupInstance;
@@ -24,7 +25,6 @@ import ratismal.drivebackup.util.Version;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 public final class BukkitPlugin extends JavaPlugin implements DriveBackupInstance {
@@ -40,6 +40,7 @@ public final class BukkitPlugin extends JavaPlugin implements DriveBackupInstanc
     private BukkitAudiences adventure;
     private ArrayList<CommandSender> chatInputPlayers;
     private Version currentVersion;
+    private BukkitPlayerHandler playerHandler;
     private final Collection<String> autoSaveWorlds = new ArrayList<>(3);
     
     
@@ -84,6 +85,12 @@ public final class BukkitPlugin extends JavaPlugin implements DriveBackupInstanc
         return langConfigHandler;
     }
     
+    @Contract (pure = true)
+    @Override
+    public PlayerHandler getPlayerHandler() {
+        return playerHandler;
+    }
+    
     @Override
     public void disable() {
         getServer().getPluginManager().disablePlugin(this);
@@ -122,6 +129,7 @@ public final class BukkitPlugin extends JavaPlugin implements DriveBackupInstanc
             }
         }
         adventure = BukkitAudiences.create(this);
+        playerHandler = new BukkitPlayerHandler(this);
         bukkitMessageHandler = new BukkitMessageHandler(this);
         chatInputPlayers = new ArrayList<>(1);
         permissionHandler = new BukkitPermissionHandler(getServer());

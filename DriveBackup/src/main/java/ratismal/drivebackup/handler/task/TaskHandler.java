@@ -1,8 +1,12 @@
 package ratismal.drivebackup.handler.task;
 
+import java.util.concurrent.Callable;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 public interface TaskHandler {
+    
+    <T> Future<T> callSyncMethod(Callable<T> task);
     
     /**
      * Schedules a repeating task to run synchronously with the server

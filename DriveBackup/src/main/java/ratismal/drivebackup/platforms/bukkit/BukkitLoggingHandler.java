@@ -21,7 +21,7 @@ public class BukkitLoggingHandler implements LoggingHandler {
     private ConfigurationSection advancedSection;
     
     @Contract (pure = true)
-    public BukkitLoggingHandler(DriveBackupInstance driveBackupInstance, Logger logger) {
+    public BukkitLoggingHandler(@NotNull DriveBackupInstance driveBackupInstance, Logger logger) {
         this.logger = logger;
         this.driveBackupInstance = driveBackupInstance;
         prefixedLoggers = new HashMap<>(10);

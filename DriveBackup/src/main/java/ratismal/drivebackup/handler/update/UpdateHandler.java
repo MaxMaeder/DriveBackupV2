@@ -4,6 +4,7 @@ import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
 import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
 import org.json.JSONException;
 import ratismal.drivebackup.handler.logging.PrefixedLogger;
@@ -19,7 +20,7 @@ import java.nio.file.StandardCopyOption;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
-public class UpdateHandler {
+public final class UpdateHandler {
     
     private static final int CURSE_PROJECT_ID = 383461;
     private static final String CURSE_REQUEST_URL = "https://api.curseforge.com/servermods/files?projectids=" + CURSE_PROJECT_ID;
@@ -34,7 +35,7 @@ public class UpdateHandler {
     private String latestDownloadUrl;
     
     @Contract (pure = true)
-    public UpdateHandler(DriveBackupInstance instance) {
+    public UpdateHandler(@NotNull DriveBackupInstance instance) {
         this.instance = instance;
         logger = instance.getLoggingHandler().getPrefixedLogger("UpdateHandler");
     }

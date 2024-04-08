@@ -21,6 +21,7 @@ import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 
+@Deprecated
 public class DebugCollector {
     private static final String PASTEBIN_UPLOAD_URL = "https://api.mclo.gs/1/log";
 
