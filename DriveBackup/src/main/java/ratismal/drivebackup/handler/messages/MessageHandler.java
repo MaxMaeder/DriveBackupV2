@@ -46,6 +46,11 @@ public abstract class MessageHandler {
         langConfigHandler = instance.getLangConfigHandler();
     }
     
+    /**
+     * Reset the message handler
+     *
+     * @return The MessageHandler
+     */
     public MessageHandler reset() {
         message.clear();
         recipients.clear();
@@ -71,6 +76,11 @@ public abstract class MessageHandler {
         return "<color:" + getColor().asHexString() + ">";
     }
     
+    /**
+     * Get a message builder
+     *
+     * @return The MessageHandler
+     */
     public abstract MessageHandler Builder();
     
     private @NotNull Component getMMLang(String key) {
@@ -81,18 +91,46 @@ public abstract class MessageHandler {
         return MiniMessage.miniMessage().deserialize(getMMColor() + langConfigHandler.getConfig().getValue(key).getString(), resolver);
     }
     
+    /**
+     * Get and adds a message from the lang file
+     *
+     * @param key The key of the message
+     * @return The MessageHandler
+     */
     public MessageHandler getLang(String key) {
         message.add(getMMLang(key));
         return this;
     }
     
+    /**
+     * Get and adds a message from the lang file and replaces a placeholder
+     *
+     * @param key        The key of the message
+     * @param placeholder The placeholder to replace
+     * @param value       The value to replace the placeholder with
+     * @return The MessageHandler
+     */
     public MessageHandler getLang(String key, String placeholder, String value) {
         TagResolver.Builder builder = TagResolver.builder();
-        builder.resolver(Placeholder.parsed(placeholder, value));
+        String placeholderKey = placeholder;
+        if (placeholderKey == null) {
+            placeholderKey = "";
+        }
+        builder.resolver(Placeholder.parsed(placeholderKey, value));
         message.add(getMMLang(key, builder.build()));
         return this;
     }
     
+    /**
+     * Get a message from the lang file with placeholders
+     *
+     * @param key          The key of the message
+     * @param placeholders The placeholders to replace
+     *                     The key is the placeholder to replace
+     *                     The value is the value to replace the placeholder with
+     *                     If the key or value is null or empty, it will be ignored.
+     * @return The MessageHandler
+     */
     public MessageHandler getLang(String key, @NotNull Map<String, String> placeholders) {
         TagResolver.Builder builder = TagResolver.builder();
         for (Map.Entry<String, String> entry : placeholders.entrySet()) {
@@ -108,51 +146,103 @@ public abstract class MessageHandler {
         return this;
     }
     
+    /**
+     * Sets to not add the prefix to the message
+     * @return The MessageHandler
+     */
     public MessageHandler notAddPrefix() {
         addPrefix = false;
         return this;
     }
     
+    /**
+     * Adds a plain text message
+     *
+     * @param text The text to add
+     * @return The MessageHandler
+     */
     public MessageHandler text(String text) {
         message.add(Component.text(text, getColor()));
         return this;
     }
     
+    /**
+     * Adds a player to send the message to
+     *
+     * @param player The player to send to
+     * @return The MessageHandler
+     */
     public MessageHandler to(Player player) {
         recipients.add(player);
         return this;
     }
     
+    /**
+     * Adds a collection of players to send the message to
+     *
+     * @param players The players to send to
+     * @return The MessageHandler
+     */
     public MessageHandler to(Collection<Player> players) {
         recipients.addAll(players);
         return this;
     }
     
+    /**
+     * Adds all online players to send the message to
+     *
+     * @return The MessageHandler
+     */
     public abstract MessageHandler toAll();
     
+    /**
+     * Adds console to the recipients
+     *
+     * @return The MessageHandler
+     */
     public MessageHandler toConsole() {
         sendToConsole = true;
         return this;
     }
     
+    /**
+     * Adds console to the recipients with a log level
+     *
+     * @param level the log level
+     * @return The MessageHandler
+     */
     public MessageHandler toConsole(ConsoleLogLevel level) {
         sendToConsole = true;
         consoleLogLevel = level;
         return this;
     }
     
+    /**
+     * Sets to not send the message to the console
+     *
+     * @return The MessageHandler
+     */
     public MessageHandler notToConsole() {
         sendToConsole = false;
         consoleLogLevel = ConsoleLogLevel.INFO;
         return this;
     }
     
+    /**
+     * Adds all players with a permission to the recipients
+     *
+     * @param perm the permission
+     * @return The MessageHandler
+     */
     public MessageHandler toPerm(Permission perm) {
         List<Player> players = permissionHandler.getPlayersWithPermission(perm);
         recipients.addAll(players);
         return this;
     }
     
+    /**
+     * Sends the message to the recipients
+     */
     public void send() {
         if (addPrefix) {
             TextComponent prefix = LegacyComponentSerializer.legacyAmpersand().deserialize(
@@ -169,6 +259,9 @@ public abstract class MessageHandler {
         }
     }
     
+    /**
+     * Gets the message
+     */
     public Component getMessage() {
         return Component.join(JOIN_CONFIGURATION, message);
     }
