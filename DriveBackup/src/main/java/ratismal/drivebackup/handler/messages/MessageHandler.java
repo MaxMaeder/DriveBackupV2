@@ -21,7 +21,6 @@ import ratismal.drivebackup.platforms.DriveBackupInstance;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -52,9 +51,9 @@ public abstract class MessageHandler {
         recipients.clear();
         addPrefix = true;
         sendToConsole = true;
+        consoleLogLevel = ConsoleLogLevel.INFO;
         return this;
     }
-    
     
     private TextColor getColor() {
         String colorString = configHandler.getConfig().getValue("messages", "default-color").getString();
@@ -87,19 +86,6 @@ public abstract class MessageHandler {
         return this;
     }
     
-    @Deprecated
-    public MessageHandler getLang(String key, String @NotNull ... placeholders) {
-        int length = placeholders.length;
-        Map<String, String> map = new HashMap<>(length / 2);
-        for (int i = 0; i < length; i += 2) {
-            map.put(placeholders[i], placeholders[i + 1]);
-            if ( i == length - 3) {
-                break;
-            }
-        }
-        return getLang(key, map);
-    }
-    
     public MessageHandler getLang(String key, String placeholder, String value) {
         TagResolver.Builder builder = TagResolver.builder();
         builder.resolver(Placeholder.parsed(placeholder, value));
@@ -129,37 +115,6 @@ public abstract class MessageHandler {
     
     public MessageHandler text(String text) {
         message.add(Component.text(text, getColor()));
-        return this;
-    }
-    
-    @Deprecated
-    public MessageHandler mmText(String text) {
-        message.add(MiniMessage.miniMessage().deserialize(getMMColor() + text));
-        return this;
-    }
-    
-    @Deprecated
-    public MessageHandler mmText(String text, String @NotNull ... placeholders) {
-        TagResolver.Builder builder = TagResolver.builder();
-        for (int i = 0; i < placeholders.length; i += 2) {
-            builder.resolver(Placeholder.parsed(placeholders[i], placeholders[i + 1]));
-        }
-        message.add(MiniMessage.miniMessage().deserialize(getMMColor() + text, builder.build()));
-        return this;
-    }
-    @Deprecated
-    public MessageHandler mmText(String text, @NotNull Map<String, String> placeholders) {
-        TagResolver.Builder builder = TagResolver.builder();
-        for (Map.Entry<String, String> entry : placeholders.entrySet()) {
-            builder.resolver(Placeholder.parsed(entry.getKey(), entry.getValue()));
-        }
-        message.add(MiniMessage.miniMessage().deserialize(getMMColor() + text, builder.build()));
-        return this;
-    }
-    @Deprecated
-    public MessageHandler mmText(String text, String title, Component content) {
-        message.add(MiniMessage.miniMessage().deserialize(getMMColor()+ text,
-                                                            TagResolver.resolver(Placeholder.component(title, content))));
         return this;
     }
     
