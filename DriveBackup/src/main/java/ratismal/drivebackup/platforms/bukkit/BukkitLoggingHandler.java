@@ -2,6 +2,7 @@ package ratismal.drivebackup.platforms.bukkit;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import ratismal.drivebackup.configuration.ConfigurationSection;
 import ratismal.drivebackup.handler.logging.LoggingHandler;
 import ratismal.drivebackup.handler.logging.PrefixedLogger;
 import ratismal.drivebackup.platforms.DriveBackupInstance;
@@ -17,12 +18,14 @@ public class BukkitLoggingHandler implements LoggingHandler {
     private final DriveBackupInstance driveBackupInstance;
     private final Logger logger;
     private final Map<String, PrefixedLogger> prefixedLoggers;
+    private ConfigurationSection advancedSection;
     
     @Contract (pure = true)
     public BukkitLoggingHandler(DriveBackupInstance driveBackupInstance, Logger logger) {
         this.logger = logger;
         this.driveBackupInstance = driveBackupInstance;
         prefixedLoggers = new HashMap<>(10);
+        advancedSection = driveBackupInstance.getConfigHandler().getConfig().getSection("advanced");
     }
     
     @Override
@@ -51,23 +54,43 @@ public class BukkitLoggingHandler implements LoggingHandler {
     }
     
     private String handleError(String message, Throwable throwable) {
-        boolean suppress = driveBackupInstance.getConfigHandler().getConfig().getValue("advanced", "suppress-errors").getBoolean();
+        boolean suppress = advancedSection.getValue("suppress-errors").getBoolean();
         if (suppress) {
             return message;
         }
-        return message + LINE_SEPARATOR + throwable.getMessage() + LINE_SEPARATOR + throwable.getStackTrace();
+        StringBuilder sb = new StringBuilder(10_000);
+        sb.append(message).append(LINE_SEPARATOR);
+        sb.append("Exception: ").append(throwable).append(LINE_SEPARATOR);
+        for (StackTraceElement element : throwable.getStackTrace()) {
+            sb.append("    at ").append(element.toString()).append(LINE_SEPARATOR);
+        }
+        Throwable cause = throwable.getCause();
+        int causeCount = 0;
+        while (cause != null) {
+            causeCount++;
+            if (causeCount > 10) {
+                sb.append("...").append(LINE_SEPARATOR);
+                break;
+            }
+            sb.append("Caused by: ").append(cause).append(LINE_SEPARATOR);
+            for (StackTraceElement element : cause.getStackTrace()) {
+                sb.append(" at ").append(element.toString()).append(LINE_SEPARATOR);
+            }
+            cause = cause.getCause();
+        }
+        return sb.toString();
     }
     
     @Override
     public void debug(String message) {
-        if (driveBackupInstance.getConfigHandler().getConfig().getValue("advanced", "debug").getBoolean()) {
+        if (advancedSection.getValue("debug").getBoolean()) {
             logger.info(message);
         }
     }
     
     @Override
     public void debug(String message, Throwable throwable) {
-        if (driveBackupInstance.getConfigHandler().getConfig().getValue("advanced", "debug").getBoolean()) {
+        if (advancedSection.getValue("debug").getBoolean()) {
             logger.info(() -> handleError(message, throwable));
         }
     }
