@@ -45,53 +45,9 @@ public class Authenticator {
 
     private static int taskId = -1;
     
+    @Contract (pure = true)
     private Authenticator() {}
     
-    public enum AuthenticationProvider {
-        GOOGLE_DRIVE("Google Drive", "googledrive", "/GoogleDriveCredential.json", "qWd2xXC/ORzdZvUotXoWhHC0POkMNuO/xuwcKWc9s1LLodayZXvkdKimmpOQqWYS6I+qGSrYNb8UCJWMhrgDXhIWEbDvytkQTwq+uNcnfw8=", "pasQz0KvtyC7o6CrlLPSMVV9Y0RMX76cXzsAbBoCBxI="),
-        ONEDRIVE("OneDrive", "onedrive", "/OneDriveCredential.json", "Ktj7Jd1h0oYNVicuyTBk5fU+gHS+QYReZxZKNZNO9CDxxHaf8bXlw0SKO9jnwc81", ""),
-        DROPBOX("Dropbox", "dropbox", "/DropboxCredential.json", "OSpqXymVUFSRnANAmj2DTA==", "4MrYNbN0I6J/fsAFeF00GQ==");
-
-        private final String name;
-        private final String id;
-        private final String credStoreLocation;
-        private final String clientId;
-        private final String clientSecret;
-
-        @Contract (pure = true)
-        AuthenticationProvider(String name, String id, String credStoreLocation, String clientId, String clientSecret) {
-            this.name = name;
-            this.id = id;
-            this.credStoreLocation = credStoreLocation;
-            this.clientId = clientId;
-            this.clientSecret = clientSecret;
-        }
-
-        @Contract (pure = true)
-        public String getName() {
-            return name;
-        }
-
-        @Contract (pure = true)
-        public String getId() {
-            return id;
-        }
-
-        public @NotNull String getCredStoreLocation() {
-            return DriveBackup.getInstance().getDataFolder().getAbsolutePath() + credStoreLocation;
-        }
-
-        @Contract (pure = true)
-        public String getClientId() {
-            return clientId;
-        }
-
-        @Contract (pure = true)
-        public String getClientSecret() {
-            return clientSecret;
-        }
-    }
-
     /**
      * Attempt to authenticate a user with the specified authentication provider 
      * using the OAuth 2.0-device authorization grant flow.
@@ -158,7 +114,7 @@ public class Authenticator {
                     response1.close();
                     if (parsedResponse1.has("refresh_token")) {
                         saveRefreshToken(provider, (String) parsedResponse1.get("refresh_token"));
-                        if (provider.getId() == "googledrive") {
+                        if (provider.getId().equals("googledrive")) {
                             UploadLogger uploadLogger = new UploadLogger() {
                                 @Override
                                 public void log(String input, String... placeholders) {
@@ -194,7 +150,7 @@ public class Authenticator {
         }
     }
 
-    public static void unauthenticateUser(AuthenticationProvider provider, CommandSender initiator) {
+    public static void unAuthenticateUser(AuthenticationProvider provider, CommandSender initiator) {
         Logger logger = (input, placeholders) -> MessageUtil.Builder().mmText(input, placeholders).to(initiator).send();
         disableBackupMethod(provider, logger);
         try {
@@ -226,9 +182,9 @@ public class Authenticator {
     private static void saveRefreshToken(@NotNull AuthenticationProvider provider, String token) throws Exception {
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("refresh_token", token);
-        FileWriter file = new FileWriter(provider.getCredStoreLocation());
-        file.write(jsonObject.toString());
-        file.close();
+        try (FileWriter file = new FileWriter(provider.getCredStoreLocation())) {
+            file.write(jsonObject.toString());
+        }
     }
 
     private static void enableBackupMethod(@NotNull AuthenticationProvider provider, Logger logger) {
