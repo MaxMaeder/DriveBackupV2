@@ -23,7 +23,7 @@ import java.util.TreeMap;
 
 import static ratismal.drivebackup.config.Localization.intl;
 
-public class S3Uploader implements Uploader {
+public class S3Uploader extends Uploader {
     private UploadLogger logger;
 
     public static final String UPLOADER_NAME = "S3";
@@ -36,6 +36,7 @@ public class S3Uploader implements Uploader {
     private String _hostname;
 
     public S3Uploader(UploadLogger logger, S3BackupMethod config) {
+        super(UPLOADER_NAME, UPLOADER_ID);
         this.logger = logger;
         try {
             _hostname = new URL(config.endpoint).getHost();
