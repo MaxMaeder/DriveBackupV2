@@ -56,19 +56,14 @@ public class BstatsMetrics {
         metrics.addCustomChart(new SimplePie("nextcloudEnabled", () -> enabled(config.backupMethods.nextcloud.enabled)));
         metrics.addCustomChart(new SimplePie("ftpEnabled", () -> enabled(config.backupMethods.ftp.enabled)));
         if (config.backupMethods.ftp.enabled) {
-            metrics.addCustomChart(new SimplePie("sftpEnabledNew", () -> {
+            metrics.addCustomChart(new SimplePie("sftpEnabled", () -> {
                 if (config.backupMethods.ftp.sftp) {
                     return "FTP using SSH";
                 }
                 return "FTP";
             }));
         }
-        metrics.addCustomChart(new SimplePie("updateCheckEnabled", () -> {
-            if (config.advanced.updateCheckEnabled) {
-                return "Enabled";
-            }
-            return "Disabled";
-        }));
+        metrics.addCustomChart(new SimplePie("updateCheckEnabled", () -> enabled(config.advanced.updateCheckEnabled)));
     }
 
     @NotNull
