@@ -7,23 +7,24 @@ import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import org.jetbrains.annotations.NotNull;
+import ratismal.drivebackup.constants.Permission;
 import ratismal.drivebackup.handler.commandHandler.BasicCommands;
 
-public class Permissions {
-    public static final String LINK_ACCOUNTS = "drivebackup.linkAccounts";
-    public static final String RELOAD_CONFIG = "drivebackup.reloadConfig";
-    public static final String GET_NEXT_BACKUP = "drivebackup.getNextBackup";
-    public static final String GET_BACKUP_STATUS = "drivebackup.getBackupStatus";
-    public static final String BACKUP = "drivebackup.backup";
-
+public final class PermissionHandler {
+    
+    private PermissionHandler() {
+        throw new IllegalStateException("Utility class");
+    }
+    
     /**
      * Checks if the specified player has the specified permission
      * @param player the player
      * @param permission the permission
      * @return whether they have permissions
      */
-    public static boolean hasPerm(CommandSender player, String permission) {
-        if (!player.hasPermission(permission)) {
+    public static boolean hasPerm(@NotNull CommandSender player, Permission permission) {
+        if (!player.hasPermission(permission.getPermission())) {
             BasicCommands.sendNoPerms(player);
             return false;
         }
@@ -35,15 +36,14 @@ public class Permissions {
      * @param permission the permission, as a {@code String}
      * @return the list of players
      */
-    public static List<CommandSender> getPlayersWithPerm(String permission) {
+    @NotNull
+    public static List<CommandSender> getPlayersWithPerm(Permission permission) {
         ArrayList<CommandSender> players = new ArrayList<>();
-
         for (Player player : Bukkit.getServer().getOnlinePlayers()) {
-            if (player.hasPermission(permission)) {
+            if (player.hasPermission(permission.getPermission())) {
                 players.add(player);
             }
         }
-
         return players;
     }
 }

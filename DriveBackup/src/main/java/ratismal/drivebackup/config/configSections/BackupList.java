@@ -9,6 +9,8 @@ import java.util.Map;
 
 import org.bukkit.configuration.file.FileConfiguration;
 
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 import ratismal.drivebackup.util.Logger;
 import ratismal.drivebackup.config.configSections.BackupList.BackupListEntry.BackupLocation;
 import ratismal.drivebackup.util.FileUtil;
@@ -17,10 +19,13 @@ import ratismal.drivebackup.util.LocalDateTimeFormatter;
 import static ratismal.drivebackup.config.Localization.intl;
 
 public class BackupList {
+    
+    public static final String ENTRY = "entry";
+    
     public static class BackupListEntry {
         public interface BackupLocation {
-            public List<Path> getPaths();
-            public String toString();
+            List<Path> getPaths();
+            String toString();
         }
 
         public static class PathBackupLocation implements BackupLocation {
@@ -83,60 +88,55 @@ public class BackupList {
         this.list = list;
     }
 
-    public static BackupList parse(FileConfiguration config, Logger logger) {
+    @NotNull
+    @Contract ("_, _ -> new")
+    public static BackupList parse(@NotNull FileConfiguration config, Logger logger) {
         List<Map<?, ?>> rawList = config.getMapList("backup-list");
         ArrayList<BackupListEntry> list = new ArrayList<>();
         for (Map<?, ?> rawListEntry : rawList) {
             String entryIndex = String.valueOf(rawList.indexOf(rawListEntry) + 1);
-
             BackupLocation location;
             if (rawListEntry.containsKey("glob")) {
                 try {
                     location = new BackupListEntry.GlobBackupLocation((String) rawListEntry.get("glob"));
-                } catch (Exception e) {
-                    logger.log(intl("backup-list-glob-invalid"), "entry", entryIndex);
+                } catch (ClassCastException e) {
+                    logger.log(intl("backup-list-glob-invalid"), ENTRY, entryIndex);
                     continue;
                 }
             } else if (rawListEntry.containsKey("path")) {
                 try {
                     location = new BackupListEntry.PathBackupLocation((String) rawListEntry.get("path"));
-                } catch (Exception e) {
-                    logger.log(intl("backup-list-path-invalid"), "entry", entryIndex);
+                } catch (ClassCastException e) {
+                    logger.log(intl("backup-list-path-invalid"), ENTRY, entryIndex);
                     continue;
                 }
             } else {
-                logger.log(intl("backup-list-no-dest-specified"), "entry", entryIndex);
+                logger.log(intl("backup-list-no-dest-specified"), ENTRY, entryIndex);
                 continue;
             }
-
             LocalDateTimeFormatter formatter;
             try {
                 formatter = LocalDateTimeFormatter.ofPattern((String) rawListEntry.get("format"));
-            } catch (Exception e) {
-                logger.log(intl("backup-list-format-invalid"), "entry", entryIndex);
-                if (e instanceof IllegalArgumentException) e.getMessage();
+            } catch (IllegalArgumentException | ClassCastException e) {
+                logger.log(intl("backup-list-format-invalid"), ENTRY, entryIndex);
                 continue;
             }
-
             boolean create = true;
             try {
-                create = (boolean) (Boolean) rawListEntry.get("create");
-            } catch (Exception e) { 
+                create = (Boolean) rawListEntry.get("create");
+            } catch (ClassCastException e) {
                 // Do nothing, assume true
             }
-
             String[] blacklist = new String[0];
             if (rawListEntry.containsKey("blacklist")) {
                 try {
                     blacklist = ((List<String>) rawListEntry.get("blacklist")).toArray(new String[0]);
-                } catch (Exception e) {
-                    logger.log(intl("backup-list-blacklist-invalid"), "entry", entryIndex);
+                } catch (ClassCastException | ArrayStoreException e) {
+                    logger.log(intl("backup-list-blacklist-invalid"), ENTRY, entryIndex);
                 }
             }
-            
             list.add(new BackupListEntry(location, formatter, create, blacklist));
         }
-
         return new BackupList(list.toArray(new BackupListEntry[0]));
     }
 }

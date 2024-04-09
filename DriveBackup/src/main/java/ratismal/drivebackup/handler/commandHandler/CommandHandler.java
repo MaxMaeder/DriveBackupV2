@@ -4,11 +4,13 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 
+import org.jetbrains.annotations.NotNull;
 import ratismal.drivebackup.TestThread;
 import ratismal.drivebackup.UploadThread;
+import ratismal.drivebackup.config.PermissionHandler;
+import ratismal.drivebackup.constants.Permission;
 import ratismal.drivebackup.uploaders.Authenticator;
 import ratismal.drivebackup.uploaders.Authenticator.AuthenticationProvider;
-import ratismal.drivebackup.config.Permissions;
 import ratismal.drivebackup.plugin.DriveBackup;
 import ratismal.drivebackup.util.MessageUtil;
 
@@ -29,7 +31,7 @@ public class CommandHandler implements CommandExecutor {
      * @param args any arguments that followed the command
      * @return whether the command was handled
      */
-    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+    public boolean onCommand(CommandSender sender, @NotNull Command command, String label, String[] args) {
         if (!command.getName().equalsIgnoreCase(CHAT_KEYWORD)) {
             return false;
         } 
@@ -37,7 +39,6 @@ public class CommandHandler implements CommandExecutor {
             BasicCommands.sendHelp(sender);
             return true;
         }
-
         switch (args[0].toLowerCase()) {
             case "help":
                 BasicCommands.sendDocs(sender);
@@ -50,34 +51,31 @@ public class CommandHandler implements CommandExecutor {
                 BasicCommands.sendVersion(sender);
                 break;
             case "reloadconfig":
-                if (!Permissions.hasPerm(sender, Permissions.RELOAD_CONFIG)) break;
-
+                if (!PermissionHandler.hasPerm(sender, Permission.RELOAD_CONFIG)) {
+                    break;
+                }
                 DriveBackup.reloadLocalConfig();
                 MessageUtil.Builder().mmText(intl("config-reloaded")).to(sender).send();
-
                 break;
             /*case "debug":
-                if (!Permissions.hasPerm(sender, Permissions.RELOAD_CONFIG)) break;
-
+                if (!PermissionHandler.hasPerm(sender, PermissionHandler.RELOAD_CONFIG)) break;
                 MessageUtil.Builder().mmText(intl("debug-log-creating")).to(sender).toConsole(false).send();
-
                 DebugCollector debugInfo = new DebugCollector(DriveBackup.getInstance());
                 String publishedUrl = debugInfo.publish(DriveBackup.getInstance());
                 MessageUtil.Builder()
                     .mmText(intl("debug-log-created"), "url", publishedUrl)
                     .to(sender).toConsole(false)
                     .send();
-
                 break;*/
             case "linkaccount":
             case "link":
                 if (args.length < 2) {
                     BasicCommands.sendHelp(sender);
                     break;
-                } 
-                
-                if (!Permissions.hasPerm(sender, Permissions.LINK_ACCOUNTS)) break;
-
+                }
+                if (!PermissionHandler.hasPerm(sender, Permission.LINK_ACCOUNTS)) {
+                    break;
+                }
                 switch (args[1].toLowerCase()) {
                     case "googledrive":
                         Authenticator.authenticateUser(AuthenticationProvider.GOOGLE_DRIVE, sender);
@@ -99,9 +97,9 @@ public class CommandHandler implements CommandExecutor {
                     BasicCommands.sendHelp(sender);
                     break;
                 }
-
-                if (!Permissions.hasPerm(sender, Permissions.LINK_ACCOUNTS)) break;
-
+                if (!PermissionHandler.hasPerm(sender, Permission.LINK_ACCOUNTS)) {
+                    break;
+                }
                 switch (args[1].toLowerCase()) {
                     case "googledrive":
                         Authenticator.unauthenticateUser(AuthenticationProvider.GOOGLE_DRIVE, sender);
@@ -118,44 +116,42 @@ public class CommandHandler implements CommandExecutor {
                 }
                 break;
             case "status":
-                if (!Permissions.hasPerm(sender, Permissions.GET_BACKUP_STATUS)) break;
-                
+                if (!PermissionHandler.hasPerm(sender, Permission.GET_BACKUP_STATUS)) {
+                    break;
+                }
                 MessageUtil.Builder().mmText(UploadThread.getBackupStatus()).to(sender).toConsole(false).send();
-
                 break;
             case "nextbackup":
-                if (!Permissions.hasPerm(sender, Permissions.GET_NEXT_BACKUP)) break;
-
+                if (!PermissionHandler.hasPerm(sender, Permission.GET_NEXT_BACKUP)) {
+                    break;
+                }
                 MessageUtil.Builder().mmText(UploadThread.getNextAutoBackup()).to(sender).toConsole(false).send();
-                
-
                 break;
             case "backup":
-                if (!Permissions.hasPerm(sender, Permissions.BACKUP)) break;
-
+                if (!PermissionHandler.hasPerm(sender, Permission.BACKUP)) {
+                    break;
+                }
                 MessageUtil.Builder().mmText(intl("backup-forced")).to(sender).send();
-
                 Runnable uploadThread = new UploadThread(sender);
                 new Thread(uploadThread).start();
-                
                 break;
             case "test":
-                if (!Permissions.hasPerm(sender, Permissions.BACKUP)) break;
-
+                if (!PermissionHandler.hasPerm(sender, Permission.BACKUP)) {
+                    break;
+                }
                 Runnable testThread = new TestThread(sender, args);
                 new Thread(testThread).start();
-                    
                 break;
             case "update":
-                if (!Permissions.hasPerm(sender, Permissions.BACKUP)) break;
-
+                if (!PermissionHandler.hasPerm(sender, Permission.BACKUP)) {
+                    break;
+                }
                 DriveBackup.updater.runUpdater(sender);
                 break;
             default:
                 BasicCommands.sendHelp(sender);
                 break;
         }
-
         return true;
     }
 }

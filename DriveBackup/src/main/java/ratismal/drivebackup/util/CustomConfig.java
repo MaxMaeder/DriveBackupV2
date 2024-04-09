@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.logging.Level;
 
 import com.google.common.base.Charsets;
@@ -15,8 +16,8 @@ import ratismal.drivebackup.plugin.DriveBackup;
 
 public class CustomConfig {
     private String configName;
-    private File configFile = null;
-    private FileConfiguration config = null;
+    private File configFile;
+    private FileConfiguration config;
     
     public CustomConfig(String configName) {
         this.configName = configName;
@@ -24,15 +25,12 @@ public class CustomConfig {
 
     public void reloadConfig() {
         DriveBackup instance = DriveBackup.getInstance();
-
         config = YamlConfiguration.loadConfiguration(configFile);
-
-        final InputStream defConfigStream = instance.getResource(configName);
+        InputStream defConfigStream = instance.getResource(configName);
         if (defConfigStream == null) {
             return;
         }
-
-        config.setDefaults(YamlConfiguration.loadConfiguration(new InputStreamReader(defConfigStream, Charsets.UTF_8)));
+        config.setDefaults(YamlConfiguration.loadConfiguration(new InputStreamReader(defConfigStream, StandardCharsets.UTF_8)));
     }
 
     public FileConfiguration getConfig() {
@@ -44,7 +42,6 @@ public class CustomConfig {
 
     public void saveConfig() {
         DriveBackup instance = DriveBackup.getInstance();
-
         try {
             getConfig().save(configFile);
         } catch (IOException ex) {
@@ -54,7 +51,6 @@ public class CustomConfig {
 
     public void saveDefaultConfig() {
         DriveBackup instance = DriveBackup.getInstance();
-
         if (configFile == null) {
             configFile = new File(instance.getDataFolder(), configName);
         }

@@ -3,7 +3,7 @@ package ratismal.drivebackup.uploaders;
 import org.json.JSONObject;
 
 /**
- * Thrown to indicate an error with the response of a http request
+ * Thrown to indicate an error with the response of an http request.
  */
 class ResponseException extends Exception {
     JSONObject json;
@@ -15,7 +15,6 @@ class ResponseException extends Exception {
      * @param j the JSON response.
      */
     public ResponseException(JSONObject j) {
-        super();
         json = j;
     }
 

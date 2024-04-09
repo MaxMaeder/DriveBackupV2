@@ -1,7 +1,7 @@
-var userCode = document.getElementById('codeInput');
-var nextButton = document.getElementById('nextButton');
-var spinner = document.getElementById('spinner');
-var errorAlert = document.getElementById('errorAlert');
+const userCode = document.getElementById('codeInput');
+const nextButton = document.getElementById('nextButton');
+const spinner = document.getElementById('spinner');
+const errorAlert = document.getElementById('errorAlert');
 
 document.getElementById('form-code').addEventListener('submit', function(e){
   e.preventDefault();

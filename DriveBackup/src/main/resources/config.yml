@@ -20,7 +20,7 @@ backup-schedule-list:
 
 backup-list:
 - glob: "world*"
-  format: "Backup-world-%FORMAT.zip"
+  format: "Backup-%NAME-%FORMAT.zip"
   create: true
 - path: "plugins"
   format: "Backup-plugins-%FORMAT.zip"

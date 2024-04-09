@@ -4,6 +4,8 @@ import org.bukkit.command.CommandSender;
 import ratismal.drivebackup.UploadThread.UploadLogger;
 import ratismal.drivebackup.config.ConfigParser;
 import ratismal.drivebackup.config.ConfigParser.Config;
+
+import org.jetbrains.annotations.NotNull;
 import ratismal.drivebackup.uploaders.Uploader;
 import ratismal.drivebackup.uploaders.dropbox.DropboxUploader;
 import ratismal.drivebackup.uploaders.ftp.FTPUploader;
@@ -61,8 +63,8 @@ public class TestThread implements Runnable {
         /**
          * Arguments:
          * 0) The backup method to test
-         * 1) The name of the test file to upload during the test
-         * 2) The size (in bytes) of the file
+         * 1) The name of the test file to upload during test
+         * 2) The size (in bytes) of the file.
          */
 
         if (args.length < 2) {
@@ -99,7 +101,7 @@ public class TestThread implements Runnable {
      * @param testFileSize the size (in bytes) of the file
      * @param method name of the upload method to test
      */
-    private void testUploadMethod(String testFileName, int testFileSize, String method) throws Exception {
+    private void testUploadMethod(String testFileName, int testFileSize, @NotNull String method) throws Exception {
         Config config = ConfigParser.getConfig();
         Uploader uploadMethod = null;
         
@@ -202,7 +204,7 @@ public class TestThread implements Runnable {
         uploadMethod.close();
     }
 
-    private void sendMethodDisabled(UploadLogger logger, String methodName) {
+    private void sendMethodDisabled(@NotNull UploadLogger logger, String methodName) {
         logger.log(
             intl("test-method-not-enabled"), 
             "upload-method", methodName);

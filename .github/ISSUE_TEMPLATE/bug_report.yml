@@ -1,5 +1,7 @@
 name: Bug report
 description: Create a report to help us improve
+title: "[Bug]"
+labels: ["Bug"]
 body:
 - type: markdown
   attributes:
@@ -15,7 +17,7 @@ body:
 - type: textarea
   attributes:
     label: To Reproduce
-    description: Steps to reproduce this behaviour
+    description: Steps to reproduce this behavior
     placeholder: |
       1. Go to '...'
       2. Click on '...'
@@ -26,13 +28,39 @@ body:
 - type: textarea
   attributes:
     label: Screenshots / Videos
-    description: If applicable, add screenshots to help explain your problem.
+    description: |
+      If applicable, add screenshots to help explain your problem.
 - type: textarea
   attributes:
     label: Server and Plugin Versions
     description: |
       If this bug occurs on a server you do not control, please fill this in to the best of your knowledge.
+    placeholder: |
+      - Server Software: [e.g. Paper, Spigot, Bukkit]
+      - Server Version: [e.g. 1.16.5-365]
+      - Plugin Version: [e.g. 1.6.1]
+  validations:
+    required: true
 - type: textarea
   attributes:
-    label: Additional Context
-    description: Add any other context about the problem here
+    label: Logs
+    description: |
+      Please provide a link to the log where the error occurred.
+      You can upload the log file to https://mclo.gs and paste the link here.
+  validations:
+    required: true
+- type: textarea
+  attributes:
+    label: Config
+    description: |
+      Please provide a link to your config.yml file.
+      Please remove any sensitive information from the config file before uploading it.
+      You can upload the file to https://pastebin.com and paste the link here.
+  validations:
+    required: true
+- type: textarea
+  attributes:
+    label: Additional Information
+    description: |
+      Add any other information about the problem here.
+      Any additional information you can provide may help us fix the problem faster.

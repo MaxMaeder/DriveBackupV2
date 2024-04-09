@@ -1,5 +1,8 @@
 package ratismal.drivebackup.uploaders;
 
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
+
 import java.security.Key;
 import java.util.Base64;
 
@@ -19,7 +22,9 @@ public class Obfusticate {
         }
     }
 
-    public static String encrypt(String valueToEnc) throws Exception {
+    @NotNull
+    @Contract ("_ -> new")
+    public static String encrypt(@NotNull String valueToEnc) throws Exception {
         Key key = generateKey();
         Cipher c = Cipher.getInstance("AES");
         c.init(Cipher.ENCRYPT_MODE, key);
@@ -31,7 +36,9 @@ public class Obfusticate {
         return new String(encryptedValue);
     }
 
-    public static String decrypt(String encryptedValue) throws Exception {
+    @NotNull
+    @Contract ("_ -> new")
+    public static String decrypt(@NotNull String encryptedValue) throws Exception {
         Key key = generateKey();
         Cipher c = Cipher.getInstance("AES");
         c.init(Cipher.DECRYPT_MODE, key);
@@ -43,6 +50,8 @@ public class Obfusticate {
         return new String(decryptedVal);
     }
 
+    @NotNull
+    @Contract (value = " -> new", pure = true)
     private static Key generateKey() throws Exception {
         return new SecretKeySpec(keyValue, "AES");
     }

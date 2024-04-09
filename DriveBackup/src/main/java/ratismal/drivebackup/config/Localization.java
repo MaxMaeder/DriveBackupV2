@@ -2,18 +2,20 @@ package ratismal.drivebackup.config;
 
 import org.bukkit.configuration.file.FileConfiguration;
 
-public class Localization {
+public final class Localization {
     private static FileConfiguration intlFile;
 
-    public Localization(FileConfiguration fileConfiguration) {
-        intlFile = fileConfiguration;
+    private Localization() {
     }
 
-    public void reload(FileConfiguration fileConfiguration) {
+    public static void set(FileConfiguration fileConfiguration) {
         intlFile = fileConfiguration;
     }
 
     public static String intl(String key) {
+        if (intlFile == null) {
+            return "";
+        }
         return intlFile.getString(key);
     }
 }

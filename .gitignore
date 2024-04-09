@@ -11,3 +11,4 @@ src/com/*
 lib/*
 dependency-reduced-pom.xml
 node_modules
+/testing/
