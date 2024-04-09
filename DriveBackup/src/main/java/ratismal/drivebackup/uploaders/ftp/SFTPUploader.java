@@ -22,8 +22,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
-import java.util.List;
 import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
 
@@ -34,14 +34,14 @@ import static ratismal.drivebackup.config.Localization.intl;
  */
 
 public final class SFTPUploader {
-    private UploadLogger logger;
+    private final UploadLogger logger;
 
     private SSHClient sshClient;
     private StatefulSFTPClient sftpClient;
 
     private String initialRemoteFolder;
-    private String _localBaseFolder;
-    private String _remoteBaseFolder;
+    private final String _localBaseFolder;
+    private final String _remoteBaseFolder;
 
     /**
      * Creates an instance of the {@code SFTPUploader} object using the server credentials specified by the user in the {@code config.yml}
@@ -94,7 +94,7 @@ public final class SFTPUploader {
         // Disable host checking
         sshClient.addHostKeyVerifier(new PromiscuousVerifier());
         sshClient.connect(host, port);
-        List<AuthMethod> sshAuthMethods = new ArrayList<>(2);
+        Collection<AuthMethod> sshAuthMethods = new ArrayList<>(2);
         if (!Strings.isNullOrEmpty(password)) {
             sshAuthMethods.add(new AuthPassword(new PasswordFinder() {
                 @Override
@@ -145,7 +145,7 @@ public final class SFTPUploader {
             resetWorkingDirectory();
             createThenEnter(_remoteBaseFolder);
             sftpClient.put(testFile.getAbsolutePath(), testFile.getName());
-            TimeUnit.SECONDS.sleep(5);
+            TimeUnit.SECONDS.sleep(5L);
             sftpClient.rm(testFile.getName());
         }
     }
@@ -187,8 +187,11 @@ public final class SFTPUploader {
 
     /**
      * Returns a list of the paths of the files inside the specified folder and any subfolders.
+     *
      * @param type the type of folder (ex. plugins, world)
+     *
      * @return the list of file paths
+     *
      * @throws Exception
      */
     public @NotNull ArrayList<String> getFiles(String type) throws Exception {
@@ -255,7 +258,7 @@ public final class SFTPUploader {
     private void createThenEnter(String path) throws Exception {
         try {
             sftpClient.cd(path);
-        } catch (Exception error) {
+        } catch (Exception e) {
             sftpClient.mkdirs(path);
             sftpClient.cd(path);
         }

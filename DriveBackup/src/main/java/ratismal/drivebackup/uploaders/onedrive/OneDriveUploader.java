@@ -13,10 +13,11 @@ import org.json.JSONObject;
 import ratismal.drivebackup.UploadThread.UploadLogger;
 import ratismal.drivebackup.config.ConfigParser;
 import ratismal.drivebackup.http.HttpClient;
+import ratismal.drivebackup.uploaders.AuthenticationProvider;
 import ratismal.drivebackup.uploaders.Authenticator;
-import ratismal.drivebackup.uploaders.Authenticator.AuthenticationProvider;
 import ratismal.drivebackup.uploaders.Obfusticate;
 import ratismal.drivebackup.uploaders.Uploader;
+import ratismal.drivebackup.uploaders.UploaderUtils;
 import ratismal.drivebackup.util.MessageUtil;
 import ratismal.drivebackup.util.NetUtil;
 
@@ -36,26 +37,19 @@ import static ratismal.drivebackup.config.Localization.intl;
  * Created by Redemption on 2/24/2016.
  */
 public final class OneDriveUploader extends Uploader {
-    public static final int EXPONENTIAL_BACKOFF_MILLIS_DEFAULT = 1000;
-    public static final int EXPONENTIAL_BACKOFF_FACTOR = 5;
-    public static final int MAX_RETRY_ATTEMPTS = 3;
-
-    private UploadLogger logger;
+    private static final int EXPONENTIAL_BACKOFF_MILLIS_DEFAULT = 1000;
+    private static final int EXPONENTIAL_BACKOFF_FACTOR = 5;
+    private static final int MAX_RETRY_ATTEMPTS = 3;
+    public static final String UPLOADER_NAME = "OneDrive";
+    /**
+     * Size of the file chunks to upload to OneDrive
+     */
+    private static final int CHUNK_SIZE = 5 * 1024 * 1024;
     
     private long totalUploaded;
     private long lastUploaded;
     private String accessToken = "";
     private String refreshToken;
-
-    public static final String UPLOADER_NAME = "OneDrive";
-
-    private static final MediaType zipMediaType = MediaType.parse("application/zip; charset=utf-8");
-    private static final MediaType jsonMediaType = MediaType.parse("application/json; charset=utf-8");
-
-    /**
-     * Size of the file chunks to upload to OneDrive
-     */
-    private static final int CHUNK_SIZE = 5 * 1024 * 1024;
 
     /**
      * File upload buffer
@@ -102,6 +96,7 @@ public final class OneDriveUploader extends Uploader {
         }
         accessToken = parsedResponse.getString("access_token");
     }
+    @Contract (pure = true)
     @Override
     public boolean isAuthenticated() {
         return !accessToken.isEmpty();
@@ -170,7 +165,7 @@ public final class OneDriveUploader extends Uploader {
             Request request = new Request.Builder()
                 .addHeader("Authorization", "Bearer " + accessToken)
                 .url("https://graph.microsoft.com/v1.0/me/drive/root:/" + folder.getPath() + "/" + file.getName() + ":/createUploadSession")
-                .post(RequestBody.create("{}", jsonMediaType))
+                .post(RequestBody.create("{}", UploaderUtils.getJsonMediaType()))
                 .build();
             JSONObject parsedResponse;
             try (Response response = HttpClient.getHttpClient().newCall(request).execute()) {
@@ -185,7 +180,7 @@ public final class OneDriveUploader extends Uploader {
                 request = new Request.Builder()
                     .addHeader("Content-Range", String.format("bytes %d-%d/%d", getTotalUploaded(), getTotalUploaded() + bytesToUpload.length - 1L, file.length()))
                     .url(uploadURL)
-                    .put(RequestBody.create(bytesToUpload, zipMediaType))
+                    .put(RequestBody.create(bytesToUpload, UploaderUtils.getZipMediaType()))
                     .build();
                 try (Response uploadResponse = HttpClient.getHttpClient().newCall(request).execute()) {
                     if (uploadResponse.code() == 202) {
@@ -259,7 +254,7 @@ public final class OneDriveUploader extends Uploader {
             " \"name\": \"" + name + "\"," +
             " \"folder\": {}," +
             " \"@name.conflictBehavior\": \"fail\"" +
-            "}", jsonMediaType);
+            "}", UploaderUtils.getJsonMediaType());
         request = new Request.Builder()
             .addHeader("Authorization", "Bearer " + accessToken)
             .url("https://graph.microsoft.com/v1.0/me/drive/items/" + parentId + "/children")
@@ -291,7 +286,7 @@ public final class OneDriveUploader extends Uploader {
             " \"name\": \"" + name + "\"," +
             " \"folder\": {}," +
             " \"@name.conflictBehavior\": \"fail\"" +
-            "}", jsonMediaType);
+            "}", UploaderUtils.getJsonMediaType());
         Request request = new Request.Builder()
             .addHeader("Authorization", "Bearer " + accessToken)
             .url("https://graph.microsoft.com/v1.0/me/drive/root/children")
@@ -479,7 +474,7 @@ public final class OneDriveUploader extends Uploader {
     /**
      * A range of bytes
      */
-    private static class Range {
+    private static final class Range {
         private final long start;
         private final long end;
 
@@ -488,6 +483,7 @@ public final class OneDriveUploader extends Uploader {
          * @param start the index of the first byte
          * @param end the index of the last byte
          */
+        @Contract (pure = true)
         private Range(long start, long end) {
             this.start = start;
             this.end = end;
@@ -497,6 +493,7 @@ public final class OneDriveUploader extends Uploader {
     /**
      * Resets the number of bytes uploaded in the last chunk, and the number of bytes uploaded in total.
      */
+    @Contract (mutates = "this")
     private void resetRanges() {
         lastUploaded = 0L;
         totalUploaded = 0L;
@@ -507,7 +504,7 @@ public final class OneDriveUploader extends Uploader {
      * and the number of bytes uploaded in total from the ranges of bytes the OneDrive API requested to be uploaded last.
      * @param stringRanges the ranges of bytes requested
      */
-    private void setRanges(@NotNull String[] stringRanges) {
+    private void setRanges(@NotNull String @NotNull [] stringRanges) {
         Range[] ranges = new Range[stringRanges.length];
         for (int i = 0; i < stringRanges.length; i++) {
             long start = Long.parseLong(stringRanges[i].substring(0, stringRanges[i].indexOf('-')));
@@ -542,6 +539,7 @@ public final class OneDriveUploader extends Uploader {
      * Gets the number of bytes uploaded in total
      * @return the number of bytes
      */
+    @Contract (pure = true)
     private long getTotalUploaded() {
         return totalUploaded;
     }

@@ -9,12 +9,12 @@ import okio.Buffer;
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONObject;
 import ratismal.drivebackup.config.ConfigParser;
+import ratismal.drivebackup.uploaders.UploaderUtils;
 
 import java.io.IOException;
 
 @Deprecated
 public class HttpLogger implements Interceptor {
-    private static final MediaType jsonMediaType = MediaType.parse("application/json; charset=utf-8");
     
     @Override
     public @NotNull Response intercept(@NotNull Interceptor.Chain chain) throws IOException {
@@ -28,7 +28,7 @@ public class HttpLogger implements Interceptor {
         long t2 = System.nanoTime();
         MessageUtil.Builder().text(String.format("Received response for %s in %.1fms", response.request().url(), (t2 - t1) / 1.0e6d)).toConsole(true).send();
         try {
-            if (request.body().contentType().equals(jsonMediaType)) {
+            if (request.body().contentType().equals(UploaderUtils.getJsonMediaType())) {
                 Buffer requestBody = new Buffer();
                 request.body().writeTo(requestBody);
                 MessageUtil.Builder().text("Req: " + requestBody.readUtf8()).toConsole(true).send();
@@ -42,7 +42,7 @@ public class HttpLogger implements Interceptor {
         String responseBodyString = responseBody.string();
         MediaType responseBodyContentType = responseBody.contentType();
         responseBody.close();
-        if (responseBodyContentType.equals(jsonMediaType)) {
+        if (responseBodyContentType.equals(UploaderUtils.getJsonMediaType())) {
             try {
                 JSONObject responseBodyJson = new JSONObject(responseBodyString);
                 if (responseBodyJson.getString("msg").equals("code_not_authenticated")) {

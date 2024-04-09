@@ -3,15 +3,14 @@ package ratismal.drivebackup.handler.commandHandler;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
-
 import org.jetbrains.annotations.NotNull;
 import ratismal.drivebackup.TestThread;
 import ratismal.drivebackup.UploadThread;
 import ratismal.drivebackup.config.PermissionHandler;
 import ratismal.drivebackup.constants.Permission;
-import ratismal.drivebackup.uploaders.Authenticator;
-import ratismal.drivebackup.uploaders.Authenticator.AuthenticationProvider;
 import ratismal.drivebackup.plugin.DriveBackup;
+import ratismal.drivebackup.uploaders.AuthenticationProvider;
+import ratismal.drivebackup.uploaders.Authenticator;
 import ratismal.drivebackup.util.MessageUtil;
 
 import java.util.Locale;
@@ -104,13 +103,13 @@ public class CommandHandler implements CommandExecutor {
                 }
                 switch (args[1].toLowerCase(Locale.ROOT)) {
                     case "googledrive":
-                        Authenticator.unauthenticateUser(AuthenticationProvider.GOOGLE_DRIVE, sender);
+                        Authenticator.unAuthenticateUser(AuthenticationProvider.GOOGLE_DRIVE, sender);
                         break;
                     case "onedrive":
-                        Authenticator.unauthenticateUser(AuthenticationProvider.ONEDRIVE, sender);
+                        Authenticator.unAuthenticateUser(AuthenticationProvider.ONEDRIVE, sender);
                         break;
                     case "dropbox":
-                        Authenticator.unauthenticateUser(AuthenticationProvider.DROPBOX, sender);
+                        Authenticator.unAuthenticateUser(AuthenticationProvider.DROPBOX, sender);
                         break;
                     default:
                         BasicCommands.sendHelp(sender);

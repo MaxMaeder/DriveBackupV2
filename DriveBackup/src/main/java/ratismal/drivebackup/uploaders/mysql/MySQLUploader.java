@@ -31,18 +31,18 @@ import java.util.Date;
 import java.util.List;
 
 public final class MySQLUploader {
-    private String host;
-    private int port;
-    private String username;
-    private String password;
-    private boolean useSsl;
+    private static final String SQL_START_PATTERN = "-- start";
+    private static final String SQL_END_PATTERN = "-- end";
+    
+    private final String host;
+    private final int port;
+    private final String username;
+    private final String password;
+    private final boolean useSsl;
 
     private boolean errorOccurred;
     
     private Statement stmt;
-
-    private static final String SQL_START_PATTERN = "-- start";
-    private static final String SQL_END_PATTERN = "-- end";
 
     /**
      * Creates an instance of the {@code mysqlUploader} object using the specified credentials
@@ -65,7 +65,8 @@ public final class MySQLUploader {
      * Gets whether an error occurred while accessing the MySQL database
      * @return whether an error occurred
      */
-    public boolean isErrorWhileUploading() {
+    @Contract (pure = true)
+    public boolean didErrorOccur() {
         return errorOccurred;
     }
 
@@ -124,10 +125,11 @@ public final class MySQLUploader {
     @NotNull
     private List<String> getAllTables(String name) throws SQLException {
         List<String> table = new ArrayList<>(10);
-        ResultSet rs;
-        rs = stmt.executeQuery("SHOW TABLE STATUS FROM `" + name + "`;");
-        while ( rs.next() ) {
-            table.add(rs.getString("Name"));
+        String query = "SHOW TABLES FROM `" + name + "`;";
+        try (ResultSet rs = stmt.executeQuery(query)) {
+            while (rs.next()) {
+                table.add(rs.getString("Name"));
+            }
         }
         return table;
     }
@@ -139,20 +141,20 @@ public final class MySQLUploader {
      * @throws SQLException
      */
     private void getTableInsertStatement(OutputStreamWriter sql, String name) throws SQLException, IOException {
-        ResultSet rs;
-        rs = stmt.executeQuery("SHOW CREATE TABLE " + "`" + name + "`;");
-        while ( rs.next() ) {
-            String qtbl = rs.getString(1);
-            String query = rs.getString(2);
-            sql.append("\n\n--");
-            sql.append("\n").append(SQL_START_PATTERN).append("  table dump : ").append(qtbl);
-            sql.append("\n--\n\n");
-            sql.append(query).append(";\n\n");
+        String query = "SHOW CREATE TABLE " + "`" + name + "`;";
+        try (ResultSet rs = stmt.executeQuery(query)) {
+            while ( rs.next() ) {
+                String table = rs.getString(1);
+                String query2 = rs.getString(2);
+                sql.append("\n\n--");
+                sql.append("\n").append(SQL_START_PATTERN).append("  table dump : ").append(table);
+                sql.append("\n--\n\n");
+                sql.append(query2).append(";\n\n");
+            }
         }
         sql.append("\n\n--");
         sql.append("\n").append(SQL_END_PATTERN).append("  table dump : ").append(name);
         sql.append("\n--\n\n");
-
     }
 
 
@@ -163,91 +165,91 @@ public final class MySQLUploader {
      * @throws SQLException exception
      */
     private void getDataInsertStatement(OutputStreamWriter sql, String name) throws SQLException, IOException {
-        ResultSet rs = stmt.executeQuery("SELECT * FROM " + "`" + name + "`;");
-        //move to the last row to get max rows returned
-        rs.last();
-        int rowCount = rs.getRow();
-        if(rowCount <= 0) {
-            return;
-        }
-        sql.append("\n--").append("\n-- Inserts of ").append(name).append("\n--\n\n");
-        //temporarily disable foreign key constraint
-        sql.append("\n/*!40000 ALTER TABLE `").append(name).append("` DISABLE KEYS */;\n");
-        sql.append("\n--\n")
-                .append(SQL_START_PATTERN).append(" table insert : ").append(name)
-                .append("\n--\n");
-        sql.append("INSERT INTO `").append(name).append("` (");
-        ResultSetMetaData metaData = rs.getMetaData();
-        int columnCount = metaData.getColumnCount();
-        //generate the column names that are present
-        //in the returned result set
-        //at this point the insert is INSERT INTO (`col1`, `col2`, ...)
-        for(int i = 0; i < columnCount; i++) {
-            if (i > 0) {
-                sql.append(", ");
+        String query = "SELECT * FROM " + "`" + name + "`;";
+        try (ResultSet rs = stmt.executeQuery(query)) {
+            //move to the last row to get max rows returned
+            rs.last();
+            int rowCount = rs.getRow();
+            if (rowCount <= 0) {
+                return;
             }
-            sql.append("`");
-            sql.append(metaData.getColumnName( i + 1));
-            sql.append("`");
-        }
-        sql.append(") VALUES \n");
-        //now we're going to build the values for data insertion.
-        rs.beforeFirst();
-        while(rs.next()) {
-            if (!rs.isFirst()) {
-                sql.append(",\n");
-            }
-            sql.append("(");
-            for(int i = 0; i < columnCount; i++) {
-                int columnType = metaData.getColumnType(i + 1);
-                int columnIndex = i + 1;
+            sql.append("\n--").append("\n-- Inserts of ").append(name).append("\n--\n\n");
+            //temporarily disable foreign key constraint
+            sql.append("\n/*!40000 ALTER TABLE `").append(name).append("` DISABLE KEYS */;\n");
+            sql.append("\n--\n").append(SQL_START_PATTERN).append(" table insert : ").append(name).append("\n--\n");
+            sql.append("INSERT INTO `").append(name).append("` (");
+            ResultSetMetaData metaData = rs.getMetaData();
+            int columnCount = metaData.getColumnCount();
+            //generate the column names that are present
+            //in the returned result set
+            //at this point the insert is INSERT INTO (`col1`, `col2`, ...)
+            for (int i = 0; i < columnCount; i++) {
                 if (i > 0) {
                     sql.append(", ");
                 }
-                // this is the part where the values are processed based on their type.
-                if (rs.getObject(columnIndex) == null) {
-                    sql.append("NULL");
-                } else {
-                    switch (columnType) {
-                        case Types.BIT:
-                        case Types.TINYINT:
-                        case Types.SMALLINT:
-                        case Types.INTEGER:
-                        case Types.BIGINT:
-                            sql.append(Long.toString(rs.getLong(columnIndex)));
-                            break;
-                        case Types.FLOAT:
-                            sql.append(Float.toString(rs.getFloat(columnIndex)));
-                            break;
-                        case Types.DOUBLE:
-                            sql.append(Double.toString(rs.getDouble(columnIndex)));
-                            break;
-                        case Types.DECIMAL:
-                            sql.append(rs.getBigDecimal(columnIndex).toString());
-                            break;
-                        case Types.BINARY:
-                        case Types.VARBINARY:
-                        case Types.LONGVARBINARY:
-                        case Types.BLOB:
-                            // TODO: Replace this with a streaming pipeline
-                            // Possibly org.apache.commons.codec.binary.Base64InputStream
-                            // WARNING: Can cause excessive memory usage!
-                            sql.append("FROM_BASE64('");
-                            sql.append(Base64.getEncoder().encodeToString(rs.getBytes(columnIndex)));
-                            sql.append("')");
-                            break;
-                        default:
-                            // TODO: Replace this with a streaming pipeline
-                            // WARNING: Can cause excessive memory usage!
-                            String val = rs.getString(columnIndex);
-                            // escape the single quotes that might be in the value
-                            val = val.replace("'", "\\'");
-                            sql.append("'").append(val).append("'");
-                            break;
+                sql.append("`");
+                sql.append(metaData.getColumnName(i + 1));
+                sql.append("`");
+            }
+            sql.append(") VALUES \n");
+            //now we're going to build the values for data insertion.
+            rs.beforeFirst();
+            while (rs.next()) {
+                if (!rs.isFirst()) {
+                    sql.append(",\n");
+                }
+                sql.append("(");
+                for (int i = 0; i < columnCount; i++) {
+                    int columnType = metaData.getColumnType(i + 1);
+                    int columnIndex = i + 1;
+                    if (i > 0) {
+                        sql.append(", ");
+                    }
+                    // this is the part where the values are processed based on their type.
+                    if (rs.getObject(columnIndex) == null) {
+                        sql.append("NULL");
+                    } else {
+                        switch (columnType) {
+                            case Types.BIT:
+                            case Types.TINYINT:
+                            case Types.SMALLINT:
+                            case Types.INTEGER:
+                            case Types.BIGINT:
+                                sql.append(Long.toString(rs.getLong(columnIndex)));
+                                break;
+                            case Types.FLOAT:
+                                sql.append(Float.toString(rs.getFloat(columnIndex)));
+                                break;
+                            case Types.DOUBLE:
+                                sql.append(Double.toString(rs.getDouble(columnIndex)));
+                                break;
+                            case Types.DECIMAL:
+                                sql.append(rs.getBigDecimal(columnIndex).toString());
+                                break;
+                            case Types.BINARY:
+                            case Types.VARBINARY:
+                            case Types.LONGVARBINARY:
+                            case Types.BLOB:
+                                // TODO: Replace this with a streaming pipeline
+                                // Possibly org.apache.commons.codec.binary.Base64InputStream
+                                // WARNING: Can cause excessive memory usage!
+                                sql.append("FROM_BASE64('");
+                                sql.append(Base64.getEncoder().encodeToString(rs.getBytes(columnIndex)));
+                                sql.append("')");
+                                break;
+                            default:
+                                // TODO: Replace this with a streaming pipeline
+                                // WARNING: Can cause excessive memory usage!
+                                String val = rs.getString(columnIndex);
+                                // escape the single quotes that might be in the value
+                                val = val.replace("'", "\\'");
+                                sql.append("'").append(val).append("'");
+                                break;
+                        }
                     }
                 }
+                sql.append(")");
             }
-            sql.append(")");
         }
         //now that we are done processing the entire row,
         //let's add the terminator.
@@ -273,11 +275,11 @@ public final class MySQLUploader {
         sql.append("\n-- Date: ").append(new SimpleDateFormat("h:mm M/d/yyyy").format(new Date()));
         sql.append("\n--");
         //these declarations are extracted from HeidiSQL
-        sql.append("\n\n/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;")
-                .append("\n/*!40101 SET NAMES utf8 */;")
-                .append("\n/*!50503 SET NAMES utf8mb4 */;")
-                .append("\n/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;")
-                .append("\n/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;");
+        sql.append("\n\n/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;");
+        sql.append("\n/*!40101 SET NAMES utf8 */;");
+        sql.append("\n/*!50503 SET NAMES utf8mb4 */;");
+        sql.append("\n/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;");
+        sql.append("\n/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;");
         //get the tables that are in the database
         List<String> tables = getAllTables(name);
         //for every table, get the table creation and data
@@ -293,16 +295,18 @@ public final class MySQLUploader {
                 e.printStackTrace();
             }
         }
-        sql.append("\n/*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;")
-                .append("\n/*!40014 SET FOREIGN_KEY_CHECKS=IF(@OLD_FOREIGN_KEY_CHECKS IS NULL, 1, @OLD_FOREIGN_KEY_CHECKS) */;")
-                .append("\n/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;\n");
+        sql.append("\n/*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;");
+        sql.append("\n/*!40014 SET FOREIGN_KEY_CHECKS=IF(@OLD_FOREIGN_KEY_CHECKS IS NULL, 1, @OLD_FOREIGN_KEY_CHECKS) */;");
+        sql.append("\n/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;\n");
     }
 
     /**
      * Sets whether an error occurred while accessing the MySQL database
      * @param errorOccurredValue whether an error occurred
      */
+    @Contract (mutates = "this")
     private void setErrorOccurred(boolean errorOccurredValue) {
         errorOccurred = errorOccurredValue;
     }
+    
 }

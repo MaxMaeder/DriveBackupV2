@@ -127,7 +127,7 @@ public final class FTPUploader extends Uploader {
         ftpClient.setConnectTimeout(10 * 1000);
         ftpClient.setDefaultTimeout(30 * 1000);
         ftpClient.setDataTimeout(30 * 1000);
-        ftpClient.setControlKeepAliveTimeout(30 * 1000);
+        ftpClient.setControlKeepAliveTimeout(30L * 1000L);
         ftpClient.connect(host, port);
         ftpClient.login(username, password);
         ftpClient.enterLocalPassiveMode();
@@ -205,7 +205,7 @@ public final class FTPUploader extends Uploader {
                 ftpClient.storeFile(file.getName(), fs);
             }
             try {
-                pruneBackups(type);
+                pruneBackups();
             } catch (Exception e) {
                 logger.log(intl("backup-method-prune-failed"));
                 throw e;
@@ -277,12 +277,11 @@ public final class FTPUploader extends Uploader {
      * Deletes the oldest files past the number to retain from the FTP server inside the specified folder for the file type.
      * <p>
      * The number of files to retain is specified by the user in the {@code config.yml}
-     * @param type the type of file (ex. plugins, world)
      * @throws Exception
      */
-    private void pruneBackups(String type) throws Exception {
+    private void pruneBackups() throws Exception {
         int fileLimit = ConfigParser.getConfig().backupStorage.keepCount;
-        if (fileLimit == -1) {
+        if (-1 == fileLimit) {
             return;
         }
         TreeMap<Date, FTPFile> files = getZipFiles();

@@ -17,8 +17,8 @@ import ratismal.drivebackup.config.configSections.ExternalBackups.ExternalMySQLS
 import ratismal.drivebackup.constants.Permission;
 import ratismal.drivebackup.handler.listeners.PlayerListener;
 import ratismal.drivebackup.plugin.Scheduler;
+import ratismal.drivebackup.uploaders.AuthenticationProvider;
 import ratismal.drivebackup.uploaders.Authenticator;
-import ratismal.drivebackup.uploaders.Authenticator.AuthenticationProvider;
 import ratismal.drivebackup.uploaders.Uploader;
 import ratismal.drivebackup.uploaders.dropbox.DropboxUploader;
 import ratismal.drivebackup.uploaders.ftp.FTPUploader;
@@ -46,7 +46,6 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -260,7 +259,7 @@ public class UploadThread implements Runnable {
         logger.log(intl("upload-error-check"));
         for (Uploader uploader : uploaders) {
             uploader.close();
-            if (uploader.isErrorWhileUploading()) {
+            if (uploader.didErrorOccur()) {
                 logger.log(intl("backup-method-error-occurred"),
                     "diagnose-command", "/drivebackup test " + uploader.getId(),
                     "upload-method", uploader.getName());
@@ -390,7 +389,7 @@ public class UploadThread implements Runnable {
                 timer.start();
                 uploader.uploadFile(file, location);
                 timer.end();
-                if (uploader.isErrorWhileUploading()) {
+                if (uploader.didErrorOccur()) {
                     logger.info(intl("backup-method-upload-failed"));
                 } else {
                     logger.info(timer.getUploadTimeMessage(file));
@@ -474,7 +473,7 @@ public class UploadThread implements Runnable {
             new String[0]
         );
         backupList.add(backup);
-        if (ftpUploader.isErrorWhileUploading()) {
+        if (ftpUploader.didErrorOccur()) {
             logger.log(
                 intl("external-ftp-backup-failed"),
                 "socket-addr", getSocketAddress(externalBackup));
@@ -514,7 +513,7 @@ public class UploadThread implements Runnable {
             new String[0]
         );
         backupList.add(backup);
-        if (mysqlUploader.isErrorWhileUploading()) {
+        if (mysqlUploader.didErrorOccur()) {
             logger.log(
                 intl("external-mysql-backup-failed"), 
                 "socket-addr", getSocketAddress(externalBackup));

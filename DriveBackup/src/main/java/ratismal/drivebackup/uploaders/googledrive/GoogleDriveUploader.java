@@ -28,8 +28,8 @@ import ratismal.drivebackup.UploadThread.UploadLogger;
 import ratismal.drivebackup.config.ConfigParser;
 import ratismal.drivebackup.http.HttpClient;
 import ratismal.drivebackup.plugin.DriveBackup;
+import ratismal.drivebackup.uploaders.AuthenticationProvider;
 import ratismal.drivebackup.uploaders.Authenticator;
-import ratismal.drivebackup.uploaders.Authenticator.AuthenticationProvider;
 import ratismal.drivebackup.uploaders.Obfusticate;
 import ratismal.drivebackup.uploaders.Uploader;
 import ratismal.drivebackup.util.MessageUtil;
@@ -52,13 +52,6 @@ import static ratismal.drivebackup.config.Localization.intl;
 public final class GoogleDriveUploader extends Uploader {
     
     private static final String APPLICATION_VND_GOOGLE_APPS_FOLDER = "application/vnd.google-apps.folder";
-    private String refreshToken;
-
-    /**
-     * A cached instance of shared drives
-     */
-    private List<com.google.api.services.drive.model.Drive> drives;
-
     public static final String UPLOADER_NAME = "Google Drive";
 
     /**
@@ -70,7 +63,13 @@ public final class GoogleDriveUploader extends Uploader {
      * A global instance of the JSON factory
      */
     private static final JsonFactory JSON_FACTORY = new JacksonFactory();
-
+    
+    private String refreshToken;
+    
+    /**
+     * A cached instance of shared drives
+     */
+    private List<com.google.api.services.drive.model.Drive> drives;
     /**
      * Global Google Drive API client
      */
@@ -316,7 +315,7 @@ public final class GoogleDriveUploader extends Uploader {
         folder.setTitle(name);
         folder.setMimeType(APPLICATION_VND_GOOGLE_APPS_FOLDER);
         folder.setParents(Collections.singletonList(parentReference));
-        folder = service.files().insert(folder).setSupportsAllDrives(true).execute();
+        folder = service.files().insert(folder).setSupportsAllDrives(Boolean.TRUE).execute();
         return folder;
     }
 
@@ -339,7 +338,7 @@ public final class GoogleDriveUploader extends Uploader {
         folder.setTitle(name);
         folder.setMimeType(APPLICATION_VND_GOOGLE_APPS_FOLDER);
         folder.setParents(Collections.singletonList(parentReference));
-        folder = service.files().insert(folder).setSupportsAllDrives(true).execute();
+        folder = service.files().insert(folder).setSupportsAllDrives(Boolean.TRUE).execute();
         return folder;
     }
 
@@ -373,17 +372,16 @@ public final class GoogleDriveUploader extends Uploader {
         try {
             Drive.Files.List request = service.files().list()
                 .setDriveId(driveId)
-                .setSupportsAllDrives(true)
-                .setIncludeItemsFromAllDrives(true)
+                .setSupportsAllDrives(Boolean.TRUE)
+                .setIncludeItemsFromAllDrives(Boolean.TRUE)
                 .setCorpora("drive")
                 .setQ("mimeType='application/vnd.google-apps.folder' and trashed=false and '" + driveId + "' in parents");
             FileList files = request.execute();
-            for (File folderfiles : files.getItems()) {
-                if (folderfiles.getTitle().equals(name)) {
-                    return folderfiles;
+            for (File folderFiles : files.getItems()) {
+                if (folderFiles.getTitle().equals(name)) {
+                    return folderFiles;
                 }
             }
-            return null;
         } catch (Exception e) {
             MessageUtil.sendConsoleException(e);
         }
@@ -402,17 +400,16 @@ public final class GoogleDriveUploader extends Uploader {
             Drive.Files.List request = service.files().list()
                 .setQ("mimeType='application/vnd.google-apps.folder' and trashed=false and '" + parent.getId() + "' in parents");
             if (sharedDrive) {
-                request.setSupportsAllDrives(true)
-                .setIncludeItemsFromAllDrives(true)
+                request.setSupportsAllDrives(Boolean.TRUE)
+                .setIncludeItemsFromAllDrives(Boolean.TRUE)
                 .setCorpora("allDrives");
             }
             FileList files = request.execute();
-            for (File folderfiles : files.getItems()) {
-                if (folderfiles.getTitle().equals(name)) {
-                    return folderfiles;
+            for (File folderFiles : files.getItems()) {
+                if (folderFiles.getTitle().equals(name)) {
+                    return folderFiles;
                 }
             }
-            return null;
         } catch (Exception e) {
             MessageUtil.sendConsoleException(e);
         }
@@ -430,12 +427,11 @@ public final class GoogleDriveUploader extends Uploader {
             Drive.Files.List request = service.files().list()
                 .setQ("mimeType='application/vnd.google-apps.folder' and trashed=false and 'root' in parents");
             FileList files = request.execute();
-            for (File folderfiles : files.getItems()) {
-                if (folderfiles.getTitle().equals(name)) {
-                    return folderfiles;
+            for (File folderFiles : files.getItems()) {
+                if (folderFiles.getTitle().equals(name)) {
+                    return folderFiles;
                 }
             }
-            return null;
         } catch (Exception e) {
             MessageUtil.sendConsoleException(e);
         }
@@ -496,7 +492,7 @@ public final class GoogleDriveUploader extends Uploader {
                     break;
                 }
                 ChildReference file = iterator.next();
-                Drive.Files.Delete removeItem = service.files().delete(file.getId()).setSupportsAllDrives(true);
+                Drive.Files.Delete removeItem = service.files().delete(file.getId()).setSupportsAllDrives(Boolean.TRUE);
                 removeItem.execute();
                 iterator.remove();
             }

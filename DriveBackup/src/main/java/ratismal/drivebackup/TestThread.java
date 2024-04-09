@@ -165,7 +165,7 @@ public class TestThread implements Runnable {
         }
         File testFile = new File(localTestFilePath);
         uploadMethod.test(testFile);
-        if (uploadMethod.isErrorWhileUploading()) {
+        if (uploadMethod.didErrorOccur()) {
             logger.log(
                 intl("test-method-failed"), 
                 "upload-method", uploadMethod.getName());

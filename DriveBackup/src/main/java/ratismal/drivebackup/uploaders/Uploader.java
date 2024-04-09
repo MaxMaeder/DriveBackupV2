@@ -1,7 +1,7 @@
 package ratismal.drivebackup.uploaders;
 
+import org.jetbrains.annotations.Contract;
 import ratismal.drivebackup.UploadThread;
-import ratismal.drivebackup.uploaders.Authenticator.AuthenticationProvider;
 
 import java.io.IOException;
 
@@ -13,6 +13,7 @@ public abstract class Uploader {
     private AuthenticationProvider authProvider;
     protected UploadThread.UploadLogger logger;
     
+    @Contract (pure = true)
     protected Uploader(String name, String id) {
         this.name = name;
         this.id = id;
@@ -42,7 +43,7 @@ public abstract class Uploader {
     protected void setAuthenticated(boolean authenticated) {
         this.authenticated = authenticated;
     }
-    public boolean isErrorWhileUploading() {
+    public boolean didErrorOccur() {
         return errorOccurred;
     }
     protected void setErrorOccurred(boolean errorOccurred) {
@@ -51,4 +52,5 @@ public abstract class Uploader {
     public abstract void test(java.io.File testFile);
     public abstract void uploadFile(java.io.File file, String type) throws IOException;
     public abstract void close();
+    
 }

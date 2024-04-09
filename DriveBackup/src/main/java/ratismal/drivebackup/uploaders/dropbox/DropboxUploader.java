@@ -1,10 +1,10 @@
 package ratismal.drivebackup.uploaders.dropbox;
 
 import okhttp3.FormBody;
-import okhttp3.MediaType;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+import okhttp3.ResponseBody;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
@@ -13,10 +13,11 @@ import ratismal.drivebackup.UploadThread.UploadLogger;
 import ratismal.drivebackup.config.ConfigParser;
 import ratismal.drivebackup.config.ConfigParser.Config;
 import ratismal.drivebackup.http.HttpClient;
+import ratismal.drivebackup.uploaders.AuthenticationProvider;
 import ratismal.drivebackup.uploaders.Authenticator;
-import ratismal.drivebackup.uploaders.Authenticator.AuthenticationProvider;
 import ratismal.drivebackup.uploaders.Obfusticate;
 import ratismal.drivebackup.uploaders.Uploader;
+import ratismal.drivebackup.uploaders.UploaderUtils;
 import ratismal.drivebackup.util.MessageUtil;
 import ratismal.drivebackup.util.NetUtil;
 
@@ -47,16 +48,14 @@ public final class DropboxUploader extends Uploader {
         try (DataInputStream dis = new DataInputStream(Files.newInputStream(testFile.toPath()))) {
             byte[] content = new byte[(int) testFile.length()];
             dis.readFully(content);
-            MediaType OCTET_STREAM = MediaType.parse("application/octet-stream");
-            MediaType JSON = MediaType.parse("application/json; charset=utf-8");
-            RequestBody requestBody = RequestBody.create(content, OCTET_STREAM);
+            RequestBody requestBody = RequestBody.create(content, UploaderUtils.getOctetStreamMediaType());
             String destination = ConfigParser.getConfig().backupStorage.remoteDirectory;
-            JSONObject dropbox_json = new JSONObject();
-            dropbox_json.put("path", "/" + destination + "/" + testFile.getName());
-            String dropbox_arg = dropbox_json.toString();
+            JSONObject dropboxJson = new JSONObject();
+            dropboxJson.put("path", "/" + destination + "/" + testFile.getName());
+            String dropboxArg = dropboxJson.toString();
             Request request = new Request.Builder()
                 .addHeader("Authorization", "Bearer " + accessToken)
-                .addHeader("Dropbox-API-Arg", dropbox_arg)
+                .addHeader("Dropbox-API-Arg", dropboxArg)
                 .url("https://content.dropboxapi.com/2/files/upload")
                 .post(requestBody)
                 .build();
@@ -69,7 +68,7 @@ public final class DropboxUploader extends Uploader {
             TimeUnit.SECONDS.sleep(5L);
             JSONObject deleteJson = new JSONObject();
             deleteJson.put("path", "/" + destination + "/" + testFile.getName());
-            RequestBody deleteRequestBody = RequestBody.create(deleteJson.toString(), JSON);
+            RequestBody deleteRequestBody = RequestBody.create(deleteJson.toString(), UploaderUtils.getJsonMediaType());
             request = new Request.Builder()
                 .addHeader("Authorization", "Bearer " + accessToken)
                 .url("https://api.dropboxapi.com/2/files/delete_v2")
@@ -104,7 +103,6 @@ public final class DropboxUploader extends Uploader {
     public void uploadFile(@NotNull java.io.File file, @NotNull String type) {
         String destination = ConfigParser.getConfig().backupStorage.remoteDirectory;
         long fileSize = file.length();
-        MediaType OCTET_STREAM = MediaType.parse("application/octet-stream");
         String folder = type.replaceAll("\\.{1,2}\\/", "");
         folder = folder.replace(".\\", "");
         try (DataInputStream dis = new DataInputStream(Files.newInputStream(file.toPath()))) {
@@ -118,7 +116,7 @@ public final class DropboxUploader extends Uploader {
                 // (1) Start
                 if (sessionId == null) {
                     dis.readFully(buff);
-                    RequestBody requestBody = RequestBody.create(buff, OCTET_STREAM);
+                    RequestBody requestBody = RequestBody.create(buff, UploaderUtils.getOctetStreamMediaType());
                     Request request = new Request.Builder()
                         .addHeader("Authorization", "Bearer " + accessToken)
                         .post(requestBody)
@@ -133,15 +131,15 @@ public final class DropboxUploader extends Uploader {
                 // (2) Append
                 while (fileSize - uploaded > CHUNKED_UPLOAD_CHUNK_SIZE) {
                     dis.readFully(buff);
-                    RequestBody requestBody = RequestBody.create(buff, OCTET_STREAM);
-                    JSONObject dropbox_cursor = new JSONObject();
-                    dropbox_cursor.put("session_id", sessionId);
-                    dropbox_cursor.put("offset", uploaded);
-                    JSONObject dropbox_json = new JSONObject();
-                    dropbox_json.put("cursor", dropbox_cursor);
-                    String dropbox_arg = dropbox_json.toString();
+                    RequestBody requestBody = RequestBody.create(buff, UploaderUtils.getOctetStreamMediaType());
+                    JSONObject dropboxCursor = new JSONObject();
+                    dropboxCursor.put("session_id", sessionId);
+                    dropboxCursor.put("offset", uploaded);
+                    JSONObject dropboxJson = new JSONObject();
+                    dropboxJson.put("cursor", dropboxCursor);
+                    String dropboxArg = dropboxJson.toString();
                     Request request = new Request.Builder()
-                        .addHeader("Dropbox-API-Arg", dropbox_arg)
+                        .addHeader("Dropbox-API-Arg", dropboxArg)
                         .addHeader("Authorization", "Bearer " + accessToken)
                         .post(requestBody)
                         .url("https://content.dropboxapi.com/2/files/upload_session/append_v2")
@@ -154,7 +152,7 @@ public final class DropboxUploader extends Uploader {
                 int remainingSize = (int) (fileSize - uploaded);
                 byte[] remaining = new byte[remainingSize];
                 dis.readFully(remaining);
-                RequestBody requestBody = RequestBody.create(remaining, OCTET_STREAM);
+                RequestBody requestBody = RequestBody.create(remaining, UploaderUtils.getOctetStreamMediaType());
                 JSONObject dropboxCursor = new JSONObject();
                 dropboxCursor.put("session_id", sessionId);
                 dropboxCursor.put("offset", uploaded);
@@ -163,9 +161,9 @@ public final class DropboxUploader extends Uploader {
                 JSONObject dropboxJson = new JSONObject();
                 dropboxJson.put("cursor", dropboxCursor);
                 dropboxJson.put("commit", dropboxCommit);
-                String dropbox_arg = dropboxJson.toString();
+                String dropboxArg = dropboxJson.toString();
                 Request request = new Request.Builder()
-                    .addHeader("Dropbox-API-Arg", dropbox_arg)
+                    .addHeader("Dropbox-API-Arg", dropboxArg)
                     .addHeader("Authorization", "Bearer " + accessToken)
                     .post(requestBody)
                     .url("https://content.dropboxapi.com/2/files/upload_session/finish")
@@ -174,15 +172,15 @@ public final class DropboxUploader extends Uploader {
                 response.close();
             } else {
                 // Single upload
-                byte[] content = new byte[ (int) fileSize];
+                byte[] content = new byte[(int) fileSize];
                 dis.readFully(content);
-                RequestBody requestBody = RequestBody.create(content, OCTET_STREAM);
-                JSONObject dropbox_json = new JSONObject();
-                dropbox_json.put("path", "/" + destination + "/" + folder + "/" + file.getName());
-                String dropbox_arg = dropbox_json.toString();
+                RequestBody requestBody = RequestBody.create(content, UploaderUtils.getOctetStreamMediaType());
+                JSONObject dropboxJson = new JSONObject();
+                dropboxJson.put("path", "/" + destination + "/" + folder + "/" + file.getName());
+                String dropboxArg = dropboxJson.toString();
                 Request request = new Request.Builder()
                     .addHeader("Authorization", "Bearer " + accessToken)
-                    .addHeader("Dropbox-API-Arg", dropbox_arg)
+                    .addHeader("Dropbox-API-Arg", dropboxArg)
                     .url("https://content.dropboxapi.com/2/files/upload")
                     .post(requestBody)
                     .build();
@@ -216,11 +214,11 @@ public final class DropboxUploader extends Uploader {
         Config config = ConfigParser.getConfig();
         type = type.replace("./", "");
         type = type.replace(".\\", "");
-        String destination = config.backupStorage.remoteDirectory;
         int fileLimit = config.backupStorage.keepCount;
         if (fileLimit == -1) {
             return;
         }
+        String destination = config.backupStorage.remoteDirectory;
         TreeMap<Instant, String> files = getZipFiles(destination, type);
         if (files.size() > fileLimit) {
             logger.info(intl("backup-method-limit-reached"),
@@ -230,8 +228,7 @@ public final class DropboxUploader extends Uploader {
             while (files.size() > fileLimit) {
                 JSONObject deleteJson = new JSONObject();
                 deleteJson.put("path", "/" + destination + "/" + type + "/" + files.firstEntry().getValue());
-                RequestBody deleteRequestBody = RequestBody.create(deleteJson.toString(),
-                                                        MediaType.parse("application/json"));
+                RequestBody deleteRequestBody = RequestBody.create(deleteJson.toString(), UploaderUtils.getJsonMediaType());
                 Request deleteRequest = new Request.Builder()
                     .addHeader("Authorization", "Bearer " + accessToken)
                     .url("https://api.dropboxapi.com/2/files/delete_v2")
@@ -254,7 +251,7 @@ public final class DropboxUploader extends Uploader {
         TreeMap<Instant, String> files = new TreeMap<>();
         JSONObject json = new JSONObject();
         json.put("path", "/" + destination + "/" + type);
-        RequestBody requestBody = RequestBody.create(json.toString(), MediaType.parse("application/json"));
+        RequestBody requestBody = RequestBody.create(json.toString(), UploaderUtils.getJsonMediaType());
         Request request = new Request.Builder()
             .addHeader("Authorization", "Bearer " + accessToken)
             .url("https://api.dropboxapi.com/2/files/list_folder")
@@ -304,7 +301,8 @@ public final class DropboxUploader extends Uploader {
             .post(requestBody)
             .build();
         Response response = HttpClient.getHttpClient().newCall(request).execute();
-        JSONObject parsedResponse = new JSONObject(response.body().string());
+        ResponseBody body = response.body();
+        JSONObject parsedResponse = new JSONObject(body.string());
         response.close();
         if (!response.isSuccessful()) {
             return;
