@@ -1,12 +1,14 @@
 package ratismal.drivebackup.util;
 
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Locale;
-import java.util.Date;
 
 import static ratismal.drivebackup.config.Localization.intl;
 
@@ -15,9 +17,10 @@ import static ratismal.drivebackup.config.Localization.intl;
  */
 
 public class Timer {
-    private Date start;
-    private Date end;
+    private Instant start;
+    private Instant end;
 
+    @Contract (pure = true)
     public Timer() {
 
     }
@@ -26,7 +29,7 @@ public class Timer {
      * Starts the timer
      */
     public void start() {
-        start = new Date();
+        start = Instant.now();
         end = null;
     }
 
@@ -38,7 +41,7 @@ public class Timer {
         if (start == null) {
             return false;
         }
-        end = new Date();
+        end = Instant.now();
         return true;
     }
 
@@ -50,22 +53,13 @@ public class Timer {
     public String getUploadTimeMessage(@NotNull File file) {
         DecimalFormat df = new DecimalFormat("#.##");
         df.setDecimalFormatSymbols(DecimalFormatSymbols.getInstance(Locale.ENGLISH));
-
-        double difference = getTime();
-        double length = difference / 1000.0;
-        double speed = (((double) file.length()) / 1024.0) / length;
+        
+        long length = ChronoUnit.SECONDS.between(start, end);
+        long speed = (file.length() / 1024) / length;
         
         return intl("file-upload-message")
             .replace("<length>", df.format(length))
             .replace("<speed>", df.format(speed));
-    }
-
-    /**
-     * Calculates the time
-     * @return Calculated time
-     */
-    public double getTime() {
-        return end.getTime() - start.getTime();
     }
 
 }
