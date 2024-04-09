@@ -9,9 +9,10 @@ import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.util.Base64;
 
-public class Obfusticate {
+public final class Obfusticate {
     private static final byte[] keyValue = "kYVcmTxrWHUEk3K2ezM6Uu5a".getBytes(StandardCharsets.UTF_8);
     
+    @Contract (pure = true)
     private Obfusticate() {}
     
     public static void main(String[] args) {
@@ -51,4 +52,5 @@ public class Obfusticate {
     private static Key generateKey() {
         return new SecretKeySpec(keyValue, "AES");
     }
+    
 }
