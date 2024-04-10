@@ -24,14 +24,12 @@ import java.util.TreeMap;
 import static ratismal.drivebackup.config.Localization.intl;
 
 public class S3Uploader extends Uploader {
-    private UploadLogger logger;
 
     public static final String UPLOADER_NAME = "S3";
     public static final String UPLOADER_ID = "s3";
 
     private MinioClient minioClient;
-
-    private boolean _errorOccurred;
+    
     private String _bucket;
     private String _hostname;
 
@@ -66,11 +64,6 @@ public class S3Uploader extends Uploader {
     @Override
     public boolean isAuthenticated() {
         return true;
-    }
-
-    @Override
-    public boolean isErrorWhileUploading() {
-        return _errorOccurred;
     }
 
     @Override
@@ -109,10 +102,6 @@ public class S3Uploader extends Uploader {
     public void close() {
     }
 
-    public void setErrorOccurred(boolean errorOccurred) {
-        _errorOccurred = errorOccurred;
-    }
-
     public void pruneBackups(String type) throws Exception {
         int fileLimit = ConfigParser.getConfig().backupStorage.keepCount;
         if (fileLimit == -1) {
@@ -146,7 +135,7 @@ public class S3Uploader extends Uploader {
     }
 
     @NotNull
-    private String normalizeType(@NotNull String type) {
+    private static String normalizeType(@NotNull String type) {
         if(type.startsWith("./")) {
             return type.substring(2);
         }
