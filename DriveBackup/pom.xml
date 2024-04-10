@@ -231,5 +231,10 @@
             <artifactId>adventure-text-serializer-legacy</artifactId>
             <version>4.15.0</version>
         </dependency>
+        <dependency>
+            <groupId>io.minio</groupId>
+            <artifactId>minio</artifactId>
+            <version>8.5.9</version>
+        </dependency>
     </dependencies>
 </project>

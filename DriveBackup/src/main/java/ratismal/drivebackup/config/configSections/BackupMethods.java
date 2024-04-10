@@ -75,6 +75,21 @@ public class BackupMethods {
         }
     }
 
+    public static class S3BackupMethod extends BackupMethod {
+        public final String endpoint;
+        public final String accessKey;
+        public final String secretKey;
+        public final String bucket;
+
+        public S3BackupMethod(boolean enabled, String endpoint, String accessKey, String secretKey, String bucket) {
+            super(enabled);
+            this.endpoint = endpoint;
+            this.accessKey = accessKey;
+            this.secretKey = secretKey;
+            this.bucket = bucket;
+        }
+    }
+
     public static class FTPBackupMethod extends BackupMethod {
         public final String hostname; 
         public final int port;
@@ -117,14 +132,16 @@ public class BackupMethods {
     public final DropboxBackupMethod dropbox;
     public final WebDAVBackupMethod webdav;
     public final NextcloudBackupMethod nextcloud;
+    public final S3BackupMethod s3;
     public final FTPBackupMethod ftp;
 
-    public BackupMethods(GoogleDriveBackupMethod googleDrive, OneDriveBackupMethod oneDrive, DropboxBackupMethod dropbox, WebDAVBackupMethod webdav, NextcloudBackupMethod nextcloud, FTPBackupMethod ftp) {
+    public BackupMethods(GoogleDriveBackupMethod googleDrive, OneDriveBackupMethod oneDrive, DropboxBackupMethod dropbox, WebDAVBackupMethod webdav, NextcloudBackupMethod nextcloud, S3BackupMethod s3, FTPBackupMethod ftp) {
         this.googleDrive = googleDrive;
         this.oneDrive = oneDrive;
         this.dropbox = dropbox;
         this.webdav = webdav;
         this.nextcloud = nextcloud;
+        this.s3 = s3;
         this.ftp = ftp;
     }
 
@@ -156,6 +173,15 @@ public class BackupMethods {
             config.getString("nextcloud.remote-save-directory", config.getString("remote-save-directory")),
             config.getInt("nextcloud.chunk-size", 10_000_000)
             );
+
+        S3BackupMethod s3Method = new S3BackupMethod(
+            config.getBoolean("s3.enabled"),
+            config.getString("s3.endpoint"),
+            config.getString("s3.access-key"),
+            config.getString("s3.secret-key"),
+            config.getString("s3.bucket")
+            );
+
         boolean ftpEnabled = config.getBoolean("ftp.enabled");
         String publicKey = "";
         if (!Strings.isNullOrEmpty(config.getString("ftp.sftp-public-key")) && ftpEnabled) {
@@ -186,6 +212,6 @@ public class BackupMethods {
             baseDir
             );
 
-        return new BackupMethods(googleDriveMethod, oneDriveMethod, dropboxMethod, webdavMethod, nextcloudMethod, ftpMethod);
+        return new BackupMethods(googleDriveMethod, oneDriveMethod, dropboxMethod, webdavMethod, nextcloudMethod, s3Method, ftpMethod);
     }
 }

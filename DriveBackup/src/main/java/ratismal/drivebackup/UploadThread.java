@@ -25,6 +25,7 @@ import ratismal.drivebackup.uploaders.ftp.FTPUploader;
 import ratismal.drivebackup.uploaders.googledrive.GoogleDriveUploader;
 import ratismal.drivebackup.uploaders.mysql.MySQLUploader;
 import ratismal.drivebackup.uploaders.onedrive.OneDriveUploader;
+import ratismal.drivebackup.uploaders.s3.S3Uploader;
 import ratismal.drivebackup.uploaders.webdav.NextcloudUploader;
 import ratismal.drivebackup.uploaders.webdav.WebDAVUploader;
 import ratismal.drivebackup.util.BlacklistEntry;
@@ -246,6 +247,9 @@ public class UploadThread implements Runnable {
         }
         if (config.backupMethods.nextcloud.enabled) {
             uploaders.add(new NextcloudUploader(logger, config.backupMethods.nextcloud));
+        }
+        if (config.backupMethods.s3.enabled) {
+            uploaders.add(new S3Uploader(logger, config.backupMethods.s3));
         }
         if (config.backupMethods.ftp.enabled) {
             uploaders.add(new FTPUploader(logger, config.backupMethods.ftp));
