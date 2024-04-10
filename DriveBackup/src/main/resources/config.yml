@@ -56,6 +56,12 @@ nextcloud:
   username: "Username"
   password: "Password"
   chunk-size: 20_000_000
+s3:
+  enabled: false
+  endpoint: "https://s3.us-west-2.amazonaws.com"
+  access-key: "AKIAxxxxxxxxxxxxxxxx"
+  secret-key: "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+  bucket: "bucket"
 ftp:
   enabled: false
   hostname: "ftp.example.com"

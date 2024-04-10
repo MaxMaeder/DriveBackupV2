@@ -324,5 +324,10 @@
             <artifactId>guava</artifactId>
             <version>33.1.0-jre</version>
         </dependency>
+        <dependency>
+            <groupId>io.minio</groupId>
+            <artifactId>minio</artifactId>
+            <version>8.5.9</version>
+        </dependency>
     </dependencies>
 </project>
