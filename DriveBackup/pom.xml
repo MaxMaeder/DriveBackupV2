@@ -234,7 +234,7 @@
         <dependency>
             <groupId>io.minio</groupId>
             <artifactId>minio</artifactId>
-            <version>8.5.2</version>
+            <version>8.5.9</version>
         </dependency>
     </dependencies>
 </project>
