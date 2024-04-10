@@ -10,7 +10,6 @@ import org.jetbrains.annotations.NotNull;
 import ratismal.drivebackup.UploadThread.UploadLogger;
 import ratismal.drivebackup.config.ConfigParser;
 import ratismal.drivebackup.config.configSections.BackupMethods.S3BackupMethod;
-import ratismal.drivebackup.uploaders.Authenticator;
 import ratismal.drivebackup.uploaders.Uploader;
 import ratismal.drivebackup.util.MessageUtil;
 import ratismal.drivebackup.util.NetUtil;
@@ -34,8 +33,7 @@ public class S3Uploader extends Uploader {
     private String _hostname;
 
     public S3Uploader(UploadLogger logger, S3BackupMethod config) {
-        super(UPLOADER_NAME, UPLOADER_ID);
-        this.logger = logger;
+        super(UPLOADER_NAME, UPLOADER_ID, null, logger);
         try {
             _hostname = new URL(config.endpoint).getHost();
             _bucket = config.bucket;
@@ -44,26 +42,6 @@ public class S3Uploader extends Uploader {
             MessageUtil.sendConsoleException(e);
             setErrorOccurred(true);
         }
-    }
-
-    @Override
-    public String getName() {
-        return UPLOADER_NAME;
-    }
-
-    @Override
-    public String getId() {
-        return UPLOADER_ID;
-    }
-
-    @Override
-    public Authenticator.AuthenticationProvider getAuthProvider() {
-        return null;
-    }
-
-    @Override
-    public boolean isAuthenticated() {
-        return true;
     }
 
     @Override

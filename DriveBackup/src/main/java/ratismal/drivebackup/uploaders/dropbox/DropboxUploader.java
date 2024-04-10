@@ -274,9 +274,7 @@ public final class DropboxUploader extends Uploader {
      * Creates an instance of the {@code DropboxUploader} object
      */
     public DropboxUploader(UploadLogger logger) {
-        super(UPLOADER_NAME, "dropbox");
-        setAuthProvider(AuthenticationProvider.DROPBOX);
-        this.logger = logger;
+        super(UPLOADER_NAME, "dropbox", AuthenticationProvider.DROPBOX, logger);
         try {
             refreshToken = Authenticator.getRefreshToken(AuthenticationProvider.DROPBOX);
             retrieveNewAccessToken();

@@ -41,6 +41,7 @@ public final class OneDriveUploader extends Uploader {
     private static final int EXPONENTIAL_BACKOFF_FACTOR = 5;
     private static final int MAX_RETRY_ATTEMPTS = 3;
     public static final String UPLOADER_NAME = "OneDrive";
+    private static final String ID = "onedrive";
     /**
      * Size of the file chunks to upload to OneDrive
      */
@@ -60,9 +61,7 @@ public final class OneDriveUploader extends Uploader {
      * Creates an instance of the {@code OneDriveUploader} object
      */
     public OneDriveUploader(UploadLogger logger) {
-        super(UPLOADER_NAME, "onedrive");
-        this.logger = logger;
-        setAuthProvider(AuthenticationProvider.ONEDRIVE);
+        super(UPLOADER_NAME, ID, AuthenticationProvider.ONEDRIVE, logger);
         try {
             refreshToken = Authenticator.getRefreshToken(AuthenticationProvider.ONEDRIVE);
             retrieveNewAccessToken();

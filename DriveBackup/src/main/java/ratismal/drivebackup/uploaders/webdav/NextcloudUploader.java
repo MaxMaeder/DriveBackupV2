@@ -15,7 +15,8 @@ import java.util.UUID;
 
 public final class NextcloudUploader extends WebDAVUploader {
 
-    public static String UPLOADER_NAME = "Nextcloud";
+    public static final String UPLOADER_NAME = "Nextcloud";
+    private static final String ID = "nextcloud";
 
     private NextcloudBackupMethod nextcloud;
 
@@ -24,7 +25,7 @@ public final class NextcloudUploader extends WebDAVUploader {
     public NextcloudUploader(UploadLogger logger, NextcloudBackupMethod nextcloud) {
         super(logger, nextcloud);
         setName(UPLOADER_NAME);
-        setId("nextcloud");
+        setId(ID);
         this.nextcloud = nextcloud;
         try {
             findUploadDir();

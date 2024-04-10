@@ -3,54 +3,69 @@ package ratismal.drivebackup.uploaders;
 import org.jetbrains.annotations.Contract;
 import ratismal.drivebackup.UploadThread;
 
+import java.io.File;
 import java.io.IOException;
 
 public abstract class Uploader {
+    
     private String name;
     private String id;
     private boolean authenticated;
     private boolean errorOccurred;
-    private AuthenticationProvider authProvider;
-    protected UploadThread.UploadLogger logger;
+    private final AuthenticationProvider authProvider;
+    protected final UploadThread.UploadLogger logger;
     
     @Contract (pure = true)
-    protected Uploader(String name, String id) {
+    protected Uploader(String name, String id, AuthenticationProvider authProvider, UploadThread.UploadLogger logger) {
         this.name = name;
         this.id = id;
+        this.authProvider = authProvider;
+        if (authProvider == null) {
+            authenticated = true;
+        }
+        this.logger = logger;
     }
     
     public String getName() {
         return name;
     }
+    
     protected void setName(String name) {
         this.name = name;
     }
+    
     public String getId() {
         return id;
     }
+    
     protected void setId(String id) {
         this.id = id;
     }
+    
     public AuthenticationProvider getAuthProvider() {
         return authProvider;
     }
-    protected void setAuthProvider(AuthenticationProvider authProvider) {
-        this.authProvider = authProvider;
-    }
+    
     public boolean isAuthenticated() {
         return authenticated;
     }
+    
     protected void setAuthenticated(boolean authenticated) {
         this.authenticated = authenticated;
     }
+    
     public boolean didErrorOccur() {
         return errorOccurred;
     }
+    
     protected void setErrorOccurred(boolean errorOccurred) {
         this.errorOccurred = errorOccurred;
     }
-    public abstract void test(java.io.File testFile);
-    public abstract void uploadFile(java.io.File file, String type) throws IOException;
+    
+    public abstract void test(File testFile);
+    
+    public abstract void uploadFile(File file, String type) throws IOException;
+    
     public abstract void close();
     
 }

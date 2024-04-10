@@ -16,8 +16,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URL;
+import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
@@ -25,17 +25,18 @@ import java.util.concurrent.TimeUnit;
 import static ratismal.drivebackup.config.Localization.intl;
 
 public class WebDAVUploader extends Uploader {
-
-    Sardine sardine;
-    private URL _remoteBaseFolder;
+    
     public static final String UPLOADER_NAME = "WebDAV";
-
+    private static final String ID = "webdav";
+    
+    protected Sardine sardine;
+    private URL _remoteBaseFolder;
+    
     /**
      * Creates an instance of the {@code WebDAVUploader} object using the server credentials specified by the user in the {@code config.yml}
      */
     public WebDAVUploader(UploadLogger logger, WebDAVBackupMethod webdav) {
-        super(UPLOADER_NAME, "webdav");
-        this.logger = logger;
+        super(UPLOADER_NAME, ID, null, logger);
         try {
             _remoteBaseFolder = new URL(webdav.hostname + "/" + webdav.remoteDirectory);
             sardine = SardineFactory.begin(webdav.username, webdav.password);
@@ -45,8 +46,6 @@ public class WebDAVUploader extends Uploader {
             MessageUtil.sendConsoleException(e);
             setErrorOccurred(true);
         }
-        setAuthenticated(true);
-        setAuthProvider(null);
     }
 
     /**
@@ -144,7 +143,7 @@ public class WebDAVUploader extends Uploader {
         if (fileLimit == -1) {
             return;
         }
-        TreeMap<Date, DavResource> files = getZipFiles(type);
+        TreeMap<Instant, DavResource> files = getZipFiles(type);
         if (files.size() > fileLimit) {
             logger.info(
                 intl("backup-method-limit-reached"), 
@@ -164,12 +163,12 @@ public class WebDAVUploader extends Uploader {
      * @throws Exception
      */
     @NotNull
-    private TreeMap<Date, DavResource> getZipFiles(String type) throws Exception {
-        TreeMap<Date, DavResource> files = new TreeMap<>();
+    private TreeMap<Instant, DavResource> getZipFiles(String type) throws Exception {
+        TreeMap<Instant, DavResource> files = new TreeMap<>();
         List<DavResource> resources = sardine.list(new URL(_remoteBaseFolder + "/" + type).toString());
         for (DavResource resource : resources) {
             if (resource.getName().endsWith(".zip")) {
-                files.put(resource.getModified(), resource);
+                files.put(resource.getModified().toInstant(), resource);
             }
         }
         return files;

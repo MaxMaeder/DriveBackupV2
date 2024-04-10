@@ -53,6 +53,7 @@ public final class GoogleDriveUploader extends Uploader {
     
     private static final String APPLICATION_VND_GOOGLE_APPS_FOLDER = "application/vnd.google-apps.folder";
     public static final String UPLOADER_NAME = "Google Drive";
+    private static final String ID = "googledrive";
 
     /**
      * A global instance of the HTTP transport
@@ -80,9 +81,7 @@ public final class GoogleDriveUploader extends Uploader {
      * Creates an instance of the {@code GoogleDriveUploader} object
      */
     public GoogleDriveUploader(UploadLogger logger) {
-        super(UPLOADER_NAME, "googledrive");
-        this.logger = logger;
-        setAuthProvider(AuthenticationProvider.GOOGLE_DRIVE);
+        super(UPLOADER_NAME,  ID, AuthenticationProvider.GOOGLE_DRIVE, logger);
         try {
             refreshToken = Authenticator.getRefreshToken(AuthenticationProvider.GOOGLE_DRIVE);
             retrieveNewAccessToken();

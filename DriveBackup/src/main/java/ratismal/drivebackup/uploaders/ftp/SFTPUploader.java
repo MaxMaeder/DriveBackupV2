@@ -19,11 +19,11 @@ import ratismal.drivebackup.config.configSections.BackupMethods.FTPBackupMethod;
 import ratismal.drivebackup.plugin.DriveBackup;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Date;
+import java.util.List;
 import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
 
@@ -141,13 +141,11 @@ public final class SFTPUploader {
      * @throws Exception
      */
     public void test(@NotNull File testFile) throws Exception {
-        try (FileOutputStream fos = new FileOutputStream(testFile)) {
-            resetWorkingDirectory();
-            createThenEnter(_remoteBaseFolder);
-            sftpClient.put(testFile.getAbsolutePath(), testFile.getName());
-            TimeUnit.SECONDS.sleep(5L);
-            sftpClient.rm(testFile.getName());
-        }
+        resetWorkingDirectory();
+        createThenEnter(_remoteBaseFolder);
+        sftpClient.put(testFile.getAbsolutePath(), testFile.getName());
+        TimeUnit.SECONDS.sleep(5L);
+        sftpClient.rm(testFile.getName());
     }
 
     /**
@@ -194,8 +192,8 @@ public final class SFTPUploader {
      *
      * @throws Exception
      */
-    public @NotNull ArrayList<String> getFiles(String type) throws Exception {
-        ArrayList<String> result = new ArrayList<>();
+    public @NotNull List<String> getFiles(String type) throws Exception {
+        List<String> result = new ArrayList<>();
         resetWorkingDirectory();
         sftpClient.cd(_remoteBaseFolder);
         sftpClient.cd(type);
@@ -220,7 +218,7 @@ public final class SFTPUploader {
         if (fileLimit == -1) {
             return;
         }
-        TreeMap<Date, RemoteResourceInfo> files = getZipFiles();
+        TreeMap<Instant, RemoteResourceInfo> files = getZipFiles();
         if (files.size() > fileLimit) {
             logger.info(
                 intl("backup-method-limit-reached"), 
@@ -240,11 +238,11 @@ public final class SFTPUploader {
      * @throws Exception
      */
     @NotNull
-    private TreeMap<Date, RemoteResourceInfo> getZipFiles() throws Exception {
-        TreeMap<Date, RemoteResourceInfo> files = new TreeMap<>();
+    private TreeMap<Instant, RemoteResourceInfo> getZipFiles() throws Exception {
+        TreeMap<Instant, RemoteResourceInfo> files = new TreeMap<>();
         for (RemoteResourceInfo file : sftpClient.ls()) {
             if (file.getName().endsWith(".zip")) {
-                files.put(new Date(file.getAttributes().getMtime()), file);
+                files.put(Instant.ofEpochMilli(file.getAttributes().getMtime()), file);
             }
         }
         return files;
@@ -279,7 +277,7 @@ public final class SFTPUploader {
      * @return the new ArrayList
      */
     @Contract ("_, _ -> param1")
-    private static @NotNull ArrayList<String> prependToAll(@NotNull ArrayList<String> list, String string) {
+    private static @NotNull List<String> prependToAll(@NotNull List<String> list, String string) {
         list.replaceAll(s -> string + s);
         return list;
     }

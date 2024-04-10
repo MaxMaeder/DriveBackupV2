@@ -19,8 +19,9 @@ import java.io.FileInputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Date;
+import java.util.List;
 import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
 
@@ -33,7 +34,8 @@ import static ratismal.drivebackup.config.Localization.intl;
 public final class FTPUploader extends Uploader {
 
     public static final String UPLOADER_NAME = "(S)FTP";
-
+    private static final String ID = "ftp";
+    
     private FTPClient ftpClient;
     private SFTPUploader sftpClient;
 
@@ -55,9 +57,7 @@ public final class FTPUploader extends Uploader {
      * Creates an instance of the {@code FTPUploader} object using the server credentials specified by the user in the {@code config.yml}
      */
     public FTPUploader(UploadLogger logger, FTPBackupMethod ftp) {
-        super(UPLOADER_NAME, "ftp");
-        this.logger = logger;
-        setAuthProvider(null);
+        super(UPLOADER_NAME, ID, null, logger);
         try {
             if (ftp.sftp) {
                 sftpClient = new SFTPUploader(logger);
@@ -91,8 +91,7 @@ public final class FTPUploader extends Uploader {
      * @param remoteBaseFolder the path to the folder, which all remote file paths are relative to.
      */
     public FTPUploader(UploadLogger logger, String host, int port, String username, String password, boolean ftps, boolean sftp, String publicKey, String passphrase, String localBaseFolder, String remoteBaseFolder) {
-        super(UPLOADER_NAME, "ftp");
-        this.logger = logger;
+        super(UPLOADER_NAME, ID, null, logger);
         try {
             if (sftp) {
                 setId("sftp");
@@ -249,8 +248,8 @@ public final class FTPUploader extends Uploader {
      * @param folderPath the path of the folder
      * @return the list of file paths
      */
-    public @NotNull ArrayList<String> getFiles(String folderPath) {
-        ArrayList<String> filePaths = new ArrayList<>(10);
+    public @NotNull List<String> getFiles(String folderPath) {
+        List<String> filePaths = new ArrayList<>(10);
         try {
             if (sftpClient != null) {
                 return sftpClient.getFiles(folderPath);
@@ -284,7 +283,7 @@ public final class FTPUploader extends Uploader {
         if (-1 == fileLimit) {
             return;
         }
-        TreeMap<Date, FTPFile> files = getZipFiles();
+        TreeMap<Instant, FTPFile> files = getZipFiles();
         if (files.size() > fileLimit) {
             logger.info(
                 intl("backup-method-limit-reached"), 
@@ -304,11 +303,11 @@ public final class FTPUploader extends Uploader {
      * @throws Exception
      */
     @NotNull
-    private TreeMap<Date, FTPFile> getZipFiles() throws Exception {
-        TreeMap<Date, FTPFile> files = new TreeMap<>();
+    private TreeMap<Instant, FTPFile> getZipFiles() throws Exception {
+        TreeMap<Instant, FTPFile> files = new TreeMap<>();
         for (FTPFile file : ftpClient.mlistDir()) {
             if (file.getName().endsWith(".zip")) {
-                files.put(file.getTimestamp().getTime(), file);
+                files.put(file.getTimestamp().getTime().toInstant(), file);
             }
         }
         return files;
@@ -341,7 +340,7 @@ public final class FTPUploader extends Uploader {
      * @return the new ArrayList
      */
     @Contract ("_, _ -> param1")
-    private static @NotNull ArrayList<String> prependToAll(@NotNull ArrayList<String> list, String string) {
+    private static @NotNull List<String> prependToAll(@NotNull List<String> list, String string) {
         list.replaceAll(s -> string + s);
         return list;
     }
