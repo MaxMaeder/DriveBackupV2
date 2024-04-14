@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>ratismal</groupId>
     <artifactId>DriveBackupV2</artifactId>
-    <version>1.6.1</version>
+    <version>1.6.2</version>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <!--suppress UnresolvedMavenProperty -->
@@ -206,12 +206,12 @@
         <dependency>
             <groupId>org.json</groupId>
             <artifactId>json</artifactId>
-            <version>20240303</version>
+            <version>20231013</version>
         </dependency>
         <dependency>
             <groupId>commons-net</groupId>
             <artifactId>commons-net</artifactId>
-            <version>3.10.0</version>
+            <version>3.9.0</version>
         </dependency>
         <dependency>
             <groupId>com.hierynomus</groupId>
