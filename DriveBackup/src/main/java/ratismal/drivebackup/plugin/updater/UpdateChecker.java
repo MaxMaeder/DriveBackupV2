@@ -1,9 +1,11 @@
 package ratismal.drivebackup.plugin.updater;
 
-import org.json.JSONArray;
-
 import okhttp3.Request;
 import okhttp3.Response;
+import okhttp3.ResponseBody;
+import org.jetbrains.annotations.Contract;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import ratismal.drivebackup.config.ConfigParser;
 import ratismal.drivebackup.plugin.DriveBackup;
 import ratismal.drivebackup.util.Logger;
@@ -12,12 +14,12 @@ import ratismal.drivebackup.util.NetUtil;
 import ratismal.drivebackup.util.SchedulerUtil;
 import ratismal.drivebackup.util.Version;
 
+import java.io.IOException;
 import java.util.NoSuchElementException;
 
 import static ratismal.drivebackup.config.Localization.intl;
 
 public class UpdateChecker {
-    private static final int CURSE_PROJECT_ID = 383461;
 
     /**
      * How often to check for updates, in seconds
@@ -57,7 +59,7 @@ public class UpdateChecker {
                             "current-version", currentVersion.toString());
                     }
                 } catch (Exception e) {
-                    NetUtil.catchException(e, "dev.bukkit.org", logger);
+                    NetUtil.catchException(e, "api.github.com", logger);
                     logger.log(intl("update-checker-failed"));
                     MessageUtil.sendConsoleException(e);
                 }
@@ -76,6 +78,7 @@ public class UpdateChecker {
         return false;
     }
 
+    @Contract (pure = true)
     public static String getLatestDownloadUrl() {
         return latestDownloadUrl;
     }
@@ -86,21 +89,39 @@ public class UpdateChecker {
     }
 
     public Version getLatest() throws Exception {
-        Request request = new Request.Builder()
-            .url("https://api.curseforge.com/servermods/files?projectids=" + CURSE_PROJECT_ID)
-            .build();
-        JSONArray pluginVersions;
+        final String LATEST_URL = "https://api.github.com/repos/MaxMaeder/DriveBackupV2/releases/latest";
+        Request request = new Request.Builder().url(LATEST_URL).build();
+        JSONObject pluginVersions;
         try (Response response = DriveBackup.httpClient.newCall(request).execute()) {
             if (response.code() != 200) {
-                throw new Exception("Unexpected response: " + response.code() + " : " + response.message());
+                throw new IOException("Unexpected response: " + response.code() + " : " + response.message());
             }
-            pluginVersions = new JSONArray(response.body().string());
+            ResponseBody body = response.body();
+            if (body == null) {
+                throw new IOException("Response body is null");
+            }
+            pluginVersions = new JSONObject(body.string());
         }
         if (pluginVersions.isEmpty()) {
             throw new NoSuchElementException("No plugin versions received");
         }
-        String versionTitle = pluginVersions.getJSONObject(pluginVersions.length() - 1).getString("name").replace("DriveBackupV2-", "").trim();
-        latestDownloadUrl = pluginVersions.getJSONObject(pluginVersions.length() - 1).getString("downloadUrl");
+        String htmlUrl = pluginVersions.getString("html_url");
+        String assetsUrl = pluginVersions.getString("assets_url");
+        Request request2 = new Request.Builder().url(assetsUrl).build();
+        JSONArray assets;
+        try (Response response = DriveBackup.httpClient.newCall(request2).execute()) {
+            if (response.code() != 200) {
+                throw new IOException("Unexpected response: " + response.code() + " : " + response.message());
+            }
+            ResponseBody body = response.body();
+            if (body == null) {
+                throw new IOException("Response body is null");
+            }
+            assets = new JSONArray(body.string());
+        }
+        JSONObject jar = assets.getJSONObject(0);
+        String versionTitle = htmlUrl.substring(htmlUrl.lastIndexOf('/') + 2).trim();
+        latestDownloadUrl = jar.getString("url");
         return Version.parse(versionTitle);
     }
 }
