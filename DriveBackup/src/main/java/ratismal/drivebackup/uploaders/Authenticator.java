@@ -28,7 +28,7 @@ import java.io.IOException;
 
 import static ratismal.drivebackup.config.Localization.intl;
 
-public class Authenticator {
+public final class Authenticator {
     /**
      * Endpoints
      */
@@ -63,7 +63,7 @@ public class Authenticator {
             FormBody.Builder requestBody = new FormBody.Builder()
                 .add("type", provider.getId());
             String requestEndpoint;
-            if (provider == AuthenticationProvider.ONEDRIVE) {
+            if (AuthenticationProvider.ONEDRIVE == provider) {
                 requestBody.add("client_id", Obfusticate.decrypt(provider.getClientId()));
                 requestBody.add("scope", "offline_access Files.ReadWrite");
                 requestEndpoint = ONEDRIVE_REQUEST_CODE_ENDPOINT;
@@ -97,7 +97,7 @@ public class Authenticator {
                         .add("device_code", deviceCode)
                         .add("user_code", userCode);
                     String requestEndpoint1;
-                    if (provider == AuthenticationProvider.ONEDRIVE) {
+                    if (AuthenticationProvider.ONEDRIVE == provider) {
                         requestBody1.add("client_id", Obfusticate.decrypt(provider.getClientId()));
                         requestBody1.add("grant_type", "urn:ietf:params:oauth:grant-type:device_code");
                         requestEndpoint1 = ONEDRIVE_POLL_VERIFICATION_ENDPOINT;
@@ -130,7 +130,7 @@ public class Authenticator {
                         }
                         cancelPollTask();
                     } else if (
-                            (provider == AuthenticationProvider.ONEDRIVE && !parsedResponse1.getString("error").equals("authorization_pending")) ||
+                            (AuthenticationProvider.ONEDRIVE == provider && !parsedResponse1.getString("error").equals("authorization_pending")) ||
                             (provider != AuthenticationProvider.ONEDRIVE && !parsedResponse1.get("msg").equals("code_not_authenticated"))
                         ) {
                         MessageUtil.Builder().text(parsedResponse1.toString()).send();
@@ -166,7 +166,7 @@ public class Authenticator {
     }
 
     private static void cancelPollTask() {
-        if (taskId != -1) {
+        if (-1 != taskId) {
             Bukkit.getScheduler().cancelTask(taskId);
             taskId = -1;
         }
@@ -191,7 +191,7 @@ public class Authenticator {
         DriveBackup plugin = DriveBackup.getInstance();
         if (!plugin.getConfig().getBoolean(provider.getId() + ".enabled")) {
             logger.log("Automatically enabled " + provider.getName() + " backups");
-            plugin.getConfig().set(provider.getId() + ".enabled", true);
+            plugin.getConfig().set(provider.getId() + ".enabled", Boolean.TRUE);
             plugin.saveConfig();
         }
     }

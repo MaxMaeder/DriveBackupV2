@@ -91,6 +91,12 @@ public final class BukkitPlugin extends JavaPlugin implements DriveBackupInstanc
         return playerHandler;
     }
     
+    @Contract (pure = true)
+    @Override
+    public UpdateHandler getUpdateHandler() {
+        return updateHandler;
+    }
+    
     @Override
     public void disable() {
         getServer().getPluginManager().disablePlugin(this);

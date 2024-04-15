@@ -8,6 +8,7 @@ import ratismal.drivebackup.handler.messages.MessageHandler;
 import ratismal.drivebackup.handler.permission.PermissionHandler;
 import ratismal.drivebackup.handler.player.PlayerHandler;
 import ratismal.drivebackup.handler.task.TaskHandler;
+import ratismal.drivebackup.handler.update.UpdateHandler;
 import ratismal.drivebackup.util.Version;
 
 import java.io.File;
@@ -26,6 +27,7 @@ public interface DriveBackupInstance {
     Version getCurrentVersion();
     TaskHandler getTaskHandler();
     PlayerHandler getPlayerHandler();
+    UpdateHandler getUpdateHandler();
     /*
     Disable auto saving for worlds that have it enabled
      */

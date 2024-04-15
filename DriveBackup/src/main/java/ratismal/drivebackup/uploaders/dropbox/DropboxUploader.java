@@ -106,7 +106,7 @@ public final class DropboxUploader extends Uploader {
         String folder = type.replaceAll("\\.{1,2}\\/", "");
         folder = folder.replace(".\\", "");
         try (DataInputStream dis = new DataInputStream(Files.newInputStream(file.toPath()))) {
-            if (fileSize > 150000000L /* 150MB */) {
+            if (fileSize > 150_000_000L /* 150MB */) {
                 // Chunked upload
                 // 10 MB chunk
                 final int CHUNKED_UPLOAD_CHUNK_SIZE = (1024 * 1024 * 10);

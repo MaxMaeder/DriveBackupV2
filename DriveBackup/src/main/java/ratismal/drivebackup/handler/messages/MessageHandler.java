@@ -29,14 +29,14 @@ public abstract class MessageHandler {
     private static final ANSIComponentSerializer ANSI_COMPONENT_SERIALIZER =
             ANSIComponentSerializer.builder().colorLevel(ColorLevel.TRUE_COLOR).build();
     private static final JoinConfiguration JOIN_CONFIGURATION = JoinConfiguration.separator(Component.text(""));
-    private boolean sendToConsole = true;
-    private ConsoleLogLevel consoleLogLevel = ConsoleLogLevel.INFO;
     protected final List<Component> message = new ArrayList<>(5);
     protected final ArrayList<Player> recipients = new ArrayList<>(5);
     protected final DriveBackupInstance instance;
     private final PermissionHandler permissionHandler;
     private final ConfigHandler configHandler;
     private final LangConfigHandler langConfigHandler;
+    private ConsoleLogLevel consoleLogLevel = ConsoleLogLevel.INFO;
+    private boolean sendToConsole = true;
     private boolean addPrefix = true;
     
     protected MessageHandler(@NotNull DriveBackupInstance instance) {
@@ -112,11 +112,10 @@ public abstract class MessageHandler {
      */
     public MessageHandler getLang(String key, String placeholder, String value) {
         TagResolver.Builder builder = TagResolver.builder();
-        String placeholderKey = placeholder;
-        if (placeholderKey == null) {
-            placeholderKey = "";
+        if (placeholder == null) {
+            placeholder = "";
         }
-        builder.resolver(Placeholder.parsed(placeholderKey, value));
+        builder.resolver(Placeholder.parsed(placeholder, value));
         message.add(getMMLang(key, builder.build()));
         return this;
     }
@@ -281,5 +280,5 @@ public abstract class MessageHandler {
         }
     }
     
-    public abstract void sendPlayer(Player player);
+    protected abstract void sendPlayer(Player player);
 }

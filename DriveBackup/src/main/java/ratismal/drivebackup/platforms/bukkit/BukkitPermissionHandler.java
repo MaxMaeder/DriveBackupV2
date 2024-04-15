@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-public class BukkitPermissionHandler implements PermissionHandler {
+public final class BukkitPermissionHandler implements PermissionHandler {
     
     private static final String PERMISSION_CANNOT_BE_NULL = "Permission cannot be null";
     private static final String PLAYER_CANNOT_BE_NULL = "Player cannot be null";

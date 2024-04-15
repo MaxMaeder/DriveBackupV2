@@ -18,7 +18,7 @@ public final class NextcloudUploader extends WebDAVUploader {
     public static final String UPLOADER_NAME = "Nextcloud";
     private static final String ID = "nextcloud";
 
-    private NextcloudBackupMethod nextcloud;
+    private final NextcloudBackupMethod nextcloud;
 
     private String magic_upload_dir;
 
@@ -60,7 +60,7 @@ public final class NextcloudUploader extends WebDAVUploader {
     public void realUploadFile(@NotNull File file, @NotNull URL target) throws IOException {
         int chunksize = nextcloud.chunkSize;
         if (file.length() > chunksize && magic_upload_dir != null) {
-            String tempdir = magic_upload_dir + "/" + UUID.randomUUID().toString();
+            String tempdir = magic_upload_dir + "/" + UUID.randomUUID();
             sardine.createDirectory(tempdir);
             try (FileInputStream _fis = new FileInputStream(file)) {
                 ChunkedFileInputStream fis = new ChunkedFileInputStream(chunksize, _fis);

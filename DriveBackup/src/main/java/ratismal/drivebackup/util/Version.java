@@ -56,21 +56,6 @@ public final class Version {
     }
     
     @Contract (pure = true)
-    @Deprecated
-    public boolean isAfter(@NotNull Version other) {
-        if (major != other.major) {
-            return major > other.major;
-        }
-        if (minor != other.minor) {
-            return minor > other.minor;
-        }
-        if (patch != other.patch) {
-            return patch > other.patch;
-        }
-        return false;
-    }
-    
-    @Contract (pure = true)
     public boolean isNewerThan(@NotNull Version other) {
         if (major != other.major) {
             return major > other.major;

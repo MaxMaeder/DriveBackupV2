@@ -12,13 +12,13 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.logging.Logger;
 
-public class BukkitLoggingHandler implements LoggingHandler {
+public final class BukkitLoggingHandler implements LoggingHandler {
     
     private static final String LINE_SEPARATOR = System.lineSeparator();
     private final DriveBackupInstance driveBackupInstance;
     private final Logger logger;
     private final Map<String, PrefixedLogger> prefixedLoggers;
-    private ConfigurationSection advancedSection;
+    private final ConfigurationSection advancedSection;
     
     @Contract (pure = true)
     public BukkitLoggingHandler(@NotNull DriveBackupInstance driveBackupInstance, Logger logger) {

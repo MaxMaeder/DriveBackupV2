@@ -9,4 +9,5 @@ public interface PermissionHandler {
     
     boolean hasPermission(Player player, Permission permission);
     List<Player> getPlayersWithPermission(Permission permission);
+    
 }

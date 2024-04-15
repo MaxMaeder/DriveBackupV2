@@ -15,7 +15,7 @@ public interface TaskHandler {
      * @param period the period between each run
      * @param unit the unit of time for the delay and period
      */
-    void scheduleSyncRepeatingTask(Runnable runnable, long delay, long period, TimeUnit unit);
+    TaskIdentifier scheduleSyncRepeatingTask(Runnable runnable, long delay, long period, TimeUnit unit);
     
     /**
      * Schedules a repeating task to run asynchronously with the server
@@ -24,7 +24,7 @@ public interface TaskHandler {
      * @param period the period between each run
      * @param unit the unit of time for the delay and period
      */
-    void scheduleAsyncRepeatingTask(Runnable runnable, long delay, long period, TimeUnit unit);
+    TaskIdentifier scheduleAsyncRepeatingTask(Runnable runnable, long delay, long period, TimeUnit unit);
     
     /**
      * Schedules a task to run synchronously with the server
@@ -32,7 +32,7 @@ public interface TaskHandler {
      * @param delay the delay before the task starts
      * @param unit the unit of time for the delay
      */
-    void scheduleSyncDelayedTask(Runnable runnable, long delay, TimeUnit unit);
+    TaskIdentifier scheduleSyncDelayedTask(Runnable runnable, long delay, TimeUnit unit);
     
     /**
      * Schedules a task to run asynchronously with the server
@@ -40,7 +40,9 @@ public interface TaskHandler {
      * @param delay the delay before the task starts
      * @param unit the unit of time for the delay
      */
-    void scheduleAsyncDelayedTask(Runnable runnable, long delay, TimeUnit unit);
+    TaskIdentifier scheduleAsyncDelayedTask(Runnable runnable, long delay, TimeUnit unit);
+    
+    void cancelTask(TaskIdentifier taskId);
     
     void cancelAllTasks();
 }

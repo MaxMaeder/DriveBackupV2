@@ -30,6 +30,8 @@ public class DebugHandler {
     private static final List<String> SENSITIVE_CONFIG_KEYS = Arrays.asList("shared-drive-id", "hostname", "username", "password", "token", "sftp-public-key", "sftp-passphrase", "passphrase");
     private static final Pattern VALUE_PATTERN = Pattern.compile(":(\\s+)(.*)");
     private static final long MEGA_BYTE = 1024L * 1024L;
+    private static final long SIZE_LIMIT = 10_000_000L;
+    private static final int NUMBER_OF_LINES_LIMIT = 25_000;
     private final PrefixedLogger logger;
     private final DriveBackupInstance driveBackupInstance;
     
@@ -44,19 +46,19 @@ public class DebugHandler {
         File latestLog = new File(driveBackupInstance.getDataDirectory().getAbsoluteFile().getParentFile().getParentFile() + "/logs/latest.log");
         long size = latestLog.length();
         logger.info("Checking size of latest log");
-        if (10_000_000L < size) {
+        if (SIZE_LIMIT < size) {
             logger.warn("File too large to upload: " + size);
             throw new IOException("File too large");
         }
         logger.info("Latest log size: " + size);
         List<String> lines = Files.readAllLines(latestLog.toPath(), StandardCharsets.UTF_8);
         logger.info("Checking line count of latest log");
-        if (25_000 < lines.size()) {
+        if (NUMBER_OF_LINES_LIMIT < lines.size()) {
             logger.warn("File contains too many line to upload: " + lines.size());
             throw new IOException("File too long");
         }
         logger.info("Latest log line count: " + lines.size());
-        StringBuilder log = new StringBuilder(10000);
+        StringBuilder log = new StringBuilder(10_000);
         for (String line : lines) {
             log.append(line).append("\n");
         }
@@ -79,15 +81,15 @@ public class DebugHandler {
         logger.info("Making request to upload " + type);
         try (Response response = HttpClient.getHttpClient().newCall(request).execute()) {
             if (!response.isSuccessful()) {
-                final String requestFailed = "Request failed with code: ";
-                logger.warn(requestFailed + response);
-                throw new IOException(requestFailed+ response);
+                final String REQUEST_FAILED = "Request failed with code: ";
+                logger.warn(REQUEST_FAILED + response);
+                throw new IOException(REQUEST_FAILED+ response);
             }
             ResponseBody body = response.body();
             if (body == null) {
-                final String responseNull = "Response body is null";
-                logger.warn(responseNull);
-                throw new IOException(responseNull);
+                final String NULL_RESPONSE = "Response body is null";
+                logger.warn(NULL_RESPONSE);
+                throw new IOException(NULL_RESPONSE);
             }
             JSONObject responseJson = new JSONObject(body.string());
             logger.info("Successfully uploaded " + type + ", ID is: " + responseJson.getString("id"));
@@ -120,20 +122,20 @@ public class DebugHandler {
         try {
             configFile = config.getConfigFile();
         } catch (IllegalStateException e) {
-            final String failedToGetConfigFile = "Failed to get config file";
-            logger.warn(failedToGetConfigFile, e);
-            return failedToGetConfigFile;
+            final String FAILED_TO_GET_CONFIG = "Failed to get config file";
+            logger.warn(FAILED_TO_GET_CONFIG, e);
+            return FAILED_TO_GET_CONFIG;
         }
         logger.info("Reading config file");
         List<String> lines;
         try {
             lines = Files.readAllLines(configFile.toPath(), StandardCharsets.UTF_8);
         } catch (IOException e) {
-            final String failedToReadConfigFile = "Failed to read config file";
-            logger.warn(failedToReadConfigFile, e);
-            return failedToReadConfigFile;
+            final String FAILED_TO_READ_CONFIG = "Failed to read config file";
+            logger.warn(FAILED_TO_READ_CONFIG, e);
+            return FAILED_TO_READ_CONFIG;
         }
-        StringBuilder configString = new StringBuilder(1000);
+        StringBuilder configString = new StringBuilder(1_000);
         configString.append("Config\n");
         configString.append("------\n");
         for (String line : lines) {

@@ -7,7 +7,7 @@ import ratismal.drivebackup.objects.Player;
 
 import java.util.Collection;
 
-public class BukkitPlayerHandler implements PlayerHandler {
+public final class BukkitPlayerHandler implements PlayerHandler {
     
     private final BukkitPlugin instance;
     

@@ -53,10 +53,8 @@ public class Timer {
     public String getUploadTimeMessage(@NotNull File file) {
         DecimalFormat df = new DecimalFormat("#.##");
         df.setDecimalFormatSymbols(DecimalFormatSymbols.getInstance(Locale.ENGLISH));
-        
         long length = ChronoUnit.SECONDS.between(start, end);
         long speed = (file.length() / 1024) / length;
-        
         return intl("file-upload-message")
             .replace("<length>", df.format(length))
             .replace("<speed>", df.format(speed));

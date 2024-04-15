@@ -28,7 +28,7 @@ public final class UpdateTask implements Runnable {
         logger.info("Checking for updates...");
         updateHandler.getLatest();
         if (updateHandler.hasUpdate()) {
-            StringBuilder sb = new StringBuilder();
+            StringBuilder sb = new StringBuilder(1000);
             sb.append("DriveBackup has an update available!\n");
             sb.append("New version available: ");
             sb.append(updateHandler.getLatestVersion());

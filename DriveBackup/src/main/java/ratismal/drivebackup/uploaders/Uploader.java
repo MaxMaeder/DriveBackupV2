@@ -2,21 +2,24 @@ package ratismal.drivebackup.uploaders;
 
 import org.jetbrains.annotations.Contract;
 import ratismal.drivebackup.UploadThread;
+import ratismal.drivebackup.platforms.DriveBackupInstance;
 
 import java.io.File;
 import java.io.IOException;
 
 public abstract class Uploader {
     
-    private String name;
-    private String id;
-    private boolean authenticated;
-    private boolean errorOccurred;
-    private final AuthenticationProvider authProvider;
+    protected final DriveBackupInstance instance;
+    protected String name;
+    protected String id;
+    protected boolean authenticated;
+    protected boolean errorOccurred;
+    protected final AuthenticationProvider authProvider;
     protected final UploadThread.UploadLogger logger;
     
     @Contract (pure = true)
-    protected Uploader(String name, String id, AuthenticationProvider authProvider, UploadThread.UploadLogger logger) {
+    protected Uploader(DriveBackupInstance instance, String name, String id, AuthenticationProvider authProvider, UploadThread.UploadLogger logger) {
+        this.instance = instance;
         this.name = name;
         this.id = id;
         this.authProvider = authProvider;

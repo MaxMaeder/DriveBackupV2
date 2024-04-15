@@ -61,16 +61,14 @@ public class Scheduler {
                 ZoneOffset timezone = config.advanced.dateTimezone;
                 for (DayOfWeek day : entry.days) {
                     ZonedDateTime previousOccurrence = ZonedDateTime.now(timezone)
-                        .with(TemporalAdjusters.previous(day))
-                        .with(ChronoField.CLOCK_HOUR_OF_DAY, entry.time.get(ChronoField.CLOCK_HOUR_OF_DAY))
-                        .with(ChronoField.MINUTE_OF_HOUR, entry.time.get(ChronoField.MINUTE_OF_HOUR))
-                        .with(ChronoField.SECOND_OF_MINUTE, 0L);
+                                                                    .with(TemporalAdjusters.previous(day))
+                                                                    .with(ChronoField.CLOCK_HOUR_OF_DAY, entry.time.get(ChronoField.CLOCK_HOUR_OF_DAY)).withMinute(entry.time.get(ChronoField.MINUTE_OF_HOUR))
+                                                                    .with(ChronoField.SECOND_OF_MINUTE, 0L);
                     ZonedDateTime now = ZonedDateTime.now(timezone);
                     ZonedDateTime nextOccurrence = ZonedDateTime.now(timezone)
-                        .with(TemporalAdjusters.nextOrSame(day))
-                        .with(ChronoField.CLOCK_HOUR_OF_DAY, entry.time.get(ChronoField.CLOCK_HOUR_OF_DAY))
-                        .with(ChronoField.MINUTE_OF_HOUR, entry.time.get(ChronoField.MINUTE_OF_HOUR))
-                        .with(ChronoField.SECOND_OF_MINUTE, 0L);
+                                                                .with(TemporalAdjusters.nextOrSame(day))
+                                                                .with(ChronoField.CLOCK_HOUR_OF_DAY, entry.time.get(ChronoField.CLOCK_HOUR_OF_DAY)).withMinute(entry.time.get(ChronoField.MINUTE_OF_HOUR))
+                                                                .with(ChronoField.SECOND_OF_MINUTE, 0L);
                     // Adjusts nextOccurrence date when it was set to earlier on the same day,
                     // as the DayOfWeek TemporalAdjuster only takes into account the day,
                     // not the time.
@@ -87,8 +85,7 @@ public class Scheduler {
                     backupDatesList.add(startingOccurrence);
                 }
                 ZonedDateTime scheduleMessageTime = ZonedDateTime.now(timezone)
-                    .with(ChronoField.CLOCK_HOUR_OF_DAY, entry.time.get(ChronoField.CLOCK_HOUR_OF_DAY))
-                    .with(ChronoField.MINUTE_OF_HOUR, entry.time.get(ChronoField.MINUTE_OF_HOUR));
+                                                                 .with(ChronoField.CLOCK_HOUR_OF_DAY, entry.time.get(ChronoField.CLOCK_HOUR_OF_DAY)).withMinute(entry.time.get(ChronoField.MINUTE_OF_HOUR));
                 StringBuilder scheduleDays = new StringBuilder(1_000);
                 for (int i = 0; i < entry.days.length; i++) {
                     if (i == entry.days.length - 1) {

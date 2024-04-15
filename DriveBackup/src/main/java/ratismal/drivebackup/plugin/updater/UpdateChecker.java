@@ -18,7 +18,6 @@ import ratismal.drivebackup.util.Version;
 import java.io.IOException;
 import java.util.NoSuchElementException;
 import java.util.concurrent.TimeUnit;
-import java.util.regex.Pattern;
 
 import static ratismal.drivebackup.config.Localization.intl;
 
@@ -28,8 +27,7 @@ public class UpdateChecker {
     /**
      * How often to check for updates, in seconds
      */
-    private static final long UPDATE_CHECK_INTERVAL = TimeUnit.HOURS.toSeconds((long) 4L);
-    private static final Pattern NAME_DASH = Pattern.compile("DriveBackupV2-", Pattern.LITERAL);
+    private static final long UPDATE_CHECK_INTERVAL = TimeUnit.HOURS.toSeconds(4L);
     
     private static Version currentVersion;
     private static Version latestVersion;
@@ -52,12 +50,12 @@ public class UpdateChecker {
                     currentVersion = checker.getCurrent();
                     latestVersion = checker.getLatest();
                     //check if the current version is outdated
-                    if (latestVersion.isAfter(currentVersion)) {
+                    if (latestVersion.isNewerThan(currentVersion)) {
                         logger.log(
                             intl("update-checker-new-release"),
                             "latest-version", latestVersion.toString(),
                             "current-version", currentVersion.toString());
-                    } else if (currentVersion.isAfter(latestVersion)) {
+                    } else if (currentVersion.isNewerThan(latestVersion)) {
                         logger.log(
                             intl("update-checker-unsupported-release"),
                             "latest-version", latestVersion.toString(),
@@ -79,7 +77,7 @@ public class UpdateChecker {
     @Contract (pure = true)
     public static boolean isUpdateAvailable() {
         if (latestVersion != null) {
-            return latestVersion.isAfter(currentVersion);
+            return latestVersion.isNewerThan(currentVersion);
         }
         return false;
     }
@@ -98,7 +96,7 @@ public class UpdateChecker {
         final String LATEST_URL = "https://api.github.com/repos/MaxMaeder/DriveBackupV2/releases/latest";
         Request request = new Request.Builder().url(LATEST_URL).build();
         JSONObject pluginVersions;
-        try (Response response = DriveBackup.httpClient.newCall(request).execute()) {
+        try (Response response = HttpClient.getHttpClient().newCall(request).execute()) {
             if (response.code() != 200) {
                 throw new IOException("Unexpected response: " + response.code() + " : " + response.message());
             }
@@ -115,7 +113,7 @@ public class UpdateChecker {
         String assetsUrl = pluginVersions.getString("assets_url");
         Request request2 = new Request.Builder().url(assetsUrl).build();
         JSONArray assets;
-        try (Response response = DriveBackup.httpClient.newCall(request2).execute()) {
+        try (Response response = HttpClient.getHttpClient().newCall(request2).execute()) {
             if (response.code() != 200) {
                 throw new IOException("Unexpected response: " + response.code() + " : " + response.message());
             }

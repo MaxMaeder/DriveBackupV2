@@ -25,7 +25,8 @@ public final class BukkitMessageHandler extends MessageHandler {
     @Override
     public MessageHandler toAll() {
         Collection<? extends org.bukkit.entity.Player> players = plugin.getServer().getOnlinePlayers();
-        recipients.ensureCapacity(players.size());
+        int expectedSize = players.size() + recipients.size();
+        recipients.ensureCapacity(expectedSize);
         for (org.bukkit.entity.Player player : players) {
             recipients.add(new Player(player.getName(), player.getUniqueId()));
         }
@@ -33,7 +34,7 @@ public final class BukkitMessageHandler extends MessageHandler {
     }
     
     @Override
-    public void sendPlayer(@NotNull Player player) {
+    protected void sendPlayer(@NotNull Player player) {
         plugin.getAudiences().player(player.getUuid()).sendMessage(getMessage());
     }
 }

@@ -1,4 +1,4 @@
-package ratismal.drivebackup.util;
+package ratismal.drivebackup.http;
 
 import okhttp3.Interceptor;
 import okhttp3.MediaType;
@@ -10,11 +10,11 @@ import org.jetbrains.annotations.NotNull;
 import org.json.JSONObject;
 import ratismal.drivebackup.config.ConfigParser;
 import ratismal.drivebackup.uploaders.UploaderUtils;
+import ratismal.drivebackup.util.MessageUtil;
 
 import java.io.IOException;
 
-@Deprecated
-public class HttpLogger implements Interceptor {
+public final class HttpLogger implements Interceptor {
     
     @Override
     public @NotNull Response intercept(@NotNull Interceptor.Chain chain) throws IOException {

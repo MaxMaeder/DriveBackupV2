@@ -7,6 +7,7 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 import ratismal.drivebackup.handler.logging.PrefixedLogger;
 import ratismal.drivebackup.http.HttpClient;
 import ratismal.drivebackup.platforms.DriveBackupInstance;
@@ -18,14 +19,11 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.concurrent.TimeUnit;
-import java.util.regex.Pattern;
 
 public final class UpdateHandler {
     
-    private static final int CURSE_PROJECT_ID = 383461;
-    private static final String CURSE_REQUEST_URL = "https://api.curseforge.com/servermods/files?projectids=" + CURSE_PROJECT_ID;
-    private static final Pattern NAME_DASH = Pattern.compile("DriveBackupV2-", Pattern.LITERAL);
-    private static final String tempFileName = "DriveBackupV2.jar.temp";
+    private static final String LATEST_URL = "https://api.github.com/repos/MaxMaeder/DriveBackupV2/releases/latest";
+    private static final String TEMP_FILE_NAME = "DriveBackupV2.jar.temp";
     
     private final DriveBackupInstance instance;
     private UpdateTask updateTask;
@@ -54,27 +52,42 @@ public final class UpdateHandler {
     
     public void getLatest() {
         try {
-            Request request = new Request.Builder().url(CURSE_REQUEST_URL).build();
+            Request request = new Request.Builder().url(LATEST_URL).build();
             Response response = HttpClient.getHttpClient().newCall(request).execute();
             ResponseBody body = response.body();
             if (body == null) {
                 throw new IOException("Response body is null");
             }
-            JSONArray pluginVersions = new JSONArray(body.string());
+            JSONObject pluginVersions = new JSONObject(body.string());
             response.close();
             if (pluginVersions.isEmpty()) {
                 throw new IOException("No versions found");
             }
             int index = pluginVersions.length() - 1;
-            String versionTitle = pluginVersions.getJSONObject(index).getString("name");
-            String downloadURL = pluginVersions.getJSONObject(index).getString("downloadUrl");
+            String htmlUrl = pluginVersions.getString("html_url");
+            String assetsUrl = pluginVersions.getString("assets_url");
+            Request request2 = new Request.Builder().url(assetsUrl).build();
+            JSONArray assets;
+            try (Response response2 = HttpClient.getHttpClient().newCall(request2).execute()) {
+                if (response2.code() != 200) {
+                    throw new IOException("Unexpected response: " + response2.code() + " : " + response2.message());
+                }
+                ResponseBody body2 = response2.body();
+                if (body2 == null) {
+                    throw new IOException("Response body is null");
+                }
+                assets = new JSONArray(body2.string());
+            }
+            JSONObject jar = assets.getJSONObject(0);
+            String versionTitle = htmlUrl.substring(htmlUrl.lastIndexOf('/') + 2).trim();
             latest = Version.parse(versionTitle);
-            latestDownloadUrl = downloadURL;
+            latestDownloadUrl = jar.getString("url");
         } catch (IOException | JSONException e) {
             logger.error("Failed to get latest version: " + e.getMessage());
         }
     }
     
+    @Contract (pure = true)
     public boolean hasUpdate() {
         if (latest == null || latestDownloadUrl == null || current == null) {
             return false;
@@ -84,8 +97,8 @@ public final class UpdateHandler {
     
     public void downloadUpdate() {
         try {
-            File tempFile = new File(instance.getJarFile().getParentFile(), "DriveBackupV2.jar.temp");
-            Request request = new Request.Builder().url(latestDownloadUrl).build();
+            File tempFile = new File(instance.getJarFile().getParentFile(), TEMP_FILE_NAME);
+            Request request = new Request.Builder().url(latestDownloadUrl).addHeader("Accept", "application/octet-stream").build();
             try (Response response = HttpClient.getHttpClient().newCall(request).execute()) {
                 if (!response.isSuccessful()) {
                     throw new IOException("Failed to download file: " + response);
@@ -107,11 +120,14 @@ public final class UpdateHandler {
         }
     }
     
+    @Contract (pure = true)
     public Version getCurrentVersion() {
         return current;
     }
     
+    @Contract (pure = true)
     public Version getLatestVersion() {
         return latest;
     }
+    
 }

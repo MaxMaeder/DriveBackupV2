@@ -2,7 +2,6 @@ package ratismal.drivebackup.http;
 
 import okhttp3.OkHttpClient;
 import org.jetbrains.annotations.Contract;
-import ratismal.drivebackup.util.HttpLogger;
 
 import java.util.concurrent.TimeUnit;
 

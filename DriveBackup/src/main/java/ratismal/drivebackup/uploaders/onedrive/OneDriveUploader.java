@@ -409,7 +409,7 @@ public final class OneDriveUploader extends Uploader {
      * A file/folder in the authenticated user's OneDrive 
      */
     private static final class File {
-        private ArrayList<String> filePath = new ArrayList<>();
+        private final ArrayList<String> filePath = new ArrayList<>();
 
         /**
          * Creates a reference of the {@code File} object

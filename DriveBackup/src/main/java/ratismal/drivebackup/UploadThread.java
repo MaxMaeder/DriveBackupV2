@@ -65,27 +65,7 @@ public class UploadThread implements Runnable {
     private CommandSender initiator;
     private final UploadLogger logger;
     private final FileUtil fileUtil;
-
-    /**
-     * The current status of the backup thread
-     */
-    enum BackupStatus {
-        /**
-         * The backup thread isn't running
-         */
-        NOT_RUNNING,
-
-        /**
-         * The backup thread is compressing the files to be backed up.
-         */
-        COMPRESSING,
-
-        /**
-         * The backup thread is uploading the files
-         */
-        UPLOADING
-    }
-
+    
     /**
      * List of {@code Uploaders} to upload the backups to
      */
@@ -103,16 +83,17 @@ public class UploadThread implements Runnable {
     /**
      * The {@code BackupStatus} of the backup thread
      */
-    private static BackupStatus backupStatus = BackupStatus.NOT_RUNNING;
+    private BackupStatus backupStatus = BackupStatus.NOT_RUNNING;
     
-    private static LocalDateTime nextIntervalBackupTime;
-    private static boolean lastBackupSuccessful = true;
+    private LocalDateTime nextIntervalBackupTime;
+    private boolean lastBackupSuccessful = true;
 
     /**
-     * The backup currently being backed up by the 
+     * The backup currently being backed up by the
      */
-    private static int backupBackingUp;
+    private int backupBackingUp;
     
+    @Deprecated
     public abstract static class UploadLogger implements Logger {
         public void broadcast(String input, String... placeholders) {
             MessageUtil.Builder()
@@ -182,9 +163,9 @@ public class UploadThread implements Runnable {
             locationsToBePruned.clear();
         }
         Config config = ConfigParser.getConfig();
-        if (initiator != null && backupStatus != BackupStatus.NOT_RUNNING) {
+        if (initiator != null && BackupStatus.NOT_RUNNING != backupStatus) {
             logger.initiatorError(
-                intl("backup-already-running"), 
+                intl("backup-already-running"),
                 "backup-status", getBackupStatus());
             return;
         }
@@ -214,7 +195,7 @@ public class UploadThread implements Runnable {
             }
         }
         logger.log(intl("backup-local-start"));
-        backupStatus = BackupStatus.COMPRESSING;
+        setBackupStatus(BackupStatus.COMPRESSING);
         backupBackingUp = 0;
         ServerUtil.setAutoSave(false);
         for (BackupListEntry set : backupList) {
@@ -228,7 +209,7 @@ public class UploadThread implements Runnable {
         ServerUtil.setAutoSave(true);
         logger.log(intl("backup-local-complete"));
         logger.log(intl("backup-upload-start"));
-        backupStatus = BackupStatus.UPLOADING;
+        setBackupStatus(BackupStatus.UPLOADING);
         uploaders = new ArrayList<>(5);
         if (config.backupMethods.googleDrive.enabled) {
             uploaders.add(new GoogleDriveUploader(logger));
@@ -284,7 +265,7 @@ public class UploadThread implements Runnable {
             logger.info(intl("backup-disabled-inactivity"));
             PlayerListener.setAutoBackupsActive(false);
         }
-        lastBackupSuccessful = !errorOccurred;
+        setLastBackupSuccessful(!errorOccurred);
         pruneLocalBackups();
         if (errorOccurred) {
             DriveBackupApi.backupError();
@@ -292,7 +273,17 @@ public class UploadThread implements Runnable {
             DriveBackupApi.backupDone();
         }
     }
-
+    
+    @Contract (mutates = "this")
+    private void setLastBackupSuccessful(boolean lastBackupSuccessful) {
+        this.lastBackupSuccessful = lastBackupSuccessful;
+    }
+    
+    @Contract (mutates = "this")
+    private void setBackupStatus(BackupStatus backupStatus) {
+        this.backupStatus = backupStatus;
+    }
+    
     private void ensureMethodsAuthenticated() {
         Iterator<Uploader> iterator = uploaders.iterator();
         while (iterator.hasNext()) {
@@ -412,17 +403,17 @@ public class UploadThread implements Runnable {
      */
     private void makeExternalFileBackup(ExternalFTPSource externalBackup) {
         logger.info(
-            intl("external-ftp-backup-start"), 
+            intl("external-ftp-backup-start"),
             "socket-addr", getSocketAddress(externalBackup));
         FTPUploader ftpUploader = new FTPUploader(
                 logger,
-                externalBackup.hostname, 
-                externalBackup.port, 
-                externalBackup.username, 
+                externalBackup.hostname,
+                externalBackup.port,
+                externalBackup.username,
                 externalBackup.password,
                 externalBackup.ftps,
                 externalBackup.sftp,
-                externalBackup.publicKey, 
+                externalBackup.publicKey,
                 externalBackup.passphrase,
                 "external-backups",
                 ".");
@@ -430,7 +421,7 @@ public class UploadThread implements Runnable {
             List<BlacklistEntry> blacklist = new ArrayList<>(2);
             for (String blacklistGlob : backup.blacklist) {
                 BlacklistEntry blacklistEntry = new BlacklistEntry(
-                    blacklistGlob, 
+                    blacklistGlob,
                     FileSystems.getDefault().getPathMatcher("glob:" + blacklistGlob)
                     );
                 blacklist.add(blacklistEntry);
@@ -443,13 +434,13 @@ public class UploadThread implements Runnable {
             }
             for (String relativeFilePath : ftpUploader.getFiles(baseDirectory)) {
                 String filePath = baseDirectory + "/" + relativeFilePath;
-
+                Path path = Paths.get(relativeFilePath);
                 for (BlacklistEntry blacklistEntry : blacklist) {
-                    if (blacklistEntry.getPathMatcher().matches(Paths.get(relativeFilePath))) {
+                    if (blacklistEntry.getPathMatcher().matches(path)) {
                         blacklistEntry.incBlacklistedFiles();
                     }
                 }
-                String parentFolder = new File(relativeFilePath).getParent();
+                String parentFolder = path.toFile().getParent();
                 String parentFolderPath;
                 if (parentFolder != null) {
                     parentFolderPath = "/" + parentFolder;
@@ -463,7 +454,7 @@ public class UploadThread implements Runnable {
                 int blacklistedFiles = blacklistEntry.getBlacklistedFiles();
                 if (blacklistedFiles > 0) {
                     logger.log(
-                        intl("external-ftp-backup-blacklisted"), 
+                        intl("external-ftp-backup-blacklisted"),
                         "blacklisted-files", String.valueOf(blacklistedFiles),
                         "glob-pattern", globPattern);
                 }
@@ -489,23 +480,24 @@ public class UploadThread implements Runnable {
     }
 
     /**
-     * Downloads databases from a MySQL server and stores them within the external-backups temporary folder, using the specified external backup settings.
+     * Downloads databases from a MySQL server and stores them within the external-backups temporary folder,
+     * using the specified external backup settings.
      * @param externalBackup the external backup settings
      */
     private void makeExternalDatabaseBackup(ExternalMySQLSource externalBackup) {
         logger.info(
-            intl("external-mysql-backup-start"), 
+            intl("external-mysql-backup-start"),
             "socket-addr", getSocketAddress(externalBackup));
         MySQLUploader mysqlUploader = new MySQLUploader(
-                externalBackup.hostname, 
-                externalBackup.port, 
-                externalBackup.username, 
+                externalBackup.hostname,
+                externalBackup.port,
+                externalBackup.username,
                 externalBackup.password,
                 externalBackup.ssl);
         for (MySQLDatabaseBackup database : externalBackup.databaseList) {
             for (String blacklistEntry : database.blacklist) {
                 logger.log(
-                    intl("external-mysql-backup-blacklisted"), 
+                    intl("external-mysql-backup-blacklisted"),
                     "blacklist-entry", blacklistEntry);
             }
             mysqlUploader.downloadDatabase(database.name, getTempFolderName(externalBackup), Arrays.asList(database.blacklist));
@@ -519,7 +511,7 @@ public class UploadThread implements Runnable {
         backupList.add(backup);
         if (mysqlUploader.didErrorOccur()) {
             logger.log(
-                intl("external-mysql-backup-failed"), 
+                intl("external-mysql-backup-failed"),
                 "socket-addr", getSocketAddress(externalBackup));
         } else {
             logger.info(
@@ -532,7 +524,7 @@ public class UploadThread implements Runnable {
      * Gets the current status of the backup thread
      * @return the status of the backup thread as a {@code String}
      */
-    public static String getBackupStatus() {
+    public String getBackupStatus() {
         Config config = ConfigParser.getConfig();
         String message;
         switch (backupStatus) {
@@ -555,9 +547,9 @@ public class UploadThread implements Runnable {
 
     /**
      * Gets the date/time of the next automatic backup, if enabled.
-     * @return the time and/or date of the next automatic backup formatted using the messages in the {@code config.yml} 
+     * @return the time and/or date of the next automatic backup formatted using the messages in the {@code config.yml}
      */
-    public static String getNextAutoBackup() {
+    public String getNextAutoBackup() {
         Config config = ConfigParser.getConfig();
         if (config.backupScheduling.enabled) {
             long now = ZonedDateTime.now(config.advanced.dateTimezone).toEpochSecond();
@@ -578,11 +570,12 @@ public class UploadThread implements Runnable {
     /**
      * Sets the time of the next interval-based backup to the current time + the configured interval.
      */
-    public static void updateNextIntervalBackupTime() {
+    public void updateNextIntervalBackupTime() {
         nextIntervalBackupTime = LocalDateTime.now().plusMinutes(ConfigParser.getConfig().backupStorage.delay);
     }
 
-    public static boolean wasLastBackupSuccessful() {
+    @Contract (pure = true)
+    public boolean wasLastBackupSuccessful() {
         return lastBackupSuccessful;
     }
 

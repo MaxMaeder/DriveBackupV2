@@ -40,7 +40,7 @@ public class Updater {
     private void downloadFile() throws IOException  {
         File outputPath = new File(updateFolder, "DriveBackupV2.jar.temp");
         Request request = new Request.Builder().url(UpdateChecker.getLatestDownloadUrl()).addHeader("Accept", "application/octet-stream").build();
-        try (Response response = DriveBackup.httpClient.newCall(request).execute()) {
+        try (Response response = HttpClient.getHttpClient().newCall(request).execute()) {
             if (!response.isSuccessful()) {
                 throw new IOException("Failed to download file: " + response);
             }
