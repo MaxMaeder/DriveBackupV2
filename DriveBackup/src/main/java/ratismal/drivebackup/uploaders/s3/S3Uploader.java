@@ -7,39 +7,37 @@ import io.minio.Result;
 import io.minio.UploadObjectArgs;
 import io.minio.messages.Item;
 import org.jetbrains.annotations.NotNull;
-import ratismal.drivebackup.UploadThread.UploadLogger;
-import ratismal.drivebackup.config.ConfigParser;
 import ratismal.drivebackup.config.configSections.BackupMethods.S3BackupMethod;
+import ratismal.drivebackup.platforms.DriveBackupInstance;
+import ratismal.drivebackup.uploaders.UploadLogger;
 import ratismal.drivebackup.uploaders.Uploader;
-import ratismal.drivebackup.util.MessageUtil;
 import ratismal.drivebackup.util.NetUtil;
 
 import java.io.File;
 import java.net.URL;
 import java.time.ZonedDateTime;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
 
-import static ratismal.drivebackup.config.Localization.intl;
-
 public class S3Uploader extends Uploader {
 
-    public static final String UPLOADER_NAME = "S3";
-    public static final String UPLOADER_ID = "s3";
+    private static final String UPLOADER_NAME = "S3";
+    private static final String UPLOADER_ID = "s3";
 
     private MinioClient minioClient;
     
     private String _bucket;
     private String _hostname;
 
-    public S3Uploader(UploadLogger logger, S3BackupMethod config) {
-        super(UPLOADER_NAME, UPLOADER_ID, null, logger);
+    public S3Uploader(DriveBackupInstance instance, UploadLogger logger, S3BackupMethod config) {
+        super(instance, UPLOADER_NAME, UPLOADER_ID, null, logger);
         try {
             _hostname = new URL(config.endpoint).getHost();
             _bucket = config.bucket;
             minioClient = MinioClient.builder().endpoint(config.endpoint).credentials(config.accessKey, config.secretKey).build();
         } catch(Exception e) {
-            MessageUtil.sendConsoleException(e);
+            instance.getLoggingHandler().error("Failed to initialize S3 uploader", e);
             setErrorOccurred(true);
         }
     }
@@ -52,7 +50,7 @@ public class S3Uploader extends Uploader {
             minioClient.removeObject(RemoveObjectArgs.builder().bucket(_bucket).object(testFile.getName()).build());
         } catch (Exception exception) {
             NetUtil.catchException(exception, _hostname, logger);
-            MessageUtil.sendConsoleException(exception);
+            instance.getLoggingHandler().error("Failed to test S3 uploader", exception);
             setErrorOccurred(true);
         }
     }
@@ -66,12 +64,12 @@ public class S3Uploader extends Uploader {
             try {
                 pruneBackups(type);
             } catch (Exception e) {
-                logger.log(intl("backup-method-prune-failed"));
+                logger.log("backup-method-prune-failed");
                 throw e;
             }
         } catch(Exception exception) {
             NetUtil.catchException(exception, _hostname, logger);
-            MessageUtil.sendConsoleException(exception);
+            instance.getLoggingHandler().error("Failed to upload file to S3", exception);
             setErrorOccurred(true);
         }
     }
@@ -81,17 +79,17 @@ public class S3Uploader extends Uploader {
     }
 
     public void pruneBackups(String type) throws Exception {
-        int fileLimit = ConfigParser.getConfig().backupStorage.keepCount;
+        int fileLimit = getKeepCount();
         if (fileLimit == -1) {
             return;
         }
         TreeMap<ZonedDateTime, Item> files = getZipFiles(type);
         if (files.size() > fileLimit) {
-            logger.info(
-                    intl("backup-method-limit-reached"),
-                    "file-count", String.valueOf(files.size()),
-                    "upload-method", getName(),
-                    "file-limit", String.valueOf(fileLimit));
+            Map<String, String> placeholders = new HashMap<>(3);
+            placeholders.put("file-count", String.valueOf(files.size()));
+            placeholders.put("upload-method", getName());
+            placeholders.put("file-limit", String.valueOf(fileLimit));
+            logger.info("backup-method-limit-reached", placeholders);
             while (files.size() > fileLimit) {
                 Map.Entry<ZonedDateTime, Item> firstEntry = files.firstEntry();
                 minioClient.removeObject(RemoveObjectArgs.builder().bucket(_bucket).object(firstEntry.getValue().objectName()).build());

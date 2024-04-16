@@ -2,9 +2,9 @@ package ratismal.drivebackup.util;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import ratismal.drivebackup.UploadThread.UploadLogger;
 import ratismal.drivebackup.config.ConfigParser;
-import ratismal.drivebackup.config.ConfigParser.Config;
+import ratismal.drivebackup.platforms.DriveBackupInstance;
+import ratismal.drivebackup.uploaders.UploadLogger;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -16,8 +16,14 @@ import java.nio.file.Path;
 import java.nio.file.PathMatcher;
 import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -25,20 +31,17 @@ import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-import static ratismal.drivebackup.config.Localization.intl;
-
-/**
- * Created by Ratismal on 2016-01-20.
- */
-
-public class FileUtil {
+public final class FileUtil {
     private static final String NAME_KEYWORD = "%NAME";
     private static final Pattern NAME = Pattern.compile(NAME_KEYWORD, Pattern.LITERAL);
     
-    private UploadLogger logger;
+    private final UploadLogger logger;
+    private final DriveBackupInstance instance;
 
-    public FileUtil(UploadLogger logger) {
+    @Contract (pure = true)
+    public FileUtil(DriveBackupInstance instance, UploadLogger logger) {
         this.logger = logger;
+        this.instance = instance;
     }
 
     /**
@@ -47,22 +50,16 @@ public class FileUtil {
      * @param formatter the format of the file name
      * @return The list of backups
      */
-    public TreeMap<Long, File> getLocalBackups(String location, LocalDateTimeFormatter formatter) {
+    public @NotNull TreeMap<Long, File> getLocalBackups(String location, LocalDateTimeFormatter formatter) {
         location = escapeBackupLocation(location);
         TreeMap<Long, File> backupList = new TreeMap<>();
-        String path = new File(ConfigParser.getConfig().backupStorage.localDirectory).getAbsolutePath() + "/" + location;
+        String localDir = instance.getConfigHandler().getConfig().getValue("local-save-directory").getString();
+        String path = new File(localDir).getAbsolutePath() + File.separator + location;
         File[] files = new File(path).listFiles();
         for (File file : files) {
             if (file.getName().endsWith(".zip")) {
-                //String fileName = file.getName();
-                // try {
-                //     ZonedDateTime date = formatter.parse(fileName);
-                //     backupList.put(date.toEpochSecond(), file);
-                // } catch (Exception e) {
-                // Fallback to using file creation date if the file name doesn't match the format.
-                backupList.put((file.lastModified() / 1000L), file);
-                //     logger.log(intl("local-backup-date-format-invalid"), "file-name", fileName);
-                // }
+                long dateOfFile = TimeUnit.MILLISECONDS.toSeconds(file.lastModified());
+                backupList.put(dateOfFile, file);
             }
         }
         return backupList;
@@ -76,17 +73,18 @@ public class FileUtil {
      * @throws Exception
      */
     public void makeBackup(@NotNull String location, LocalDateTimeFormatter formatter, List<String> blacklistGlobs) throws Exception {
-        Config config = ConfigParser.getConfig();
         if (location.charAt(0) == '/') {
             throw new IllegalArgumentException("Location cannot start with a slash");
         }
-        ZonedDateTime now = ZonedDateTime.now(config.advanced.dateTimezone);
+        ZoneOffset zoneOffset = ZoneOffset.of(instance.getConfigHandler().getConfig().getValue("advanced", "date-timezone").getString());
+        ZonedDateTime now = ZonedDateTime.now(zoneOffset);
         String fileName = formatter.format(now);
         String subFolderName = location;
         if (isBaseFolder(subFolderName)) {
             subFolderName = "root";
         }
-        File path = new File(escapeBackupLocation(config.backupStorage.localDirectory + "/" + subFolderName));
+        String localDir = instance.getConfigHandler().getConfig().getValue("local-save-directory").getString();
+        File path = new File(escapeBackupLocation(localDir + "/" + subFolderName));
         if (!path.exists()) {
             path.mkdirs();
         }
@@ -103,17 +101,15 @@ public class FileUtil {
             String globPattern = blacklistEntry.getGlobPattern();
             int blacklistedFiles = blacklistEntry.getBlacklistedFiles();
             if (blacklistedFiles > 0) {
-                logger.info(
-                    intl("local-backup-backlisted"),
-                    "blacklisted-files-count", String.valueOf(blacklistedFiles),
-                    "glob-pattern", globPattern);
+                Map<String, String> placeholders = new HashMap<>(2);
+                placeholders.put("blacklisted-files-count", String.valueOf(blacklistedFiles));
+                placeholders.put("glob-pattern", globPattern);
+                logger.info("local-backup-backlisted", placeholders);
             }
         }
         int filesInBackupFolder = fileList.getFilesInBackupFolder();
         if (filesInBackupFolder > 0) {
-            logger.info(
-                intl("local-backup-in-backup-folder"), 
-                "files-in-backup-folder-count", String.valueOf(filesInBackupFolder));
+            logger.info("local-backup-in-backup-folder", "files-in-backup-folder-count", String.valueOf(filesInBackupFolder));
         }
         if (fileName.contains(NAME_KEYWORD)) {
             int lastSeparatorIndex = Math.max(location.lastIndexOf('/'), location.lastIndexOf('\\'));
@@ -132,42 +128,39 @@ public class FileUtil {
      */
     public void pruneLocalBackups(String location, LocalDateTimeFormatter formatter) {
         location = escapeBackupLocation(location);
-        logger.log(intl("local-backup-pruning-start"), "location", location);
-        int localKeepCount = ConfigParser.getConfig().backupStorage.localKeepCount;
+        logger.info("local-backup-pruning-start", "location", location);
+        int localKeepCount = instance.getConfigHandler().getConfig().getValue("local-keep-count").getInt();
         if (localKeepCount != -1) {
             try {
                 TreeMap<Long, File> backupList = getLocalBackups(location, formatter);
                 String size = String.valueOf(backupList.size());
                 String keepCount = String.valueOf(localKeepCount);
+                Map<String, String> placeholders = new HashMap<>(2);
+                placeholders.put("backup-count", size);
+                placeholders.put("backup-limit", keepCount);
                 if (backupList.size() > localKeepCount) {
-                    logger.info(intl("local-backup-limit-reached"),
-                        "backup-count", size,
-                        "backup-limit", keepCount);
+                    logger.info("local-backup-limit-reached", placeholders);
                 } else {
-                    logger.info(intl("local-backup-limit-not-reached"),
-                        "backup-count", size,
-                        "backup-limit", keepCount);
+                    logger.info("local-backup-limit-not-reached", placeholders);
                     return;
                 }
                 while (backupList.size() > localKeepCount) {
                     File fileToDelete = backupList.descendingMap().lastEntry().getValue();
                     long dateOfFile = backupList.descendingMap().lastKey();
                     if (!fileToDelete.delete()) {
-                        logger.log(intl("local-backup-file-failed-to-delete"),
-                            "local-backup-name", fileToDelete.getName());
+                        logger.log("local-backup-file-failed-to-delete", "local-backup-name", fileToDelete.getName());
                     } else {
-                        logger.info(intl("local-backup-file-deleted"),
-                            "local-backup-name", fileToDelete.getName());
+                        logger.info("local-backup-file-deleted", "local-backup-name", fileToDelete.getName());
                     }
                     backupList.remove(dateOfFile);
                 }
-                logger.log(intl("local-backup-pruning-complete"), "location", location);
+                logger.log("local-backup-pruning-complete", "location", location);
             } catch (Exception e) {
-                logger.log(intl("local-backup-failed-to-delete"));
+                logger.log("local-backup-failed-to-delete");
                 MessageUtil.sendConsoleException(e);
             }
         } else {
-            logger.info(intl("local-backup-no-limit"));
+            logger.info("local-backup-no-limit");
         }
     }
 
@@ -187,8 +180,15 @@ public class FileUtil {
         }
         try {
             fileOutputStream = new FileOutputStream(outputFilePath);
+            int compression = instance.getConfigHandler().getConfig().getValue("zip-compression").getInt();
+            if (compression > 9) {
+                compression = 9;
+            }
+            if (compression < 0) {
+                compression = 0;
+            }
             zipOutputStream = new ZipOutputStream(fileOutputStream);
-            zipOutputStream.setLevel(ConfigParser.getConfig().backupStorage.zipCompression);
+            zipOutputStream.setLevel(compression);
             for (String file : fileList.getList()) {
                 ZipEntry entry = new ZipEntry(formattedInputFolderPath + "/" + file);
                 String filePath = inputFolderPath + "/" + file;
@@ -197,9 +197,7 @@ public class FileUtil {
                     fileAttributes = Files.readAttributes(Paths.get(filePath), BasicFileAttributes.class);
                 } catch(Exception ignored) { }
                 if (fileAttributes == null) {
-                    logger.info(
-                        intl("local-backup-failed-attributes"),
-                        "file-path", filePath);
+                    logger.info("local-backup-failed-attributes", "file-path", filePath);
                 } else {
                     entry.setCreationTime(fileAttributes.creationTime());
                     entry.setLastAccessTime(fileAttributes.lastAccessTime());
@@ -215,9 +213,7 @@ public class FileUtil {
                 } catch (Exception e) {
                     // Don't send warning for .lock files, they will always be locked.
                     if (!filePath.endsWith(".lock")) {
-                        logger.info(
-                            intl("local-backup-failed-to-include"),
-                            "file-path", filePath);
+                        logger.info("local-backup-failed-to-include", "file-path", filePath);
                     }
                 }
                 zipOutputStream.closeEntry();
@@ -299,7 +295,6 @@ public class FileUtil {
             for (BlacklistEntry blacklistEntry : fileList.getBlacklist()) {
                 if (blacklistEntry.getPathMatcher().matches(relativePath)) {
                     blacklistEntry.incBlacklistedFiles();
-
                     return;
                 }
             }
@@ -309,9 +304,7 @@ public class FileUtil {
                 generateFileList(new File(file, filename), inputFolderPath, fileList);
             }
         } else {
-            logger.info(intl("local-backup-failed-to-include"),
-                "file-path", file.getAbsolutePath()
-                );
+            logger.info("local-backup-failed-to-include", "file-path", file.getAbsolutePath());
         }
     }
 

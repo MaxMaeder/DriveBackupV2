@@ -2,6 +2,7 @@ package ratismal.drivebackup.util;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import ratismal.drivebackup.platforms.DriveBackupInstance;
 
 import java.io.File;
 import java.text.DecimalFormat;
@@ -10,19 +11,14 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Locale;
 
-import static ratismal.drivebackup.config.Localization.intl;
-
-/**
- * Created by Ratismal on 2016-03-30.
- */
-
 public class Timer {
     private Instant start;
     private Instant end;
+    private final DriveBackupInstance instance;
 
     @Contract (pure = true)
-    public Timer() {
-
+    public Timer(DriveBackupInstance instance) {
+        this.instance = instance;
     }
 
     /**
@@ -52,12 +48,13 @@ public class Timer {
      */
     public String getUploadTimeMessage(@NotNull File file) {
         DecimalFormat df = new DecimalFormat("#.##");
-        df.setDecimalFormatSymbols(DecimalFormatSymbols.getInstance(Locale.ENGLISH));
+        Locale locale = Locale.forLanguageTag(instance.getConfigHandler().getConfig().getValue("advanced", "date-language").getString());
+        df.setDecimalFormatSymbols(DecimalFormatSymbols.getInstance(locale));
         long length = ChronoUnit.SECONDS.between(start, end);
-        long speed = (file.length() / 1024) / length;
-        return intl("file-upload-message")
-            .replace("<length>", df.format(length))
-            .replace("<speed>", df.format(speed));
+        long speed = (file.length() / 1024L) / length;
+        String message = instance.getMessageHandler().getLangString("file-upload-message");
+        message.replace("<length>", df.format(length));
+        return message.replace("<speed>", df.format(speed));
     }
 
 }

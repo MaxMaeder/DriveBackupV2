@@ -1,11 +1,7 @@
 package ratismal.drivebackup.config;
 
-import java.nio.file.InvalidPathException;
-import java.util.List;
-
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
-
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ratismal.drivebackup.config.configSections.Advanced;
@@ -16,8 +12,9 @@ import ratismal.drivebackup.config.configSections.BackupStorage;
 import ratismal.drivebackup.config.configSections.ExternalBackups;
 import ratismal.drivebackup.config.configSections.Messages;
 import ratismal.drivebackup.plugin.DriveBackup;
-import ratismal.drivebackup.util.Logger;
-import ratismal.drivebackup.util.MessageUtil;
+
+import java.nio.file.InvalidPathException;
+import java.util.List;
 
 @Deprecated
 public class ConfigParser {
@@ -87,8 +84,6 @@ public class ConfigParser {
      * Reloads the plugin's {@code config.yml}
      */
     public void reload(List<CommandSender> initiators) {
-        Logger logger = (input, placeholders) -> MessageUtil.Builder().mmText(input, placeholders).to(initiators).send();
-
         parsedConfig = new Config(
             BackupStorage.parse(config, logger),
             BackupScheduling.parse(config, logger),
@@ -103,8 +98,6 @@ public class ConfigParser {
     @NotNull
     public static Config defaultConfig() {
         FileConfiguration config = DriveBackup.getInstance().getConfig();
-        Logger logger = (input, placeholders) -> {};
-
         return new Config(
             BackupStorage.parse(config, logger),
             BackupScheduling.parse(config, logger),

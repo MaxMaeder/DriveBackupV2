@@ -286,4 +286,8 @@ public final class LangConfigHandler {
     public void save() throws ConfigurateException {
         ConfigurationUtils.saveConfig(configurationObject);
     }
+    
+    public void reload() throws ConfigurateException {
+        ConfigurationUtils.loadConfig(configurationObject);
+    }
 }

@@ -7,11 +7,10 @@ import org.apache.commons.net.ftp.FTPFile;
 import org.apache.commons.net.ftp.FTPSClient;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import ratismal.drivebackup.UploadThread.UploadLogger;
-import ratismal.drivebackup.config.ConfigParser;
 import ratismal.drivebackup.config.configSections.BackupMethods.FTPBackupMethod;
+import ratismal.drivebackup.platforms.DriveBackupInstance;
+import ratismal.drivebackup.uploaders.UploadLogger;
 import ratismal.drivebackup.uploaders.Uploader;
-import ratismal.drivebackup.util.MessageUtil;
 import ratismal.drivebackup.util.NetUtil;
 
 import java.io.File;
@@ -21,11 +20,11 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
-
-import static ratismal.drivebackup.config.Localization.intl;
 
 /**
  * Created by Ratismal on 2016-03-30.
@@ -33,15 +32,15 @@ import static ratismal.drivebackup.config.Localization.intl;
 
 public final class FTPUploader extends Uploader {
 
-    public static final String UPLOADER_NAME = "(S)FTP";
+    private static final String UPLOADER_NAME = "(S)FTP";
     private static final String ID = "ftp";
     
     private FTPClient ftpClient;
     private SFTPUploader sftpClient;
 
     private String initialRemoteFolder;
-    private String _localBaseFolder;
-    private String _remoteBaseFolder;
+    private String localBaseFolder;
+    private String remoteBaseFolder;
     private String host;
 
     /**
@@ -49,15 +48,15 @@ public final class FTPUploader extends Uploader {
      * @return the separator
      */
     @Contract (pure = true)
-    private static String sep() {
-        return ConfigParser.getConfig().advanced.fileSeparator;
+    private String sep() {
+        return instance.getConfigHandler().getConfig().getValue("advanced", "file-separator").getString();
     }
 
     /**
      * Creates an instance of the {@code FTPUploader} object using the server credentials specified by the user in the {@code config.yml}
      */
-    public FTPUploader(UploadLogger logger, FTPBackupMethod ftp) {
-        super(UPLOADER_NAME, ID, null, logger);
+    public FTPUploader(DriveBackupInstance instance, UploadLogger logger, FTPBackupMethod ftp) {
+        super(instance, UPLOADER_NAME, ID, null, logger);
         try {
             if (ftp.sftp) {
                 sftpClient = new SFTPUploader(logger);
@@ -65,14 +64,14 @@ public final class FTPUploader extends Uploader {
                 connect(ftp.hostname, ftp.port, ftp.username, ftp.password, ftp.ftps);
                 host = ftp.hostname;
             }
-            _localBaseFolder = ".";
+            localBaseFolder = ".";
             if (Strings.isNullOrEmpty(ftp.remoteDirectory)) {
-                _remoteBaseFolder = ftp.remoteDirectory;
+                remoteBaseFolder = ftp.remoteDirectory;
             } else {
-                _remoteBaseFolder = ftp.remoteDirectory + sep() + ftp.remoteDirectory;
+                remoteBaseFolder = ftp.remoteDirectory + sep() + ftp.remoteDirectory;
             }
         } catch (Exception e) {
-            MessageUtil.sendConsoleException(e);
+            instance.getLoggingHandler().error("backup-method-ftp-connection-failed", e);
             setErrorOccurred(true);
         }
     }
@@ -90,8 +89,8 @@ public final class FTPUploader extends Uploader {
      * @param localBaseFolder the path to the folder, which all local file paths are relative to.
      * @param remoteBaseFolder the path to the folder, which all remote file paths are relative to.
      */
-    public FTPUploader(UploadLogger logger, String host, int port, String username, String password, boolean ftps, boolean sftp, String publicKey, String passphrase, String localBaseFolder, String remoteBaseFolder) {
-        super(UPLOADER_NAME, ID, null, logger);
+    public FTPUploader(DriveBackupInstance instance, UploadLogger logger, String host, int port, String username, String password, boolean ftps, boolean sftp, String publicKey, String passphrase, String localBaseFolder, String remoteBaseFolder) {
+        super(instance, UPLOADER_NAME, ID, null, logger);
         try {
             if (sftp) {
                 setId("sftp");
@@ -100,10 +99,10 @@ public final class FTPUploader extends Uploader {
                 connect(host, port, username, password, ftps);
                 this.host = host;
             }
-            _localBaseFolder = localBaseFolder;
-            _remoteBaseFolder = remoteBaseFolder;
+            this.localBaseFolder = localBaseFolder;
+            this.remoteBaseFolder = remoteBaseFolder;
         } catch (Exception e) {
-            MessageUtil.sendConsoleException(e);
+            instance.getLoggingHandler().error("backup-method-ftp-connection-failed", e);
             setErrorOccurred(true);
         }        
     }
@@ -156,7 +155,7 @@ public final class FTPUploader extends Uploader {
                 ftpClient.disconnect();
             }
         } catch (Exception e) {
-            MessageUtil.sendConsoleException(e);
+            instance.getLoggingHandler().error("backup-method-ftp-close-failed", e);
             setErrorOccurred(true);
         }
     }
@@ -173,14 +172,14 @@ public final class FTPUploader extends Uploader {
             }
             try (FileInputStream fis = new FileInputStream(testFile)) {
                 resetWorkingDirectory();
-                createThenEnter(_remoteBaseFolder);
+                createThenEnter(remoteBaseFolder);
                 ftpClient.storeFile(testFile.getName(), fis);
                 TimeUnit.SECONDS.sleep(5L);
                 ftpClient.deleteFile(testFile.getName());
             }
-        } catch (Exception exception) {
-            NetUtil.catchException(exception, host, logger);
-            MessageUtil.sendConsoleException(exception);
+        } catch (Exception e) {
+            NetUtil.catchException(e, host, logger);
+            instance.getLoggingHandler().error("backup-method-ftp-test-failed", e);
             setErrorOccurred(true);
         }
     }
@@ -198,7 +197,7 @@ public final class FTPUploader extends Uploader {
                 return;
             }
             resetWorkingDirectory();
-            createThenEnter(_remoteBaseFolder);
+            createThenEnter(remoteBaseFolder);
             createThenEnter(type);
             try (FileInputStream fs = new FileInputStream(file)) {
                 ftpClient.storeFile(file.getName(), fs);
@@ -206,12 +205,12 @@ public final class FTPUploader extends Uploader {
             try {
                 pruneBackups();
             } catch (Exception e) {
-                logger.log(intl("backup-method-prune-failed"));
+                logger.log("backup-method-prune-failed");
                 throw e;
             }
-        } catch (Exception exception) {
-            NetUtil.catchException(exception, host, logger);
-            MessageUtil.sendConsoleException(exception);
+        } catch (Exception e) {
+            NetUtil.catchException(e, host, logger);
+            instance.getLoggingHandler().error("backup-method-ftp-connection-failed", e);
             setErrorOccurred(true);
         }
     }
@@ -228,17 +227,17 @@ public final class FTPUploader extends Uploader {
                 return;
             }
             resetWorkingDirectory();
-            ftpClient.changeWorkingDirectory(_remoteBaseFolder);
-            File outputFile = new File(_localBaseFolder + sep() + type);
+            ftpClient.changeWorkingDirectory(remoteBaseFolder);
+            File outputFile = new File(localBaseFolder + sep() + type);
             if (!outputFile.exists()) {
                 outputFile.mkdirs();
             }
-            OutputStream outputStream = Files.newOutputStream(Paths.get(_localBaseFolder + "/" + type + "/" + new File(filePath).getName()));
+            OutputStream outputStream = Files.newOutputStream(Paths.get(localBaseFolder + "/" + type + "/" + new File(filePath).getName()));
             ftpClient.retrieveFile(filePath, outputStream);
             outputStream.flush();
             outputStream.close();
         } catch (Exception e) {
-            MessageUtil.sendConsoleException(e);
+            instance.getLoggingHandler().error("backup-method-ftp-download-failed", e);
             setErrorOccurred(true);
         }
     }
@@ -255,7 +254,7 @@ public final class FTPUploader extends Uploader {
                 return sftpClient.getFiles(folderPath);
             }
             resetWorkingDirectory();
-            ftpClient.changeWorkingDirectory(_remoteBaseFolder);
+            ftpClient.changeWorkingDirectory(remoteBaseFolder);
             ftpClient.changeWorkingDirectory(folderPath);
             for (FTPFile file : ftpClient.mlistDir()) {
                 if (file.isDirectory()) {
@@ -266,7 +265,7 @@ public final class FTPUploader extends Uploader {
                 }
             }
         } catch (Exception e) {
-            MessageUtil.sendConsoleException(e);
+            instance.getLoggingHandler().error("backup-method-ftp-get-file-list-failed", e);
             setErrorOccurred(true);
         }
         return filePaths;
@@ -279,17 +278,17 @@ public final class FTPUploader extends Uploader {
      * @throws Exception
      */
     private void pruneBackups() throws Exception {
-        int fileLimit = ConfigParser.getConfig().backupStorage.keepCount;
+        int fileLimit = getKeepCount();
         if (-1 == fileLimit) {
             return;
         }
         TreeMap<Instant, FTPFile> files = getZipFiles();
         if (files.size() > fileLimit) {
-            logger.info(
-                intl("backup-method-limit-reached"), 
-                "file-count", String.valueOf(files.size()),
-                "upload-method", getName(),
-                "file-limit", String.valueOf(fileLimit));
+            Map<String, String> placeholders = new HashMap<>(3);
+            placeholders.put("upload-method", getName());
+            placeholders.put("file-count", String.valueOf(files.size()));
+            placeholders.put("file-limit", String.valueOf(fileLimit));
+            logger.info("backup-method-limit-reached", placeholders);
             while (files.size() > fileLimit) {
                 ftpClient.deleteFile(files.firstEntry().getValue().getName());
                 files.remove(files.firstKey());

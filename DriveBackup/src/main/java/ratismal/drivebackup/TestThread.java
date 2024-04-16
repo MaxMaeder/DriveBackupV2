@@ -1,11 +1,12 @@
 package ratismal.drivebackup;
 
-import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import ratismal.drivebackup.UploadThread.UploadLogger;
 import ratismal.drivebackup.config.ConfigParser;
 import ratismal.drivebackup.config.ConfigParser.Config;
+import ratismal.drivebackup.objects.Player;
+import ratismal.drivebackup.platforms.DriveBackupInstance;
+import ratismal.drivebackup.uploaders.UploadLogger;
 import ratismal.drivebackup.uploaders.Uploader;
 import ratismal.drivebackup.uploaders.dropbox.DropboxUploader;
 import ratismal.drivebackup.uploaders.ftp.FTPUploader;
@@ -14,43 +15,28 @@ import ratismal.drivebackup.uploaders.onedrive.OneDriveUploader;
 import ratismal.drivebackup.uploaders.s3.S3Uploader;
 import ratismal.drivebackup.uploaders.webdav.NextcloudUploader;
 import ratismal.drivebackup.uploaders.webdav.WebDAVUploader;
-import ratismal.drivebackup.util.MessageUtil;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.nio.file.Files;
 import java.security.SecureRandom;
 
-import static ratismal.drivebackup.config.Localization.intl;
-
 public class TestThread implements Runnable {
-    private UploadLogger logger;
-    private String[] args;
+    private final UploadLogger logger;
+    private final String[] args;
+    private final DriveBackupInstance instance;
 
     /**
      * Creates an instance of the {@code TestThread} object
-     * @param initiator the player who initiated the test
+     * @param instance the plugin instance
+     * @param player the player who initiated the test
      * @param args any arguments that followed the command that initiated the test
      */
     @Contract (pure = true)
-    public TestThread(CommandSender initiator, String[] args) {
-        logger = new UploadLogger() {
-            @Override
-            public void log(String input, String... placeholders) {
-                MessageUtil.Builder()
-                    .mmText(input, placeholders)
-                    .to(initiator)
-                    .send();
-            }
-            @Override
-            public void initiatorError(String input, String... placeholders) {
-                MessageUtil.Builder()
-                    .mmText(input, placeholders)
-                    .to(initiator)
-                    .toConsole(false)
-                    .send();
-            }
-        };
+    public TestThread(DriveBackupInstance instance, Player player, String[] args) {
+        this.instance = instance;
         this.args = args;
+        logger = new UploadLogger(instance, player);
     }
 
     /**
@@ -65,7 +51,7 @@ public class TestThread implements Runnable {
          * 2) The size (in bytes) of the file.
          */
         if (args.length < 2) {
-            logger.initiatorError(intl("test-method-not-specified"));
+            logger.log("test-method-not-specified");
             return;
         }
         String testFileName;
@@ -78,13 +64,13 @@ public class TestThread implements Runnable {
         try {
             testFileSize = Integer.parseInt(args[2]);
         } catch (NumberFormatException exception) {
-            testFileSize = 1000;
+            testFileSize = 1024;
         }
         String method = args[1];
         try {
             testUploadMethod(testFileName, testFileSize, method);
         } catch (Exception exception) {
-            logger.initiatorError(intl("test-method-invalid"), "specified-method", method);
+            logger.log("test-method-invalid", "specified-method", method);
         }
     }
 
@@ -100,66 +86,64 @@ public class TestThread implements Runnable {
         switch (method) {
             case "googledrive":
                 if (config.backupMethods.googleDrive.enabled) {
-                    uploadMethod = new GoogleDriveUploader(logger);
+                    uploadMethod = new GoogleDriveUploader(instance, logger);
                 } else {
-                    sendMethodDisabled(logger, GoogleDriveUploader.UPLOADER_NAME);
+                    sendMethodDisabled(logger, "GoogleDrive");
                     return;
                 }
                 break;
             case "onedrive":
                 if (config.backupMethods.oneDrive.enabled) {
-                    uploadMethod = new OneDriveUploader(logger);
+                    uploadMethod = new OneDriveUploader(instance, logger);
                 } else {
-                    sendMethodDisabled(logger, OneDriveUploader.UPLOADER_NAME);
+                    sendMethodDisabled(logger, "OneDrive");
                     return;
                 }
                 break;
             case "dropbox":
                 if (config.backupMethods.dropbox.enabled) {
-                    uploadMethod = new DropboxUploader(logger);
+                    uploadMethod = new DropboxUploader(instance, logger);
                 } else {
-                    sendMethodDisabled(logger, DropboxUploader.UPLOADER_NAME);
+                    sendMethodDisabled(logger, "Dropbox");
                     return;
                 }
                 break;
             case "webdav":
                 if (config.backupMethods.webdav.enabled) {
-                    uploadMethod = new WebDAVUploader(logger, config.backupMethods.webdav);
+                    uploadMethod = new WebDAVUploader(instance, logger, config.backupMethods.webdav);
                 } else {
-                    sendMethodDisabled(logger, WebDAVUploader.UPLOADER_NAME);
+                    sendMethodDisabled(logger, "WebDAV");
                     return;
                 }
                 break;
             case "nextcloud":
                 if (config.backupMethods.nextcloud.enabled) {
-                    uploadMethod = new NextcloudUploader(logger, config.backupMethods.nextcloud);
+                    uploadMethod = new NextcloudUploader(instance, logger, config.backupMethods.nextcloud);
                 } else {
-                    sendMethodDisabled(logger, NextcloudUploader.UPLOADER_NAME);
+                    sendMethodDisabled(logger, "Nextcloud");
                     return;
                 }
                 break;
             case "s3":
                 if (config.backupMethods.s3.enabled) {
-                    uploadMethod = new S3Uploader(logger, config.backupMethods.s3);
+                    uploadMethod = new S3Uploader(instance, logger, config.backupMethods.s3);
                 } else {
-                    sendMethodDisabled(logger, S3Uploader.UPLOADER_NAME);
+                    sendMethodDisabled(logger, "S3");
                     return;
                 }
                 break;
             case "ftp":
                 if (config.backupMethods.ftp.enabled) {
-                    uploadMethod = new FTPUploader(logger, config.backupMethods.ftp);
+                    uploadMethod = new FTPUploader(instance, logger, config.backupMethods.ftp);
                 } else {
-                    sendMethodDisabled(logger, FTPUploader.UPLOADER_NAME);
+                    sendMethodDisabled(logger, "FTP");
                     return;
                 }
                 break;
             default:
                 throw new IllegalArgumentException("Invalid method");
         }
-        logger.log(
-            intl("test-method-begin"), 
-            "upload-method", uploadMethod.getName());
+        logger.log("test-method-begin", "upload-method", uploadMethod.getName());
         String localTestFilePath = config.backupStorage.localDirectory + File.separator + testFileName;
         new File(config.backupStorage.localDirectory).mkdirs();
         try (FileOutputStream fos = new FileOutputStream(localTestFilePath)) {
@@ -169,28 +153,22 @@ public class TestThread implements Runnable {
             fos.write(randomBytes);
             fos.flush();
         } catch (Exception exception) {
-            logger.log(intl("test-file-creation-failed"));
-            MessageUtil.sendConsoleException(exception);
+            logger.log("test-file-creation-failed");
+            instance.getLoggingHandler().error("Failed to create test file", exception);
         }
         File testFile = new File(localTestFilePath);
         uploadMethod.test(testFile);
         if (uploadMethod.didErrorOccur()) {
-            logger.log(
-                intl("test-method-failed"), 
-                "upload-method", uploadMethod.getName());
+            logger.log("test-method-failed", "upload-method", uploadMethod.getName());
         } else {
-            logger.log(
-                intl("test-method-successful"),
-                "upload-method", uploadMethod.getName());
+            logger.log("test-method-successful", "upload-method", uploadMethod.getName());
         }
-        testFile.delete();
         uploadMethod.close();
+        Files.delete(testFile.toPath());
     }
 
     private static void sendMethodDisabled(@NotNull UploadLogger logger, String methodName) {
-        logger.log(
-            intl("test-method-not-enabled"), 
-            "upload-method", methodName);
+        logger.log("test-method-not-enabled", "upload-method", methodName);
     }
     
 }

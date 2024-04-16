@@ -12,22 +12,22 @@ import net.schmizz.sshj.userauth.password.PasswordFinder;
 import net.schmizz.sshj.userauth.password.Resource;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import ratismal.drivebackup.UploadThread.UploadLogger;
 import ratismal.drivebackup.config.ConfigParser;
 import ratismal.drivebackup.config.ConfigParser.Config;
 import ratismal.drivebackup.config.configSections.BackupMethods.FTPBackupMethod;
-import ratismal.drivebackup.plugin.DriveBackup;
+import ratismal.drivebackup.platforms.DriveBackupInstance;
+import ratismal.drivebackup.uploaders.UploadLogger;
 
 import java.io.File;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
-
-import static ratismal.drivebackup.config.Localization.intl;
 
 /**
  * Created by Ratismal on 2016-03-30.
@@ -35,6 +35,7 @@ import static ratismal.drivebackup.config.Localization.intl;
 
 public final class SFTPUploader {
     private final UploadLogger logger;
+    private final DriveBackupInstance instance;
 
     private SSHClient sshClient;
     private StatefulSFTPClient sftpClient;
@@ -47,16 +48,17 @@ public final class SFTPUploader {
      * Creates an instance of the {@code SFTPUploader} object using the server credentials specified by the user in the {@code config.yml}
      * @throws Exception
      */
-    public SFTPUploader(UploadLogger logger) throws Exception {
+    public SFTPUploader(DriveBackupInstance instance, UploadLogger logger) throws Exception {
+        this.instance = instance;
         this.logger = logger;
         Config config = ConfigParser.getConfig();
         FTPBackupMethod ftp = config.backupMethods.ftp;
         connect(ftp.hostname, ftp.port, ftp.username, ftp.password, ftp.publicKey, ftp.passphrase);
         _localBaseFolder = ".";
         if (Strings.isNullOrEmpty(ftp.remoteDirectory)) {
-            _remoteBaseFolder = config.backupStorage.remoteDirectory;
+            _remoteBaseFolder = instance.getConfigHandler().getConfig().getValue("remote-save-directory").getString();
         } else {
-            _remoteBaseFolder = ftp.remoteDirectory + "/" + config.backupStorage.remoteDirectory;
+            _remoteBaseFolder = ftp.remoteDirectory + "/" + instance.getConfigHandler().getConfig().getValue("remote-save-directory").getString();
         }
     }
 
@@ -72,7 +74,8 @@ public final class SFTPUploader {
      * @param remoteBaseFolder the path to the folder, which all remote file paths are relative to.
      * @throws Exception
      */
-    public SFTPUploader(UploadLogger logger, String host, int port, String username, String password, String publicKey, String passphrase, String localBaseFolder, String remoteBaseFolder) throws Exception {
+    public SFTPUploader(DriveBackupInstance instance, UploadLogger logger, String host, int port, String username, String password, String publicKey, String passphrase, String localBaseFolder, String remoteBaseFolder) throws Exception {
+        this.instance = instance;
         this.logger = logger;
         connect(host, port, username, password, publicKey, passphrase);
         _localBaseFolder = localBaseFolder;
@@ -111,11 +114,11 @@ public final class SFTPUploader {
         if (!Strings.isNullOrEmpty(publicKey)) {
             if (!Strings.isNullOrEmpty(passphrase)) {
                 sshAuthMethods.add(new AuthPublickey(sshClient.loadKeys(
-                        DriveBackup.getInstance().getDataFolder().getAbsolutePath() + "/" + publicKey,
+                        instance.getDataDirectory() + "/" + publicKey,
                         passphrase.toCharArray())));
             } else {
                 sshAuthMethods.add(new AuthPublickey(sshClient.loadKeys(
-                    DriveBackup.getInstance().getDataFolder().getAbsolutePath() + "/" + publicKey)));
+                        instance.getDataDirectory() + "/" + publicKey)));
             }
         }
         sshClient.auth(username, sshAuthMethods);
@@ -162,7 +165,7 @@ public final class SFTPUploader {
         try {
             pruneBackups();
         } catch (Exception e) {
-            logger.log(intl("backup-method-prune-failed"));
+            logger.log("backup-method-prune-failed");
             throw e;
         }
     }
@@ -214,17 +217,17 @@ public final class SFTPUploader {
      * @throws Exception
      */
     private void pruneBackups() throws Exception {
-        int fileLimit = ConfigParser.getConfig().backupStorage.keepCount;
+        int fileLimit = instance.getConfigHandler().getConfig().getValue("keep-count").getInt();
         if (fileLimit == -1) {
             return;
         }
         TreeMap<Instant, RemoteResourceInfo> files = getZipFiles();
         if (files.size() > fileLimit) {
-            logger.info(
-                intl("backup-method-limit-reached"), 
-                "file-count", String.valueOf(files.size()),
-                "upload-method", "(S)FTP",
-                "file-limit", String.valueOf(fileLimit));
+            Map<String, String> placeholders = new HashMap<>(3);
+            placeholders.put("file-count", String.valueOf(files.size()));
+            placeholders.put("upload-method", "(S)FTP");
+            placeholders.put("file-limit", String.valueOf(fileLimit));
+            logger.info("backup-method-limit-reached", placeholders);
             while (files.size() > fileLimit) {
                 sftpClient.rm(files.firstEntry().getValue().getName());
                 files.remove(files.firstEntry().getKey());

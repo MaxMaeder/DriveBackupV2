@@ -39,6 +39,11 @@ public final class PrefixedLogger implements LoggingInterface {
     }
     
     @Override
+    public void info(String message, Throwable throwable) {
+        loggingHandler.info(prefix + " " + message, throwable);
+    }
+    
+    @Override
     public void debug(String message) {
         loggingHandler.debug(prefix + " " + message);
     }

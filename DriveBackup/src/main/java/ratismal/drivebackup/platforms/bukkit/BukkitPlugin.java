@@ -9,6 +9,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.spongepowered.configurate.ConfigurateException;
+import ratismal.drivebackup.api.APIHandler;
 import ratismal.drivebackup.configuration.ConfigHandler;
 import ratismal.drivebackup.configuration.ConfigMigrator;
 import ratismal.drivebackup.configuration.LangConfigHandler;
@@ -18,6 +19,7 @@ import ratismal.drivebackup.handler.permission.PermissionHandler;
 import ratismal.drivebackup.handler.player.PlayerHandler;
 import ratismal.drivebackup.handler.task.TaskHandler;
 import ratismal.drivebackup.handler.update.UpdateHandler;
+import ratismal.drivebackup.http.HttpLogger;
 import ratismal.drivebackup.platforms.DriveBackupInstance;
 import ratismal.drivebackup.plugin.BstatsMetrics;
 import ratismal.drivebackup.util.Version;
@@ -41,6 +43,7 @@ public final class BukkitPlugin extends JavaPlugin implements DriveBackupInstanc
     private ArrayList<CommandSender> chatInputPlayers;
     private Version currentVersion;
     private BukkitPlayerHandler playerHandler;
+    private APIHandler apiHandler;
     private final Collection<String> autoSaveWorlds = new ArrayList<>(3);
     
     
@@ -97,6 +100,12 @@ public final class BukkitPlugin extends JavaPlugin implements DriveBackupInstanc
         return updateHandler;
     }
     
+    @Contract (pure = true)
+    @Override
+    public APIHandler getAPIHandler() {
+        return apiHandler;
+    }
+    
     @Override
     public void disable() {
         getServer().getPluginManager().disablePlugin(this);
@@ -123,6 +132,7 @@ public final class BukkitPlugin extends JavaPlugin implements DriveBackupInstanc
     @Override
     public void onEnable() {
         setInstance(this);
+        HttpLogger.setInstance(this);
         loggingHandler = new BukkitLoggingHandler(this, getLogger());
         configHandler = new ConfigHandler(this);
         langConfigHandler = new LangConfigHandler(this);
@@ -149,6 +159,7 @@ public final class BukkitPlugin extends JavaPlugin implements DriveBackupInstanc
         //pm.registerEvents(new BukkitPlayerListener(), this);
         BstatsMetrics.initMetrics();
         updateHandler = new UpdateHandler(this);
+        apiHandler = new APIHandler(this);
     }
     
     @Contract (pure = true)
@@ -172,7 +183,7 @@ public final class BukkitPlugin extends JavaPlugin implements DriveBackupInstanc
     
     @Contract (pure = true)
     @Override
-    public void preBackupAutoSave() throws InterruptedException, ExecutionException {
+    public void disableWorldAutoSave() throws InterruptedException, ExecutionException {
         Bukkit.getScheduler().callSyncMethod(this, () -> {
             for (World world : Bukkit.getWorlds()) {
                 if (world.isAutoSave()) {
@@ -186,7 +197,7 @@ public final class BukkitPlugin extends JavaPlugin implements DriveBackupInstanc
     
     @Contract (pure = true)
     @Override
-    public void postBackupAutoSave() throws InterruptedException, ExecutionException {
+    public void enableWorldAutoSave() throws InterruptedException, ExecutionException {
         Bukkit.getScheduler().callSyncMethod(this, () -> {
             for (World world : Bukkit.getWorlds()) {
                 String worldName = world.getName();

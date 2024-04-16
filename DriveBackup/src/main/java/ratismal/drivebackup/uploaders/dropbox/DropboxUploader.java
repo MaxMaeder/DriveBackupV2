@@ -9,13 +9,12 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import ratismal.drivebackup.UploadThread.UploadLogger;
-import ratismal.drivebackup.config.ConfigParser;
-import ratismal.drivebackup.config.ConfigParser.Config;
 import ratismal.drivebackup.http.HttpClient;
+import ratismal.drivebackup.platforms.DriveBackupInstance;
 import ratismal.drivebackup.uploaders.AuthenticationProvider;
 import ratismal.drivebackup.uploaders.Authenticator;
 import ratismal.drivebackup.uploaders.Obfusticate;
+import ratismal.drivebackup.uploaders.UploadLogger;
 import ratismal.drivebackup.uploaders.Uploader;
 import ratismal.drivebackup.uploaders.UploaderUtils;
 import ratismal.drivebackup.util.MessageUtil;
@@ -25,14 +24,15 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.time.Instant;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
 
-import static ratismal.drivebackup.config.Localization.intl;
-
 public final class DropboxUploader extends Uploader {
 
-    public static final String UPLOADER_NAME = "Dropbox";
+    private static final String UPLOADER_NAME = "Dropbox";
+    private static final String ID = "dropbox";
 
     /**
      * Global Dropbox tokens
@@ -49,7 +49,7 @@ public final class DropboxUploader extends Uploader {
             byte[] content = new byte[(int) testFile.length()];
             dis.readFully(content);
             RequestBody requestBody = RequestBody.create(content, UploaderUtils.getOctetStreamMediaType());
-            String destination = ConfigParser.getConfig().backupStorage.remoteDirectory;
+            String destination = getLocalSaveDirectory();
             JSONObject dropboxJson = new JSONObject();
             dropboxJson.put("path", "/" + destination + "/" + testFile.getName());
             String dropboxArg = dropboxJson.toString();
@@ -101,7 +101,7 @@ public final class DropboxUploader extends Uploader {
      * @param type the type of file (ex. plugins, world)
      */
     public void uploadFile(@NotNull java.io.File file, @NotNull String type) {
-        String destination = ConfigParser.getConfig().backupStorage.remoteDirectory;
+        String destination = getRemoteSaveDirectory();
         long fileSize = file.length();
         String folder = type.replaceAll("\\.{1,2}\\/", "");
         folder = folder.replace(".\\", "");
@@ -190,7 +190,7 @@ public final class DropboxUploader extends Uploader {
             try {
                 pruneBackups(folder);
             } catch (Exception e) {
-                logger.log(intl("backup-method-prune-failed"));
+                logger.log("backup-method-prune-failed");
                 throw e;
             }
         } catch (Exception exception) {
@@ -211,20 +211,20 @@ public final class DropboxUploader extends Uploader {
      * @throws Exception
      */
     private void pruneBackups(String type) throws Exception {
-        Config config = ConfigParser.getConfig();
         type = type.replace("./", "");
         type = type.replace(".\\", "");
-        int fileLimit = config.backupStorage.keepCount;
+        int fileLimit = getKeepCount();
         if (fileLimit == -1) {
             return;
         }
-        String destination = config.backupStorage.remoteDirectory;
+        String destination = getRemoteSaveDirectory();
         TreeMap<Instant, String> files = getZipFiles(destination, type);
         if (files.size() > fileLimit) {
-            logger.info(intl("backup-method-limit-reached"),
-                "file-count", String.valueOf(files.size()),
-                "upload-method", getName(),
-                "file-limit", String.valueOf(fileLimit));
+            Map<String, String> placeholders = new HashMap<>(3);
+            placeholders.put("file-count", String.valueOf(files.size()));
+            placeholders.put("upload-method", getName());
+            placeholders.put("file-limit", String.valueOf(fileLimit));
+            logger.info("backup-method-limit-reached", placeholders);
             while (files.size() > fileLimit) {
                 JSONObject deleteJson = new JSONObject();
                 deleteJson.put("path", "/" + destination + "/" + type + "/" + files.firstEntry().getValue());
@@ -273,13 +273,13 @@ public final class DropboxUploader extends Uploader {
     /**
      * Creates an instance of the {@code DropboxUploader} object
      */
-    public DropboxUploader(UploadLogger logger) {
-        super(UPLOADER_NAME, "dropbox", AuthenticationProvider.DROPBOX, logger);
+    public DropboxUploader(DriveBackupInstance instance, UploadLogger logger) {
+        super(instance, UPLOADER_NAME, ID, AuthenticationProvider.DROPBOX, logger);
+        refreshToken = Authenticator.getRefreshToken(AuthenticationProvider.DROPBOX);
         try {
-            refreshToken = Authenticator.getRefreshToken(AuthenticationProvider.DROPBOX);
             retrieveNewAccessToken();
         } catch (Exception e) {
-            MessageUtil.sendConsoleException(e);
+            instance.getLoggingHandler().error("Failed to retrieve new access token from Dropbox", e);
             setErrorOccurred(true);
         }
     }

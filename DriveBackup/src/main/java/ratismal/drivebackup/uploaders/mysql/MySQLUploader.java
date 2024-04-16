@@ -7,7 +7,7 @@ package ratismal.drivebackup.uploaders.mysql;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import ratismal.drivebackup.util.MessageUtil;
+import ratismal.drivebackup.platforms.DriveBackupInstance;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -34,6 +34,7 @@ public final class MySQLUploader {
     private static final String SQL_START_PATTERN = "-- start";
     private static final String SQL_END_PATTERN = "-- end";
     
+    private final DriveBackupInstance instance;
     private final String host;
     private final int port;
     private final String username;
@@ -53,7 +54,8 @@ public final class MySQLUploader {
      * @param useSsl whether to connect to the server using SSL/TLS
      */
     @Contract (pure = true)
-    public MySQLUploader(String host, int port, String username, String password, boolean useSsl) {
+    public MySQLUploader(DriveBackupInstance instance, String host, int port, String username, String password, boolean useSsl) {
+        this.instance = instance;
         this.host = host;
         this.port = port;
         this.username = username;
@@ -111,7 +113,7 @@ public final class MySQLUploader {
                 }
             }
         } catch (Exception e) {
-            MessageUtil.sendConsoleException(e);
+            instance.getLoggingHandler().error("An error occurred while downloading the MySQL database: ", e);
             setErrorOccurred(true);
         }
     }

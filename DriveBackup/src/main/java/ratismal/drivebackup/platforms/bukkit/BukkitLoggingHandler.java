@@ -53,6 +53,11 @@ public final class BukkitLoggingHandler implements LoggingHandler {
         logger.warning(() -> handleError(message, throwable));
     }
     
+    @Override
+    public void info(String message, Throwable throwable) {
+        logger.info(() -> handleError(message, throwable));
+    }
+    
     private String handleError(String message, Throwable throwable) {
         boolean suppress = advancedSection.getValue("suppress-errors").getBoolean();
         if (suppress) {

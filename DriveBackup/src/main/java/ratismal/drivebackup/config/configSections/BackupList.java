@@ -1,22 +1,18 @@
 package ratismal.drivebackup.config.configSections;
 
+import org.bukkit.configuration.file.FileConfiguration;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
+import ratismal.drivebackup.config.configSections.BackupList.BackupListEntry.BackupLocation;
+import ratismal.drivebackup.util.FileUtil;
+import ratismal.drivebackup.util.LocalDateTimeFormatter;
+
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-
-import org.bukkit.configuration.file.FileConfiguration;
-
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
-import ratismal.drivebackup.util.Logger;
-import ratismal.drivebackup.config.configSections.BackupList.BackupListEntry.BackupLocation;
-import ratismal.drivebackup.util.FileUtil;
-import ratismal.drivebackup.util.LocalDateTimeFormatter;
-
-import static ratismal.drivebackup.config.Localization.intl;
 
 @Deprecated
 public class BackupList {
@@ -97,7 +93,7 @@ public class BackupList {
 
     @NotNull
     @Contract ("_, _ -> new")
-    public static BackupList parse(@NotNull FileConfiguration config, Logger logger) {
+    public static BackupList parse(@NotNull FileConfiguration config) {
         List<Map<?, ?>> rawList = config.getMapList("backup-list");
         ArrayList<BackupListEntry> list = new ArrayList<>();
         for (Map<?, ?> rawListEntry : rawList) {
@@ -107,25 +103,21 @@ public class BackupList {
                 try {
                     location = new BackupListEntry.GlobBackupLocation((String) rawListEntry.get("glob"));
                 } catch (ClassCastException e) {
-                    logger.log(intl("backup-list-glob-invalid"), ENTRY, entryIndex);
                     continue;
                 }
             } else if (rawListEntry.containsKey("path")) {
                 try {
                     location = new BackupListEntry.PathBackupLocation((String) rawListEntry.get("path"));
                 } catch (ClassCastException e) {
-                    logger.log(intl("backup-list-path-invalid"), ENTRY, entryIndex);
                     continue;
                 }
             } else {
-                logger.log(intl("backup-list-no-dest-specified"), ENTRY, entryIndex);
                 continue;
             }
             LocalDateTimeFormatter formatter;
             try {
-                formatter = LocalDateTimeFormatter.ofPattern((String) rawListEntry.get("format"));
+                formatter = LocalDateTimeFormatter.ofPattern(null,(String) rawListEntry.get("format"));
             } catch (IllegalArgumentException | ClassCastException e) {
-                logger.log(intl("backup-list-format-invalid"), ENTRY, entryIndex);
                 continue;
             }
             boolean create = true;
@@ -139,7 +131,6 @@ public class BackupList {
                 try {
                     blacklist = ((List<String>) rawListEntry.get("blacklist")).toArray(new String[0]);
                 } catch (ClassCastException | ArrayStoreException e) {
-                    logger.log(intl("backup-list-blacklist-invalid"), ENTRY, entryIndex);
                 }
             }
             list.add(new BackupListEntry(location, formatter, create, blacklist));

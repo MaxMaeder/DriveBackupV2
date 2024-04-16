@@ -1,15 +1,11 @@
 package ratismal.drivebackup.config.configSections;
 
-import java.util.zip.Deflater;
-
 import org.bukkit.configuration.Configuration;
 import org.bukkit.configuration.file.FileConfiguration;
-
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import ratismal.drivebackup.util.Logger;
 
-import static ratismal.drivebackup.config.Localization.intl;
+import java.util.zip.Deflater;
 
 @Deprecated
 public class BackupStorage {
@@ -49,37 +45,30 @@ public class BackupStorage {
 
     @NotNull
     @Contract ("_, _ -> new")
-    public static BackupStorage parse(@NotNull FileConfiguration config, Logger logger) {
+    public static BackupStorage parse(@NotNull FileConfiguration config) {
         Configuration defaultConfig = config.getDefaults();
         long delay = config.getLong("delay");
         if (delay < 5L && delay != -1L) {
-            logger.log(intl("invalid-backup-delay"));
             delay = defaultConfig.getLong("delay");
         }
         int threadPriority = config.getInt("backup-thread-priority");
         if (threadPriority < Thread.MIN_PRIORITY) {
-            logger.log(intl("thread-priority-too-low"));
             threadPriority = Thread.MIN_PRIORITY;
         } else if (threadPriority > Thread.MAX_PRIORITY) {
-            logger.log(intl("thread-priority-too-high"));
             threadPriority = Thread.MAX_PRIORITY;
         }
         int keepCount = config.getInt("keep-count");
         if (keepCount < 1 && keepCount != -1) {
-            logger.log(intl("keep-count-invalid"));
             keepCount = defaultConfig.getInt("keep-count");
         }
         int localKeepCount = config.getInt("local-keep-count");
         if (localKeepCount < -1) {
-            logger.log(intl("local-keep-count-invalid"));
             localKeepCount = defaultConfig.getInt("local-keep-count");
         }
         int zipCompression = config.getInt("zip-compression");
         if (zipCompression < Deflater.BEST_SPEED) {
-            logger.log(intl("zip-compression-too-low"));
             zipCompression = Deflater.BEST_SPEED;
         } else if (zipCompression > Deflater.BEST_COMPRESSION) {
-            logger.log(intl("zip-compression-too-high"));
             zipCompression = Deflater.BEST_COMPRESSION;
         }
         boolean backupsRequirePlayers = config.getBoolean("backups-require-players");

@@ -4,18 +4,19 @@ import okhttp3.FormBody;
 import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
-import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONException;
 import org.json.JSONObject;
-import ratismal.drivebackup.UploadThread.UploadLogger;
+import ratismal.drivebackup.configuration.ConfigHandler;
+import ratismal.drivebackup.configuration.ConfigurationSection;
+import ratismal.drivebackup.constants.Initiator;
 import ratismal.drivebackup.handler.commandHandler.BasicCommands;
+import ratismal.drivebackup.handler.task.TaskIdentifier;
 import ratismal.drivebackup.http.HttpClient;
-import ratismal.drivebackup.plugin.DriveBackup;
+import ratismal.drivebackup.platforms.DriveBackupInstance;
 import ratismal.drivebackup.uploaders.googledrive.GoogleDriveUploader;
-import ratismal.drivebackup.util.Logger;
 import ratismal.drivebackup.util.MessageUtil;
 import ratismal.drivebackup.util.NetUtil;
 import ratismal.drivebackup.util.SchedulerUtil;
@@ -25,8 +26,9 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-
-import static ratismal.drivebackup.config.Localization.intl;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 public final class Authenticator {
     /**
@@ -43,7 +45,7 @@ public final class Authenticator {
      */
     private static final String CLIENT_SECRET = "fyKCRZRyJeHW5PzGJvQkL4dr2zRHRmwTaOutG7BBhQM=";
 
-    private static int taskId = -1;
+    private static TaskIdentifier taskId;
     
     @Contract (pure = true)
     private Authenticator() {}
@@ -55,10 +57,9 @@ public final class Authenticator {
      * @param provider an {@code AuthenticationProvider}
      * @param initiator user who initiated the authentication
      */
-    public static void authenticateUser(AuthenticationProvider provider, CommandSender initiator) {
-        DriveBackup plugin = DriveBackup.getInstance();
-        Logger logger = (input, placeholders) -> MessageUtil.Builder().mmText(input, placeholders).to(initiator).toConsole(false).send();
-        cancelPollTask();
+    public static void authenticateUser(AuthenticationProvider provider, CommandSender initiator, DriveBackupInstance instance) {
+        UploadLogger logger = new UploadLogger(instance, Initiator.OTHER);
+        cancelPollTask(instance);
         try {
             FormBody.Builder requestBody = new FormBody.Builder()
                 .add("type", provider.getId());
@@ -86,12 +87,12 @@ public final class Authenticator {
             String deviceCode = parsedResponse.getString("device_code");
             String verificationUri = parsedResponse.getString("verification_uri");
             long responseCheckDelay = SchedulerUtil.sToTicks(parsedResponse.getLong("interval"));
-            logger.log(
-                intl("link-account-code"),
-                "link-url", verificationUri,
-                "link-code", userCode,
-                "provider", provider.getName());
-            taskId = plugin.getServer().getScheduler().scheduleSyncRepeatingTask(plugin, () -> {
+            Map<String, String> placeholders = new HashMap<>(3);
+            placeholders.put("link-url", verificationUri);
+            placeholders.put("link-code", userCode);
+            placeholders.put("provider", provider.getName());
+            logger.log("link-account-code", placeholders);
+            taskId = instance.getTaskHandler().scheduleSyncRepeatingTask(() -> {
                 try {
                     FormBody.Builder requestBody1 = new FormBody.Builder()
                         .add("device_code", deviceCode)
@@ -115,67 +116,58 @@ public final class Authenticator {
                     if (parsedResponse1.has("refresh_token")) {
                         saveRefreshToken(provider, (String) parsedResponse1.get("refresh_token"));
                         if (provider.getId().equals("googledrive")) {
-                            UploadLogger uploadLogger = new UploadLogger() {
-                                @Override
-                                public void log(String input, String... placeholders) {
-                                    MessageUtil.Builder()
-                                            .mmText(input, placeholders)
-                                            .to(initiator)
-                                            .send();
-                                }
-                            };
-                            new GoogleDriveUploader(uploadLogger).setupSharedDrives(initiator);
+                            UploadLogger uploadLogger = new UploadLogger(instance, Initiator.OTHER);
+                            new GoogleDriveUploader(instance, uploadLogger).setupSharedDrives(initiator);
                         } else {
-                            linkSuccess(initiator, provider, logger);
+                            linkSuccess(initiator, provider, logger, instance);
                         }
-                        cancelPollTask();
+                        cancelPollTask(instance);
                     } else if (
                             (AuthenticationProvider.ONEDRIVE == provider && !parsedResponse1.getString("error").equals("authorization_pending")) ||
                             (provider != AuthenticationProvider.ONEDRIVE && !parsedResponse1.get("msg").equals("code_not_authenticated"))
                         ) {
                         MessageUtil.Builder().text(parsedResponse1.toString()).send();
-                        throw new UploadException();
+                        throw new AuthException();
                     }
                 } catch (Exception exception) {
                     NetUtil.catchException(exception, AUTH_URL, logger);
-                    logger.log(intl("link-provider-failed"), "provider", provider.getName());
+                    logger.log("link-provider-failed", "provider", provider.getName());
                     MessageUtil.sendConsoleException(exception);
-                    cancelPollTask();
+                    cancelPollTask(instance);
                 }
-            }, responseCheckDelay, responseCheckDelay);
+            }, responseCheckDelay, responseCheckDelay, TimeUnit.SECONDS);
         } catch (Exception exception) {
             NetUtil.catchException(exception, AUTH_URL, logger);
-            logger.log(intl("link-provider-failed"), "provider", provider.getName());
-            MessageUtil.sendConsoleException(exception);
+            logger.log("link-provider-failed", "provider", provider.getName());
+            instance.getLoggingHandler().error("Failed to authenticate user with " + provider.getName() + " provider", exception);
         }
     }
 
-    public static void unAuthenticateUser(AuthenticationProvider provider, CommandSender initiator) {
-        Logger logger = (input, placeholders) -> MessageUtil.Builder().mmText(input, placeholders).to(initiator).send();
-        disableBackupMethod(provider, logger);
+    public static void unAuthenticateUser(AuthenticationProvider provider, CommandSender initiator, DriveBackupInstance instance) {
+        UploadLogger logger = new UploadLogger(instance, Initiator.OTHER);
+        disableBackupMethod(provider, logger, instance);
         try {
             File credStoreFile = new File(provider.getCredStoreLocation());
             if (credStoreFile.exists()) {
                 credStoreFile.delete();
             }
         } catch (Exception exception) {
-            logger.log(intl("unlink-provider-failed"), "provider", provider.getName());
+            logger.log("unlink-provider-failed", "provider", provider.getName());
             MessageUtil.sendConsoleException(exception);
         }
-        logger.log(intl("unlink-provider-complete"), "provider", provider.getName());
+        logger.log("unlink-provider-complete", "provider", provider.getName());
     }
 
-    private static void cancelPollTask() {
-        if (-1 != taskId) {
-            Bukkit.getScheduler().cancelTask(taskId);
-            taskId = -1;
+    private static void cancelPollTask(DriveBackupInstance instance) {
+        if (taskId != null) {
+            instance.getTaskHandler().cancelTask(taskId);
         }
     }
 
-    public static void linkSuccess(CommandSender initiator, @NotNull AuthenticationProvider provider, @NotNull Logger logger) {
-        logger.log(intl("link-provider-complete"), "provider", provider.getName());
-        enableBackupMethod(provider, logger);
-        DriveBackup.reloadLocalConfig();
+    public static void linkSuccess(CommandSender initiator, @NotNull AuthenticationProvider provider, @NotNull UploadLogger logger, DriveBackupInstance instance) {
+        logger.log("link-provider-complete", "provider", provider.getName());
+        enableBackupMethod(provider, logger, instance);
+        //TODO
         BasicCommands.sendBriefBackupList(initiator);
     }
 
@@ -187,21 +179,33 @@ public final class Authenticator {
         }
     }
 
-    private static void enableBackupMethod(@NotNull AuthenticationProvider provider, Logger logger) {
-        DriveBackup plugin = DriveBackup.getInstance();
-        if (!plugin.getConfig().getBoolean(provider.getId() + ".enabled")) {
-            logger.log("Automatically enabled " + provider.getName() + " backups");
-            plugin.getConfig().set(provider.getId() + ".enabled", Boolean.TRUE);
-            plugin.saveConfig();
+    private static void enableBackupMethod(@NotNull AuthenticationProvider provider, UploadLogger logger, DriveBackupInstance instance) {
+        ConfigHandler configHandler = instance.getConfigHandler();
+        ConfigurationSection section = configHandler.getConfig().getSection(provider.getId());
+        if (!section.getValue("enabled").getBoolean()) {
+            try {
+                configHandler.getConfig().getConfig().node(provider.getId()).node("enabled").set(Boolean.TRUE);
+                configHandler.save();
+                logger.log("Automatically enabled " + provider.getName() + " backups");
+            } catch (Exception e) {
+                logger.log("Failed to enable " + provider.getName() + " backups");
+                instance.getLoggingHandler().error("Failed to enable " + provider.getName() + " backups", e);
+            }
         }
     }
 
-    private static void disableBackupMethod(@NotNull AuthenticationProvider provider, Logger logger) {
-        DriveBackup plugin = DriveBackup.getInstance();
-        if (plugin.getConfig().getBoolean(provider.getId() + ".enabled")) {
-            logger.log("Disabled " + provider.getName() + " backups");
-            plugin.getConfig().set(provider.getId() + ".enabled", false);
-            plugin.saveConfig();
+    private static void disableBackupMethod(@NotNull AuthenticationProvider provider, UploadLogger logger, DriveBackupInstance instance) {
+        ConfigHandler configHandler = instance.getConfigHandler();
+        ConfigurationSection section = configHandler.getConfig().getSection(provider.getId());
+        if (section.getValue("enabled").getBoolean()) {
+            try {
+                configHandler.getConfig().getConfig().node(provider.getId()).node("enabled").set(Boolean.FALSE);
+                configHandler.save();
+                logger.log("Automatically disabled " + provider.getName() + " backups");
+            } catch (Exception e) {
+                logger.log("Failed to disable " + provider.getName() + " backups");
+                instance.getLoggingHandler().error("Failed to disable " + provider.getName() + " backups", e);
+            }
         }
     }
 

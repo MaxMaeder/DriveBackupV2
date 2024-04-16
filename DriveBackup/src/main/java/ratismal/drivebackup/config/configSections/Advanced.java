@@ -1,16 +1,12 @@
 package ratismal.drivebackup.config.configSections;
 
+import org.bukkit.configuration.file.FileConfiguration;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
+
 import java.time.DateTimeException;
 import java.time.ZoneOffset;
 import java.util.Locale;
-
-import org.bukkit.configuration.file.FileConfiguration;
-
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
-import ratismal.drivebackup.util.Logger;
-
-import static ratismal.drivebackup.config.Localization.intl;
 
 @Deprecated
 public class Advanced {
@@ -44,7 +40,7 @@ public class Advanced {
 
     @NotNull
     @Contract ("_, _ -> new")
-    public static Advanced parse(@NotNull FileConfiguration config, Logger logger) {
+    public static Advanced parse(@NotNull FileConfiguration config) {
         boolean metrics = config.getBoolean("advanced.metrics");
         boolean updateCheck = config.getBoolean("advanced.update-check");
         boolean suppressErrors = config.getBoolean("advanced.suppress-errors");
@@ -54,7 +50,6 @@ public class Advanced {
         try {
             dateTimezone = ZoneOffset.of(config.getString("advanced.date-timezone"));
         } catch(DateTimeException e) {
-            logger.log(intl("date-format-invalid"));
             //Fallback to UTC
             dateTimezone = ZoneOffset.of("Z");
         }

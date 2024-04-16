@@ -1,7 +1,6 @@
 package ratismal.drivebackup.uploaders;
 
 import org.jetbrains.annotations.Contract;
-import ratismal.drivebackup.UploadThread;
 import ratismal.drivebackup.platforms.DriveBackupInstance;
 
 import java.io.File;
@@ -15,10 +14,10 @@ public abstract class Uploader {
     protected boolean authenticated;
     protected boolean errorOccurred;
     protected final AuthenticationProvider authProvider;
-    protected final UploadThread.UploadLogger logger;
+    protected final UploadLogger logger;
     
     @Contract (pure = true)
-    protected Uploader(DriveBackupInstance instance, String name, String id, AuthenticationProvider authProvider, UploadThread.UploadLogger logger) {
+    protected Uploader(DriveBackupInstance instance, String name, String id, AuthenticationProvider authProvider, UploadLogger logger) {
         this.instance = instance;
         this.name = name;
         this.id = id;
@@ -70,5 +69,17 @@ public abstract class Uploader {
     public abstract void uploadFile(File file, String type) throws IOException;
     
     public abstract void close();
+    
+    protected String getLocalSaveDirectory() {
+        return instance.getConfigHandler().getConfig().getValue("local-save-directory").getString();
+    }
+    
+    protected String getRemoteSaveDirectory() {
+        return instance.getConfigHandler().getConfig().getValue("remote-save-directory").getString();
+    }
+    
+    protected int getKeepCount() {
+        return instance.getConfigHandler().getConfig().getValue("keep-count").getInt();
+    }
     
 }

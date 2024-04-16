@@ -1,93 +1,39 @@
-package ratismal.drivebackup;
+package ratismal.drivebackup.api;
 
 import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
-import ratismal.drivebackup.config.ConfigParser;
-import ratismal.drivebackup.config.ConfigParser.Config;
-import ratismal.drivebackup.plugin.DriveBackup;
-import ratismal.drivebackup.util.MessageUtil;
+import org.spongepowered.configurate.CommentedConfigurationNode;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
+/**
+ * Represents the DriveBackupV2 API
+ *
+ */
 public final class DriveBackupApi {
     private static final Map<String, Callable<Boolean>> beforeBackupStartCallablesMap = new HashMap<>(2);
     private static final Map<String, Runnable> onBackupDoneRunnablesMap = new HashMap<>(2);
     private static final Map<String, Runnable> onBackupErrorRunnablesMap = new HashMap<>(2);
-    private static final ExecutorService executor = Executors.newFixedThreadPool(10);
-    private static final long TIMEOUT = 10L;
     
     private static int deprecatedIdentifier = 1;
     
     @Contract (pure = true)
     private DriveBackupApi() {}
     
-    /**
-     * Gets whether to proceed with the backup by executing the {@code Callable}s specified by API users.
-     * @return whether to proceed
-     */
-    static boolean shouldStartBackup() {
-        Map<String, Future<Boolean>> futureMap = new HashMap<>(beforeBackupStartCallablesMap.size());
-        for (Map.Entry<String, Callable<Boolean>> entry : beforeBackupStartCallablesMap.entrySet()) {
-            futureMap.put(entry.getKey(), executor.submit(entry.getValue()));
-        }
-        boolean shouldStartBackup = true;
-        for (Map.Entry<String, Future<Boolean>> entry : futureMap.entrySet()) {
-            try {
-                if (Boolean.FALSE.equals(entry.getValue().get(TIMEOUT, TimeUnit.SECONDS))) {
-                    shouldStartBackup = false;
-                    String message = "Not starting a backup due to " + entry.getKey() + " beforeBackupStart() Callable returning false";
-                    MessageUtil.Builder().text(message).toConsole(true).send();
-                    break;
-                }
-            } catch (InterruptedException | ExecutionException | TimeoutException exception) {
-                MessageUtil.Builder().text("Failed to execute a beforeBackupStart() Callable, ignoring").toConsole(true).send();
-                MessageUtil.sendConsoleException(exception);
-            }
-        }
-        return shouldStartBackup;
-    }
-
-    /**
-     * Runs the {@code Callable}s specified by API users to be run after a backup is successfully completed.
-     */
-    static void backupDone() {
-        final String DID_NOT_EXECUTE_SUCCESSFULLY = "A onBackupDone() Runnable returned false";
-        final String FAILED_TO_EXECUTE = "Failed to execute an onBackupDone() Runnable, ignoring";
-        processRunnables(onBackupDoneRunnablesMap, DID_NOT_EXECUTE_SUCCESSFULLY, FAILED_TO_EXECUTE);
-    }
-
-    /**
-     * Runs the {@code Callable}s specified by API users to be run after an error occurs during a backup.
-     */
-    static void backupError() {
-        final String DID_NOT_EXECUTE_SUCCESSFULLY = "A onBackupError() Runnable returned false";
-        final String FAILED_TO_EXECUTE = "Failed to execute an onBackupError() Runnable, ignoring";
-        processRunnables(onBackupErrorRunnablesMap, DID_NOT_EXECUTE_SUCCESSFULLY, FAILED_TO_EXECUTE);
+    @Contract (pure = true)
+    static Map<String, Callable<Boolean>> getBeforeBackupStartCallablesMap() {
+        return beforeBackupStartCallablesMap;
     }
     
-    private static void processRunnables(@NotNull Map<String, Runnable>runnableMap, String didNotExecuteSuccessfully, String failedToExecuteMsg) {
-        Map<String, Future<Boolean>> futures = new HashMap<>(runnableMap.size());
-        for (Map.Entry<String, Runnable> entry : runnableMap.entrySet()) {
-            futures.put(entry.getKey(), executor.submit(entry.getValue(), Boolean.TRUE));
-        }
-        for (Map.Entry<String, Future<Boolean>> entry : futures.entrySet()) {
-            try {
-                if (!Boolean.TRUE.equals(entry.getValue().get(TIMEOUT, TimeUnit.SECONDS))) {
-                    MessageUtil.Builder().text(didNotExecuteSuccessfully).toConsole(true).send();
-                }
-            } catch (InterruptedException | ExecutionException | TimeoutException e) {
-                MessageUtil.Builder().text(failedToExecuteMsg).toConsole(true).send();
-                MessageUtil.sendConsoleException(e);
-            }
-        }
+    @Contract (pure = true)
+    static Map<String, Runnable> getOnBackupDoneRunnablesMap() {
+        return onBackupDoneRunnablesMap;
+    }
+    
+    @Contract (pure = true)
+    static Map<String, Runnable> getOnBackupErrorRunnablesMap() {
+        return onBackupErrorRunnablesMap;
     }
     
     private static void testIdentifier(String identifier) throws IllegalArgumentException {
@@ -99,12 +45,12 @@ public final class DriveBackupApi {
     }
     
     /**
-     * Gets the plugin's parsed config as an object
-     * @return the config
+     * Gets the plugin's config in a CommendedConfigurationNode object
+     * @return the config object
      */
     @Contract (pure = true)
-    public static Config getConfig() {
-        return ConfigParser.getConfig();
+    public static CommentedConfigurationNode getConfig() {
+        return APIHandler.getInstance().getDBInstance().getConfigHandler().getConfig().getConfig();
     }
 
     /**
@@ -207,7 +153,7 @@ public final class DriveBackupApi {
      * Behaves identically to running {@code /drivebackup backup}
      */
     public static void startBackup() {
-        new Thread(new UploadThread()).start();
+        APIHandler.getInstance().startBackup();
     }
 
     /**
@@ -216,7 +162,7 @@ public final class DriveBackupApi {
      * Behaves identically to running {@code /drivebackup reloadconfig}
      */
     public static void reloadConfig() {
-        DriveBackup.reloadLocalConfig();
+        APIHandler.getInstance().reloadConfig();
     }
 
     /**
@@ -227,6 +173,6 @@ public final class DriveBackupApi {
      * @return the message
      */
     public static String getNextAutoBackup() {
-        return UploadThread.getNextAutoBackup();
+        return APIHandler.getInstance().getNextAutoBackup();
     }
 }

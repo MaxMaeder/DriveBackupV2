@@ -5,11 +5,8 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ratismal.drivebackup.config.ConfigParser;
-import ratismal.drivebackup.util.Logger;
 
 import java.nio.file.InvalidPathException;
-
-import static ratismal.drivebackup.config.Localization.intl;
 
 @Deprecated
 public class BackupMethods {
@@ -147,7 +144,7 @@ public class BackupMethods {
 
     @NotNull
     @Contract ("_, _ -> new")
-    public static BackupMethods parse(@NotNull FileConfiguration config, Logger logger) {
+    public static BackupMethods parse(@NotNull FileConfiguration config) {
         GoogleDriveBackupMethod googleDriveMethod = new GoogleDriveBackupMethod(
             config.getBoolean("googledrive.enabled"),
             config.getString("googledrive.shared-drive-id").trim()
@@ -188,7 +185,6 @@ public class BackupMethods {
             try {
                 publicKey = ConfigParser.verifyPath(config.getString("ftp.sftp-public-key"));
             } catch (InvalidPathException e) {
-                logger.log(intl("ftp-method-pubic-key-invalid"));
             }
         }
         String baseDir = "";
@@ -196,7 +192,6 @@ public class BackupMethods {
             try {
                 baseDir = ConfigParser.verifyPath(config.getString("ftp.base-dir"));
             } catch (InvalidPathException e) {
-                logger.log(intl("ftp-method-passphrase-invalid"));
             }
         }
         FTPBackupMethod ftpMethod = new FTPBackupMethod(

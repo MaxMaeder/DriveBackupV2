@@ -2,8 +2,9 @@ package ratismal.drivebackup.uploaders.webdav;
 
 import com.github.sardine.impl.SardineException;
 import org.jetbrains.annotations.NotNull;
-import ratismal.drivebackup.UploadThread.UploadLogger;
 import ratismal.drivebackup.config.configSections.BackupMethods.NextcloudBackupMethod;
+import ratismal.drivebackup.platforms.DriveBackupInstance;
+import ratismal.drivebackup.uploaders.UploadLogger;
 import ratismal.drivebackup.util.ChunkedFileInputStream;
 
 import java.io.File;
@@ -15,15 +16,15 @@ import java.util.UUID;
 
 public final class NextcloudUploader extends WebDAVUploader {
 
-    public static final String UPLOADER_NAME = "Nextcloud";
+    private static final String UPLOADER_NAME = "Nextcloud";
     private static final String ID = "nextcloud";
 
     private final NextcloudBackupMethod nextcloud;
 
     private String magic_upload_dir;
 
-    public NextcloudUploader(UploadLogger logger, NextcloudBackupMethod nextcloud) {
-        super(logger, nextcloud);
+    public NextcloudUploader(DriveBackupInstance instance, UploadLogger logger, NextcloudBackupMethod nextcloud) {
+        super(instance, logger, nextcloud);
         setName(UPLOADER_NAME);
         setId(ID);
         this.nextcloud = nextcloud;

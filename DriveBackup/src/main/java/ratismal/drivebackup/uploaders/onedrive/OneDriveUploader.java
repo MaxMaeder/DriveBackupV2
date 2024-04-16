@@ -10,12 +10,12 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import ratismal.drivebackup.UploadThread.UploadLogger;
-import ratismal.drivebackup.config.ConfigParser;
 import ratismal.drivebackup.http.HttpClient;
+import ratismal.drivebackup.platforms.DriveBackupInstance;
 import ratismal.drivebackup.uploaders.AuthenticationProvider;
 import ratismal.drivebackup.uploaders.Authenticator;
 import ratismal.drivebackup.uploaders.Obfusticate;
+import ratismal.drivebackup.uploaders.UploadLogger;
 import ratismal.drivebackup.uploaders.Uploader;
 import ratismal.drivebackup.uploaders.UploaderUtils;
 import ratismal.drivebackup.util.MessageUtil;
@@ -27,11 +27,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
-
-import static ratismal.drivebackup.config.Localization.intl;
 
 /**
  * Created by Redemption on 2/24/2016.
@@ -40,7 +40,7 @@ public final class OneDriveUploader extends Uploader {
     private static final int EXPONENTIAL_BACKOFF_MILLIS_DEFAULT = 1000;
     private static final int EXPONENTIAL_BACKOFF_FACTOR = 5;
     private static final int MAX_RETRY_ATTEMPTS = 3;
-    public static final String UPLOADER_NAME = "OneDrive";
+    private static final String UPLOADER_NAME = "OneDrive";
     private static final String ID = "onedrive";
     /**
      * Size of the file chunks to upload to OneDrive
@@ -60,8 +60,8 @@ public final class OneDriveUploader extends Uploader {
     /**
      * Creates an instance of the {@code OneDriveUploader} object
      */
-    public OneDriveUploader(UploadLogger logger) {
-        super(UPLOADER_NAME, ID, AuthenticationProvider.ONEDRIVE, logger);
+    public OneDriveUploader(DriveBackupInstance instance, UploadLogger logger) {
+        super(instance, UPLOADER_NAME, ID, AuthenticationProvider.ONEDRIVE, logger);
         try {
             refreshToken = Authenticator.getRefreshToken(AuthenticationProvider.ONEDRIVE);
             retrieveNewAccessToken();
@@ -107,7 +107,7 @@ public final class OneDriveUploader extends Uploader {
      */
     public void test(java.io.File testFile) {
         try {
-            String destination = ConfigParser.getConfig().backupStorage.remoteDirectory;
+            String destination = getRemoteSaveDirectory();
             Request request = new Request.Builder()
                 .addHeader("Authorization", "Bearer " + accessToken)
                 .url("https://graph.microsoft.com/v1.0/me/drive/root:/" + destination + "/" + testFile.getName() + ":/content")
@@ -133,7 +133,7 @@ public final class OneDriveUploader extends Uploader {
             }
         } catch (Exception exception) {
             NetUtil.catchException(exception, "graph.microsoft.com", logger);
-            MessageUtil.sendConsoleException(exception);
+            instance.getLoggingHandler().error("Error occurred while testing OneDrive", exception);
             setErrorOccurred(true);
         }
     }
@@ -146,7 +146,7 @@ public final class OneDriveUploader extends Uploader {
     public void uploadFile(java.io.File file, String type) throws IOException {
         try {
             resetRanges();
-            String destination = ConfigParser.getConfig().backupStorage.remoteDirectory;
+            String destination = getRemoteSaveDirectory();
             Collection<String> typeFolders = new ArrayList<>();
             Collections.addAll(typeFolders, destination.split("/"));
             Collections.addAll(typeFolders, type.split("[/\\\\]"));
@@ -208,12 +208,12 @@ public final class OneDriveUploader extends Uploader {
             try {
                 pruneBackups(folder);
             } catch (Exception e) {
-                logger.log(intl("backup-method-prune-failed"));
+                logger.log("backup-method-prune-failed");
                 throw e;
             }
         } catch (Exception exception) {
             NetUtil.catchException(exception, "graph.microsoft.com", logger);
-            MessageUtil.sendConsoleException(exception);
+            instance.getLoggingHandler().error("Error occurred while uploading to OneDrive", exception);
             setErrorOccurred(true);
         }
         raf.close();
@@ -365,7 +365,7 @@ public final class OneDriveUploader extends Uploader {
      * @throws Exception
      */
     private void pruneBackups(File parent) throws Exception {
-        int fileLimit = ConfigParser.getConfig().backupStorage.keepCount;
+        int fileLimit = getKeepCount();
         if (fileLimit == -1) {
             return;
         }
@@ -382,11 +382,11 @@ public final class OneDriveUploader extends Uploader {
             fileIDs.add(jsonArray.getJSONObject(i).getString("id"));
         }
         if(fileLimit < fileIDs.size()){
-            logger.info(
-                intl("backup-method-limit-reached"), 
-                "file-count", String.valueOf(fileIDs.size()),
-                "upload-method", getName(),
-                "file-limit", String.valueOf(fileLimit));
+            Map<String, String> placeholders = new HashMap<>(3);
+            placeholders.put("file-count", String.valueOf(fileIDs.size()));
+            placeholders.put("upload-method", getName());
+            placeholders.put("file-limit", String.valueOf(fileLimit));
+            logger.info("backup-method-limit-reached", placeholders);
         }
         for (Iterator<String> iterator = fileIDs.listIterator(); iterator.hasNext(); ) {
             String fileIDValue = iterator.next();

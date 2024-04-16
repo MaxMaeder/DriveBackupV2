@@ -5,11 +5,10 @@ import com.github.sardine.Sardine;
 import com.github.sardine.SardineFactory;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import ratismal.drivebackup.UploadThread.UploadLogger;
-import ratismal.drivebackup.config.ConfigParser;
 import ratismal.drivebackup.config.configSections.BackupMethods.WebDAVBackupMethod;
+import ratismal.drivebackup.platforms.DriveBackupInstance;
+import ratismal.drivebackup.uploaders.UploadLogger;
 import ratismal.drivebackup.uploaders.Uploader;
-import ratismal.drivebackup.util.MessageUtil;
 import ratismal.drivebackup.util.NetUtil;
 
 import java.io.File;
@@ -18,15 +17,15 @@ import java.io.IOException;
 import java.net.URL;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
 
-import static ratismal.drivebackup.config.Localization.intl;
-
 public class WebDAVUploader extends Uploader {
     
-    public static final String UPLOADER_NAME = "WebDAV";
+    private static final String UPLOADER_NAME = "WebDAV";
     private static final String ID = "webdav";
     
     protected Sardine sardine;
@@ -35,15 +34,15 @@ public class WebDAVUploader extends Uploader {
     /**
      * Creates an instance of the {@code WebDAVUploader} object using the server credentials specified by the user in the {@code config.yml}
      */
-    public WebDAVUploader(UploadLogger logger, WebDAVBackupMethod webdav) {
-        super(UPLOADER_NAME, ID, null, logger);
+    public WebDAVUploader(DriveBackupInstance instance, UploadLogger logger, WebDAVBackupMethod webdav) {
+        super(instance, UPLOADER_NAME, ID, null, logger);
         try {
             _remoteBaseFolder = new URL(webdav.hostname + "/" + webdav.remoteDirectory);
             sardine = SardineFactory.begin(webdav.username, webdav.password);
             sardine.enablePreemptiveAuthentication(_remoteBaseFolder.getHost());
             createDirectory(_remoteBaseFolder.toString());
         } catch (Exception e) {
-            MessageUtil.sendConsoleException(e);
+            instance.getLoggingHandler().error("Failed to create WebDAV uploader", e);
             setErrorOccurred(true);
         }
     }
@@ -55,7 +54,7 @@ public class WebDAVUploader extends Uploader {
         try {
             sardine.shutdown();
         } catch (Exception e) {
-            MessageUtil.sendConsoleException(e);
+            instance.getLoggingHandler().error("Failed to close WebDAV uploader", e);
             setErrorOccurred(true);
         }
     }
@@ -72,7 +71,7 @@ public class WebDAVUploader extends Uploader {
             sardine.delete(target.toString());
         } catch (Exception exception) {
             NetUtil.catchException(exception, _remoteBaseFolder.getHost(), logger);
-            MessageUtil.sendConsoleException(exception);
+            instance.getLoggingHandler().error("Failed to test WebDAV uploader", exception);
             setErrorOccurred(true);
         }
     }
@@ -97,12 +96,12 @@ public class WebDAVUploader extends Uploader {
             try {
                 pruneBackups(type);
             } catch (Exception e) {
-                logger.log(intl("backup-method-prune-failed"));
+                logger.log("backup-method-prune-failed");
                 throw e;
             }
         } catch (Exception exception) {
             NetUtil.catchException(exception, _remoteBaseFolder.getHost(), logger);
-            MessageUtil.sendConsoleException(exception);
+            instance.getLoggingHandler().error("Failed to upload file to WebDAV", exception);
             setErrorOccurred(true);
         }
     }
@@ -125,7 +124,7 @@ public class WebDAVUploader extends Uploader {
                 }
             }
         } catch (Exception e) {
-            MessageUtil.sendConsoleException(e);
+            instance.getLoggingHandler().error("Failed to get files from WebDAV", e);
             setErrorOccurred(true);
         }
         return filePaths;
@@ -139,17 +138,17 @@ public class WebDAVUploader extends Uploader {
      * @throws Exception
      */
     public void pruneBackups(String type) throws Exception {
-        int fileLimit = ConfigParser.getConfig().backupStorage.keepCount;
+        int fileLimit = getKeepCount();
         if (fileLimit == -1) {
             return;
         }
         TreeMap<Instant, DavResource> files = getZipFiles(type);
         if (files.size() > fileLimit) {
-            logger.info(
-                intl("backup-method-limit-reached"), 
-                "file-count", String.valueOf(files.size()),
-                "upload-method", getName(),
-                "file-limit", String.valueOf(fileLimit));
+            Map<String, String> placeholders = new HashMap<>(3);
+            placeholders.put("file-count", String.valueOf(files.size()));
+            placeholders.put("upload-method", getName());
+            placeholders.put("file-limit", String.valueOf(fileLimit));
+            logger.info("backup-method-limit-reached", placeholders);
             while (files.size() > fileLimit) {
                 sardine.delete(new URL(_remoteBaseFolder + "/" + type + "/" + files.firstEntry().getValue().getName()).toString());
                 files.remove(files.firstKey());

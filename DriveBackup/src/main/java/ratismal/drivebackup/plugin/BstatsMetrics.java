@@ -6,28 +6,27 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ratismal.drivebackup.config.ConfigParser;
 import ratismal.drivebackup.config.ConfigParser.Config;
-import ratismal.drivebackup.util.MessageUtil;
-
-import static ratismal.drivebackup.config.Localization.intl;
+import ratismal.drivebackup.platforms.bukkit.BukkitPlugin;
 
 public class BstatsMetrics {
     private static final int METRICS_ID = 7537;
 
-    public static void initMetrics() {
-        if (ConfigParser.getConfig().advanced.metricsEnabled) {
+    public static void initMetrics(@NotNull BukkitPlugin instance) {
+        boolean metricsEnabled = instance.getConfigHandler().getConfig().getValue("advanced", "metricsEnabled").getBoolean();
+        if (metricsEnabled) {
             try {
-                BstatsMetrics metrics = new BstatsMetrics(DriveBackup.getInstance());
+                BstatsMetrics metrics = new BstatsMetrics(instance);
                 metrics.updateMetrics();
-                MessageUtil.Builder().mmText(intl("metrics-started")).toConsole(true).send();
+                instance.getMessageHandler().Builder().getLang("metrics-started").toConsole().send();
             } catch (Exception e) {
-                MessageUtil.Builder().mmText(intl("metrics-error")).toConsole(true).send();
+                instance.getMessageHandler().Builder().getLang("metrics-error").toConsole().send();
             }
         }
     }
 
     private final Metrics metrics;
 
-    public BstatsMetrics(DriveBackup plugin) {
+    public BstatsMetrics(BukkitPlugin plugin) {
         metrics = new Metrics(plugin, METRICS_ID);
     }
 

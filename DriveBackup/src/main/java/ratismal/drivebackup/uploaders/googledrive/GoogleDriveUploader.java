@@ -24,26 +24,27 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.json.JSONObject;
-import ratismal.drivebackup.UploadThread.UploadLogger;
-import ratismal.drivebackup.config.ConfigParser;
+import org.spongepowered.configurate.CommentedConfigurationNode;
+import ratismal.drivebackup.configuration.ConfigHandler;
 import ratismal.drivebackup.http.HttpClient;
+import ratismal.drivebackup.platforms.DriveBackupInstance;
 import ratismal.drivebackup.plugin.DriveBackup;
 import ratismal.drivebackup.uploaders.AuthenticationProvider;
 import ratismal.drivebackup.uploaders.Authenticator;
 import ratismal.drivebackup.uploaders.Obfusticate;
+import ratismal.drivebackup.uploaders.UploadLogger;
 import ratismal.drivebackup.uploaders.Uploader;
-import ratismal.drivebackup.util.MessageUtil;
 import ratismal.drivebackup.util.NetUtil;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
-
-import static ratismal.drivebackup.config.Localization.intl;
 
 /**
  * Created by Ratismal on 2016-01-20.
@@ -52,7 +53,7 @@ import static ratismal.drivebackup.config.Localization.intl;
 public final class GoogleDriveUploader extends Uploader {
     
     private static final String APPLICATION_VND_GOOGLE_APPS_FOLDER = "application/vnd.google-apps.folder";
-    public static final String UPLOADER_NAME = "Google Drive";
+    private static final String UPLOADER_NAME = "Google Drive";
     private static final String ID = "googledrive";
 
     /**
@@ -80,14 +81,14 @@ public final class GoogleDriveUploader extends Uploader {
     /**
      * Creates an instance of the {@code GoogleDriveUploader} object
      */
-    public GoogleDriveUploader(UploadLogger logger) {
-        super(UPLOADER_NAME,  ID, AuthenticationProvider.GOOGLE_DRIVE, logger);
+    public GoogleDriveUploader(DriveBackupInstance instance, UploadLogger logger) {
+        super(instance, UPLOADER_NAME,  ID, AuthenticationProvider.GOOGLE_DRIVE, logger);
         try {
             refreshToken = Authenticator.getRefreshToken(AuthenticationProvider.GOOGLE_DRIVE);
             retrieveNewAccessToken();
             drives = service.drives().list().execute().getItems();
         } catch (Exception e) {
-            MessageUtil.sendConsoleException(e);
+            instance.getLoggingHandler().error("Failed to create Google Drive uploader", e);
             setErrorOccurred(true);
         }
     }
@@ -151,8 +152,8 @@ public final class GoogleDriveUploader extends Uploader {
      */
     public void test(java.io.File testFile) {
         try {
-            String sharedDriveId = ConfigParser.getConfig().backupMethods.googleDrive.sharedDriveId;
-            String destination = ConfigParser.getConfig().backupStorage.remoteDirectory;
+            String sharedDriveId = instance.getConfigHandler().getConfig().getValue("googledrive", "shared-drive-id").getString();
+            String destination = getRemoteSaveDirectory();
             File body = new File();
             body.setTitle(testFile.getName());
             body.setDescription("DriveBackupV2 test file");
@@ -172,7 +173,7 @@ public final class GoogleDriveUploader extends Uploader {
             service.files().delete(fileId).setSupportsAllDrives(true).execute();
         } catch (Exception exception) {
             NetUtil.catchException(exception, "www.googleapis.com", logger);
-            MessageUtil.sendConsoleException(exception);
+            instance.getLoggingHandler().error("Failed to test Google Drive", exception);
             setErrorOccurred(true);
         }
     }
@@ -184,8 +185,8 @@ public final class GoogleDriveUploader extends Uploader {
      */
     public void uploadFile(java.io.File file, String type) {
         try {
-            String sharedDriveId = ConfigParser.getConfig().backupMethods.googleDrive.sharedDriveId;
-            String destination = ConfigParser.getConfig().backupStorage.remoteDirectory;
+            String sharedDriveId = instance.getConfigHandler().getConfig().getValue("googledrive", "shared-drive-id").getString();
+            String destination = getRemoteSaveDirectory();
             retrieveNewAccessToken();
             Collection<String> typeFolders = new ArrayList<>();
             Collections.addAll(typeFolders, destination.split("[/\\\\]"));
@@ -218,15 +219,15 @@ public final class GoogleDriveUploader extends Uploader {
                 pruneBackups(folder);
             } catch (Exception e) {
                 if (!sharedDriveId.isEmpty()) {
-                    logger.log(intl("backup-method-shared-drive-prune-failed"));
+                    logger.log("backup-method-shared-drive-prune-failed");
                 } else {
-                    logger.log(intl("backup-method-prune-failed"));
+                    logger.log("backup-method-prune-failed");
                 }
                 throw e;
             }
         } catch (Exception exception) {
             NetUtil.catchException(exception, "www.googleapis.com", logger);
-            MessageUtil.sendConsoleException(exception);
+            instance.getLoggingHandler().error("Failed to upload file to Google Drive", exception);
             setErrorOccurred(true);
         }
     }
@@ -244,20 +245,22 @@ public final class GoogleDriveUploader extends Uploader {
      */
     public void setupSharedDrives(CommandSender initiator) {
         if (drives != null && !drives.isEmpty()) {
-            logger.log(intl("google-pick-shared-drive"));
-            logger.log(
-                intl("google-shared-drive-option"),
-                "select-command", "1",
-                "drive-num", "1",
-                "drive-name", intl("default-google-drive-name"));
+            logger.log("google-pick-shared-drive");
+            String msg = instance.getMessageHandler().getLangString("default-google-drive-name");
+            Map<String, String> placeholders = new HashMap<>(3);
+            placeholders.put("select-command", "1");
+            placeholders.put("drive-num", "1");
+            placeholders.put("drive-name", msg);
+            logger.log("google-shared-drive-option", placeholders);
             int index = 1;
             for (com.google.api.services.drive.model.Drive drive : drives) {
-                logger.log(
-                    intl("google-shared-drive-option"),
-                    "select-command", drive.getId(),
-                    "drive-num", String.valueOf(++index),
-                    "drive-name", drive.getName()); 
+                Map<String, String> placeholders2 = new HashMap<>(3);
+                placeholders2.put("select-command", String.valueOf(index + 1));
+                placeholders2.put("drive-num", String.valueOf(index + 1));
+                placeholders2.put("drive-name", drive.getName());
+                logger.log("google-shared-drive-option", placeholders2);
             }
+            //TODO
             if (initiator instanceof Player) {
                 Player player = (Player) initiator;
                 DriveBackup.chatInputPlayers.add(player);
@@ -265,34 +268,39 @@ public final class GoogleDriveUploader extends Uploader {
                 DriveBackup.chatInputPlayers.add(initiator);
             }
         } else {
-            Authenticator.linkSuccess(initiator, getAuthProvider(), logger);
+            Authenticator.linkSuccess(initiator, getAuthProvider(), logger, instance);
         }
     }
 
     public void finalizeSharedDrives(CommandSender initiator, String input) {
-        DriveBackup instance = DriveBackup.getInstance();
         final String idKey = "googledrive.shared-drive-id";
-        for (com.google.api.services.drive.model.Drive drive : drives) {
-            if (input.equals(drive.getId())) {
-                instance.getConfig().set(idKey, input);
-                instance.saveConfig();
-                Authenticator.linkSuccess(initiator, getAuthProvider(), logger);
+        ConfigHandler configHandler = instance.getConfigHandler();
+        CommentedConfigurationNode config = configHandler.getConfig().getConfig();
+        try {
+            for (com.google.api.services.drive.model.Drive drive : drives) {
+                if (input.equals(drive.getId())) {
+                    config.node(idKey).set(input);
+                    configHandler.save();
+                    Authenticator.linkSuccess(initiator, getAuthProvider(), logger, instance);
+                    return;
+                }
+            }
+            if ("1".equals(input)) {
+                config.node(idKey).set("");
+                configHandler.save();
+                Authenticator.linkSuccess(initiator, getAuthProvider(), logger, instance);
+                return;
+            } else if (input.matches("[0-9]+")) {
+                config.node(idKey).set(drives.get(Integer.parseInt(input) - 2).getId());
+                configHandler.save();
+                Authenticator.linkSuccess(initiator, getAuthProvider(), logger, instance);
                 return;
             }
-        }
-        if ("1".equals(input)) {
-            instance.getConfig().set(idKey, "");
-            instance.saveConfig();
-            Authenticator.linkSuccess(initiator, getAuthProvider(), logger);
-            return;
-        } else if (input.matches("[0-9]+")) {
-            instance.getConfig().set(idKey, drives.get(Integer.parseInt(input) - 2).getId());
-            instance.saveConfig();
-            Authenticator.linkSuccess(initiator, getAuthProvider(), logger);
-            return;
+        } catch (Exception e) {
+            instance.getLoggingHandler().error("Failed to finalize shared drive setup", e);
         }
         // TODO: handle this better
-        logger.log(intl("link-provider-failed"), "provider", getAuthProvider().getName());
+        logger.log("link-provider-failed", "provider", getAuthProvider().getName());
     }
 
     /**
@@ -382,7 +390,7 @@ public final class GoogleDriveUploader extends Uploader {
                 }
             }
         } catch (Exception e) {
-            MessageUtil.sendConsoleException(e);
+            instance.getLoggingHandler().error("Failed to get folder", e);
         }
         return null;
     }
@@ -410,7 +418,7 @@ public final class GoogleDriveUploader extends Uploader {
                 }
             }
         } catch (Exception e) {
-            MessageUtil.sendConsoleException(e);
+            instance.getLoggingHandler().error("Failed to get folder", e);
         }
         return null;
     }
@@ -432,7 +440,7 @@ public final class GoogleDriveUploader extends Uploader {
                 }
             }
         } catch (Exception e) {
-            MessageUtil.sendConsoleException(e);
+            instance.getLoggingHandler().error("Failed to get folder", e);
         }
         return null;
     }
@@ -460,7 +468,7 @@ public final class GoogleDriveUploader extends Uploader {
                 result.addAll(files.getItems());
                 request.setPageToken(files.getNextPageToken());
             } catch (IOException e) {
-                MessageUtil.sendConsoleException(e);
+                instance.getLoggingHandler().error("Failed to get files", e);
                 request.setPageToken(null);
             }
         } while (request.getPageToken() != null && !request.getPageToken().isEmpty());
@@ -475,17 +483,17 @@ public final class GoogleDriveUploader extends Uploader {
      * @throws Exception
      */
     private void pruneBackups(File folder) throws Exception {
-        int fileLimit = ConfigParser.getConfig().backupStorage.keepCount;
+        int fileLimit = getKeepCount();
         if (fileLimit == -1) {
             return;
         }
         List<ChildReference> files = getFiles(folder);
         if (files.size() > fileLimit) {
-            logger.info(
-                intl("backup-method-limit-reached"), 
-                "file-count", String.valueOf(files.size()),
-                "upload-method", getName(),
-                "file-limit", String.valueOf(fileLimit));
+            Map<String, String> placeholders = new HashMap<>(3);
+            placeholders.put("file-count", String.valueOf(files.size()));
+            placeholders.put("upload-method", getName());
+            placeholders.put("file-limit", String.valueOf(fileLimit));
+            logger.info("backup-method-limit-reached", placeholders);
             for (Iterator<ChildReference> iterator = files.iterator(); iterator.hasNext(); ) {
                 if (files.size() == fileLimit) {
                     break;

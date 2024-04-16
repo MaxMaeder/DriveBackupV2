@@ -2,7 +2,6 @@ package ratismal.drivebackup;
 
 import com.google.api.client.util.Strings;
 import org.bukkit.Bukkit;
-import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ratismal.drivebackup.config.ConfigParser;
@@ -14,11 +13,17 @@ import ratismal.drivebackup.config.configSections.ExternalBackups.ExternalFTPSou
 import ratismal.drivebackup.config.configSections.ExternalBackups.ExternalFTPSource.ExternalBackupListEntry;
 import ratismal.drivebackup.config.configSections.ExternalBackups.ExternalMySQLSource;
 import ratismal.drivebackup.config.configSections.ExternalBackups.ExternalMySQLSource.MySQLDatabaseBackup;
-import ratismal.drivebackup.constants.Permission;
+import ratismal.drivebackup.configuration.ConfigurationObject;
+import ratismal.drivebackup.constants.BackupStatusValue;
+import ratismal.drivebackup.constants.Initiator;
+import ratismal.drivebackup.handler.BackupStatus;
 import ratismal.drivebackup.handler.listeners.PlayerListener;
+import ratismal.drivebackup.objects.Player;
+import ratismal.drivebackup.platforms.DriveBackupInstance;
 import ratismal.drivebackup.plugin.Scheduler;
 import ratismal.drivebackup.uploaders.AuthenticationProvider;
 import ratismal.drivebackup.uploaders.Authenticator;
+import ratismal.drivebackup.uploaders.UploadLogger;
 import ratismal.drivebackup.uploaders.Uploader;
 import ratismal.drivebackup.uploaders.dropbox.DropboxUploader;
 import ratismal.drivebackup.uploaders.ftp.FTPUploader;
@@ -31,8 +36,6 @@ import ratismal.drivebackup.uploaders.webdav.WebDAVUploader;
 import ratismal.drivebackup.util.BlacklistEntry;
 import ratismal.drivebackup.util.FileUtil;
 import ratismal.drivebackup.util.LocalDateTimeFormatter;
-import ratismal.drivebackup.util.Logger;
-import ratismal.drivebackup.util.MessageUtil;
 import ratismal.drivebackup.util.ServerUtil;
 import ratismal.drivebackup.util.Timer;
 
@@ -41,6 +44,7 @@ import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
@@ -50,10 +54,9 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.TreeMap;
-
-import static ratismal.drivebackup.config.Localization.intl;
 
 /**
  * Created by Ratismal on 2016-01-22.
@@ -62,8 +65,9 @@ import static ratismal.drivebackup.config.Localization.intl;
 public class UploadThread implements Runnable {
     
     private static final String LINK_COMMAND = "/drivebackup linkaccount ";
-    private CommandSender initiator;
-    private final UploadLogger logger;
+    private final DriveBackupInstance instance;
+    private final Initiator initiator;
+    private final UploadLogger uploadLogger;
     private final FileUtil fileUtil;
     
     /**
@@ -79,11 +83,6 @@ public class UploadThread implements Runnable {
      * The list of items to be backed up by the backup thread.
      */
     private List<BackupListEntry> backupList;
-
-    /**
-     * The {@code BackupStatus} of the backup thread
-     */
-    private BackupStatus backupStatus = BackupStatus.NOT_RUNNING;
     
     private LocalDateTime nextIntervalBackupTime;
     private boolean lastBackupSuccessful = true;
@@ -92,66 +91,46 @@ public class UploadThread implements Runnable {
      * The backup currently being backed up by the
      */
     private int backupBackingUp;
+
+    /**
+     * Creates an instance of the {@code UploadThread} object
+     * Used for automated backups
+     * @param instance the instance of the plugin
+     */
+    public UploadThread(DriveBackupInstance instance) {
+        this.instance = instance;
+        initiator = Initiator.AUTOMATIC;
+        uploadLogger = new UploadLogger(instance, initiator);
+        fileUtil = new FileUtil(instance, uploadLogger);
+    }
     
-    @Deprecated
-    public abstract static class UploadLogger implements Logger {
-        public void broadcast(String input, String... placeholders) {
-            MessageUtil.Builder()
-                .mmText(input, placeholders)
-                .all()
-                .send();
-        }
-        
-        public void initiatorError(String input, String... placeholders) {}
-
-        public void info(String input, String... placeholders) {
-            MessageUtil.Builder()
-                .mmText(input, placeholders)
-                .send();
-        }
+    /**
+     * Creates an instance of the {@code UploadThread} object
+     * used when a player initiates a backup
+     * @param instance the instance of the plugin
+     * @param player the player who initiated the backup
+     */
+    public UploadThread(DriveBackupInstance instance, Player player) {
+        initiator = Initiator.PLAYER;
+        this.instance = instance;
+        uploadLogger = new UploadLogger(instance, player);
+        fileUtil = new FileUtil(instance, uploadLogger);
     }
 
     /**
      * Creates an instance of the {@code UploadThread} object
+     * used when a non-player initiates a backup
+     * @param instance the instance of the plugin
+     * @param initiator the initiator of the backup that isn't a player
      */
-    public UploadThread() {
-        logger = new UploadLogger() {
-            @Override
-            public void log(String input, String... placeholders) {
-                MessageUtil.Builder()
-                    .mmText(input, placeholders)
-                    .toPerm(Permission.BACKUP.getPermission())
-                    .send();
-            }
-        };
-        fileUtil = new FileUtil(logger);
-    }
-
-    /**
-     * Creates an instance of the {@code UploadThread} object
-     * @param initiator the player who initiated the backup
-     */
-    public UploadThread(CommandSender initiator) {
+    public UploadThread(DriveBackupInstance instance, Initiator initiator) {
+        if (Initiator.PLAYER == initiator) {
+            throw new IllegalArgumentException("initiator cannot be a player, use the other constructor instead");
+        }
+        this.instance = instance;
         this.initiator = initiator;
-        logger = new UploadLogger() {
-            @Override
-            public void log(String input, String... placeholders) {
-                MessageUtil.Builder()
-                    .mmText(input, placeholders)
-                    .to(initiator)
-                    .toPerm(Permission.BACKUP.getPermission())
-                    .send();
-            }
-            @Override
-            public void initiatorError(String input, String... placeholders) {
-                MessageUtil.Builder()
-                    .mmText(input, placeholders)
-                    .to(initiator)
-                    .toConsole(false)
-                    .send();
-            }
-        };
-        fileUtil = new FileUtil(logger);
+        uploadLogger = new UploadLogger(instance, initiator);
+        fileUtil = new FileUtil(instance, uploadLogger);
     }
 
     /**
@@ -159,34 +138,32 @@ public class UploadThread implements Runnable {
      */
     @Override
     public void run() {
-        if (!locationsToBePruned.isEmpty()) {
-            locationsToBePruned.clear();
-        }
         Config config = ConfigParser.getConfig();
-        if (initiator != null && BackupStatus.NOT_RUNNING != backupStatus) {
-            logger.initiatorError(
-                intl("backup-already-running"),
-                "backup-status", getBackupStatus());
+        if (initiator != null && BackupStatusValue.NOT_RUNNING != BackupStatus.getStatus()) {
+            uploadLogger.info("backup-already-running", "backup-status", getBackupStatus());
             return;
         }
+        Thread.currentThread().setPriority(config.backupStorage.threadPriority);
         if (initiator == null) {
             updateNextIntervalBackupTime();
         }
-        Thread.currentThread().setPriority(config.backupStorage.threadPriority);
-        if (!DriveBackupApi.shouldStartBackup()) {
+        if (!instance.getAPIHandler().shouldStartBackup()) {
             return;
         }
         if (config.backupStorage.backupsRequirePlayers && !PlayerListener.isAutoBackupsActive() && initiator == null) {
             return;
         }
+        if (!locationsToBePruned.isEmpty()) {
+            locationsToBePruned.clear();
+        }
         boolean errorOccurred = false;
         List<ExternalBackupSource> externalBackupList = Arrays.asList(config.externalBackups.sources);
         backupList = new ArrayList<>(Arrays.asList(config.backupList.list));
         if (externalBackupList.isEmpty() && backupList.isEmpty()) {
-            logger.log(intl("backup-empty-list"));
+            uploadLogger.log("backup-empty-list");
             return;
         }
-        logger.broadcast(intl("backup-start"));
+        uploadLogger.broadcast("backup-start");
         for (ExternalBackupSource externalBackup : externalBackupList) {
             if (externalBackup instanceof ExternalFTPSource) {
                 makeExternalFileBackup((ExternalFTPSource) externalBackup);
@@ -194,10 +171,14 @@ public class UploadThread implements Runnable {
                 makeExternalDatabaseBackup((ExternalMySQLSource) externalBackup);
             }
         }
-        logger.log(intl("backup-local-start"));
-        setBackupStatus(BackupStatus.COMPRESSING);
+        uploadLogger.log("backup-local-start");
+        BackupStatus.setStatus(BackupStatusValue.COMPRESSING);
         backupBackingUp = 0;
-        ServerUtil.setAutoSave(false);
+        try {
+            instance.disableWorldAutoSave();
+        } catch (Exception e) {
+            uploadLogger.log("auto-save-disable-fail");
+        }
         for (BackupListEntry set : backupList) {
             for(Path folder : set.location.getPaths()) {
                 if (set.create) {
@@ -206,71 +187,75 @@ public class UploadThread implements Runnable {
             }
             backupBackingUp++;
         }
-        ServerUtil.setAutoSave(true);
-        logger.log(intl("backup-local-complete"));
-        logger.log(intl("backup-upload-start"));
-        setBackupStatus(BackupStatus.UPLOADING);
+        try {
+            instance.enableWorldAutoSave();
+        } catch (Exception e) {
+            uploadLogger.log("auto-save-enable-fail");
+        }
+        uploadLogger.log("backup-local-complete");
+        uploadLogger.log("backup-upload-start");
+        BackupStatus.setStatus(BackupStatusValue.UPLOADING);
         uploaders = new ArrayList<>(5);
         if (config.backupMethods.googleDrive.enabled) {
-            uploaders.add(new GoogleDriveUploader(logger));
+            uploaders.add(new GoogleDriveUploader(instance, uploadLogger));
         }
         if (config.backupMethods.oneDrive.enabled) {
-            uploaders.add(new OneDriveUploader(logger));
+            uploaders.add(new OneDriveUploader(instance, uploadLogger));
         }
         if (config.backupMethods.dropbox.enabled) {
-            uploaders.add(new DropboxUploader(logger));
+            uploaders.add(new DropboxUploader(instance, uploadLogger));
         }
         if (config.backupMethods.webdav.enabled) {
-            uploaders.add(new WebDAVUploader(logger, config.backupMethods.webdav));
+            uploaders.add(new WebDAVUploader(instance, uploadLogger, config.backupMethods.webdav));
         }
         if (config.backupMethods.nextcloud.enabled) {
-            uploaders.add(new NextcloudUploader(logger, config.backupMethods.nextcloud));
+            uploaders.add(new NextcloudUploader(instance, uploadLogger, config.backupMethods.nextcloud));
         }
         if (config.backupMethods.s3.enabled) {
-            uploaders.add(new S3Uploader(logger, config.backupMethods.s3));
+            uploaders.add(new S3Uploader(instance, uploadLogger, config.backupMethods.s3));
         }
         if (config.backupMethods.ftp.enabled) {
-            uploaders.add(new FTPUploader(logger, config.backupMethods.ftp));
+            uploaders.add(new FTPUploader(instance, uploadLogger, config.backupMethods.ftp));
         }
         if (uploaders.isEmpty() && config.backupStorage.localKeepCount == 0) {
-            logger.log(intl("backup-no-methods"));
+            uploadLogger.log("backup-no-methods");
             return;
         }
         ensureMethodsAuthenticated();
         uploadBackupFiles(uploaders);
         FileUtil.deleteFolder(new File("external-backups"));
-        logger.log(intl("backup-upload-complete"));
-        backupStatus = BackupStatus.NOT_RUNNING;
-        logger.log(intl("upload-error-check"));
+        uploadLogger.log("backup-upload-complete");
+        BackupStatus.setStatus(BackupStatusValue.NOT_RUNNING);
+        uploadLogger.log("upload-error-check");
         for (Uploader uploader : uploaders) {
             uploader.close();
             if (uploader.didErrorOccur()) {
-                logger.log(intl("backup-method-error-occurred"),
-                    "diagnose-command", "/drivebackup test " + uploader.getId(),
-                    "upload-method", uploader.getName());
+                Map<String, String> placeholders = new HashMap<>(2);
+                placeholders.put("upload-method", uploader.getName());
+                placeholders.put("diagnose-command", "/drivebackup test " + uploader.getId());
+                uploadLogger.log("backup-method-error-occurred", placeholders);
                 errorOccurred = true;
             } else {
-                logger.log(intl("backup-method-complete"),
-                    "upload-method", uploader.getName());
+                uploadLogger.log("backup-method-complete", "upload-method", uploader.getName());
             }
         }
         if (!errorOccurred) {
-            logger.log(intl("upload-no-errors"));
+            uploadLogger.log("upload-no-errors");
         }
-        logger.broadcast(intl("backup-complete"));
+        uploadLogger.broadcast("backup-complete");
         if (initiator == null) {
-            logger.broadcast(getNextAutoBackup());
+            uploadLogger.broadcast(getNextAutoBackup());
         }
         if (config.backupStorage.backupsRequirePlayers && Bukkit.getOnlinePlayers().isEmpty() && PlayerListener.isAutoBackupsActive()) {
-            logger.info(intl("backup-disabled-inactivity"));
+            uploadLogger.info("backup-disabled-inactivity");
             PlayerListener.setAutoBackupsActive(false);
         }
         setLastBackupSuccessful(!errorOccurred);
         pruneLocalBackups();
         if (errorOccurred) {
-            DriveBackupApi.backupError();
+            instance.getAPIHandler().backupError();
         } else {
-            DriveBackupApi.backupDone();
+            instance.getAPIHandler().backupDone();
         }
     }
     
@@ -279,34 +264,27 @@ public class UploadThread implements Runnable {
         this.lastBackupSuccessful = lastBackupSuccessful;
     }
     
-    @Contract (mutates = "this")
-    private void setBackupStatus(BackupStatus backupStatus) {
-        this.backupStatus = backupStatus;
-    }
-    
     private void ensureMethodsAuthenticated() {
         Iterator<Uploader> iterator = uploaders.iterator();
         while (iterator.hasNext()) {
             Uploader uploader = iterator.next();
             AuthenticationProvider provider = uploader.getAuthProvider();
             if (provider != null && !Authenticator.hasRefreshToken(provider)) {
-                logger.log(
-                    intl("backup-method-not-linked"),
-                    "link-command", LINK_COMMAND + provider.getId(),
-                    "upload-method", provider.getName());
+                Map<String, String> placeholders = new HashMap<>(2);
+                placeholders.put("upload-method", uploader.getName());
+                placeholders.put("link-command", LINK_COMMAND + provider.getId());
+                uploadLogger.log("backup-method-not-linked", placeholders);
                 iterator.remove();
                 continue;
             }
             if (!uploader.isAuthenticated()) {
                 if (provider == null) {
-                    logger.log(
-                        intl("backup-method-not-auth"),
-                        "upload-method", uploader.getName());
+                    uploadLogger.log("backup-method-not-auth", "upload-method", uploader.getName());
                 } else {
-                    logger.log(
-                        intl("backup-method-not-auth-authenticator"),
-                        "link-command", LINK_COMMAND + provider.getId(),
-                        "upload-method", uploader.getName());
+                    Map<String, String> placeholders = new HashMap<>(2);
+                    placeholders.put("upload-method", uploader.getName());
+                    placeholders.put("link-command", LINK_COMMAND + provider.getId());
+                    uploadLogger.log("backup-method-not-auth-authenticator", placeholders);
                 }
                 iterator.remove();
             }
@@ -314,13 +292,13 @@ public class UploadThread implements Runnable {
     }
     
     private void pruneLocalBackups() {
-        logger.log(intl("backup-local-prune-start"));
+        uploadLogger.log("backup-local-prune-start");
         for (Map.Entry<String, LocalDateTimeFormatter> entry : locationsToBePruned.entrySet()) {
             String location = entry.getKey();
             LocalDateTimeFormatter formatter = entry.getValue();
             fileUtil.pruneLocalBackups(location, formatter);
         }
-        logger.log(intl("backup-local-prune-complete"));
+        uploadLogger.log("backup-local-prune-complete");
     }
     
     /**
@@ -330,22 +308,22 @@ public class UploadThread implements Runnable {
      * @param blackList a configured blacklist (with globs)
      */
     private void makeBackupFile(String location, LocalDateTimeFormatter formatter, List<String> blackList) {
-        logger.info(intl("backup-local-file-start"), "location", location);
+        uploadLogger.info("backup-local-file-start", "location", location);
         try {
             ServerUtil.setAutoSave(false);
             fileUtil.makeBackup(location, formatter, blackList);
         } catch (IllegalArgumentException exception) {
-            logger.log(intl("backup-failed-absolute-path"));
+            uploadLogger.log("backup-failed-absolute-path");
             return;
         } catch (SecurityException exception) {
-            logger.log(intl("local-backup-failed-permissions"));
+            uploadLogger.log("local-backup-failed-permissions");
             return;
         } catch (Exception exception) {
-            logger.log(intl("backup-local-failed"));
+            uploadLogger.log("backup-local-failed");
             return;
         }
         locationsToBePruned.put(location, formatter);
-        logger.info(intl("backup-local-file-complete"), "location", location);
+        uploadLogger.info("backup-local-file-complete", "location", location);
     }
     
     private void uploadBackupFiles(List<Uploader> uploaders) {
@@ -369,31 +347,27 @@ public class UploadThread implements Runnable {
             }
             TreeMap<Long, File> localBackups = fileUtil.getLocalBackups(location, formatter);
             if (localBackups.isEmpty()) {
-                logger.log(intl("location-empty"), "location", location);
+                uploadLogger.log("location-empty", "location", location);
                 return;
             }
             File file = localBackups.descendingMap().firstEntry().getValue();
             String name = file.getParent().replace("\\", "/").replace("./", "") + "/" + file.getName();
-            logger.log(intl("backup-file-upload-start"), "file-name", name);
+            uploadLogger.log("backup-file-upload-start", "file-name", name);
             Timer timer = new Timer();
             for (Uploader uploader : uploaders) {
-                logger.info(
-                        intl("backup-method-uploading"),
-                        "upload-method",
-                        uploader.getName());
+                uploadLogger.info("backup-method-uploading", "upload-method", uploader.getName());
                 timer.start();
                 uploader.uploadFile(file, location);
                 timer.end();
                 if (uploader.didErrorOccur()) {
-                    logger.info(intl("backup-method-upload-failed"));
+                    uploadLogger.info("backup-method-upload-failed");
                 } else {
-                    logger.info(timer.getUploadTimeMessage(file));
+                    uploadLogger.info(timer.getUploadTimeMessage(file));
                 }
             }
-            logger.log(intl("backup-file-upload-complete"), "file-name", file.getName());
+            uploadLogger.log("backup-file-upload-complete", "file-name", file.getName());
         } catch (Exception e) {
-            logger.info(intl("backup-method-upload-failed"));
-            MessageUtil.sendConsoleException(e);
+            uploadLogger.log("backup-method-upload-failed", e);
         }
     }
 
@@ -402,11 +376,10 @@ public class UploadThread implements Runnable {
      * @param externalBackup the external backup settings
      */
     private void makeExternalFileBackup(ExternalFTPSource externalBackup) {
-        logger.info(
-            intl("external-ftp-backup-start"),
-            "socket-addr", getSocketAddress(externalBackup));
+        uploadLogger.info("external-ftp-backup-start", "socket-addr", getSocketAddress(externalBackup));
         FTPUploader ftpUploader = new FTPUploader(
-                logger,
+                instance,
+                uploadLogger,
                 externalBackup.hostname,
                 externalBackup.port,
                 externalBackup.username,
@@ -453,10 +426,10 @@ public class UploadThread implements Runnable {
                 String globPattern = blacklistEntry.getGlobPattern();
                 int blacklistedFiles = blacklistEntry.getBlacklistedFiles();
                 if (blacklistedFiles > 0) {
-                    logger.log(
-                        intl("external-ftp-backup-blacklisted"),
-                        "blacklisted-files", String.valueOf(blacklistedFiles),
-                        "glob-pattern", globPattern);
+                    Map<String, String> placeholders = new HashMap<>(2);
+                    placeholders.put("blacklisted-files", String.valueOf(blacklistedFiles));
+                    placeholders.put("glob-pattern", globPattern);
+                    uploadLogger.log("external-ftp-backup-blacklisted", placeholders);
                 }
             }
         }
@@ -469,13 +442,9 @@ public class UploadThread implements Runnable {
         );
         backupList.add(backup);
         if (ftpUploader.didErrorOccur()) {
-            logger.log(
-                intl("external-ftp-backup-failed"),
-                "socket-addr", getSocketAddress(externalBackup));
+            uploadLogger.log("external-ftp-backup-failed", "socket-addr", getSocketAddress(externalBackup));
         } else {
-            logger.info(
-                intl("external-ftp-backup-complete"),
-                "socket-addr", getSocketAddress(externalBackup));
+            uploadLogger.info("external-ftp-backup-complete", "socket-addr", getSocketAddress(externalBackup));
         }
     }
 
@@ -485,9 +454,7 @@ public class UploadThread implements Runnable {
      * @param externalBackup the external backup settings
      */
     private void makeExternalDatabaseBackup(ExternalMySQLSource externalBackup) {
-        logger.info(
-            intl("external-mysql-backup-start"),
-            "socket-addr", getSocketAddress(externalBackup));
+        uploadLogger.info("external-mysql-backup-start", "socket-addr", getSocketAddress(externalBackup));
         MySQLUploader mysqlUploader = new MySQLUploader(
                 externalBackup.hostname,
                 externalBackup.port,
@@ -496,9 +463,7 @@ public class UploadThread implements Runnable {
                 externalBackup.ssl);
         for (MySQLDatabaseBackup database : externalBackup.databaseList) {
             for (String blacklistEntry : database.blacklist) {
-                logger.log(
-                    intl("external-mysql-backup-blacklisted"),
-                    "blacklist-entry", blacklistEntry);
+                uploadLogger.log("external-mysql-backup-blacklisted", "blacklist-entry", blacklistEntry);
             }
             mysqlUploader.downloadDatabase(database.name, getTempFolderName(externalBackup), Arrays.asList(database.blacklist));
         }
@@ -510,13 +475,9 @@ public class UploadThread implements Runnable {
         );
         backupList.add(backup);
         if (mysqlUploader.didErrorOccur()) {
-            logger.log(
-                intl("external-mysql-backup-failed"),
-                "socket-addr", getSocketAddress(externalBackup));
+            uploadLogger.log("external-mysql-backup-failed", "socket-addr", getSocketAddress(externalBackup));
         } else {
-            logger.info(
-                intl("external-mysql-backup-complete"),
-                "socket-addr", getSocketAddress(externalBackup));
+            uploadLogger.info("external-mysql-backup-complete", "socket-addr", getSocketAddress(externalBackup));
         }
     }
 
@@ -527,15 +488,15 @@ public class UploadThread implements Runnable {
     public String getBackupStatus() {
         Config config = ConfigParser.getConfig();
         String message;
-        switch (backupStatus) {
+        switch (BackupStatus.getStatus()) {
             case COMPRESSING:
-                message = intl("backup-status-compressing");
+                message = instance.getMessageHandler().getLangString("backup-status-compressing");
                 break;
             case UPLOADING:
-                message = intl("backup-status-uploading");
+                message = instance.getMessageHandler().getLangString("backup-status-uploading");
                 break;
             default:
-                return intl("backup-status-not-running");
+                return instance.getMessageHandler().getLangString("backup-status-not-running");
         }
         BackupListEntry[] backupList = config.backupList.list;
         String backupSetName = backupList[backupBackingUp].location.toString();
@@ -550,20 +511,28 @@ public class UploadThread implements Runnable {
      * @return the time and/or date of the next automatic backup formatted using the messages in the {@code config.yml}
      */
     public String getNextAutoBackup() {
-        Config config = ConfigParser.getConfig();
-        if (config.backupScheduling.enabled) {
-            long now = ZonedDateTime.now(config.advanced.dateTimezone).toEpochSecond();
+        ConfigurationObject config = instance.getConfigHandler().getConfig();
+        if (config.getValue("scheduled-backups").getBoolean()) {
+            String offset = instance.getConfigHandler().getConfig().getValue("advanced", "date-timezone").getString();
+            ZoneOffset zoneOffset = ZoneOffset.of(offset);
+            long now = ZonedDateTime.now(zoneOffset).toEpochSecond();
             ZonedDateTime nextBackupDate = Collections.min(Scheduler.getBackupDatesList(), (d1, d2) -> {
                 long diff1 = Math.abs(d1.toEpochSecond() - now);
                 long diff2 = Math.abs(d2.toEpochSecond() - now);
                 return Long.compare(diff1, diff2);
             });
-            DateTimeFormatter backupDateFormatter = DateTimeFormatter.ofPattern(intl("next-schedule-backup-format"), config.advanced.dateLanguage);
-            return intl("next-schedule-backup").replaceAll("%DATE", nextBackupDate.format(backupDateFormatter));
-        } else if (config.backupStorage.delay != -1L) {
-            return intl("next-backup").replaceAll("%TIME", String.valueOf(LocalDateTime.now().until(nextIntervalBackupTime, ChronoUnit.MINUTES)));
+            String dateLanguageString = instance.getConfigHandler().getConfig().getValue("advanced", "date-language").getString();
+            Locale dateLanguage = Locale.forLanguageTag(dateLanguageString);
+            String format = instance.getMessageHandler().getLangString("next-schedule-backup-format");
+            DateTimeFormatter backupDateFormatter = DateTimeFormatter.ofPattern(format, dateLanguage);
+            String message = instance.getMessageHandler().getLangString("next-schedule-backup");
+            return message.replaceAll("%DATE", nextBackupDate.format(backupDateFormatter));
+        } else if (config.getValue("delay").getLong() != -1L) {
+            String message = instance.getMessageHandler().getLangString("next-backup");
+            long nextTime = LocalDateTime.now().until(nextIntervalBackupTime, ChronoUnit.MINUTES);
+            return message.replaceAll("%TIME", String.valueOf(nextTime));
         } else {
-            return intl("auto-backups-disabled");
+            return instance.getMessageHandler().getLangString("auto-backups-disabled");
         }
     }
 
@@ -571,7 +540,8 @@ public class UploadThread implements Runnable {
      * Sets the time of the next interval-based backup to the current time + the configured interval.
      */
     public void updateNextIntervalBackupTime() {
-        nextIntervalBackupTime = LocalDateTime.now().plusMinutes(ConfigParser.getConfig().backupStorage.delay);
+        long delay = instance.getConfigHandler().getConfig().getValue("delay").getLong();
+        nextIntervalBackupTime = LocalDateTime.now().plusMinutes(delay);
     }
 
     @Contract (pure = true)

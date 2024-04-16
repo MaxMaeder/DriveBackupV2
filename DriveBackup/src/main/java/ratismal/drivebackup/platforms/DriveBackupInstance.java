@@ -1,5 +1,6 @@
 package ratismal.drivebackup.platforms;
 
+import ratismal.drivebackup.api.APIHandler;
 import ratismal.drivebackup.configuration.ConfigHandler;
 import ratismal.drivebackup.configuration.LangConfigHandler;
 import ratismal.drivebackup.handler.debug.ServerInformation;
@@ -28,13 +29,14 @@ public interface DriveBackupInstance {
     TaskHandler getTaskHandler();
     PlayerHandler getPlayerHandler();
     UpdateHandler getUpdateHandler();
+    APIHandler getAPIHandler();
     /*
     Disable auto saving for worlds that have it enabled
      */
-    void preBackupAutoSave() throws InterruptedException, ExecutionException;
+    void disableWorldAutoSave() throws InterruptedException, ExecutionException;
     /*
     Re-enable auto saving for worlds that had it enabled
      */
-    void postBackupAutoSave() throws InterruptedException, ExecutionException;
+    void enableWorldAutoSave() throws InterruptedException, ExecutionException;
     ServerInformation getServerInfo();
 }

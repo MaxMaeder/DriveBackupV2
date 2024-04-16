@@ -38,6 +38,7 @@ public abstract class MessageHandler {
     private ConsoleLogLevel consoleLogLevel = ConsoleLogLevel.INFO;
     private boolean sendToConsole = true;
     private boolean addPrefix = true;
+    private Throwable throwable;
     
     protected MessageHandler(@NotNull DriveBackupInstance instance) {
         this.instance = instance;
@@ -84,11 +85,15 @@ public abstract class MessageHandler {
     public abstract MessageHandler Builder();
     
     private @NotNull Component getMMLang(String key) {
-        return MiniMessage.miniMessage().deserialize(getMMColor() + langConfigHandler.getConfig().getValue(key).getString());
+        return MiniMessage.miniMessage().deserialize(getMMColor() + getLangString(key));
     }
     
     private @NotNull Component getMMLang(String key, TagResolver resolver) {
-        return MiniMessage.miniMessage().deserialize(getMMColor() + langConfigHandler.getConfig().getValue(key).getString(), resolver);
+        return MiniMessage.miniMessage().deserialize(getMMColor() + getLangString(key), resolver);
+    }
+    
+    public String getLangString(String key) {
+        return langConfigHandler.getConfig().getValue(key).getString();
     }
     
     /**
@@ -239,6 +244,11 @@ public abstract class MessageHandler {
         return this;
     }
     
+    public MessageHandler addThrowable(Throwable throwable) {
+        this.throwable = throwable;
+        return this;
+    }
+    
     /**
      * Sends the message to the recipients
      */
@@ -248,7 +258,7 @@ public abstract class MessageHandler {
                     configHandler.getConfig().getValue("advanced", "prefix").getString());
             message.add(0, prefix);
         }
-        if (sendToConsole) {
+        if (sendToConsole || throwable != null) {
             sendConsole();
         }
         if (configHandler.getConfig().getValue("messages", "send-in-chat").getBoolean()) {
@@ -265,17 +275,30 @@ public abstract class MessageHandler {
         return Component.join(JOIN_CONFIGURATION, message);
     }
     
+    
     private void sendConsole() {
         String message = ANSI_COMPONENT_SERIALIZER.serialize(getMessage());
         switch (consoleLogLevel) {
             case INFO:
-                instance.getLoggingHandler().info(message);
+                if (throwable != null) {
+                    instance.getLoggingHandler().info(message, throwable);
+                } else {
+                    instance.getLoggingHandler().info(message);
+                }
                 break;
             case WARNING:
-                instance.getLoggingHandler().warn(message);
+                if (throwable != null) {
+                    instance.getLoggingHandler().warn(message, throwable);
+                } else {
+                    instance.getLoggingHandler().warn(message);
+                }
                 break;
             case ERROR:
-                instance.getLoggingHandler().error(message);
+                if (throwable != null) {
+                    instance.getLoggingHandler().error(message, throwable);
+                } else {
+                    instance.getLoggingHandler().error(message);
+                }
                 break;
         }
     }

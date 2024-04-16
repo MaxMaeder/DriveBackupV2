@@ -31,8 +31,14 @@ public final class ConfigurationValue {
         return configurationObject.getConfig().node(path).getInt(defaultValue);
     }
     
+    public long getLong() {
+        long defaultValue = configurationObject.getDefaults().node(path).getLong();
+        return configurationObject.getConfig().node(path).getLong(defaultValue);
+    }
+    
     public List<String> getStringList() throws SerializationException {
         List<String> defaultValue = configurationObject.getDefaults().node(path).getList(String.class);
         return configurationObject.getConfig().node(path).getList(String.class, defaultValue);
     }
+    
 }

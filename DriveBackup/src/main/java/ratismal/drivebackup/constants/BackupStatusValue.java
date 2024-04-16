@@ -1,9 +1,9 @@
-package ratismal.drivebackup;
+package ratismal.drivebackup.constants;
 
 /**
  * The current status of the backup thread
  */
-enum BackupStatus {
+public enum BackupStatusValue {
     /**
      * The backup thread isn't running
      */
