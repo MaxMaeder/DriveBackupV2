@@ -142,7 +142,7 @@ public class UploadThread implements Runnable {
             public void log(String input, String... placeholders) {
                 MessageUtil.Builder()
                     .mmText(input, placeholders)
-                    .toPerm(Permission.BACKUP.getPermission())
+                    .toPerm(Permission.BACKUP)
                     .send();
             }
         };
@@ -161,7 +161,7 @@ public class UploadThread implements Runnable {
                 MessageUtil.Builder()
                     .mmText(input, placeholders)
                     .to(initiator)
-                    .toPerm(Permission.BACKUP.getPermission())
+                    .toPerm(Permission.BACKUP)
                     .send();
             }
             @Override
