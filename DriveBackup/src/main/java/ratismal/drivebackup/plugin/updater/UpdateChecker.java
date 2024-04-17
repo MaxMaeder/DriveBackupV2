@@ -119,6 +119,9 @@ public class UpdateChecker {
             }
             assets = new JSONArray(body.string());
         }
+        if (assets.isEmpty()) {
+            throw new NoSuchElementException("No assets received");
+        }
         JSONObject jar = assets.getJSONObject(0);
         String versionTitle = htmlUrl.substring(htmlUrl.lastIndexOf('/') + 2).trim();
         latestDownloadUrl = jar.getString("url");
