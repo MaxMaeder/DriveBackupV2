@@ -127,9 +127,9 @@ public class MessageUtil {
      * @param permission the specified permission to be added to the recipients
      * @return the calling MessageUtil's instance
      */
-    public MessageUtil toPerm(String permission) {
+    public MessageUtil toPerm(Permission permission) {
         for (Player player : Bukkit.getServer().getOnlinePlayers()) {
-            if (PermissionHandler.hasPerm(player, Permission.LINK_ACCOUNTS) && !recipients.contains(player)) {
+            if (PermissionHandler.hasPerm(player, permission) && !recipients.contains(player)) {
                 recipients.add(player);
             }
         }
