@@ -1,8 +1,10 @@
 # How to contribute
 
-TODO Introduction
+Thank you for considering to contribute to this project to make it the best it can be.
 
-Check existing [issues](https://github.com/MaxMaeder/DriveBackupV2/issues) and [pulls](https://github.com/MaxMaeder/DriveBackupV2/pulls), maybe it has already been submitted or someone else is already working on it, or if you want to find something to contibute to.
+To make this process as frictionless as possible please read through the information in this document.
+
+First up, check existing [issues](https://github.com/MaxMaeder/DriveBackupV2/issues) and [pulls](https://github.com/MaxMaeder/DriveBackupV2/pulls), maybe it has already been submitted or someone else is already working on it, or if you want to find something to contribute to.
 
 ## Non Code Contributions
 
@@ -14,23 +16,31 @@ If you found a bug or want to suggest a new feature see [issues/new/choose](http
 
 ### Java
 
-The plugin is build using Maven TODO describe relevant targets
+The plugin is build using Maven, to build the plugin use `mvn package`. Build artifacts can be cleaned with `mvn clean`.
 
-TODO IDE recommendation
+We recommend [IntelliJ IDEA](https://www.jetbrains.com/idea/) as an IDE, but others like [VSCode](https://code.visualstudio.com/) or [Eclipse IDE](https://eclipseide.org/) should work fine.
+TODO recommended run/debug configuration?
 
-TODO specify formatt-er/ing used
+TODO specify format-ter/ing used
 
 TODO specify style guide used
 
 TODO specify coding conventions not covered by or different from style guide
 
-We taget Java 8 to support older versions of Minecraft TODO citation needed
+We target Java 8 *(JVM)* to support older versions of Minecraft
+TODO citation needed
 
-Kotlin is not accepted into the codebase TODO reason needed
+Kotlin is not accepted into the codebase
+TODO reason needed
 
-Make sure to test your changes before submitting them. Each individual commit should leave the plugin in a working state.
+Each of your commits should leave the plugin in a working state.
+
+Before submitting your changes make sure to test them using the latest LTS JRE.
+If you need to test changes that affect an uploader test with a backup >= 5GB where possible.
+
+When submitting your change specify what you tested, especially if you could not test all affected components.
 
 ### JS
 
-TODO Everythings Authenticator related
+TODO Everything Authenticator related
 
