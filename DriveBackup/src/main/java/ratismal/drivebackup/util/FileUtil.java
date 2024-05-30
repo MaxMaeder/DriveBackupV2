@@ -17,7 +17,9 @@ import java.nio.file.PathMatcher;
 import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.time.ZonedDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.TreeMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
@@ -129,6 +131,9 @@ public class FileUtil {
      */
     public void pruneLocalBackups(String location, LocalDateTimeFormatter formatter) {
         location = escapeBackupLocation(location);
+        if (isBaseFolder(location)) {
+            location = "root";
+        }
         logger.log(intl("local-backup-pruning-start"), "location", location);
         int localKeepCount = ConfigParser.getConfig().backupStorage.localKeepCount;
         if (localKeepCount != -1) {
@@ -346,9 +351,8 @@ public class FileUtil {
      * In other words, whether the folder is the folder containing the server jar.
      * @param folderPath the path of the folder
      * @return whether the folder is the base folder
-     * @throws Exception
      */
-    public static boolean isBaseFolder(String folderPath) throws Exception {
+    public static boolean isBaseFolder(String folderPath) {
         return new File(folderPath).getPath().equals(".");
     }
 

@@ -188,7 +188,7 @@ local-backup-file-deleted: 'Deleted local backup "<local-backup-name>"'
 local-backup-file-failed-to-delete: 'Failed to delete local backup "<local-backup-name>"'
 local-backup-in-backup-folder: "Didn't include <files-in-backup-folder-count>
   file(s) in the backup, as they are in the folder used for backups"
-local-backup-limit-not-reached: "Local backup limit not reached, skipping pruning"
+local-backup-limit-not-reached: "Local backup limit not reached with count of <backup-count> and limit of <backup-limit>, skipping pruning"
 local-backup-limit-reached: "There are <backup-count> file(s) which exceeds the
   local limit of <backup-limit>, deleting oldest"
 local-backup-no-limit: "Local backup limit is set to 0, skipping pruning"
