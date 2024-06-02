@@ -115,6 +115,17 @@ public final class UploadThread implements Runnable {
         this.instance = instance;
         uploadLogger = new UploadLogger(instance, player);
         fileUtil = new FileUtil(instance, uploadLogger);
+    public UploadThread() {
+        logger = new UploadLogger() {
+            @Override
+            public void log(String input, String... placeholders) {
+                MessageUtil.Builder()
+                    .mmText(input, placeholders)
+                    .toPerm(Permission.BACKUP)
+                    .send();
+            }
+        };
+        fileUtil = new FileUtil(logger);
     }
 
     /**

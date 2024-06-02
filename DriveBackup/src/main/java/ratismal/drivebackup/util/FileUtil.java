@@ -131,6 +131,9 @@ public final class FileUtil {
      */
     public void pruneLocalBackups(String location, LocalDateTimeFormatter formatter) {
         location = escapeBackupLocation(location);
+        if (isBaseFolder(location)) {
+            location = "root";
+        }
         logger.info("local-backup-pruning-start", "location", location);
         int localKeepCount = instance.getConfigHandler().getConfig().getValue("local-keep-count").getInt();
         if (localKeepCount != -1) {

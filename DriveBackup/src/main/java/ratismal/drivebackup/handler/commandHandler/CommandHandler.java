@@ -53,6 +53,7 @@ public class CommandHandler implements CommandExecutor {
                 break;
             case "reloadconfig":
                 if (!PermissionHandler.hasPerm(sender, Permission.RELOAD_CONFIG)) {
+                    BasicCommands.sendNoPerms(sender);
                     break;
                 }
                 DriveBackup.reloadLocalConfig();
@@ -75,6 +76,7 @@ public class CommandHandler implements CommandExecutor {
                     break;
                 }
                 if (!PermissionHandler.hasPerm(sender, Permission.LINK_ACCOUNTS)) {
+                    BasicCommands.sendNoPerms(sender);
                     break;
                 }
                 switch (args[1].toLowerCase(Locale.ROOT)) {
@@ -99,6 +101,7 @@ public class CommandHandler implements CommandExecutor {
                     break;
                 }
                 if (!PermissionHandler.hasPerm(sender, Permission.LINK_ACCOUNTS)) {
+                    BasicCommands.sendNoPerms(sender);
                     break;
                 }
                 switch (args[1].toLowerCase(Locale.ROOT)) {
@@ -118,18 +121,21 @@ public class CommandHandler implements CommandExecutor {
                 break;
             case "status":
                 if (!PermissionHandler.hasPerm(sender, Permission.GET_BACKUP_STATUS)) {
+                    BasicCommands.sendNoPerms(sender);
                     break;
                 }
                 MessageUtil.Builder().mmText(UploadThread.getBackupStatus()).to(sender).toConsole(false).send();
                 break;
             case "nextbackup":
                 if (!PermissionHandler.hasPerm(sender, Permission.GET_NEXT_BACKUP)) {
+                    BasicCommands.sendNoPerms(sender);
                     break;
                 }
                 MessageUtil.Builder().mmText(UploadThread.getNextAutoBackup()).to(sender).toConsole(false).send();
                 break;
             case "backup":
                 if (!PermissionHandler.hasPerm(sender, Permission.BACKUP)) {
+                    BasicCommands.sendNoPerms(sender);
                     break;
                 }
                 MessageUtil.Builder().mmText(intl("backup-forced")).to(sender).send();
@@ -138,6 +144,7 @@ public class CommandHandler implements CommandExecutor {
                 break;
             case "test":
                 if (!PermissionHandler.hasPerm(sender, Permission.BACKUP)) {
+                    BasicCommands.sendNoPerms(sender);
                     break;
                 }
                 Runnable testThread = new TestThread(sender, args);
@@ -145,6 +152,7 @@ public class CommandHandler implements CommandExecutor {
                 break;
             case "update":
                 if (!PermissionHandler.hasPerm(sender, Permission.BACKUP)) {
+                    BasicCommands.sendNoPerms(sender);
                     break;
                 }
                 DriveBackup.updater.runUpdater(sender);

@@ -27,11 +27,7 @@ public final class PermissionHandler {
      * @return whether they have permissions
      */
     public static boolean hasPerm(@NotNull CommandSender player, Permission permission) {
-        if (!player.hasPermission(permission.getPermission())) {
-            BasicCommands.sendNoPerms(player);
-            return false;
-        }
-        return true;
+        return player.hasPermission(permission.getPermission());
     }
 
     /**

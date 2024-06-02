@@ -73,7 +73,7 @@ brief-backup-list: "DriveBackupV2 will currently back up <list>"
 brief-backup-list-empty: "nothing"
 brief-backup-list-external-backups: "some external backups"
 brief-backup-list-help: "Want to back up something else? See
-  <gold><click:open_url:http://bit.ly/3xoHRAs>http://bit.ly/3xoHRAs</click></go\
+  <gold><click:open_url:https://bit.ly/3xoHRAs>https://bit.ly/3xoHRAs</click></go\
   ld>"
 config-loaded: "Config loaded!"
 config-reloaded: "Config reloaded!"
@@ -87,8 +87,8 @@ drivebackup-command-header: <gold>|====== <dark_red>DriveBackupV2</dark_red> ===
 drivebackup-docs-command: |-
   <header>
   Need help? Check out these helpful resources!
-  Wiki: <gold><click:open_url:http://bit.ly/3dDdmwK>http://bit.ly/3dDdmwK</click></gold>
-  Discord: <gold><click:open_url:http://bit.ly/3f4VuuT>http://bit.ly/3f4VuuT</click></gold>
+  Wiki: <gold><click:open_url:https://bit.ly/3dDdmwK>https://bit.ly/3dDdmwK</click></gold>
+  Discord: <gold><click:open_url:https://bit.ly/3f4VuuT>https://bit.ly/3f4VuuT</click></gold>
 drivebackup-help-command: |-
   <header>
   <gold><click:run_command:/drivebackup>/drivebackup</click></gold> - Displays this menu
@@ -188,13 +188,14 @@ local-backup-file-deleted: 'Deleted local backup "<local-backup-name>"'
 local-backup-file-failed-to-delete: 'Failed to delete local backup "<local-backup-name>"'
 local-backup-in-backup-folder: "Didn't include <files-in-backup-folder-count>
   file(s) in the backup, as they are in the folder used for backups"
-local-backup-limit-not-reached: "Local backup limit not reached, skipping pruning"
+local-backup-limit-not-reached: "Local backup limit not reached with count of <backup-count> and limit of <backup-limit>, skipping pruning"
 local-backup-limit-reached: "There are <backup-count> file(s) which exceeds the
   local limit of <backup-limit>, deleting oldest"
 local-backup-no-limit: "Local backup limit is set to 0, skipping pruning"
 local-backup-pruning-complete: 'Local backup pruning complete for "<location>"'
 local-backup-pruning-start: 'Pruning local backups for "<location>"'
 local-keep-count-invalid: "Inputted local keep count invalid, using default"
+local-save-directory-not-relative: "Local save directory is not relative, making relative to server directory"
 location-empty: "Location <location> is empty, skipping"
 metrics-error: "Metrics failed to start"
 metrics-started: "Metrics started"
@@ -207,7 +208,7 @@ player-join-backup-failed: |-
   <red>The last backup failed!<red>
   Check the console for more info
 player-join-update-available: |-
-  An update is available, get it here: <gold><click:open_url:http://bit.ly/2M14uVD>http://bit.ly/2M14uVD</click></gold>
+  An update is available, get it here: <gold><click:open_url:https://bit.ly/2M14uVD>https://bit.ly/2M14uVD</click></gold>
   or by running <gold><click:run_command:/drivebackup update>/drivebackup update</click></gold>
 plugin-stop: "Stopping plugin!"
 test-file-creation-failed: "Test file creation failed, please try again"
@@ -226,7 +227,7 @@ unlink-provider-failed: "Failed to unlink your <provider> account, please try ag
 update-checker-failed: "There was an issue attempting to check for the latest DriveBackupV2 release"
 update-checker-new-release: |-
   DriveBackup version <latest-version> has been released, You are currently running version <current-version>
-  Update at: <gold><click:open_url:http://bit.ly/2VGtF7L>http://bit.ly/2VGtF7L</click></gold>" or with <gold><click:run_command:/drivebackup update>/drivebackup update</click></gold>
+  Update at: <gold><click:open_url:https://bit.ly/2VGtF7L>https://bit.ly/2VGtF7L</click></gold>" or with <gold><click:run_command:/drivebackup update>/drivebackup update</click></gold>
 update-checker-started: "Checking for updates..."
 update-checker-unsupported-release: |-
   You are running an unsupported release!
