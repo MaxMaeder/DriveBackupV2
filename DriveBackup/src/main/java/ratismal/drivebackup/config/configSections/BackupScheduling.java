@@ -42,7 +42,7 @@ public class BackupScheduling {
     }
 
     @NotNull
-    @Contract ("_, _ -> new")
+    @Contract ("_ -> new")
     public static BackupScheduling parse(@NotNull FileConfiguration config) {
         boolean enabled = config.getBoolean("scheduled-backups");
         List<Map<?, ?>> rawSchedule = config.getMapList("backup-schedule-list");
@@ -75,7 +75,7 @@ public class BackupScheduling {
                     if (!isDayGroup) {
                         days.add(DayOfWeek.valueOf(rawDay.toUpperCase(Locale.ROOT)));
                     }
-                } catch (IllegalArgumentException e) {
+                } catch (IllegalArgumentException ignored) {
                 }
             }
             if (days.isEmpty()) {

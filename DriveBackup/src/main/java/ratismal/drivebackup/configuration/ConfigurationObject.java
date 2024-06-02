@@ -21,6 +21,7 @@ public final class ConfigurationObject {
     private CommentedConfigurationNode defaults;
     private final LoggingInterface logger;
     
+    @Contract (pure = true)
     public ConfigurationObject(LoggingInterface logger, File folder, String fileName, String extension, DriveBackupInstance instance, CommentedConfigurationNode config, CommentedConfigurationNode defaults) {
         this.logger = logger;
         this.folder = folder;
@@ -31,10 +32,12 @@ public final class ConfigurationObject {
         this.defaults = defaults;
     }
     
+    @Contract (pure = true)
     public ConfigurationObject(LoggingInterface logger, File folder, String fileName, String extension, DriveBackupInstance instance, CommentedConfigurationNode defaults) {
         this(logger, folder, fileName, extension, instance, null, defaults);
     }
     
+    @Contract (pure = true)
     public ConfigurationObject(LoggingInterface logger, File folder, String fileName, DriveBackupInstance instance, CommentedConfigurationNode defaults) {
         this(logger, folder, fileName, null, instance, defaults);
     }

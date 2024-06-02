@@ -1,12 +1,13 @@
 package ratismal.drivebackup.util;
 
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-public class ChunkedFileInputStream extends InputStream {
+public final class ChunkedFileInputStream extends InputStream {
     private FileInputStream input;
     private final int chunksize;
     private int current_chunk;
@@ -32,11 +33,11 @@ public class ChunkedFileInputStream extends InputStream {
     }
 
     @Override
-    public int read(byte @NotNull [] b, int off, int len) throws IOException {
+    public int read(byte @NotNull [] bytes, int off, int len) throws IOException {
         len = Integer.min(available(), len);
-        int bytes = input.read(b, off, len);
-        position += bytes;
-        return bytes;
+        int bytes2 = input.read(bytes, off, len);
+        position += bytes2;
+        return bytes2;
     }
 
     @Override
@@ -61,15 +62,18 @@ public class ChunkedFileInputStream extends InputStream {
         return true;
     }
 
+    @Contract (pure = true)
     public int getCurrentChunk() {
         return current_chunk;
     }
 
     // Needs to be long, or you'll get trouble with files larger than 2G.
+    @Contract (pure = true)
     public long getCurrentOffset() {
         return (long)current_chunk * chunksize;
     }
 
+    @Contract (mutates = "this")
     @Override
     protected void finalize() {
         input = null;

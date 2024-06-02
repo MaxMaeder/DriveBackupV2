@@ -2,6 +2,7 @@ package ratismal.drivebackup.plugin.updater;
 
 import okhttp3.Request;
 import okhttp3.Response;
+import okhttp3.ResponseBody;
 import org.bukkit.command.CommandSender;
 import ratismal.drivebackup.http.HttpClient;
 import ratismal.drivebackup.plugin.DriveBackup;
@@ -44,8 +45,12 @@ public class Updater {
             if (!response.isSuccessful()) {
                 throw new IOException("Failed to download file: " + response);
             }
+            ResponseBody body = response.body();
+            if (body == null) {
+                throw new IOException("Response Body is null");
+            }
             try (FileOutputStream fos = new FileOutputStream(outputPath)) {
-                fos.write(response.body().bytes());
+                fos.write(body.bytes());
             }
         }
         outputPath.renameTo(new File(file.getAbsolutePath()));

@@ -21,7 +21,7 @@ import java.io.FileOutputStream;
 import java.nio.file.Files;
 import java.security.SecureRandom;
 
-public class TestThread implements Runnable {
+public final class TestThread implements Runnable {
     private final UploadLogger logger;
     private final String[] args;
     private final DriveBackupInstance instance;

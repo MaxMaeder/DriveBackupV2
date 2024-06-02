@@ -1,5 +1,6 @@
 package ratismal.drivebackup.configuration;
 
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.spongepowered.configurate.CommentedConfigurationNode;
 import org.spongepowered.configurate.ConfigurateException;
@@ -32,10 +33,12 @@ public final class ConfigHandler {
         }
     }
     
+    @Contract (pure = true)
     public PrefixedLogger getLogger() {
         return logger;
     }
     
+    @Contract (pure = true)
     public ConfigurationObject getConfig() {
         return configurationObject;
     }

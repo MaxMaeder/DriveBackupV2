@@ -3,6 +3,7 @@ package ratismal.drivebackup.http;
 import okhttp3.Interceptor;
 import okhttp3.MediaType;
 import okhttp3.Request;
+import okhttp3.RequestBody;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
 import okio.Buffer;
@@ -32,8 +33,12 @@ public final class HttpLogger implements Interceptor {
         Response response = chain.proceed(request);
         long t2 = System.nanoTime();
         instance.getLoggingHandler().info(String.format("Received response for %s in %.1fms", response.request().url(), (t2 - t1) / 1.0e6d));
+        RequestBody body = request.body();
+        if (body == null) {
+            throw new IOException("Response Body is null");
+        }
         try {
-            if (request.body().contentType().equals(UploaderUtils.getJsonMediaType())) {
+            if (body.contentType().equals(UploaderUtils.getJsonMediaType())) {
                 Buffer requestBody = new Buffer();
                 request.body().writeTo(requestBody);
                 instance.getLoggingHandler().info("Req: " + requestBody.readUtf8());
@@ -44,6 +49,9 @@ public final class HttpLogger implements Interceptor {
             instance.getLoggingHandler().info("Req: None");
         }
         ResponseBody responseBody = response.body();
+        if (responseBody == null) {
+            throw new IOException("Response Body is null");
+        }
         String responseBodyString = responseBody.string();
         MediaType responseBodyContentType = responseBody.contentType();
         responseBody.close();

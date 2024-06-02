@@ -47,8 +47,8 @@ public class UpdateChecker {
                         hasSentStartMessage = true;
                     }
                     //get versions
-                    currentVersion = checker.getCurrent();
-                    latestVersion = checker.getLatest();
+                    currentVersion = UpdateChecker.getCurrent();
+                    latestVersion = UpdateChecker.getLatest();
                     //check if the current version is outdated
                     if (latestVersion.isNewerThan(currentVersion)) {
                         logger.log(
@@ -87,12 +87,12 @@ public class UpdateChecker {
         return latestDownloadUrl;
     }
 
-    public Version getCurrent() {
+    public static Version getCurrent() {
         String versionTitle = DriveBackup.getInstance().getDescription().getVersion().split("-")[0];
         return Version.parse(versionTitle);
     }
 
-    public Version getLatest() throws Exception {
+    public static Version getLatest() throws Exception {
         final String LATEST_URL = "https://api.github.com/repos/MaxMaeder/DriveBackupV2/releases/latest";
         Request request = new Request.Builder().url(LATEST_URL).build();
         JSONObject pluginVersions;

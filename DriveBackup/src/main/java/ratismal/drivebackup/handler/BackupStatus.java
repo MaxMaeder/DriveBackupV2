@@ -7,6 +7,8 @@ public class BackupStatus {
     
     private static BackupStatusValue status = BackupStatusValue.NOT_RUNNING;
     
+    private BackupStatus() {}
+    
     @Contract (pure = true)
     public static BackupStatusValue getStatus() {
         return status;
@@ -15,4 +17,5 @@ public class BackupStatus {
     public static void setStatus(BackupStatusValue status) {
         BackupStatus.status = status;
     }
+    
 }

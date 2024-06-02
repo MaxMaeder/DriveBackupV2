@@ -62,7 +62,7 @@ import java.util.TreeMap;
  * Created by Ratismal on 2016-01-22.
  */
 
-public class UploadThread implements Runnable {
+public final class UploadThread implements Runnable {
     
     private static final String LINK_COMMAND = "/drivebackup linkaccount ";
     private final DriveBackupInstance instance;
@@ -353,7 +353,7 @@ public class UploadThread implements Runnable {
             File file = localBackups.descendingMap().firstEntry().getValue();
             String name = file.getParent().replace("\\", "/").replace("./", "") + "/" + file.getName();
             uploadLogger.log("backup-file-upload-start", "file-name", name);
-            Timer timer = new Timer();
+            Timer timer = new Timer(instance);
             for (Uploader uploader : uploaders) {
                 uploadLogger.info("backup-method-uploading", "upload-method", uploader.getName());
                 timer.start();
@@ -455,7 +455,7 @@ public class UploadThread implements Runnable {
      */
     private void makeExternalDatabaseBackup(ExternalMySQLSource externalBackup) {
         uploadLogger.info("external-mysql-backup-start", "socket-addr", getSocketAddress(externalBackup));
-        MySQLUploader mysqlUploader = new MySQLUploader(
+        MySQLUploader mysqlUploader = new MySQLUploader(instance,
                 externalBackup.hostname,
                 externalBackup.port,
                 externalBackup.username,
@@ -545,7 +545,7 @@ public class UploadThread implements Runnable {
     }
 
     @Contract (pure = true)
-    public boolean wasLastBackupSuccessful() {
+    public static boolean wasLastBackupSuccessful() {
         return lastBackupSuccessful;
     }
 

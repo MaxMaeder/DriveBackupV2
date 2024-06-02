@@ -6,6 +6,7 @@ import okhttp3.FormBody;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+import okhttp3.ResponseBody;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONObject;
@@ -16,6 +17,7 @@ import ratismal.drivebackup.config.configSections.BackupScheduling;
 import ratismal.drivebackup.http.HttpClient;
 import ratismal.drivebackup.plugin.DriveBackup;
 
+import java.io.IOException;
 import java.net.UnknownHostException;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
@@ -58,7 +60,11 @@ public class DebugCollector {
             if (!response.isSuccessful()) {
                 throw new Exception("Unexpected code " + response);
             }
-            JSONObject responseJson = new JSONObject(response.body().string());
+            ResponseBody body = response.body();
+            if (body == null) {
+                throw new IOException("Response Body is null");
+            }
+            JSONObject responseJson = new JSONObject(body.string());
             return responseJson.getString("url");
         } catch (UnknownHostException e) {
             return "Network error, check your connection";

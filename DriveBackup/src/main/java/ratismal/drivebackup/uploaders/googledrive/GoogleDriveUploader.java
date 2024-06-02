@@ -18,6 +18,7 @@ import okhttp3.FormBody;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+import okhttp3.ResponseBody;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Contract;
@@ -108,7 +109,11 @@ public final class GoogleDriveUploader extends Uploader {
             .post(requestBody)
             .build();
         Response response = HttpClient.getHttpClient().newCall(request).execute();
-        JSONObject parsedResponse = new JSONObject(response.body().string());
+        ResponseBody body = response.body();
+        if (body == null) {
+            throw new IOException("Response Body is null");
+        }
+        JSONObject parsedResponse = new JSONObject(body.string());
         response.close();
         if (!response.isSuccessful()) {
             return;

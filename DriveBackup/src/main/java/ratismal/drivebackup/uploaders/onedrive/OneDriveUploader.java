@@ -5,6 +5,7 @@ import okhttp3.MediaType;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+import okhttp3.ResponseBody;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -88,7 +89,11 @@ public final class OneDriveUploader extends Uploader {
             .post(requestBody)
             .build();
         Response response = HttpClient.getHttpClient().newCall(request).execute();
-        JSONObject parsedResponse = new JSONObject(response.body().string());
+        ResponseBody body = response.body();
+        if (body == null) {
+            throw new IOException("Response Body is null");
+        }
+        JSONObject parsedResponse = new JSONObject(body.string());
         response.close();
         if (!response.isSuccessful()) {
             return;
@@ -168,7 +173,11 @@ public final class OneDriveUploader extends Uploader {
                 .build();
             JSONObject parsedResponse;
             try (Response response = HttpClient.getHttpClient().newCall(request).execute()) {
-                parsedResponse = new JSONObject(response.body().string());
+                ResponseBody body = response.body();
+                if (body == null) {
+                    throw new IOException("Response Body is null");
+                }
+                parsedResponse = new JSONObject(body.string());
             }
             String uploadURL = parsedResponse.getString("uploadUrl");
             raf = new RandomAccessFile(file, "r");
@@ -183,7 +192,11 @@ public final class OneDriveUploader extends Uploader {
                     .build();
                 try (Response uploadResponse = HttpClient.getHttpClient().newCall(request).execute()) {
                     if (uploadResponse.code() == 202) {
-                        parsedResponse = new JSONObject(uploadResponse.body().string());
+                        ResponseBody responseBody = uploadResponse.body();
+                        if (responseBody == null) {
+                            throw new IOException("Response Body is null");
+                        }
+                        parsedResponse = new JSONObject(responseBody.string());
                         List<Object> nextExpectedRanges = parsedResponse.getJSONArray("nextExpectedRanges").toList();
                         setRanges(nextExpectedRanges.toArray(new String[0]));
                         exponentialBackoffMillis = EXPONENTIAL_BACKOFF_MILLIS_DEFAULT;
@@ -245,7 +258,11 @@ public final class OneDriveUploader extends Uploader {
             .url("https://graph.microsoft.com/v1.0/me/drive/root:/" + parent.getPath())
             .build();
         Response response = HttpClient.getHttpClient().newCall(request).execute();
-        JSONObject parsedResponse = new JSONObject(response.body().string());
+        ResponseBody body = response.body();
+        if (body == null) {
+            throw new IOException("Response Body is null");
+        }
+        JSONObject parsedResponse = new JSONObject(body.string());
         response.close();
         String parentId = parsedResponse.getString("id");
         RequestBody requestBody = RequestBody.create(
@@ -314,7 +331,11 @@ public final class OneDriveUploader extends Uploader {
                 .url("https://graph.microsoft.com/v1.0/me/drive/root:/" + parent.getPath() + ":/children")
                 .build();
             Response response = HttpClient.getHttpClient().newCall(request).execute();
-            JSONObject parsedResponse = new JSONObject(response.body().string());
+            ResponseBody body = response.body();
+            if (body == null) {
+                throw new IOException("Response Body is null");
+            }
+            JSONObject parsedResponse = new JSONObject(body.string());
             response.close();
             JSONArray jsonArray = parsedResponse.getJSONArray("value");
             for (int i = 0; i < jsonArray.length(); i++) {
@@ -342,7 +363,11 @@ public final class OneDriveUploader extends Uploader {
                 .url("https://graph.microsoft.com/v1.0/me/drive/root/children")
                 .build();
             Response response = HttpClient.getHttpClient().newCall(request).execute();
-            JSONObject parsedResponse = new JSONObject(response.body().string());
+            ResponseBody body = response.body();
+            if (body == null) {
+                throw new IOException("Response Body is null");
+            }
+            JSONObject parsedResponse = new JSONObject(body.string());
             response.close();
             JSONArray jsonArray = parsedResponse.getJSONArray("value");
             for (int i = 0; i < jsonArray.length(); i++) {
@@ -374,7 +399,11 @@ public final class OneDriveUploader extends Uploader {
             .url("https://graph.microsoft.com/v1.0/me/drive/root:/" + parent.getPath() + ":/children?sort_by=createdDateTime")
             .build();
         Response response = HttpClient.getHttpClient().newCall(request).execute();
-        JSONObject parsedResponse = new JSONObject(response.body().string());
+        ResponseBody body = response.body();
+        if (body == null) {
+            throw new IOException("Response Body is null");
+        }
+        JSONObject parsedResponse = new JSONObject(body.string());
         response.close();
         List<String> fileIDs = new ArrayList<>();
         JSONArray jsonArray = parsedResponse.getJSONArray("value");

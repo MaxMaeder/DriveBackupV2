@@ -15,11 +15,10 @@ import ratismal.drivebackup.constants.Initiator;
 import ratismal.drivebackup.handler.commandHandler.BasicCommands;
 import ratismal.drivebackup.handler.task.TaskIdentifier;
 import ratismal.drivebackup.http.HttpClient;
+import ratismal.drivebackup.objects.Player;
 import ratismal.drivebackup.platforms.DriveBackupInstance;
 import ratismal.drivebackup.uploaders.googledrive.GoogleDriveUploader;
-import ratismal.drivebackup.util.MessageUtil;
 import ratismal.drivebackup.util.NetUtil;
-import ratismal.drivebackup.util.SchedulerUtil;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -86,7 +85,7 @@ public final class Authenticator {
             String userCode = parsedResponse.getString("user_code");
             String deviceCode = parsedResponse.getString("device_code");
             String verificationUri = parsedResponse.getString("verification_uri");
-            long responseCheckDelay = SchedulerUtil.sToTicks(parsedResponse.getLong("interval"));
+            long responseCheckDelay = parsedResponse.getLong("interval");
             Map<String, String> placeholders = new HashMap<>(3);
             placeholders.put("link-url", verificationUri);
             placeholders.put("link-code", userCode);
@@ -111,7 +110,12 @@ public final class Authenticator {
                         .post(requestBody1.build())
                         .build();
                     Response response1 = HttpClient.getHttpClient().newCall(request1).execute();
-                    JSONObject parsedResponse1 = new JSONObject(response1.body().string());
+                    ResponseBody body1 = response1.body();
+                    if (body1 == null) {
+                        logger.log("Body returned null from " + requestEndpoint1);
+                        return;
+                    }
+                    JSONObject parsedResponse1 = new JSONObject(body1.string());
                     response1.close();
                     if (parsedResponse1.has("refresh_token")) {
                         saveRefreshToken(provider, (String) parsedResponse1.get("refresh_token"));
@@ -126,13 +130,12 @@ public final class Authenticator {
                             (AuthenticationProvider.ONEDRIVE == provider && !parsedResponse1.getString("error").equals("authorization_pending")) ||
                             (provider != AuthenticationProvider.ONEDRIVE && !parsedResponse1.get("msg").equals("code_not_authenticated"))
                         ) {
-                        MessageUtil.Builder().text(parsedResponse1.toString()).send();
+                        logger.log(parsedResponse1.toString());
                         throw new AuthException();
                     }
                 } catch (Exception exception) {
                     NetUtil.catchException(exception, AUTH_URL, logger);
                     logger.log("link-provider-failed", "provider", provider.getName());
-                    MessageUtil.sendConsoleException(exception);
                     cancelPollTask(instance);
                 }
             }, responseCheckDelay, responseCheckDelay, TimeUnit.SECONDS);
@@ -143,8 +146,13 @@ public final class Authenticator {
         }
     }
 
-    public static void unAuthenticateUser(AuthenticationProvider provider, CommandSender initiator, DriveBackupInstance instance) {
-        UploadLogger logger = new UploadLogger(instance, Initiator.OTHER);
+    public static void unAuthenticateUser(AuthenticationProvider provider, Player player, DriveBackupInstance instance) {
+        UploadLogger logger;
+        if (player == null) {
+            logger = new UploadLogger(instance, Initiator.OTHER);
+        } else {
+            logger = new UploadLogger(instance, player);
+        }
         disableBackupMethod(provider, logger, instance);
         try {
             File credStoreFile = new File(provider.getCredStoreLocation());
@@ -153,7 +161,7 @@ public final class Authenticator {
             }
         } catch (Exception exception) {
             logger.log("unlink-provider-failed", "provider", provider.getName());
-            MessageUtil.sendConsoleException(exception);
+            logger.log("Failed to unlink ", exception);
         }
         logger.log("unlink-provider-complete", "provider", provider.getName());
     }

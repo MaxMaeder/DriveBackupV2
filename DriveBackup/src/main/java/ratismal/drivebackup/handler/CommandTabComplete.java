@@ -25,46 +25,46 @@ public class CommandTabComplete implements TabCompleter {
     /**
      * Command tab completer
      *
-     * @param player Player, who sent command
-     * @param cmd    Command that was sent
-     * @param label  Command alias that was used
+     * @param sender Player, who sent command
+     * @param command    Command that was sent
+     * @param alias  Command alias that was used
      * @param args   Arguments that followed command
      * @return String list of possible tab completions
      */
     @Override
-    public List<String> onTabComplete(CommandSender player, @NotNull Command cmd, String label, String[] args) {
-        if ("drivebackup".equalsIgnoreCase(cmd.getName())) {
+    public List<String> onTabComplete(CommandSender sender, @NotNull Command command, String alias, String[] args) {
+        if ("drivebackup".equalsIgnoreCase(command.getName())) {
             if (args.length == 1) {
                 List<String> commandList = new ArrayList<>(10);
                 commandList.add("v");
                 commandList.add("help");
-                if (hasPerm(player, Permission.LINK_ACCOUNTS)) {
+                if (hasPerm(sender, Permission.LINK_ACCOUNTS)) {
                     commandList.add("linkaccount");
                 }
-                if (hasPerm(player, Permission.RELOAD_CONFIG)) {
+                if (hasPerm(sender, Permission.RELOAD_CONFIG)) {
                     commandList.add("reloadconfig");
                 }
-                if (hasPerm(player, Permission.RELOAD_CONFIG)) {
+                if (hasPerm(sender, Permission.RELOAD_CONFIG)) {
                     commandList.add("debug");
                 }
-                if (hasPerm(player, Permission.GET_BACKUP_STATUS)) {
+                if (hasPerm(sender, Permission.GET_BACKUP_STATUS)) {
                     commandList.add("status");
                 }
-                if (hasPerm(player, Permission.GET_NEXT_BACKUP)) {
+                if (hasPerm(sender, Permission.GET_NEXT_BACKUP)) {
                     commandList.add("nextbackup");
                 }
-                if (hasPerm(player, Permission.BACKUP)) {
+                if (hasPerm(sender, Permission.BACKUP)) {
                     commandList.add("backup");
                 }
-                if (hasPerm(player, Permission.BACKUP)) {
+                if (hasPerm(sender, Permission.BACKUP)) {
                     commandList.add("test");
                 }
-                if (hasPerm(player, Permission.BACKUP)) {
+                if (hasPerm(sender, Permission.BACKUP)) {
                     commandList.add("update");
                 }
                 return commandList;
             } else if (args[0].equalsIgnoreCase("linkaccount") && args.length == 2) {
-                if (!hasPerm(player, Permission.LINK_ACCOUNTS)) {
+                if (!hasPerm(sender, Permission.LINK_ACCOUNTS)) {
                     return Collections.emptyList();
                 }
                 List<String> commandList = new ArrayList<>(3);
@@ -73,7 +73,7 @@ public class CommandTabComplete implements TabCompleter {
                 commandList.add("dropbox");
                 return commandList;
             } else if (args[0].equalsIgnoreCase("test") && args.length == 2) {
-                if (!hasPerm(player, Permission.BACKUP)) {
+                if (!hasPerm(sender, Permission.BACKUP)) {
                     return Collections.emptyList();
                 }
                 List<String> commandList = new ArrayList<>(6);

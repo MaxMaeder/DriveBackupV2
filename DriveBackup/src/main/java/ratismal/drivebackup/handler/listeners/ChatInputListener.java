@@ -6,8 +6,8 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.server.ServerCommandEvent;
 import org.jetbrains.annotations.NotNull;
-import ratismal.drivebackup.UploadThread.UploadLogger;
 import ratismal.drivebackup.plugin.DriveBackup;
+import ratismal.drivebackup.uploaders.UploadLogger;
 import ratismal.drivebackup.uploaders.googledrive.GoogleDriveUploader;
 import ratismal.drivebackup.util.MessageUtil;
 

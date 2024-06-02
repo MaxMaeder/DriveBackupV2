@@ -25,7 +25,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class DebugHandler {
+public final class DebugHandler {
     private static final String MC_LOGS_UPLOAD_URL = "https://api.mclo.gs/1/log";
     private static final List<String> SENSITIVE_CONFIG_KEYS = Arrays.asList("shared-drive-id", "hostname", "username", "password", "token", "sftp-public-key", "sftp-passphrase", "passphrase");
     private static final Pattern VALUE_PATTERN = Pattern.compile(":(\\s+)(.*)");

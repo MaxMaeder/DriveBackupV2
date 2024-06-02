@@ -11,7 +11,7 @@ import java.util.Collection;
 
 @Deprecated
 public final class SchedulerUtil {
-    private static final long TICKS_PER_SECOND = 20;
+    private static final long TICKS_PER_SECOND = 20L;
     
     @Contract (pure = true)
     private SchedulerUtil() {}

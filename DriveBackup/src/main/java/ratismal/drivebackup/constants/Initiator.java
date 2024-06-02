@@ -5,5 +5,5 @@ public enum Initiator {
     CONSOLE,
     AUTOMATIC,
     API,
-    OTHER;
+    OTHER
 }

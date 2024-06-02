@@ -44,7 +44,7 @@ public class BackupStorage {
     }
 
     @NotNull
-    @Contract ("_, _ -> new")
+    @Contract ("_ -> new")
     public static BackupStorage parse(@NotNull FileConfiguration config) {
         Configuration defaultConfig = config.getDefaults();
         long delay = config.getLong("delay");

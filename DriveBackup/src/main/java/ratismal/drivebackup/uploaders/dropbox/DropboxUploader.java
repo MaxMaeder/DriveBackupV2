@@ -17,7 +17,6 @@ import ratismal.drivebackup.uploaders.Obfusticate;
 import ratismal.drivebackup.uploaders.UploadLogger;
 import ratismal.drivebackup.uploaders.Uploader;
 import ratismal.drivebackup.uploaders.UploaderUtils;
-import ratismal.drivebackup.util.MessageUtil;
 import ratismal.drivebackup.util.NetUtil;
 
 import java.io.DataInputStream;
@@ -82,7 +81,7 @@ public final class DropboxUploader extends Uploader {
             }
         } catch (IOException | InterruptedException exception) {
             NetUtil.catchException(exception, "api.dropboxapi.com", logger);
-            MessageUtil.sendConsoleException(exception);
+            instance.getLoggingHandler().error("Failed to test Dropbox", exception);
             setErrorOccurred(true);
         }
     }
@@ -123,7 +122,11 @@ public final class DropboxUploader extends Uploader {
                         .url("https://content.dropboxapi.com/2/files/upload_session/start")
                         .build();
                     Response response = HttpClient.getHttpClient().newCall(request).execute();
-                    JSONObject parsedResponse = new JSONObject(response.body().string());
+                    ResponseBody body = response.body();
+                    if (body == null) {
+                        throw new IOException("Response Body is null");
+                    }
+                    JSONObject parsedResponse = new JSONObject(body.string());
                     sessionId = parsedResponse.getString("session_id");
                     response.close();
                     uploaded += CHUNKED_UPLOAD_CHUNK_SIZE;
@@ -195,7 +198,7 @@ public final class DropboxUploader extends Uploader {
             }
         } catch (Exception exception) {
             NetUtil.catchException(exception, "api.dropboxapi.com", logger);
-            MessageUtil.sendConsoleException(exception);
+            instance.getLoggingHandler().error("Failed to upload file to Dropbox", exception);
             setErrorOccurred(true);
         }
     }
@@ -258,7 +261,11 @@ public final class DropboxUploader extends Uploader {
             .post(requestBody)
             .build();
         Response response = HttpClient.getHttpClient().newCall(request).execute();
-        JSONObject parsedResponse = new JSONObject(response.body().string());
+        ResponseBody body = response.body();
+        if (body == null) {
+            throw new IOException("Response Body is null");
+        }
+        JSONObject parsedResponse = new JSONObject(body.string());
         JSONArray resFiles = parsedResponse.getJSONArray("entries");
         response.close();
         for (int i = 0; i < resFiles.length(); i++) {
@@ -300,6 +307,9 @@ public final class DropboxUploader extends Uploader {
             .build();
         Response response = HttpClient.getHttpClient().newCall(request).execute();
         ResponseBody body = response.body();
+        if (body == null) {
+            throw new IOException("Response Body is null");
+        }
         JSONObject parsedResponse = new JSONObject(body.string());
         response.close();
         if (!response.isSuccessful()) {

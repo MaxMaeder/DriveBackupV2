@@ -1,10 +1,8 @@
 package ratismal.drivebackup.config.configSections;
 
 import org.bukkit.configuration.file.FileConfiguration;
-
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import ratismal.drivebackup.util.Logger;
 
 @Deprecated
 public class Messages {
@@ -25,7 +23,7 @@ public class Messages {
     }
 
     @NotNull
-    public static Messages parse(@NotNull FileConfiguration config, Logger logger) {
+    public static Messages parse(@NotNull FileConfiguration config) {
         boolean sendInChat = config.getBoolean("messages.send-in-chat");
         String prefix = config.getString("messages.prefix");
         String defaultColor = config.getString("messages.default-color");

@@ -157,7 +157,7 @@ public final class BukkitPlugin extends JavaPlugin implements DriveBackupInstanc
         PluginManager pm = getServer().getPluginManager();
         //pm.registerEvents(new BukkitChatListener(), this);
         //pm.registerEvents(new BukkitPlayerListener(), this);
-        BstatsMetrics.initMetrics();
+        BstatsMetrics.initMetrics(this);
         updateHandler = new UpdateHandler(this);
         apiHandler = new APIHandler(this);
     }

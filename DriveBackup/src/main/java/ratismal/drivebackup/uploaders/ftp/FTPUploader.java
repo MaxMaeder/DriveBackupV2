@@ -18,6 +18,7 @@ import java.io.FileInputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -59,7 +60,7 @@ public final class FTPUploader extends Uploader {
         super(instance, UPLOADER_NAME, ID, null, logger);
         try {
             if (ftp.sftp) {
-                sftpClient = new SFTPUploader(logger);
+                sftpClient = new SFTPUploader(instance, logger);
             } else {
                 connect(ftp.hostname, ftp.port, ftp.username, ftp.password, ftp.ftps);
                 host = ftp.hostname;
@@ -94,7 +95,7 @@ public final class FTPUploader extends Uploader {
         try {
             if (sftp) {
                 setId("sftp");
-                sftpClient = new SFTPUploader(logger, host, port, username, password, publicKey, passphrase, localBaseFolder, remoteBaseFolder);
+                sftpClient = new SFTPUploader(instance, logger, host, port, username, password, publicKey, passphrase, localBaseFolder, remoteBaseFolder);
             } else {
                 connect(host, port, username, password, ftps);
                 this.host = host;
@@ -124,8 +125,8 @@ public final class FTPUploader extends Uploader {
         }
         ftpClient.setConnectTimeout(10 * 1000);
         ftpClient.setDefaultTimeout(30 * 1000);
-        ftpClient.setDataTimeout(30 * 1000);
-        ftpClient.setControlKeepAliveTimeout(30L * 1000L);
+        ftpClient.setDataTimeout(Duration.ofSeconds(30L * 1000L));
+        ftpClient.setControlKeepAliveTimeout(Duration.ofSeconds(30L * 1000L));
         ftpClient.connect(host, port);
         ftpClient.login(username, password);
         ftpClient.enterLocalPassiveMode();

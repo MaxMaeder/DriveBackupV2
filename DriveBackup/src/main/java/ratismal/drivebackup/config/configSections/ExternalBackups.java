@@ -7,14 +7,11 @@ import ratismal.drivebackup.config.ConfigParser;
 import ratismal.drivebackup.config.configSections.ExternalBackups.ExternalFTPSource.ExternalBackupListEntry;
 import ratismal.drivebackup.config.configSections.ExternalBackups.ExternalMySQLSource.MySQLDatabaseBackup;
 import ratismal.drivebackup.util.LocalDateTimeFormatter;
-import ratismal.drivebackup.util.Logger;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-
-import static ratismal.drivebackup.config.Localization.intl;
 
 @Deprecated
 public class ExternalBackups {
@@ -123,8 +120,8 @@ public class ExternalBackups {
     }
 
     @NotNull
-    @Contract ("_, _ -> new")
-    public static ExternalBackups parse(@NotNull FileConfiguration config, Logger logger) {
+    @Contract ("_ -> new")
+    public static ExternalBackups parse(@NotNull FileConfiguration config) {
         List<Map<?, ?>> rawList = config.getMapList("external-backup-list");
         ArrayList<ExternalBackupSource> list = new ArrayList<>();
         for (Map<?, ?> rawListEntry : rawList) {
@@ -137,7 +134,6 @@ public class ExternalBackups {
                     throw new IllegalArgumentException("Unsupported type");
                 }
             } catch (Exception e) {
-                logger.log(intl("external-backup-type-invalid"), "entry", entryIndex);
                 continue;
             }
 
@@ -147,7 +143,6 @@ public class ExternalBackups {
                 hostname = (String) rawListEntry.get("hostname");
                 port = (Integer) rawListEntry.get("port");
             } catch (ClassCastException e) {
-                logger.log(intl("external-backup-host-port-invalid"), "entry", entryIndex);
                 continue;
             }
 
@@ -158,14 +153,12 @@ public class ExternalBackups {
                 username = (String) rawListEntry.get("username");
                 password = (String) rawListEntry.get("password");
             } catch (ClassCastException e) {
-                logger.log(intl("external-backup-user-pass-invalid"), "entry", entryIndex);
                 continue;
             }
             LocalDateTimeFormatter formatter;
             try {
-                formatter = LocalDateTimeFormatter.ofPattern((String) rawListEntry.get("format"));
+                formatter = LocalDateTimeFormatter.ofPattern(null, (String) rawListEntry.get("format"));
             } catch (IllegalArgumentException | ClassCastException e) {
-                logger.log(intl("external-backup-format-invalid"), "entry", entryIndex);
                 continue;
             }
             switch (type) {
@@ -176,31 +169,27 @@ public class ExternalBackups {
                     if (rawListEntry.containsKey("sftp-public-key")) {
                         try {
                             publicKey = ConfigParser.verifyPath((String) rawListEntry.get("sftp-public-key"));
-                        } catch (IllegalArgumentException | ClassCastException e) {
-                            logger.log(intl("external-backup-public-key-invalid"), "entry", entryIndex);
+                        } catch (IllegalArgumentException | ClassCastException ignored) {
                         }
                     }
                     String passphrase = "";
                     if (rawListEntry.containsKey("passphrase")) {
                         try {
                             passphrase = (String) rawListEntry.get("passphrase");
-                        } catch (ClassCastException e) {
-                            logger.log(intl("external-backup-passphrase-invalid"), "entry", entryIndex);
+                        } catch (ClassCastException ignored) {
                         }
                     }
                     String baseDirectory = "";
                     if (rawListEntry.containsKey("base-dir")) {
                         try {
                             baseDirectory = ConfigParser.verifyPath((String) rawListEntry.get("base-dir"));
-                        } catch (IllegalArgumentException | ClassCastException e) {
-                            logger.log(intl("external-backup-base-dir-invalid"), "entry", entryIndex);
+                        } catch (IllegalArgumentException | ClassCastException ignored) {
                         }
                     }
                     List<Map<?, ?>> rawBackupList;
                     try {
                         rawBackupList = (List<Map<?, ?>>) rawListEntry.get("backup-list");
                     } catch (ClassCastException e) {
-                        logger.log(intl("external-backup-list-invalid"), "entry", entryIndex);
                         continue;
                     }
                     List<ExternalBackupListEntry> backupList = new ArrayList<>();
@@ -210,15 +199,13 @@ public class ExternalBackups {
                         try {
                             path = ConfigParser.verifyPath((String) rawBackupListEntry.get("path"));
                         } catch (IllegalArgumentException | ClassCastException e) {
-                            logger.log(intl("external-backup-list-path-invalid"), "entry-backup", entryBackupIndex);
                             continue;
                         }
                         String[] blacklist = new String[0];
                         if (rawBackupListEntry.containsKey("blacklist")) {
                             try {
                                 blacklist = ((List<String>) rawBackupListEntry.get("blacklist")).toArray(new String[0]);
-                            } catch (ArrayStoreException | ClassCastException e) {
-                                logger.log(intl("external-backup-list-blacklist-invalid"), "entry-backup", entryBackupIndex);
+                            } catch (ArrayStoreException | ClassCastException ignored) {
                             }
                         }
                         backupList.add(
@@ -246,14 +233,12 @@ public class ExternalBackups {
                     try {
                         ssl = (Boolean) rawListEntry.get("ssl");
                     } catch (ClassCastException e) {
-                        logger.log(intl("external-database-ssl-invalid"), "entry", entryIndex);
                         // Use false
                     }
                     List<Map<?, ?>> rawDatabaseList;
                     try {
                         rawDatabaseList = (List<Map<?, ?>>) rawListEntry.get("databases");
                     } catch (ClassCastException e) {
-                        logger.log(intl("external-database-list-invalid"), "entry", entryIndex);
                         continue;
                     }
                     List<MySQLDatabaseBackup> databaseList = new ArrayList<>();
@@ -263,15 +248,13 @@ public class ExternalBackups {
                         try {
                             name = (String) rawDatabaseListEntry.get("name");
                         } catch (ClassCastException e) {
-                            logger.log(intl("external-database-list-name-invalid"), "entry-database", entryDatabaseIndex);
                             continue;
                         }
                         String[] blacklist = new String[0];
                         if (rawDatabaseListEntry.containsKey("blacklist")) {
                             try {
                                 blacklist = ((List<String>) rawDatabaseListEntry.get("blacklist")).toArray(new String[0]);
-                            } catch (ArrayStoreException | ClassCastException e) {
-                                logger.log(intl("external-database-list-blacklist-invalid"), "entry-database", entryDatabaseIndex);
+                            } catch (ArrayStoreException | ClassCastException ignored) {
                             }
                         }
                         databaseList.add(new MySQLDatabaseBackup(name, blacklist));

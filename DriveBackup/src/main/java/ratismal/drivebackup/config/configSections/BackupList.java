@@ -92,7 +92,7 @@ public class BackupList {
     }
 
     @NotNull
-    @Contract ("_, _ -> new")
+    @Contract ("_ -> new")
     public static BackupList parse(@NotNull FileConfiguration config) {
         List<Map<?, ?>> rawList = config.getMapList("backup-list");
         ArrayList<BackupListEntry> list = new ArrayList<>();
@@ -130,7 +130,7 @@ public class BackupList {
             if (rawListEntry.containsKey("blacklist")) {
                 try {
                     blacklist = ((List<String>) rawListEntry.get("blacklist")).toArray(new String[0]);
-                } catch (ClassCastException | ArrayStoreException e) {
+                } catch (ClassCastException | ArrayStoreException ignored) {
                 }
             }
             list.add(new BackupListEntry(location, formatter, create, blacklist));

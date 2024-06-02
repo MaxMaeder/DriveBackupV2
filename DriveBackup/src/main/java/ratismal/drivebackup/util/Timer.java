@@ -11,7 +11,7 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Locale;
 
-public class Timer {
+public final class Timer {
     private Instant start;
     private Instant end;
     private final DriveBackupInstance instance;
@@ -53,8 +53,8 @@ public class Timer {
         long length = ChronoUnit.SECONDS.between(start, end);
         long speed = (file.length() / 1024L) / length;
         String message = instance.getMessageHandler().getLangString("file-upload-message");
-        message.replace("<length>", df.format(length));
-        return message.replace("<speed>", df.format(speed));
+        String message2 = message.replace("<length>", df.format(length));
+        return message2.replace("<speed>", df.format(speed));
     }
 
 }

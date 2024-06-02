@@ -143,7 +143,7 @@ public class BackupMethods {
     }
 
     @NotNull
-    @Contract ("_, _ -> new")
+    @Contract ("_ -> new")
     public static BackupMethods parse(@NotNull FileConfiguration config) {
         GoogleDriveBackupMethod googleDriveMethod = new GoogleDriveBackupMethod(
             config.getBoolean("googledrive.enabled"),
@@ -184,14 +184,14 @@ public class BackupMethods {
         if (!Strings.isNullOrEmpty(config.getString("ftp.sftp-public-key")) && ftpEnabled) {
             try {
                 publicKey = ConfigParser.verifyPath(config.getString("ftp.sftp-public-key"));
-            } catch (InvalidPathException e) {
+            } catch (InvalidPathException ignored) {
             }
         }
         String baseDir = "";
         if (!Strings.isNullOrEmpty(config.getString("ftp.base-dir")) && ftpEnabled) {
             try {
                 baseDir = ConfigParser.verifyPath(config.getString("ftp.base-dir"));
-            } catch (InvalidPathException e) {
+            } catch (InvalidPathException ignored) {
             }
         }
         FTPBackupMethod ftpMethod = new FTPBackupMethod(

@@ -173,7 +173,7 @@ public class WebDAVUploader extends Uploader {
         return files;
     }
 
-    private String rstrip(@NotNull String src, char remove) {
+    private static String rstrip(@NotNull String src, char remove) {
         while (src.charAt(src.length()-1) == remove) {
             src = src.substring(0, src.length()-2);
         }

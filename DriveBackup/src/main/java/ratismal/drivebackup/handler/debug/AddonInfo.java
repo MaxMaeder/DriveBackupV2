@@ -5,7 +5,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
-public class AddonInfo {
+public final class AddonInfo {
     private final AddonType type;
     private final String name;
     private final String version;
@@ -29,18 +29,22 @@ public class AddonInfo {
         return new AddonInfo(AddonType.MOD, name, version, authors);
     }
     
+    @Contract (pure = true)
     public AddonType getType() {
         return type;
     }
     
+    @Contract (pure = true)
     public String getName() {
         return name;
     }
     
+    @Contract (pure = true)
     public String getVersion() {
         return version;
     }
     
+    @Contract (pure = true)
     public List<String> getAuthors() {
         return authors;
     }

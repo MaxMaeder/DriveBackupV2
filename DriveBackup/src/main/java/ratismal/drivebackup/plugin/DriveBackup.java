@@ -72,7 +72,7 @@ public class DriveBackup extends JavaPlugin {
         pm.registerEvents(new PlayerListener(), plugin);
         pm.registerEvents(new ChatInputListener(), plugin);
         Scheduler.startBackupThread();
-        BstatsMetrics.initMetrics();
+        BstatsMetrics.initMetrics(null);
         updater = new Updater(getFile());
         UpdateChecker.updateCheck();
     }
@@ -86,7 +86,7 @@ public class DriveBackup extends JavaPlugin {
         MessageUtil.Builder().mmText(intl("plugin-stop")).send();
     }
 
-    public void saveIntlConfig() {
+    public static void saveIntlConfig() {
         localizationConfig.saveConfig();
     }
 

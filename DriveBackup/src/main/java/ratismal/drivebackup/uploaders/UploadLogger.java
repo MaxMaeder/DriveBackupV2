@@ -9,7 +9,7 @@ import ratismal.drivebackup.platforms.DriveBackupInstance;
 
 import java.util.Map;
 
-public class UploadLogger {
+public final class UploadLogger {
     
     private final DriveBackupInstance instance;
     private Player player;

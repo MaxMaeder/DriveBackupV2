@@ -56,6 +56,9 @@ public final class FileUtil {
         String localDir = instance.getConfigHandler().getConfig().getValue("local-save-directory").getString();
         String path = new File(localDir).getAbsolutePath() + File.separator + location;
         File[] files = new File(path).listFiles();
+        if (files == null) {
+            return backupList;
+        }
         for (File file : files) {
             if (file.getName().endsWith(".zip")) {
                 long dateOfFile = TimeUnit.MILLISECONDS.toSeconds(file.lastModified());
@@ -300,7 +303,11 @@ public final class FileUtil {
             }
             fileList.appendToList(relativePath.toString());
         } else if (fileAttributes.isDirectory()) {
-            for (String filename : file.list()) {
+            String[] files = file.list();
+            if (files == null) {
+                return;
+            }
+            for (String filename : files) {
                 generateFileList(new File(file, filename), inputFolderPath, fileList);
             }
         } else {

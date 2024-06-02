@@ -39,7 +39,7 @@ public class Advanced {
     }
 
     @NotNull
-    @Contract ("_, _ -> new")
+    @Contract ("_ -> new")
     public static Advanced parse(@NotNull FileConfiguration config) {
         boolean metrics = config.getBoolean("advanced.metrics");
         boolean updateCheck = config.getBoolean("advanced.update-check");
