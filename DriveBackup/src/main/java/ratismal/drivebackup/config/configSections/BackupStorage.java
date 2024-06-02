@@ -1,13 +1,12 @@
 package ratismal.drivebackup.config.configSections;
 
-import java.util.zip.Deflater;
-
 import org.bukkit.configuration.Configuration;
 import org.bukkit.configuration.file.FileConfiguration;
-
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ratismal.drivebackup.util.Logger;
+
+import java.util.zip.Deflater;
 
 import static ratismal.drivebackup.config.Localization.intl;
 
@@ -83,6 +82,10 @@ public class BackupStorage {
         boolean backupsRequirePlayers = config.getBoolean("backups-require-players");
         boolean disableSavingDuringBackups = config.getBoolean("disable-saving-during-backups");
         String localDirectory = config.getString("local-save-directory");
+        if (localDirectory.startsWith("/")) {
+            logger.log(intl("local-save-directory-not-relative"));
+            localDirectory = localDirectory.substring(1);
+        }
         String remoteDirectory = config.getString("remote-save-directory");
         return new BackupStorage(delay, threadPriority, keepCount, localKeepCount, zipCompression, backupsRequirePlayers, disableSavingDuringBackups, localDirectory, remoteDirectory);
     }

@@ -195,6 +195,7 @@ local-backup-no-limit: "Local backup limit is set to 0, skipping pruning"
 local-backup-pruning-complete: 'Local backup pruning complete for "<location>"'
 local-backup-pruning-start: 'Pruning local backups for "<location>"'
 local-keep-count-invalid: "Inputted local keep count invalid, using default"
+local-save-directory-not-relative: "Local save directory is not relative, making relative to server directory"
 location-empty: "Location <location> is empty, skipping"
 metrics-error: "Metrics failed to start"
 metrics-started: "Metrics started"
