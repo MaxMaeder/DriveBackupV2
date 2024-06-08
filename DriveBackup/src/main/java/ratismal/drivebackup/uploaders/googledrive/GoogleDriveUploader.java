@@ -3,29 +3,34 @@ package ratismal.drivebackup.uploaders.googledrive;
 import com.google.api.client.auth.oauth2.BearerToken;
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.http.FileContent;
-import com.google.api.client.http.HttpRequest;
 import com.google.api.client.http.HttpRequestInitializer;
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.services.drive.Drive;
-import com.google.api.services.drive.model.*;
+import com.google.api.services.drive.model.ChildList;
+import com.google.api.services.drive.model.ChildReference;
+import com.google.api.services.drive.model.File;
+import com.google.api.services.drive.model.FileList;
+import com.google.api.services.drive.model.ParentReference;
 import okhttp3.FormBody;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
-
+import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import ratismal.drivebackup.uploaders.Uploader;
-import ratismal.drivebackup.uploaders.Authenticator;
-import ratismal.drivebackup.uploaders.Obfusticate;
-import ratismal.drivebackup.uploaders.Authenticator.AuthenticationProvider;
+import org.json.JSONObject;
 import ratismal.drivebackup.UploadThread.UploadLogger;
 import ratismal.drivebackup.config.ConfigParser;
 import ratismal.drivebackup.plugin.DriveBackup;
+import ratismal.drivebackup.uploaders.Authenticator;
+import ratismal.drivebackup.uploaders.Authenticator.AuthenticationProvider;
+import ratismal.drivebackup.uploaders.Obfusticate;
+import ratismal.drivebackup.uploaders.Uploader;
 import ratismal.drivebackup.util.MessageUtil;
 import ratismal.drivebackup.util.NetUtil;
 
@@ -35,10 +40,6 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-
-import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
-import org.json.JSONObject;
 
 import static ratismal.drivebackup.config.Localization.intl;
 
@@ -150,17 +151,11 @@ public class GoogleDriveUploader extends Uploader {
     public void test(java.io.File testFile) {
         try {
             String sharedDriveId = ConfigParser.getConfig().backupMethods.googleDrive.sharedDriveId;
-            String destination = ConfigParser.getConfig().backupStorage.remoteDirectory;
+            File folder = getRemoteDir(null, sharedDriveId);
             File body = new File();
             body.setTitle(testFile.getName());
             body.setDescription("DriveBackupV2 test file");
             FileContent testContent = new FileContent("plain/txt", testFile);
-            File folder;
-            if (!sharedDriveId.isEmpty()) {
-                folder = createFolder(destination, sharedDriveId);
-            } else {
-                folder = createFolder(destination);
-            }
             ParentReference fileParent = new ParentReference();
             fileParent.setId(folder.getId());
             body.setParents(Collections.singletonList(fileParent));
@@ -174,6 +169,36 @@ public class GoogleDriveUploader extends Uploader {
             setErrorOccurred(true);
         }
     }
+    
+    private @NotNull List<String> getRemoteDirList(String type) {
+        String destination = ConfigParser.getConfig().backupStorage.remoteDirectory;
+        List<String> typeFolders = new ArrayList<>(10);
+        Collections.addAll(typeFolders, destination.split("[/\\\\]"));
+        if (type != null) {
+            Collections.addAll(typeFolders, type.split("[/\\\\]"));
+        }
+        return typeFolders;
+    }
+    
+    private File getRemoteDir(String type, String sharedDriveId) throws Exception {
+        List<String> typeFolders = getRemoteDirList(type);
+        File folder = null;
+        for (String typeFolder : typeFolders) {
+            if (".".equals(typeFolder) || "..".equals(typeFolder)) {
+                continue;
+            }
+            if (folder == null && !sharedDriveId.isEmpty()) {
+                folder = createFolder(typeFolder, sharedDriveId);
+            } else if (folder == null) {
+                folder = createFolder(typeFolder);
+            } else if (!sharedDriveId.isEmpty()) {
+                folder = createFolder(typeFolder, folder, true);
+            } else {
+                folder = createFolder(typeFolder, folder, false);
+            }
+        }
+        return folder;
+    }
 
     /**
      * Uploads the specified file to the authenticated user's Google Drive inside a folder for the specified file type.
@@ -183,26 +208,8 @@ public class GoogleDriveUploader extends Uploader {
     public void uploadFile(java.io.File file, String type) {
         try {
             String sharedDriveId = ConfigParser.getConfig().backupMethods.googleDrive.sharedDriveId;
-            String destination = ConfigParser.getConfig().backupStorage.remoteDirectory;
             retrieveNewAccessToken();
-            ArrayList<String> typeFolders = new ArrayList<>();
-            Collections.addAll(typeFolders, destination.split("[/\\\\]"));
-            Collections.addAll(typeFolders, type.split("[/\\\\]"));
-            File folder = null;
-            for (String typeFolder : typeFolders) {
-                if (typeFolder.equals(".") || typeFolder.equals("..")) {
-                    continue;
-                }
-                if (folder == null && !sharedDriveId.isEmpty()) {
-                    folder = createFolder(typeFolder, sharedDriveId);
-                } else if (folder == null) {
-                    folder = createFolder(typeFolder);
-                } else if (!sharedDriveId.isEmpty()) {
-                    folder = createFolder(typeFolder, folder, true);
-                } else {
-                    folder = createFolder(typeFolder, folder, false);
-                }
-            }
+            File folder = getRemoteDir(type, sharedDriveId);
             File fileMetadata = new File();
             fileMetadata.setTitle(file.getName());
             fileMetadata.setDescription("Uploaded by the DriveBackupV2 Minecraft plugin");
