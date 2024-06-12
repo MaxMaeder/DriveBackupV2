@@ -1,0 +1,245 @@
+# Check if someone has translated the plugin into your language already!
+# https://github.com/MaxMaeder/DriveBackupV2/tree/master/translations
+#
+# If not, feel free to contribute!
+
+auto-backups-disabled: "자동 백업이 비활성화되었습니다."
+backup-already-running: |-
+  백업이 이미 실행 중입니다.
+  <backup-status>
+backup-complete: "백업 완료"
+backup-disabled-inactivity: "활동이 없어 자동 백업을 비활성화합니다."
+backup-empty-list: "백업 목록이 비어 있습니다."
+backup-failed-absolute-path: |-
+  백업을 생성하지 못했습니다. 백업할 폴더의 경로가 절대 경로이며 상대 경로가 필요합니다.
+  절대 경로는 민감한 파일을 덮어쓸 수 있습니다. 자세한 내용은 문서를 참조하세요.
+  백업 위치를 건너뜁니다.
+backup-file-upload-complete: '"<file-name>" 파일 업로드 완료'
+backup-file-upload-start: '"<file-name>" 파일 업로드를 시작합니다.'
+backup-forced: "강제 백업을 진행합니다."
+backup-list-blacklist-invalid: "백업 항목 <entry>에 블랙리스트가 잘못되어 비워 둡니다."
+backup-list-format-invalid: "형식이 잘못되어 백업 목록 항목 <entry>을(를) 건너뜁니다."
+backup-list-glob-invalid: "글로브가 잘못되어 백업 목록 항목 <entry>을(를) 건너뜁니다."
+backup-list-no-dest-specified: "경로 또는 글로브가 지정되지 않아 백업 목록 항목 <entry>을(를) 건너뜁니다."
+backup-list-path-invalid: "경로가 잘못되어 백업 목록 항목 <entry>을(를) 건너뜁니다."
+backup-local-complete: "로컬 백업이 생성되고 압축되었습니다."
+backup-local-failed: |-
+  로컬 백업을 생성하지 못했습니다.
+  local-keep-count가 0으로 설정되어 있더라도, 플러그인은 로컬 백업을 일시적으로 생성해야 합니다.
+  백업 위치를 건너뜁니다.
+backup-local-file-complete: '"<location>"에 대한 로컬 백업을 생성했습니다.'
+backup-local-file-start: '"<location>"에 대한 로컬 백업을 생성합니다.'
+backup-local-prune-complete: "로컬 백업 정리 완료"
+backup-local-prune-start: "로컬 백업을 정리합니다."
+backup-local-start: "로컬 백업을 생성하고 압축합니다..."
+backup-method-complete: "<gold><upload-method></gold>(으)로 백업 완료"
+backup-method-error-occurred: "<upload-method>(으)로 백업하지 못했습니다. 모든
+  계정 정보가 올바른지 확인하거나 해당 명령어로 문제를 진단하세요.
+  <gold><click:run_command:'<diagnose-command>'><diagnose-command></click></gol\
+  d>"
+backup-method-limit-reached: "<upload-method>의 현재 백업 위치에 <file-count>개의 파일이 있습니다.
+  이는 <file-limit>의 제한을 초과하므로
+  삭제합니다."
+backup-method-not-auth: |-
+  인증에 실패하여 <upload-method>(으)로의 백업을 건너뜁니다.
+  <gold>config.yml<gold>의 모든 계정 정보가 올바른지 확인하세요.
+backup-method-not-auth-authenticator: |-
+  인증에 실패하여 <upload-method>(으)로의 백업을 건너뜁니다.
+  계정을 다시 연동해보세요. <gold><click:run_command:'<link-command>'><link-command></click></gold>을(를) 실행하세요.
+backup-method-not-linked: |-
+  계정이 아직 연동되지 않아 <upload-method>(으)로의 백업을 건너뜁니다.
+  계정을 연동하려면, <gold><click:run_command:'<link-command>'><link-command></click></gold>을(를) 실행하세요.
+backup-method-prune-failed: "제한을 초과하는 백업을 삭제하지 못했습니다."
+backup-method-shared-drive-prune-failed: |-
+  제한을 초과하는 백업을 삭제하지 못했습니다.
+  공유 드라이브의 소유자에게 계정의 권한을 높여 달라고 요청하거나 백업 삭제를 비활성화하려면 keep-count를 0으로 설정하세요.
+backup-method-upload-failed: "업로드에 실패했습니다."
+backup-method-uploading: "<upload-method>(으)로 파일을 업로드합니다."
+backup-no-methods: "어떠한 백업 방법도 활성화되지 않았습니다."
+backup-schedule-day-empty: "요일 목록이 비어 있어 스케줄 항목 <entry>을(를) 건너뜁니다."
+backup-schedule-day-invalid: '요일이 잘못되어 요일 "<day>"을(를) 건너뜁니다.'
+backup-schedule-days-invalid: "날짜 목록이 잘못되어 스케줄 항목 <entry>을(를) 건너뜁니다."
+backup-schedule-empty: "백업 스케줄이 비어 있어 스케줄 기반 백업을 비활성화합니다."
+backup-schedule-time-invalid: "시간이 잘못되어 스케줄 항목 <entry>을(를) 건너뜁니다."
+backup-start: "백업을 생성하는 중, 서버가 잠시 느려질 수 있습니다..."
+backup-status-compressing: '백업 세트 "<set-name>" 압축 중, 세트 <set-count>개 중 <set-num>'
+backup-status-not-running: "백업이 실행 중이지 않습니다."
+backup-status-uploading: '백업 세트 "<set-name>" 업로드 중, 세트 <set-count>개 중 <set-num>'
+backup-upload-complete: "백업 업로드 완료"
+backup-upload-start: "백업을 업로드합니다..."
+backups-interval-scheduled: "매 <delay>분마다 백업을 실행하도록 스케줄링합니다."
+backups-scheduled: "매 <days>마다 <time>에 백업을 실행하도록 스케줄링합니다."
+brief-backup-list: "DriveBackupV2는 현재 <list>을(를) 백업합니다."
+brief-backup-list-empty: "아무것도 없음"
+brief-backup-list-external-backups: "일부의 외부 백업"
+brief-backup-list-help: "다른 어떤 것을 백업하고 싶나요? 해당 링크를 확인하세요.
+  <gold><click:open_url:https://bit.ly/3xoHRAs>https://bit.ly/3xoHRAs</click></go\
+  ld>"
+config-loaded: "설정을 불러왔습니다!"
+config-reloaded: "설정을 다시 불러왔습니다!"
+connection-error: "<domain>에 연결하지 못했습니다. 인터넷 연결을 확인하고,
+  서버 방화벽도 확인하세요."
+date-format-invalid: "날짜 형식 및 시간대가 올바르지 않아 UTC를 사용합니다."
+debug-log-created: "디버그 URL: <url>"
+debug-log-creating: "디버그 로그를 생성하는 중"
+default-google-drive-name: "내 드라이브"
+drivebackup-command-header: <gold>|====== <dark_red>DriveBackupV2</dark_red> ======|</gold>
+drivebackup-docs-command: |-
+  <header>
+  도움이 필요하신가요? 유용한 자료들을 확인해 보세요!
+  위키: <gold><click:open_url:https://bit.ly/3dDdmwK>https://bit.ly/3dDdmwK</click></gold>
+  Discord: <gold><click:open_url:https://bit.ly/3f4VuuT>https://bit.ly/3f4VuuT</click></gold>
+drivebackup-help-command: |-
+  <header>
+  <gold><click:run_command:/drivebackup>/drivebackup</click></gold> - 이 메뉴를 표시합니다.
+  <gold><click:run_command:/drivebackup help>/drivebackup help</click></gold> - 도움말 리소스를 표시합니다.
+  <gold><click:run_command:/drivebackup commands>/drivebackup commands</click></gold> - 이 명령 도움말 페이지를 표시합니다.
+  <gold><click:run_command:/drivebackup v>/drivebackup [v|version]</click></gold> - 플러그인 버전을 표시합니다.
+  <gold><click:run_command:/drivebackup linkaccount googledrive>/drivebackup [link|linkaccount] googledrive</click></gold> - 백업을 위한 Google Drive 계정을 연동합니다.
+  <gold><click:run_command:/drivebackup linkaccount onedrive>/drivebackup [link|linkaccount] onedrive</click></gold> - 백업을 위한 OneDrive 계정을 연동합니다.
+  <gold><click:run_command:/drivebackup linkaccount dropbox>/drivebackup [link|linkaccount] dropbox</click></gold> - 백업을 위한 Dropbox 계정을 연동합니다.
+  <gold><click:run_command:/drivebackup linkaccount googledrive>/drivebackup [unlink|unlinkaccount] googledrive</click></gold> - Google Drive 계정 연동을 해제하고 백업 방법을 비활성화합니다.
+  <gold><click:run_command:/drivebackup linkaccount onedrive>/drivebackup [unlink|unlinkaccount] onedrive</click></gold> - OneDrive 계정 연동을 해제하고 백업 방법을 비활성화합니다.
+  <gold><click:run_command:/drivebackup linkaccount dropbox>/drivebackup [unlink|unlinkaccount] dropbox</click></gold> - Dropbox 계정 연동을 해제하고 백업 방법을 비활성화합니다.
+  <gold><click:run_command:/drivebackup reloadconfig>/drivebackup reloadconfig</click></gold> - config.yml 파일을 다시 불러옵니다.
+  <gold><click:run_command:/drivebackup nextbackup>/drivebackup nextbackup</click></gold> - 다음 자동 백업의 시간/날짜를 확인합니다.
+  <gold><click:run_command:/drivebackup status>/drivebackup status</click></gold> - 실행 중인 백업의 상태를 확인합니다.
+  <gold><click:run_command:/drivebackup backup>/drivebackup backup</click></gold> - 백업을 수동으로 실행합니다.
+  <gold><click:run_command:/drivebackup test ftp>/drivebackup test ftp</click></gold> - (S)FTP 서버와의 연결을 테스트합니다.
+  <gold><click:run_command:/drivebackup test googledrive>/drivebackup test googledrive</click></gold> - Google Drive와의 연결을 테스트합니다.
+  <gold><click:run_command:/drivebackup test onedrive>/drivebackup test onedrive</click></gold> - OneDrive와의 연결을 테스트합니다.
+  <gold><click:run_command:/drivebackup test dropbox>/drivebackup test dropbox</click></gold> - Dropbox와의 연결을 테스트합니다.
+  <gold><click:run_command:/drivebackup update>/drivebackup update</click></gold> - 새 버전이 있다면 플러그인을 업데이트합니다.
+drivebackup-version-command: |-
+  <header>
+  플러그인 버전: <gold><plugin-version></gold>
+  Java 버전: <gold><java-version></gold>
+  서버 소프트웨어: <gold><server-software></gold>
+  서버 소프트웨어 버전: <gold><server-version></gold>
+drivebackup-version-update: <gold>플러그인 업데이트가 가능합니다!
+external-backup-base-dir-invalid: "외부 백업 항목 <entry>에서 기본 디렉터리 키 경로가
+  잘못되어 비워 둡니다."
+external-backup-format-invalid: "형식이 잘못되어 외부 백업 항목 <entry>을(를) 건너뜁니다."
+external-backup-host-port-invalid: "호스트명/포트가 잘못되어 외부 백업 항목 <entry>을(를) 건너뜁니다."
+external-backup-list-blacklist-invalid: "외부 백업 목록 항목 <entry-backup>에 블랙리스트가
+  잘못되어 비워 둡니다."
+external-backup-list-invalid: "백업 목록이 잘못되어 외부 백업 항목 <entry>을(를) 건너뜁니다."
+external-backup-list-path-invalid: "경로가 잘못되어 외부 백업 목록 항목 <entry-backup>을(를) 건너뜁니다."
+external-backup-passphrase-invalid: "외부 백업 항목 <entry>에 암호 구문이 잘못되어 비워 둡니다."
+external-backup-public-key-invalid: "외부 백업 항목 <entry>에서 공개 키 경로가 잘못되어 비워 둡니다."
+external-backup-type-invalid: "백업 유형이 잘못되어 외부 백업 항목 <entry>을(를) 건너뜁니다."
+external-backup-user-pass-invalid: "사용자명/비밀번호가 잘못되어 외부 백업 항목 <entry>을(를) 건너뜁니다."
+external-database-list-blacklist-invalid: "외부 백업 데이터베이스 목록 항목 <entry-backup>에
+  블랙리스트가 잘못되어 비워 둡니다."
+external-database-list-invalid: "데이터베이스 목록이 잘못되어 외부 백업 항목 <entry>을(를) 건너뜁니다."
+external-database-list-name-invalid: "이름이 잘못되어 외부 백업 데이터베이스 목록 항목 <entry-database>을(를) 건너뜁니다."
+external-database-ssl-invalid: "외부 백업 항목 <entry>에서 SSL 사용 설정이 잘못되어 SSL을 사용하지 않습니다."
+external-ftp-backup-blacklisted: '<blacklisted-files> 파일이 "<glob-pattern>"에 의해
+  블랙리스트에 포함되어 있으므로 외부 (S)FTP 서버의
+  백업에 포함하지 않았습니다.'
+external-ftp-backup-complete: "(S)FTP 서버 (<socket-addr>)의 파일이
+  백업에 성공적으로 포함되었습니다."
+external-ftp-backup-failed: 백업에 (S)FTP 서버 (<socket-addr>)의 파일을 포함하지 못했습니다.
+  <gold>config.yml</gold>에서 서버 계정 정보를
+  확인하세요.
+external-ftp-backup-start: "백업에 포함할 (S)FTP 서버 (<socket-addr>)에서 파일 다운로드합니다."
+external-mysql-backup-blacklisted: '"<blacklist-entry>" 테이블은 블랙리스트에 있으므로
+  백업에 포함하지 않았습니다.'
+external-mysql-backup-complete: "MySQL 서버 (<socket-addr>)의 데이터베이스가
+  백업에 성공적으로 포함되었습니다."
+external-mysql-backup-failed: MySQL 서버 (<socket-addr>)의 데이터베이스를 백업에 포함하지 못했습니다.
+  <gold>config.yml</gold>에서 서버 계정
+  정보를 확인하세요.
+external-mysql-backup-start: "백업에 포함할 MySQL 서버 (<socket-addr>)에서
+  데이터베이스를 다운로드합니다."
+file-upload-message: "파일이 <length>초 만에 업로드되었습니다. (<speed>KB/s)"
+ftp-method-passphrase-invalid: "FTP 백업 방법에 대한 암호 구문이 잘못되어 비워 둡니다."
+ftp-method-pubic-key-invalid: "FTP 백업 방법에 대한 공개 키 경로가 잘못되어 비워 둡니다."
+google-pick-shared-drive: "현재 하나 이상의 공유 드라이브에 접근할 수 있습니다.
+  이 중 하나를 사용하려면 해당 드라이브를 선택하거나 채팅에서
+  번호를 입력하세요."
+google-shared-drive-option: "<bold>[<drive-num>]</bold>
+  <gold><hover:show_text:드라이브
+  선택><click:run_command:'<select-command>'><drive-name></click></hover></gol\
+  d>"
+invalid-backup-delay: "입력한 백업 딜레이가 잘못되어 기본값을 사용합니다."
+keep-count-invalid: "Keep count 값이 잘못되어 기본값을 사용합니다."
+link-account-code: "<provider> 계정을 연동하기 위해서는
+  <gold><click:open_url:'<link-url>'><link-url></click></gold>로 이동하여
+  <gold><click:copy_to_clipboard:'<link-code>'><link-code></click></gold>을(를) 입력하세요."
+link-provider-complete: "<provider> 계정이 연동되었습니다!"
+link-provider-failed: "<provider> 계정을 연동하지 못했습니다. 다시 시도하세요."
+list-delimiter: ", "
+list-last-delimiter: " 그리고 "
+local-backup-backlisted: '<blacklisted-files-count>개의 파일이 "<glob-pattern>"에
+  의해 블랙리스트에 포함되어 있으므로 백업에 포함하지 않았습니다.'
+local-backup-date-format-invalid: |-
+  저장된 백업 "<file-name>"의 날짜 형식을 구문 분석할 수 없습니다. 이는 config.yml에서 날짜 형식이 업데이트되고 있기 때문일 수 있습니다.
+  백업이 가장 먼저 삭제됩니다.
+local-backup-failed-attributes: '"<file-path>"의 속성을 읽지 못하여 기본값을 대신 사용했습니다. 액세스할 권한이 있나요?'
+local-backup-failed-permissions: |-
+  로컬 백업을 생성하지 못했습니다. 플러그인이 현재 필요한 파일 시스템 경로에 대한 쓰기 권한을 가지고 있지 않습니다.
+  local-keep-count가 0으로 설정되어 있더라도, 플러그인은 로컬 백업을 일시적으로 생성해야 합니다.
+  백업 위치를 건너뜁니다.
+local-backup-failed-to-delete: "로컬 백업 삭제 실패"
+local-backup-failed-to-include: '백업에 "<file-path>"를 포함하지 못했습니다.
+  해당 파일이 잠겨 있나요? 액세스할 권한이 있나요?'
+local-backup-file-deleted: '로컬 백업 "<local-backup-name>"을(를) 삭제했습니다.'
+local-backup-file-failed-to-delete: '로컬 백업 "<local-backup-name>"을(를) 삭제하지 못했습니다.'
+local-backup-in-backup-folder: "백업에 사용되는 폴더에 있는 <files-in-backup-folder-count>개의
+  파일을 백업에 포함하지 않았습니다."
+local-backup-limit-not-reached: "<backup-count> 개수 및 <backup-limit> 제한이 로컬 백업 한도에 도달하지 않아 정리를 건너뜁니다."
+local-backup-limit-reached: "<backup-limit>의 로컬 한도를 초과하는 <backup-count>개의 파일이 있어
+  가장 오래된 파일을 삭제합니다."
+local-backup-no-limit: "로컬 백업 한도가 0으로 설정되어 있어 정리를 건너뜁니다."
+local-backup-pruning-complete: '"<location>"에 대한 로컬 백업 정리가 완료되었습니다.'
+local-backup-pruning-start: '"<location>"에 대한 로컬 백업을 정리합니다.'
+local-keep-count-invalid: "입력한 local keep count가 잘못되어 기본값을 사용합니다."
+local-save-directory-not-relative: "로컬 저장 디렉터리는 상대 경로가 아니므로 서버 디렉터리를 기준으로 합니다."
+location-empty: "<location> 경로가 비어 있어 건너뜁니다."
+metrics-error: "Metrics를 시작하지 못했습니다."
+metrics-started: "Metrics를 시작했습니다."
+next-backup: "다음 백업은 %TIME 분 후입니다."
+next-schedule-backup: "다음 백업은 %DATE 입니다."
+next-schedule-backup-format: "h:mm a EEE, MMM d O"
+no-perm: "이 작업을 수행할 권한이 없습니다!"
+player-join-backup-enable: "자동 백업을 활성화합니다."
+player-join-backup-failed: |-
+  <red>마지막 백업을 실패했습니다!<red>
+  자세한 내용은 콘솔을 확인하세요.
+player-join-update-available: |-
+  업데이트가 가능합니다. 여기에서 받으세요: <gold><click:open_url:https://bit.ly/2M14uVD>https://bit.ly/2M14uVD</click></gold>
+  또는 해당 명령어를 실행하세요. <gold><click:run_command:/drivebackup update>/drivebackup update</click></gold>
+plugin-stop: "플러그인을 중지하는 중!"
+test-file-creation-failed: "테스트 파일을 생성하지 못했습니다. 다시 시도하세요."
+test-method-begin: "<upload-method>에서 테스트를 시작합니다."
+test-method-failed: "<upload-method> 테스트에 성공하지 못했습니다.
+  <gold>config.yml</gold> 파일을 확인하세요."
+test-method-invalid: '"<specified-method>"은(는) 올바른 백업 방법이 아닙니다.'
+test-method-not-enabled: "<upload-method> 백업이 비활성화되었습니다. <gold>config.yml</gold> 파일에서
+  활성화할 수 있습니다."
+test-method-not-specified: "테스트할 백업 방법을 지정하세요."
+test-method-successful: "<upload-method> 테스트에 성공했습니다."
+thread-priority-too-high: "입력한 스레드 우선 순위가 최대값을 초과하여 최대값을 사용합니다."
+thread-priority-too-low: "입력한 스레드 우선 순위가 최소값보다 낮아 최소값을 사용합니다."
+unlink-provider-complete: "<provider> 계정이 연동 해제되었습니다!"
+unlink-provider-failed: "<provider> 계정을 연동 해제하지 못했습니다. 다시 시도하세요."
+update-checker-failed: "DriveBackupV2의 최신 버전을 확인하는 동안 문제가 발생했습니다."
+update-checker-new-release: |-
+  DriveBackup <latest-version> 버전이 출시되었습니다. 현재 <current-version> 버전을 실행 중입니다.
+  업데이트: <gold><click:open_url:https://bit.ly/2VGtF7L>https://bit.ly/2VGtF7L</click></gold>" 또는 <gold><click:run_command:/drivebackup update>/drivebackup update</click></gold> 명령을 실행하세요.
+update-checker-started: "업데이트를 확인하는 중..."
+update-checker-unsupported-release: |-
+  지원되지 않는 버전을 실행 중입니다!
+  권장 버전은 <latest-version> 입니다. 현재 버전은 <current-version> 입니다.
+  플러그인을 최근에 업데이트한 경우 이 메시지를 무시하세요.
+updater-fetch-failed: "DriveBackupV2의 최신 버전을 불러오지 못했습니다."
+updater-no-updates: "DriveBackupV2의 최신 버전을 사용하고 있습니다!"
+updater-start: "DriveBackupV2의 최신 버전을 다운로드 시도하는 중입니다."
+updater-successful: "성공적으로 플러그인을 업데이트했습니다! 변경 사항을 적용하기 위해
+  서버를 다시 시작하세요."
+updater-update-failed: "플러그인 업데이트에 실패했습니다. 자세한 내용은 콘솔을 확인하세요."
+upload-error-check: "업로드 오류를 확인하는 중..."
+upload-no-errors: "업로드 오류가 발견되지 않았습니다."
+zip-compression-too-high: "입력한 zip 압축률이 최대값을 초과하여 최대값을 사용합니다."
+zip-compression-too-low: "입력한 zip 압축률이 최소값보다 낮아 최소값을 사용합니다."
