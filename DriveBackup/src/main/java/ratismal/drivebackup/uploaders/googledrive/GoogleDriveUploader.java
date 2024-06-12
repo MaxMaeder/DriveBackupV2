@@ -210,15 +210,6 @@ public class GoogleDriveUploader extends Uploader {
             String sharedDriveId = ConfigParser.getConfig().backupMethods.googleDrive.sharedDriveId;
             retrieveNewAccessToken();
             File folder = getRemoteDir(type, sharedDriveId);
-            File fileMetadata = new File();
-            fileMetadata.setTitle(file.getName());
-            fileMetadata.setDescription("Uploaded by the DriveBackupV2 Minecraft plugin");
-            fileMetadata.setMimeType("application/zip");
-            ParentReference fileParent = new ParentReference();
-            fileParent.setId(folder.getId());
-            fileMetadata.setParents(Collections.singletonList(fileParent));
-            FileContent fileContent = new FileContent("application/zip", file);
-            service.files().insert(fileMetadata, fileContent).setSupportsAllDrives(true).execute();
             try {
                 pruneBackups(folder);
             } catch (Exception e) {
@@ -229,6 +220,15 @@ public class GoogleDriveUploader extends Uploader {
                 }
                 throw e;
             }
+            File fileMetadata = new File();
+            fileMetadata.setTitle(file.getName());
+            fileMetadata.setDescription("Uploaded by the DriveBackupV2 Minecraft plugin - SIL'S FORK");
+            fileMetadata.setMimeType("application/zip");
+            ParentReference fileParent = new ParentReference();
+            fileParent.setId(folder.getId());
+            fileMetadata.setParents(Collections.singletonList(fileParent));
+            FileContent fileContent = new FileContent("application/zip", file);
+            service.files().insert(fileMetadata, fileContent).setSupportsAllDrives(true).execute();
         } catch (Exception exception) {
             NetUtil.catchException(exception, "www.googleapis.com", logger);
             MessageUtil.sendConsoleException(exception);
@@ -490,14 +490,14 @@ public class GoogleDriveUploader extends Uploader {
             return;
         }
         List<ChildReference> files = getFiles(folder);
-        if (files.size() > fileLimit) {
+        if (files.size() >= fileLimit) {
             logger.info(
                 intl("backup-method-limit-reached"), 
                 "file-count", String.valueOf(files.size()),
                 "upload-method", getName(),
                 "file-limit", String.valueOf(fileLimit));
             for (Iterator<ChildReference> iterator = files.iterator(); iterator.hasNext(); ) {
-                if (files.size() == fileLimit) {
+                if (files.size() < fileLimit) {
                     break;
                 }
                 ChildReference file = iterator.next();
