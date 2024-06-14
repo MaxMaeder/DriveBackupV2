@@ -1,0 +1,219 @@
+# Check if someone has translated the plugin into your language already!
+# https://github.com/MaxMaeder/DriveBackupV2/tree/master/translations
+#
+# If not, feel free to contribute!
+
+# Check if someone has translated the plugin into your language already!
+# https://github.com/MaxMaeder/DriveBackupV2/tree/master/translations
+#
+# If not, feel free to contribute!
+
+auto-backups-disabled: "Автоматичні резервні копії вимкнено"
+backup-already-running: |-
+  Резервна копія вже виконується
+  <backup-status>
+backup-complete: "Резервна копія завершена"
+backup-disabled-inactivity: "Вимкнення автоматичних резервних копій через неактивність"
+backup-empty-list: "Список резервних копій порожній"
+backup-failed-absolute-path: |-
+  Не вдалося створити резервну копію, шлях до папки для резервного копіювання є абсолютним, очікується відносний шлях
+  Абсолютний шлях може перезаписувати чутливі файли, див. документацію для отримання додаткової інформації
+  Пропуск місця для резервного копіювання
+backup-file-upload-complete: 'Завершено завантаження(-я) файлу "<file-name>"'
+backup-file-upload-start: 'Початок завантаження(-я) файлу "<file-name>"'
+backup-forced: "Примусова резервна копія"
+backup-list-blacklist-invalid: "Чорний список недійсний в записі резервної копії <entry>, залишається порожнім"
+backup-list-format-invalid: "Недійсний формат, пропускається запис списку резервних копій <entry>"
+backup-list-glob-invalid: "Недійсний шаблон, пропускається запис списку резервних копій <entry>"
+backup-list-no-dest-specified: "Не вказано шлях або шаблон, пропускається запис списку резервних копій <entry>"
+backup-list-path-invalid: "Недійсний шлях, пропускається запис списку резервних копій <entry>"
+backup-local-complete: "Локальні резервні копії створено та стиснуто"
+backup-local-failed: |-
+  Не вдалося створити локальну резервну копію
+  Навіть якщо local-keep-count встановлено на нуль, плагін все одно потребує тимчасово створити локальну резервну копію
+  Пропуск місця для резервного копіювання
+backup-local-file-complete: 'Локальна резервна копія для "<location>" створена'
+backup-local-file-start: 'Створення локальної резервної копії для "<location>"'
+backup-local-prune-complete: "Закінчено очищення локальних резервних копій"
+backup-local-prune-start: "Початок очищення локальних резервних копій"
+backup-local-start: "Створення локальної резервної копії(ій) та стиснення..."
+backup-method-complete: "Резервна копія на <gold><upload-method></gold> завершена"
+backup-method-error-occurred: "Не вдалося зробити резервну копію на <upload-method>, перевірте, що всі облікові дані вказані правильно або діагностируйте проблему з <gold><click:run_command:'<diagnose-command>'><diagnose-command></click></gold>"
+backup-method-limit-reached: "Зараз є <file-count> файлів для поточного місця резервного копіювання в <upload-method>, що перевищує ліміт <file-limit>, видаляється"
+backup-method-not-auth: |-
+  Пропуск резервного копіювання в <upload-method>, невдалося автентифікуватися
+  Будь ласка, перевірте, що всі облікові дані вказані правильно в файлі <gold>config.yml<gold>
+backup-method-not-auth-authenticator: |-
+  Пропуск резервного копіювання в <upload-method>, невдалося автентифікуватися
+  Спробуйте повторно зв'язати свій обліковий запис, виконавши <gold><click:run_command:'<link-command>'><link-command></click></gold>
+backup-method-not-linked: |-
+  Пропуск резервного копіювання в <upload-method>, обліковий запис ще не зв'язаний
+  Щоб зв'язати свій обліковий запис, виконайте <gold><click:run_command:'<link-command>'><link-command></click></gold>
+backup-method-prune-failed: "Не вдалося видалити резервні копії, що перевищують ліміт"
+backup-method-shared-drive-prune-failed: |-
+  Не вдалося видалити резервні копії, що перевищують ліміт
+  Спробуйте запросити власника спільного диска підвищити права вашого облікового запису або встановити keep-count на 0, щоб вимкнути видалення резервних копій
+backup-method-upload-failed: "Не вдалося виконати завантаження"
+backup-method-uploading: "Виконується завантаження файлу до <upload-method>"
+backup-no-methods: "Немає активних методів резервного копіювання"
+backup-schedule-day-empty: "Список днів тижня порожній, пропуск запису розкладу <entry>"
+backup-schedule-day-invalid: 'Недійсний день тижня, пропуск дня тижня "<day>"'
+backup-schedule-days-invalid: "Недійсний список днів, пропуск запису розкладу <entry>"
+backup-schedule-empty: "Розклад резервного копіювання порожній, вимкнення резервного копіювання за розкладом"
+backup-schedule-time-invalid: "Недійсний час, пропуск запису розкладу <entry>"
+backup-start: "Створення резервних копій, на сервері може відбуватися деякий час..."
+backup-status-compressing: 'Стиснення набору резервних копій "<set-name>", набір <set-num> з <set-count>'
+backup-status-not-running: "Резервні копії не виконуються"
+backup-status-uploading: 'Виконується завантаження набору резервних копій "<set-name>", набір <set-num> з <set-count>'
+backup-upload-complete: "Резервні копії викладені"
+backup-upload-start: "Виконується завантаження резервних копій..."
+backups-interval-scheduled: "Заплановано резервне копіювання кожні <delay> хвилин"
+backups-scheduled: "Заплановано резервне копіювання на <time> щодня <days>"
+brief-backup-list: "DriveBackupV2 наразі буде резервно копіювати <list>"
+brief-backup-list-empty: "нічого"
+brief-backup-list-external-backups: "декілька зовнішніх резервних копій"
+brief-backup-list-help: "Хочете зробити резервну копію ще чогось? Перегляньте
+  <gold><click:open_url:http://bit.ly/3xoHRAs>http://bit.ly/3xoHRAs</click></go\
+  ld>"
+config-loaded: "Конфігурація завантажена!"
+config-reloaded: "Конфігурацію перезавантажено!"
+connection-error: "Не вдалося підключитися до <domain>, перевірте підключення до мережі
+  та файрвол сервера"
+date-format-invalid: "Неправильний формат дати часу, використовується UTC"
+debug-log-created: "URL відладки: <url>"
+debug-log-creating: "Створення файлу відладки"
+default-google-drive-name: "Мій Диск"
+drivebackup-command-header: <gold>|====== <dark_red>DriveBackupV2</dark_red> ======|</gold>
+drivebackup-docs-command: |-
+  <header>
+  Потрібна допомога? Перевірте ці корисні ресурси!
+  Wiki: <gold><click:open_url:http://bit.ly/3dDdmwK>http://bit.ly/3dDdmwK</click></gold>
+  Discord: <gold><click:open_url:http://bit.ly/3f4VuuT>http://bit.ly/3f4VuuT</click></gold>
+drivebackup-help-command: |-
+  <header>
+  <gold><click:run_command:/drivebackup>/drivebackup</click></gold> - Показати це меню
+  <gold><click:run_command:/drivebackup help>/drivebackup help</click></gold> - Показати ресурси допомоги
+  <gold><click:run_command:/drivebackup commands>/drivebackup commands</click></gold> - Показати цю сторінку допомоги з командами
+  <gold><click:run_command:/drivebackup v>/drivebackup [v|version]</click></gold> - Показати версію плагіна
+  <gold><click:run_command:/drivebackup linkaccount googledrive>/drivebackup [link|linkaccount] googledrive</click></gold> - Посилання на ваш обліковий запис Google Drive для резервного копіювання
+  <gold><click:run_command:/drivebackup linkaccount onedrive>/drivebackup [link|linkaccount] onedrive</click></gold> - Посилання на ваш обліковий запис OneDrive для резервного копіювання
+  <gold><click:run_command:/drivebackup linkaccount dropbox>/drivebackup [link|linkaccount] dropbox</click></gold> - Посилання на ваш обліковий запис Dropbox для резервного копіювання
+  <gold><click:run_command:/drivebackup linkaccount googledrive>/drivebackup [unlink|unlinkaccount] googledrive</click></gold> - Відв'язати ваш обліковий запис Google Drive і вимкнути метод
+  <gold><click:run_command:/drivebackup linkaccount onedrive>/drivebackup [unlink|unlinkaccount] onedrive</click></gold> - Відв'язати ваш обліковий запис OneDrive і вимкнути метод
+  <gold><click:run_command:/drivebackup linkaccount dropbox>/drivebackup [unlink|unlinkaccount] dropbox</click></gold> - Відв'язати ваш обліковий запис Dropbox і вимкнути метод
+  <gold><click:run_command:/drivebackup reloadconfig>/drivebackup reloadconfig</click></gold> - Перезавантажити config.yml
+  <gold><click:run_command:/drivebackup nextbackup>/drivebackup nextbackup</click></gold> - Отримати час/дату наступного автоматичного резервного копіювання
+  <gold><click:run_command:/drivebackup status>/drivebackup status</click></gold> - Отримати статус виконання резервного копіювання
+  <gold><click:run_command:/drivebackup backup>/drivebackup backup</click></gold> - Ручне запуск резервного копіювання
+  <gold><click:run_command:/drivebackup test ftp>/drivebackup test ftp</click></gold> - Перевірка підключення до (S)FTP-сервера
+  <gold><click:run_command:/drivebackup test googledrive>/drivebackup test googledrive</click></gold> - Перевірка підключення до Google Drive
+  <gold><click:run_command:/drivebackup test onedrive>/drivebackup test onedrive</click></gold> - Перевірка підключення до OneDrive
+  <gold><click:run_command:/drivebackup test dropbox>/drivebackup test dropbox</click></gold> - Перевірка підключення до Dropbox
+  <gold><click:run_command:/drivebackup update>/drivebackup update</click></gold> - Оновити плагін, якщо доступна нова версія
+drivebackup-version-command: |-
+  <header>
+  Версія плагіна: <gold><plugin-version></gold>
+  Версія Java: <gold><java-version></gold>
+  Програмне забезпечення сервера: <gold><server-software></gold>
+  Версія програмного забезпечення сервера: <gold><server-version></gold>
+drivebackup-version-update: <gold>Доступне оновлення плагіна!
+external-backup-base-dir-invalid: "Шлях до основного каталогу недійсний у зовнішньому записі резервного копіювання <entry>, залишаємо пустим"
+external-backup-format-invalid: "Неправильний формат, пропускаємо зовнішній запис резервного копіювання <entry>"
+external-backup-host-port-invalid: "Неправильне ім'я хоста/порт, пропускаємо зовнішній запис резервного копіювання <entry>"
+external-backup-list-blacklist-invalid: "Чорний список недійсний у списку резервних копій <entry-backup>, залишаємо пустим"
+external-backup-list-invalid: "Список резервних копій недійсний, пропускаємо зовнішній запис резервного копіювання <entry>"
+external-backup-list-path-invalid: "Неправильний шлях, пропускаємо запис списку резервних копій зовнішнього резервного копіювання <entry-backup>"
+external-backup-passphrase-invalid: "Неправильна фраза-пароль у зовнішньому записі резервного копіювання <entry>, залишаємо пустим"
+external-backup-public-key-invalid: "Неправильний шлях до публічного ключа у зовнішньому записі резервного копіювання <entry>, залишаємо пустим"
+external-backup-type-invalid: "Недійсний тип резервного копіювання, пропускаємо зовнішній запис резервного копіювання <entry>"
+external-backup-user-pass-invalid: "Неправильне ім'я користувача/пароль, пропускаємо зовнішній запис резервного копіювання <entry>"
+external-database-list-blacklist-invalid: "Чорний список недійсний у списку зовнішніх резервних копій бази даних <entry-backup>, залишаємо пустим"
+external-database-list-invalid: "Список баз даних недійсний, пропускаємо зовнішній запис резервного копіювання <entry>"
+external-database-list-name-invalid: "Неправильне ім'я у списку баз даних, пропускаємо запис списку зовнішніх резервних копій баз даних <entry-database>"
+external-database-ssl-invalid: "Налаштування включення SSL недійсне у зовнішньому записі резервного копіювання <entry>, не використовуємо SSL"
+external-ftp-backup-blacklisted: 'Не включено <blacklisted-files> файл(ів) до резервної копії з зовнішнього сервера (S)FTP, оскільки вони перелічені у чорному списку за "<glob-pattern>"'
+external-ftp-backup-complete: "Файли з сервера (S)FTP (<socket-addr>) успішно включено до резервної копії"
+external-ftp-backup-failed: Не вдалося включити файли з сервера (S)FTP (<socket-addr>) до резервної копії, перевірте дані сервера у файлі конфігурації <gold>config.yml</gold>
+external-ftp-backup-start: "Завантаження файлів з сервера (S)FTP (<socket-addr>) для включення до резервної копії"
+external-mysql-backup-blacklisted: 'Таблицю "<blacklist-entry>" не включено до резервної копії, оскільки вона перелічена у чорному списку'
+external-mysql-backup-complete: "Бази даних з сервера MySQL (<socket-addr>) успішно включено до резервної копії"
+external-mysql-backup-failed: Не вдалося включити бази даних з сервера MySQL (<socket-addr>) до резервної копії, перевірте дані сервера у файлі конфігурації <gold>config.yml</gold>
+external-mysql-backup-start: "Завантаження баз даних з сервера MySQL (<socket-addr>) для включення до резервної копії"
+file-upload-message: "Файл завантажено за <length> секунд (<speed>КБ/с)"
+ftp-method-passphrase-invalid: "Неправильна фраза-пароль для методу резервного копіювання FTP, залишаємо пустим"
+ftp-method-pubic-key-invalid: "Неправильний шлях до публічного ключа для методу резервного копіювання FTP, залишаємо пустим"
+google-pick-shared-drive: "У вас є доступ до одного або декількох спільних дисків. Якщо ви хочете використовувати один з них, виберіть його або відповідайте його номером у чаті."
+google-shared-drive-option: "<bold>[<drive-num>]</bold> <gold><hover:show_text:Виберіть
+  диск><click:run_command:'<select-command>'><drive-name></click></hover></gol\
+  d>"
+invalid-backup-delay: "Введений затримка резервного копіювання недійсний, використовуємо значення за замовчуванням"
+keep-count-invalid: "Недійсне значення кількості збережених копій, використовуємо значення за замовчуванням"
+link-account-code: "Щоб зв'язати ваш акаунт <provider>, перейдіть за посиланням <gold><click:open_url:'<link-url>'><link-url></click></gold> та введіть <gold><click:copy_to_clipboard:'<link-code>'><link-code></click></gold>"
+link-provider-complete: "Ваш акаунт <provider> успішно зв'язано!"
+link-provider-failed: "Не вдалося зв'язати ваш акаунт <provider>, спробуйте ще раз"
+list-delimiter: ", "
+list-last-delimiter: " та "
+local-backup-backlisted: 'Не включено <blacklisted-files-count> файл(ів) до резервної копії, оскільки вони перелічені у чорному списку за "<glob-pattern>"'
+local-backup-date-format-invalid: |-
+  Неможливо розібрати формат дати збереженої резервної копії "<file-name>", це може бути пов'язано з тим, що формат дати оновлено у файлі конфігурації config.yml
+  Перша резервна копія буде видалена
+local-backup-failed-attributes: 'Не вдалося прочитати атрибути для "<file-path>", використовуються значення за замовчуванням. Чи маєте ви дозвіл на доступ до нього?'
+local-backup-failed-permissions: |-
+  Не вдалося створити локальну резервну копію, плагін не має дозволу на запис до необхідного розташування файлової системи
+  Навіть якщо параметр local-keep-count встановлено на нуль, плагін тимчасово потребує створити локальну резервну копію
+  Пропускаємо розташування резервного копіювання
+local-backup-failed-to-delete: "Не вдалося видалити локальну резервну копію"
+local-backup-failed-to-include: 'Не вдалося включити "<file-path>" до резервної копії, чи він заблокований? Чи маєте ви дозвіл на доступ до нього?'
+local-backup-file-deleted: 'Видалено локальну резервну копію "<local-backup-name>"'
+local-backup-file-failed-to-delete: 'Не вдалося видалити локальну резервну копію "<local-backup-name>"'
+local-backup-in-backup-folder: "Не включено <files-in-backup-folder-count> файл(ів) до резервної копії, оскільки вони знаходяться у папці, яка використовується для резервного копіювання"
+local-backup-limit-not-reached: "Локальний ліміт резервних копій не досягнуто, пропускаємо очищення"
+local-backup-limit-reached: "Кількість файлів <backup-count> перевищує локальний ліміт <backup-limit>, видаляємо найстаріші"
+local-backup-no-limit: "Локальний ліміт резервних копій встановлено на 0, пропускаємо очищення"
+local-backup-pruning-complete: 'Очищення локальної резервної копії завершено для "<location>"'
+local-backup-pruning-start: 'Розпочато очищення локальних резервних копій для "<location>"'
+local-keep-count-invalid: "Введена недійсна локальна кількість збережених копій, використовуємо значення за замовчуванням"
+location-empty: "Розташування <location> порожнє, пропускаємо"
+metrics-error: "Не вдалося запустити метрики"
+metrics-started: "Метрики запущено"
+next-backup: "Наступне резервне копіювання через %TIME хвилин"
+next-schedule-backup: "Наступне резервне копіювання о %DATE"
+next-schedule-backup-format: "h:mm a EEE, MMM d O"
+no-perm: "У вас немає дозволу на це!"
+player-join-backup-enable: "Увімкнення автоматичних резервних копій"
+player-join-backup-failed: |-
+  <red>Останнє резервне копіювання не вдалося!<red>
+  Перевірте консоль для отримання додаткової інформації
+player-join-update-available: |-
+  Доступне оновлення, отримайте його тут: <gold><click:open_url:http://bit.ly/2M14uVD>http://bit.ly/2M14uVD</click></gold>
+  або запустивши <gold><click:run_command:/drivebackup update>/drivebackup update</click></gold>
+plugin-stop: "Зупинка плагіна!"
+test-file-creation-failed: "Не вдалося створити тестовий файл, спробуйте ще раз"
+test-method-begin: "Початок тесту на <upload-method>"
+test-method-failed: "Тест <upload-method> був неуспішним, перевірте конфігураційний файл <gold>config.yml</gold>"
+test-method-invalid: '"<specified-method>" - неприпустимий метод резервного копіювання'
+test-method-not-enabled: "Резервне копіювання на <upload-method> вимкнене, ви можете увімкнути його в <gold>config.yml</gold>"
+test-method-not-specified: "Будь ласка, вкажіть метод резервного копіювання для тесту"
+test-method-successful: "Тест <upload-method> пройшов успішно"
+thread-priority-too-high: "Введений пріоритет потоку перевищує максимальне значення, використовуємо максимальне"
+thread-priority-too-low: "Введений пріоритет потоку менше мінімального значення, використовуємо мінімальне"
+unlink-provider-complete: "Ваш обліковий запис <provider> відключений!"
+unlink-provider-failed: "Не вдалося відключити ваш обліковий запис <provider>, спробуйте ще раз"
+update-checker-failed: "Виникла проблема зі спробою перевірки останнього випуску DriveBackupV2"
+update-checker-new-release: |-
+  Випущено версію DriveBackup <latest-version>. Ви зараз використовуєте версію <current-version>.
+  Оновлення за адресою: <gold><click:open_url:http://bit.ly/2VGtF7L>http://bit.ly/2VGtF7L</click></gold>" або за допомогою <gold><click:run_command:/drivebackup update>/drivebackup update</click></gold>
+update-checker-started: "Перевірка оновлень..."
+update-checker-unsupported-release: |-
+  Ви використовуєте непідтримувану версію!
+  Рекомендована версія - <latest-version>, а ви використовуєте <current-version>.
+  Якщо плагін було оновлено недавно, проігноруйте це повідомлення
+updater-fetch-failed: "Не вдалося отримати останню версію DriveBackupV2"
+updater-no-updates: "Ви використовуєте останню версію DriveBackupV2!"
+updater-start: "Спроба завантаження останньої версії DriveBackupV2"
+updater-successful: "Плагін успішно оновлено! Будь ласка, перезапустіть сервер, щоб зміни вступили в силу"
+updater-update-failed: "Оновлення плагіну не вдалося, див. консоль для отримання додаткової інформації"
+upload-error-check: "Перевірка помилок завантаження..."
+upload-no-errors: "Помилок завантаження не виявлено"
+zip-compression-too-high: "Введена стискання ZIP більше максимального значення, використовуємо максимальне"
+zip-compression-too-low: "Введена стискання ZIP менше мінімального значення, використовуємо мінімальне"
