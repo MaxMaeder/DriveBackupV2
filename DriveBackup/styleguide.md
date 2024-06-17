@@ -25,43 +25,43 @@ and [Google's Java Style Guide](https://google.github.io/styleguide/javaguide.ht
 
 ## Table of contents
 
-- [Recommended reading](https://github.com/twitter/commons/blob/master/src/java/com/twitter/common/styleguide.md#recommended-reading)
-- [Coding style](https://github.com/twitter/commons/blob/master/src/java/com/twitter/common/styleguide.md#coding-style)
-  - [Formatting](https://github.com/twitter/commons/blob/master/src/java/com/twitter/common/styleguide.md#formatting)
-  - [Field, class, and method declarations](https://github.com/twitter/commons/blob/master/src/java/com/twitter/common/styleguide.md#field-class-and-method-declarations)
-  - [Variable naming](https://github.com/twitter/commons/blob/master/src/java/com/twitter/common/styleguide.md#variable-naming)
-  - [Space pad operators and equals](https://github.com/twitter/commons/blob/master/src/java/com/twitter/common/styleguide.md#space-pad-operators-and-equals)
-  - [Be explicit about operator precedence](https://github.com/twitter/commons/blob/master/src/java/com/twitter/common/styleguide.md#be-explicit-about-operator-precedence)
-  - [Documentation](https://github.com/twitter/commons/blob/master/src/java/com/twitter/common/styleguide.md#documentation)
-  - [Imports](https://github.com/twitter/commons/blob/master/src/java/com/twitter/common/styleguide.md#imports)
-  - [Use annotations wisely](https://github.com/twitter/commons/blob/master/src/java/com/twitter/common/styleguide.md#use-annotations-wisely)
-  - [Use interfaces](https://github.com/twitter/commons/blob/master/src/java/com/twitter/common/styleguide.md#use-interfaces)
-- [Writing testable code](https://github.com/twitter/commons/blob/master/src/java/com/twitter/common/styleguide.md#writing-testable-code)
-  - [Fakes and mocks](https://github.com/twitter/commons/blob/master/src/java/com/twitter/common/styleguide.md#fakes-and-mocks)
-  - [Let your callers construct support objects](https://github.com/twitter/commons/blob/master/src/java/com/twitter/common/styleguide.md#let-your-callers-construct-support-objects)
-  - [Testing multithreaded code](https://github.com/twitter/commons/blob/master/src/java/com/twitter/common/styleguide.md#testing-multithreaded-code)
-  - [Testing antipatterns](https://github.com/twitter/commons/blob/master/src/java/com/twitter/common/styleguide.md#testing-antipatterns)
-- [Avoid randomness in tests](https://github.com/twitter/commons/blob/master/src/java/com/twitter/common/styleguide.md#avoid-randomness-in-tests)
-- [Best practices](https://github.com/twitter/commons/blob/master/src/java/com/twitter/common/styleguide.md#best-practices)
-  - [Defensive programming](https://github.com/twitter/commons/blob/master/src/java/com/twitter/common/styleguide.md#defensive-programming)
-  - [Clean code](https://github.com/twitter/commons/blob/master/src/java/com/twitter/common/styleguide.md#clean-code)
-  - [Use newer/better libraries](https://github.com/twitter/commons/blob/master/src/java/com/twitter/common/styleguide.md#use-newerbetter-libraries)
-  - [equals() and hashCode()](https://github.com/twitter/commons/blob/master/src/java/com/twitter/common/styleguide.md#equals-and-hashcode)
-  - [Premature optimization is the root of all evil](https://github.com/twitter/commons/blob/master/src/java/com/twitter/common/styleguide.md#premature-optimization-is-the-root-of-all-evil)
-  - [TODOs](https://github.com/twitter/commons/blob/master/src/java/com/twitter/common/styleguide.md#todos)
-  - [Obey the Law of Demeter](https://github.com/twitter/commons/blob/master/src/java/com/twitter/common/styleguide.md#obey-the-law-of-demeter-lod)
-  - [Don't Repeat Yourself](https://github.com/twitter/commons/blob/master/src/java/com/twitter/common/styleguide.md#dont-repeat-yourself-dry)
-  - [Manage threads properly](https://github.com/twitter/commons/blob/master/src/java/com/twitter/common/styleguide.md#manage-threads-properly)
-  - [Avoid unnecessary code](https://github.com/twitter/commons/blob/master/src/java/com/twitter/common/styleguide.md#avoid-unnecessary-code)
-  - [The 'fast' implementation](https://github.com/twitter/commons/blob/master/src/java/com/twitter/common/styleguide.md#the-fast-implementation)
+- [Recommended reading](#recommended-reading)
+- [Coding style](#coding-style)
+  - [Formatting](#formatting)
+  - [Field, class, and method declarations](#field-class-and-method-declarations)
+  - [Variable naming](#variable-naming)
+  - [Space pad operators and equals](#space-pad-operators-and-equals)
+  - [Be explicit about operator precedence](#be-explicit-about-operator-precedence)
+  - [Documentation](#documentation)
+  - [Imports](#imports)
+  - [Use annotations wisely](#use-annotations-wisely)
+  - [Use interfaces](#use-interfaces)
+- [Writing testable code](#writing-testable-code)
+  - [Fakes and mocks](#fakes-and-mocks)
+  - [Let your callers construct support objects](#let-your-callers-construct-support-objects)
+  - [Testing multithreaded code](#testing-multithreaded-code)
+  - [Testing antipatterns](#testing-antipatterns)
+- [Avoid randomness in tests](#avoid-randomness-in-tests)
+- [Best practices](#best-practices)
+  - [Defensive programming](#defensive-programming)
+  - [Clean code](#clean-code)
+  - [Use newer/better libraries](#use-newerbetter-libraries)
+  - [equals() and hashCode()](#equals-and-hashcode)
+  - [Premature optimization is the root of all evil](#premature-optimization-is-the-root-of-all-evil)
+  - [TODOs](#todos)
+  - [Obey the Law of Demeter](#obey-the-law-of-demeter-lod)
+  - [Don't Repeat Yourself](#dont-repeat-yourself-dry)
+  - [Manage threads properly](#manage-threads-properly)
+  - [Avoid unnecessary code](#avoid-unnecessary-code)
+  - [The 'fast' implementation](#the-fast-implementation)
 
 ## Recommended reading
-- [Effective Java](http://www.amazon.com/Effective-Java-Edition-Joshua-Bloch/dp/0321356683)
-
+- Effective Java from Joshua Bloch
 - [Java Concurrency in Practice](http://jcip.net/)
 
-- [Code Complete 2](http://www.stevemcconnell.com/cc.htm)<br />
-  Not java-specific, but a good handbook for programming best-practices.
+- [Code Complete 2](https://stevemcconnell.com/books/)<br />
+  Not java-specific, but a good handbook for programming best-practices.<br />
+  The link also lists several other books.
 
 ## Coding style
 
@@ -216,9 +216,9 @@ However, they do serve to frustrate developers when using keyboard shortcuts to 
 
 We follow the [Java Language Specification](http://docs.oracle.com/javase/specs/) for modifier
 ordering (sections
-[8.1.1](http://docs.oracle.com/javase/specs/jls/se7/html/jls-8.html#jls-8.1.1),
-[8.3.1](http://docs.oracle.com/javase/specs/jls/se7/html/jls-8.html#jls-8.3.1) and
-[8.4.3](http://docs.oracle.com/javase/specs/jls/se7/html/jls-8.html#jls-8.4.3)).
+[8.1.1](http://docs.oracle.com/javase/specs/jls/se8/html/jls-8.html#jls-8.1.1),
+[8.3.1](http://docs.oracle.com/javase/specs/jls/se8/html/jls-8.html#jls-8.3.1) and
+[8.4.3](http://docs.oracle.com/javase/specs/jls/se8/html/jls-8.html#jls-8.4.3)).
 
     :::java
     // Bad.
@@ -526,7 +526,7 @@ class [fan-out](http://en.wikipedia.org/wiki/Coupling_(computer_programming)#Mod
 #### @Nullable
 By default - disallow `null`.  When a variable, parameter, or method return value may be `null`,
 be explicit about it by marking
-[@Nullable](http://code.google.com/p/jsr-305/source/browse/trunk/ri/src/main/java/javax/annotation/Nullable.java?r=24).
+[@Nullable](https://javadoc.io/doc/org.jetbrains/annotations/20.1.0/org/jetbrains/annotations/Nullable.html).
 This is advisable even for fields/methods with private visibility.
 
     :::java
@@ -546,7 +546,7 @@ This is advisable even for fields/methods with private visibility.
 #### @VisibleForTesting
 Sometimes it makes sense to hide members and functions in general, but they may still be required
 for good test coverage.  It's usually preferred to make these package-private and tag with
-[@VisibleForTesting](http://docs.guava-libraries.googlecode.com/git-history/v11.0.2/javadoc/com/google/common/annotations/VisibleForTesting.html)
+[@VisibleForTesting](https://javadoc.io/doc/org.jetbrains/annotations/22.0.0/org/jetbrains/annotations/VisibleForTesting.html)
 to indicate the purpose for visibility.
 
 Constants are a great example of things that are frequently exposed in this way.
@@ -733,23 +733,23 @@ it can be accomplished without deadlocks or unnecessary time-wait statements.
 
 If you are testing code that needs to perform periodic background tasks
 (such as with a
-[ScheduledExecutorService](http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/ScheduledExecutorService.html)),
+[ScheduledExecutorService](http://docs.oracle.com/javase/8/docs/api/java/util/concurrent/ScheduledExecutorService.html)),
 consider mocking the service and/or manually triggering the tasks from your tests, and
 avoiding the actual scheduling.
 If you are testing code that submits tasks to an
-[ExecutorService](http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/ExecutorService.html),
+[ExecutorService](http://docs.oracle.com/javase/8/docs/api/java/util/concurrent/ExecutorService.html),
 you might consider allowing the executor to be injected, and supplying a
-[single-thread executor](http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/Executors.html#newSingleThreadExecutor()) in tests.
+[single-thread executor](http://docs.oracle.com/javase/8/docs/api/java/util/concurrent/Executors.html#newSingleThreadExecutor()) in tests.
 
 In cases where multiple threads are inevitable,
-[java.util.concurrent](http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/package-summary.html)
+[java.util.concurrent](http://docs.oracle.com/javase/8/docs/api/java/util/concurrent/package-summary.html)
 provides some useful libraries to help manage lock-step execution.
 
 For example,
-[LinkedBlockingDeque](http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/LinkedBlockingDeque.html)
+[LinkedBlockingDeque](http://docs.oracle.com/javase/8/docs/api/java/util/concurrent/LinkedBlockingDeque.html)
 can provide synchronization between producer and consumer when an asynchronous operation is
 performed.
-[CountDownLatch](http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/CountDownLatch.html)
+[CountDownLatch](http://docs.oracle.com/javase/8/docs/api/java/util/concurrent/CountDownLatch.html)
 is useful for state/operation synchronization when a queue does not apply.
 
 ### Testing antipatterns
@@ -758,10 +758,10 @@ is useful for state/operation synchronization when a queue does not apply.
 Code that captures real wall time can be difficult to test repeatably, especially when time deltas
 are meaningful.  Therefore, try to avoid `new Date()`, `System.currentTimeMillis()`, and
 `System.nanoTime()`.  A suitable replacement for these is
-[Clock](https://github.com/twitter/commons/blob/master/src/java/com/twitter/common/util/Clock.java); using
-[Clock.SYSTEM_CLOCK](https://github.com/twitter/commons/blob/master/src/java/com/twitter/common/util/Clock.java#L32)
+[Clock](https://github.com/twitter-archive/commons/blob/master/src/java/com/twitter/common/util/Clock.java); using
+[Clock.SYSTEM_CLOCK](https://github.com/twitter-archive/commons/blob/master/src/java/com/twitter/common/util/Clock.java#L32)
 when running normally, and
-[FakeClock](https://github.com/twitter/commons/blob/master/src/java/com/twitter/common/util/testing/FakeClock.java)
+[FakeClock](https://github.com/twitter-archive/commons/blob/master/src/java/com/twitter/common/util/testing/FakeClock.java)
 in tests.
 
 #### The hidden stress test
@@ -791,7 +791,7 @@ use fixed input data that exercises known edge cases.
 
 #### Avoid assert
 We avoid the assert statement since it can be
-[disabled](http://docs.oracle.com/javase/7/docs/technotes/guides/language/assert.html#enable-disable)
+[disabled](http://docs.oracle.com/javase/8/docs/technotes/guides/language/assert.html#enable-disable)
 at execution time, and prefer to enforce these types of invariants at all times.
 
 *See also [preconditions](#preconditions)*
@@ -902,7 +902,7 @@ not violating expectations of other users of the object, and that it's even safe
 
 #### Be wary of null
 Use `@Nullable` where prudent, but favor
-[Optional](http://docs.guava-libraries.googlecode.com/git-history/v11.0.2/javadoc/com/google/common/base/Optional.html)
+[Optional](https://docs.oracle.com/javase/8/docs/api/index.html)
 over `@Nullable`.  `Optional` provides better semantics around absence of a value.
 
 #### Clean up with finally
@@ -999,7 +999,7 @@ type parameters are optional, however depending on usage they do result in compi
 We conventionally include type parameters on every declaration where the type is parameterized.
 Even if the type is unknown, it's preferable to include a wildcard or wide type.
 
-#### Stay out of [Texas](http://en.wikipedia.org/wiki/Texas-sized)
+#### Stay out of [Texas](https://en.wikipedia.org/wiki/Texas#Texas_self-perception)
 Try to keep your classes bite-sized and with clearly-defined responsibilities.  This can be
 *really* hard as a program evolves.
 
@@ -1015,7 +1015,7 @@ of classes that are too large or complex and should be broken up.
 #### Avoid typecasting
 Typecasting is a sign of poor class design, and can often be avoided.  An obvious exception here is
 overriding
-[equals](http://docs.oracle.com/javase/7/docs/api/java/lang/Object.html#equals(java.lang.Object)).
+[equals](https://docs.oracle.com/javase/8/docs/api/java/lang/Object.html#equals-java.lang.Object-).
 
 #### Use final fields
 *See also [favor immutability](#favor-immutability)*
@@ -1058,12 +1058,13 @@ An empty `catch` block is usually a bad idea, as you have no signal of a problem
 
 ##### When interrupted, reset thread interrupted state
 Many blocking operations throw
-[InterruptedException](http://docs.oracle.com/javase/7/docs/api/java/lang/InterruptedException.html)
+[InterruptedException](http://docs.oracle.com/javase/8/docs/api/java/lang/InterruptedException.html)
 so that you may be awaken for events like a JVM shutdown.  When catching `InterruptedException`,
 it is good practice to ensure that the thread interrupted state is preserved.
 
-IBM has a good [article](http://www.ibm.com/developerworks/java/library/j-jtp05236/index.html) on
-this topic.
+IBM has a good
+[article](https://web.archive.org/web/20190726022512/http://www.ibm.com/developerworks/java/library/j-jtp05236/index.html)
+on this topic.
 
     :::java
     // Bad.
@@ -1116,7 +1117,7 @@ callers when it comes to exceptions.
 ### Use newer/better libraries
 
 #### StringBuilder over StringBuffer
-[StringBuffer](http://docs.oracle.com/javase/7/docs/api/java/lang/StringBuffer.html) is thread-safe,
+[StringBuffer](http://docs.oracle.com/javase/8/docs/api/java/lang/StringBuffer.html) is thread-safe,
 which is rarely needed.
 
 #### ScheduledExecutorService over Timer
@@ -1137,22 +1138,22 @@ a stackoverflow
 
 #### List over Vector
 `Vector` is synchronized, which is often unneeded.  When synchronization is desirable,
-a [synchronized list](http://docs.oracle.com/javase/7/docs/api/java/util/Collections.html#synchronizedList(java.util.List))
+a [synchronized list](https://docs.oracle.com/javase/8/docs/api/java/util/Collections.html#synchronizedList-java.util.List-)
 can usually serve as a drop-in replacement for `Vector`.
 
 ### equals() and hashCode()
 If you override one, you must implement both.
 *See the equals/hashCode
-[contract](http://docs.oracle.com/javase/7/docs/api/java/lang/Object.html#hashCode())*
+[contract](https://docs.oracle.com/javase/8/docs/api/java/lang/Object.html#hashCode--)*
 
-[Objects.equal()](http://docs.guava-libraries.googlecode.com/git-history/v11.0.2/javadoc/com/google/common/base/Objects.html#equal(java.lang.Object, java.lang.Object))
+[Objects.equal()](https://javadoc.io/doc/com.google.guava/guava/11.0.2/com/google/common/base/Objects.html#equal(java.lang.Object,%20java.lang.Object))
 and
-[Objects.hashCode()](http://docs.guava-libraries.googlecode.com/git-history/v11.0.2/javadoc/com/google/common/base/Objects.html#hashCode(java.lang.Object...))
+[Objects.hashCode()](https://javadoc.io/doc/com.google.guava/guava/11.0.2/com/google/common/base/Objects.html#hashCode(java.lang.Object...))
 make it very easy to follow these contracts.
 
 ### Premature optimization is the root of all evil.
 Donald Knuth is a smart guy, and he had a few things to
-[say](http://c2.com/cgi/wiki?PrematureOptimization) on the topic.
+[say](http://wiki.c2.com/?PrematureOptimization) on the topic.
 
 Unless you have strong evidence that an optimization is necessary, it's usually best to implement
 the un-optimized version first (possibly leaving notes about where optimizations could be made).
@@ -1277,7 +1278,7 @@ quickly now and drill down only to those methods where I want to learn more.
 
 ### Don't Repeat Yourself ([DRY](http://en.wikipedia.org/wiki/Don't_repeat_yourself))
 For a more long-winded discussion on this topic, read
-[here](http://c2.com/cgi/wiki?DontRepeatYourself).
+[here](http://wiki.c2.com/?DontRepeatYourself).
 
 #### Extract constants whenever it makes sense
 
@@ -1287,19 +1288,19 @@ For a more long-winded discussion on this topic, read
 When spawning a thread, either directly or with a thread pool, you need to take special care that
 you properly manage the lifecycle.  Please familiarize yourself with the concept
 of daemon and non-daemon threads (and their effect on the JVM lifecycle) by reading the
-documentation for [Thread](http://docs.oracle.com/javase/7/docs/api/java/lang/Thread.html).
+documentation for [Thread](http://docs.oracle.com/javase/8/docs/api/java/lang/Thread.html).
 Failing to understand these concepts can cause your application to hang at shutdown.
 
 Shutting down an
-[ExecutorService](http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/ExecutorService.html)
+[ExecutorService](http://docs.oracle.com/javase/8/docs/api/java/util/concurrent/ExecutorService.html)
 properly is a slightly tricky process (see javadoc).
 If your code manages an executor service with non-daemon threads, you need to follow this procedure.
-[ExecutorServiceShutdown]([ExecutorService](http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/ExecutorService.html))
+[ExecutorService.shutdown](https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/ExecutorService.html#shutdown--)
 very nicely contains this behavior for you.
 
 If you want to automatically perform cleanup like this when the VM is shutting down, consider
 registering with
-[ShutdownRegistry](https://github.com/twitter/commons/blob/master/src/java/com/twitter/common/application/ShutdownRegistry.java).
+[ShutdownRegistry](https://github.com/twitter-archive/commons/blob/master/src/java/com/twitter/common/application/ShutdownRegistry.java).
 
 ### Avoid unnecessary code
 #### Superfluous temporary variables.
