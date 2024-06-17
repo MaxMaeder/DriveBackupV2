@@ -21,17 +21,16 @@ The plugin is build using Maven, to build the plugin use `mvn package`. Build ar
 We recommend [IntelliJ IDEA](https://www.jetbrains.com/idea/) as an IDE, but others like [VSCode](https://code.visualstudio.com/) or [Eclipse IDE](https://eclipseide.org/) should work fine.
 TODO recommended run/debug configuration?
 
-TODO specify format-ter/ing used
+We don't employ any automatic formatting, just keep formatting consistent with the rest of the codebase.
+See style guide for details.
 
 TODO specify style guide used
 
 TODO specify coding conventions not covered by or different from style guide
 
-We target Java 8 *(JVM)* to support older versions of Minecraft
-TODO citation needed
+We target Java 8 to support older versions of Minecraft and not introduce additional requirements when using them.
 
-Kotlin is not accepted into the codebase
-TODO reason needed
+Kotlin is not accepted into the codebase, as that would increase complexity.
 
 Each of your commits should leave the plugin in a working state.
 
