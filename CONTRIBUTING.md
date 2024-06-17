@@ -22,7 +22,7 @@ We recommend [IntelliJ IDEA](https://www.jetbrains.com/idea/) as an IDE, but oth
 TODO recommended run/debug configuration?
 
 We don't employ any automatic formatting, just keep formatting consistent with the rest of the codebase.
-See style guide for details.
+See [style guide](DriveBackup/styleguide.md) for details.
 
 TODO specify style guide used
 
