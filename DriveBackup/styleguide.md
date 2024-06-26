@@ -80,120 +80,120 @@ advantage to effectively tell the story to those reading the code.
 
 #### Indent style
 We use the "one true brace style" ([1TBS](http://en.wikipedia.org/wiki/Indent_style#Variant:_1TBS)).
-Indent size is 2 columns.
+Indent size is 4 columns.
 
 ```java
 void example() {
-  // Like this.
-  if (x < 0) {
-    negative(x);
-  } else {
-    nonnegative(x);
-  }
+    // Like this.
+    if (x < 0) {
+        negative(x);
+    } else {
+        nonnegative(x);
+    }
 
-  // Not like this.
-  if (x < 0)
-    negative(x);
+    // Not like this.
+    if (x < 0)
+        negative(x);
 
-  // Also not like this.
-  if (x < 0) negative(x);
+    // Also not like this.
+    if (x < 0) negative(x);
 }
 ```
 Continuation indent is 4 columns.  Nested continuations may add 4 columns or 2 at each level.
 
 ```java
 void example() {
-  // Bad.
-  //   - Line breaks are arbitrary.
-  //   - Scanning the code makes it difficult to piece the message together.
-  throw new IllegalStateException("Failed to process request" + request.getId()
-      + " for user " + user.getId() + " query: '" + query.getText()
-      + "'");
+    // Bad.
+    //   - Line breaks are arbitrary.
+    //   - Scanning the code makes it difficult to piece the message together.
+    throw new IllegalStateException("Failed to process request" + request.getId()
+        + " for user " + user.getId() + " query: '" + query.getText()
+        + "'");
 
-  // Good.
-  //   - Each component of the message is separate and self-contained.
-  //   - Adding or removing a component of the message requires minimal reformatting.
-  throw new IllegalStateException("Failed to process"
-      + " request " + request.getId()
-      + " for user " + user.getId()
-      + " query: '" + query.getText() + "'");
+    // Good.
+    //   - Each component of the message is separate and self-contained.
+    //   - Adding or removing a component of the message requires minimal reformatting.
+    throw new IllegalStateException("Failed to process"
+        + " request " + request.getId()
+        + " for user " + user.getId()
+        + " query: '" + query.getText() + "'");
 }
 ```
 Don't break up a statement unnecessarily.
 
 ```java
 void example() {
-  // Bad.
-  final String value =
-      otherValue;
+    // Bad.
+    final String value =
+        otherValue;
 
-  // Good.
-  final String value = otherValue;
+    // Good.
+    final String value = otherValue;
 }
 ```
 Method declaration continuations.
 
 ```java
 class Example() {
-  // Sub-optimal since line breaks are arbitrary and only filling lines.
-  String downloadAnInternet(Internet internet, Tubes tubes, Blogosphere blogs, Amount<Long, Data> bandwidth) {
-    tubes.download(internet);
-    //...
-  }
+    // Sub-optimal since line breaks are arbitrary and only filling lines.
+    String downloadAnInternet(Internet internet, Tubes tubes, Blogosphere blogs, Amount<Long, Data> bandwidth) {
+        tubes.download(internet);
+        //...
+    }
 
-  // Acceptable.
-  String downloadAnInternet(Internet internet, Tubes tubes, Blogosphere blogs, Amount<Long, Data> bandwidth) {
-    tubes.download(internet);
-    //...
-  }
+    // Acceptable.
+    String downloadAnInternet(Internet internet, Tubes tubes, Blogosphere blogs, Amount<Long, Data> bandwidth) {
+        tubes.download(internet);
+        //...
+    }
 
-  // Nicer, as the extra newline gives visual separation to the method body.
-  String downloadAnInternet(Internet internet, Tubes tubes, Blogosphere blogs, Amount<Long, Data> bandwidth) {
+    // Nicer, as the extra newline gives visual separation to the method body.
+    String downloadAnInternet(Internet internet, Tubes tubes, Blogosphere blogs, Amount<Long, Data> bandwidth) {
 
-    tubes.download(internet);
-    //...
-  }
+        tubes.download(internet);
+        //...
+    }
 
-  // Also acceptable, but may be awkward depending on the column depth of the opening parenthesis.
-  public String downloadAnInternet(Internet internet, Tubes tubes, Blogosphere blogs, Amount<Long, Data> bandwidth) {
-    tubes.download(internet);
-    //...
-  }
+    // Also acceptable, but may be awkward depending on the column depth of the opening parenthesis.
+    public String downloadAnInternet(Internet internet, Tubes tubes, Blogosphere blogs, Amount<Long, Data> bandwidth) {
+        tubes.download(internet);
+        //...
+    }
 
-  // Preferred for easy scanning and extra column space.
-  public String downloadAnInternet(Internet internet, Tubes tubes, Blogosphere blogs, Amount<Long, Data> bandwidth) {
+    // Preferred for easy scanning and extra column space.
+    public String downloadAnInternet(Internet internet, Tubes tubes, Blogosphere blogs, Amount<Long, Data> bandwidth) {
 
-    tubes.download(internet);
-    //...
-  }
+        tubes.download(internet);
+        //...
+    }
 }
 ```
 ##### Chained method calls
 
 ```java
 void example() {
-  // Bad.
-  //   - Line breaks are based on line length, not logic.
-  Iterable<Module> modules = ImmutableList.<Module>builder().add(new LifecycleModule())
-      .add(new AppLauncherModule()).addAll(application.getModules()).build();
+    // Bad.
+    //   - Line breaks are based on line length, not logic.
+    Iterable<EModule> modules = ImmutableList.<EModule>builder().add(new LifecycleModule())
+        .add(new AppLauncherModule()).addAll(application.getModules()).build();
 
-  // Better.
-  //   - Calls are logically separated.
-  //   - However, the trailing period logically splits a statement across two lines.
-  Iterable<Module> modules = ImmutableList.<Module>builder().
-      add(new LifecycleModule()).
-      add(new AppLauncherModule()).
-      addAll(application.getModules()).
-      build();
+    // Better.
+    //   - Calls are logically separated.
+    //   - However, the trailing period logically splits a statement across two lines.
+    Iterable<EModule> modules = ImmutableList.<EModule>builder().
+        add(new LifecycleModule()).
+        add(new AppLauncherModule()).
+        addAll(application.getModules()).
+        build();
 
-  // Good.
-  //   - Method calls are isolated to a line.
-  //   - The proper location for a new method call is unambiguous.
-  Iterable<Module> modules = ImmutableList.<Module>builder()
-      .add(new LifecycleModule())
-      .add(new AppLauncherModule())
-      .addAll(application.getModules())
-      .build();
+    // Good.
+    //   - Method calls are isolated to a line.
+    //   - The proper location for a new method call is unambiguous.
+    Iterable<EModule> modules = ImmutableList.<EModule>builder()
+        .add(new LifecycleModule())
+        .add(new AppLauncherModule())
+        .addAll(application.getModules())
+        .build();
 }
 ```
 #### No tabs
@@ -222,11 +222,11 @@ ordering (sections
 
 ```java
 void example() {
-  // Bad.
-  final volatile private String value;
+    // Bad.
+    final volatile private String value;
 
-  // Good.
-  private final volatile String value;
+    // Good.
+    private final volatile String value;
 }
 ```
 ### Variable naming
@@ -237,37 +237,37 @@ void example() {
 // Bad.
 //   - Field names give little insight into what fields are used for.
 class User {
-  private final int a;
-  private final String m;
+    private final int a;
+    private final String m;
 
-  //...
+    //...
 }
 
 // Good.
 class User {
-  private final int ageInYears;
-  private final String maidenName;
+    private final int ageInYears;
+    private final String maidenName;
 
-  //...
+    //...
 }
 ```
 #### Include units in variable names
 
 ```java
 void example() {
-  // Bad.
-  long pollInterval;
-  int fileSize;
+    // Bad.
+    long pollInterval;
+    int fileSize;
 
-  // Good.
-  long pollIntervalMs;
-  int fileSizeGb;
+    // Good.
+    long pollIntervalMs;
+    int fileSizeGb;
 
-  // Better.
-  //   - Unit is built in to the type.
-  //   - The field is easily adaptable between units, readability is high.
-  Amount<Long, Time> pollInterval;
-  Amount<Integer, Data> fileSize;
+    // Better.
+    //   - Unit is built in to the type.
+    //   - The field is easily adaptable between units, readability is high.
+    Amount<Long, Time> pollInterval;
+    Amount<Integer, Data> fileSize;
 }
 ```
 #### Don't embed metadata in variable names
@@ -278,13 +278,13 @@ Avoid embedding the field type in the field name.
 
 ```java
 void example() {
-  // Bad.
-  Map<Integer, User> idToUserMap;
-  String valueString;
+    // Bad.
+    Map<Integer, User> idToUserMap;
+    String valueString;
 
-  // Good.
-  Map<Integer, User> usersById;
-  String value;
+    // Good.
+    Map<Integer, User> usersById;
+    String value;
 }
 ```
 Also avoid embedding scope information in a variable.  Hierarchy-based naming suggests that a class
@@ -292,24 +292,24 @@ is too complex and should be broken apart.
 
 ```java
 class Example {
-  // Bad.
-  String _value;
-  String mValue;
+    // Bad.
+    String _value;
+    String mValue;
 
-  // Good.
-  String value;
+    // Good.
+    String value;
 }
 ```
 ### Space pad operators and equals.
 
 ```java
 void example() {
-  // Bad.
-  //   - This offers poor visual separation of operations.
-  int foo=a+b+1;
+    // Bad.
+    //   - This offers poor visual separation of operations.
+    int foo=a+b+1;
 
-  // Good.
-  int foo = a + b + 1;
+    // Good.
+    int foo = a + b + 1;
 }
 ```
 ### Be explicit about operator precedence
@@ -319,20 +319,20 @@ if you expect a specific operation ordering, make it obvious with parenthesis.
 
 ```java
 void example() {
-  // Bad.
-  return a << 8 * n + 1 | 0xFF;
+    // Bad.
+    return a << 8 * n + 1 | 0xFF;
 
-  // Good.
-  return (a << (8 * n) + 1) | 0xFF;
+    // Good.
+    return (a << (8 * n) + 1) | 0xFF;
 }
 ```
 It's even good to be *really* obvious.
 
 ```java
 void example() {
-  if ((values != null) && (10 > values.size())) {
-    //...
-  }
+    if ((values != null) && (10 > values.size())) {
+        //...
+    }
 }
 ```
 ### Documentation
@@ -345,21 +345,21 @@ Your elementary school teacher was right - you should never start a statement th
 Likewise, you shouldn't write documentation this way.
 
 ```java
-  // Bad.
-  /**
-   * This is a class that implements a cache.  It does caching for you.
-   */
-  class Cache {
-    //...
-  }
+    // Bad.
+    /**
+     * This is a class that implements a cache.  It does caching for you.
+     */
+    class Cache {
+        //...
+    }
 
-  // Good.
-  /**
-   * A volatile storage for objects based on a key, which may be invalidated and discarded.
-   */
-  class Cache {
-    //...
-  }
+    // Good.
+    /**
+     * A volatile storage for objects based on a key, which may be invalidated and discarded.
+     */
+    class Cache {
+        //...
+    }
 ```
 #### Documenting a class
 Documentation for a class may range from a single sentence
@@ -369,15 +369,15 @@ A thorough class doc usually has a one sentence summary and, if necessary,
 a more detailed explanation.
 
 ```java
-  /**
-   * An RPC equivalent of a unix pipe tee.  Any RPC sent to the tee input is guaranteed to have
-   * been sent to both tee outputs before the call returns.
-   *
-   * @param <T> The type of the tee'd service.
-   */
-  public class RpcTee<T> {
-    //...
-  }
+    /**
+     * An RPC equivalent of a unix pipe tee.  Any RPC sent to the tee input is guaranteed to have
+     * been sent to both tee outputs before the call returns.
+     *
+     * @param <T> The type of the tee'd service.
+     */
+    public class RpcTee<T> {
+        //...
+    }
 ```
 #### Documenting a method
 A method doc should tell what the method *does*.  Depending on the argument types, it may
@@ -385,37 +385,37 @@ also be important to document input format.
 
 ```java
 class Example {
-  // Bad.
-  //   - The doc tells nothing that the method declaration didn't.
-  //   - This is the 'filler doc'.  It would pass style checks, but doesn't help anybody.
-  /**
-   * Splits a string.
-   *
-   * @param s A string.
-   * @return A list of strings.
-   */
-  List<String> split(String s);
+    // Bad.
+    //   - The doc tells nothing that the method declaration didn't.
+    //   - This is the 'filler doc'.  It would pass style checks, but doesn't help anybody.
+    /**
+     * Splits a string.
+     *
+     * @param s A string.
+     * @return A list of strings.
+     */
+    List<String> split(String s);
 
-  // Better.
-  //   - We know what the method splits on.
-  //   - Still some undefined behavior.
-  /**
-   * Splits a string on whitespace.
-   *
-   * @param s The string to split.  An {@code null} string is treated as an empty string.
-   * @return A list of the whitespace-delimited parts of the input.
-   */
-  List<String> split(String s);
+    // Better.
+    //   - We know what the method splits on.
+    //   - Still some undefined behavior.
+    /**
+     * Splits a string on whitespace.
+     *
+     * @param s The string to split.  An {@code null} string is treated as an empty string.
+     * @return A list of the whitespace-delimited parts of the input.
+     */
+    List<String> split(String s);
 
-  // Great.
-  //   - Covers yet another edge case.
-  /**
-   * Splits a string on whitespace.  Repeated whitespace characters are collapsed.
-   *
-   * @param s The string to split.  An {@code null} string is treated as an empty string.
-   * @return A list of the whitespace-delimited parts of the input.
-   */
-  List<String> split(String s);
+    // Great.
+    //   - Covers yet another edge case.
+    /**
+     * Splits a string on whitespace.  Repeated whitespace characters are collapsed.
+     *
+     * @param s The string to split.  An {@code null} string is treated as an empty string.
+     * @return A list of the whitespace-delimited parts of the input.
+     */
+    List<String> split(String s);
 }
 ```
 #### Be professional
@@ -424,67 +424,67 @@ do you any favors.  Suppress the expletives and get to the point.
 
 ```java
 void example() {
-  // Bad.
-  // I hate xml/soap so much, why can't it do this for me!?
-  try {
-    userId = Integer.parseInt(xml.getField("id"));
-  } catch (NumberFormatException e) {
-    //...
-  }
+    // Bad.
+    // I hate xml/soap so much, why can't it do this for me!?
+    try {
+        userId = Integer.parseInt(xml.getField("id"));
+    } catch (NumberFormatException e) {
+        //...
+    }
 
-  // Good.
-  // TODO(Jim): Tuck field validation away in a library.
-  try {
-    userId = Integer.parseInt(xml.getField("id"));
-  } catch (NumberFormatException e) {
-    //...
-  }
+    // Good.
+    // TODO(Jim): Tuck field validation away in a library.
+    try {
+        userId = Integer.parseInt(xml.getField("id"));
+    } catch (NumberFormatException e) {
+        //...
+    }
 }
 ```
 #### Don't document overriding methods (usually)
 
 ```java
 interface Database {
-  /**
-   * Gets the installed version of the database.
-   *
-   * @return The database version identifier.
-   */
-  String getVersion();
+    /**
+     * Gets the installed version of the database.
+     *
+     * @return The database version identifier.
+     */
+    String getVersion();
 }
 
 // Bad.
 //   - Overriding method doc doesn't add anything.
 class PostgresDatabase implements Database {
-  /**
-   * Gets the installed version of the database.
-   *
-   * @return The database version identifier.
-   */
-  @Override
-  public String getVersion() {
-    //...
-  }
+    /**
+     * Gets the installed version of the database.
+     *
+     * @return The database version identifier.
+     */
+    @Override
+    public String getVersion() {
+        //...
+    }
 }
 
 // Good.
 class PostgresDatabase implements Database {
-  @Override
-  public int getVersion();
+    @Override
+    public int getVersion();
 }
 
 // Great.
 //   - The doc explains how it differs from or adds to the interface doc.
 class TwitterDatabase implements Database {
-  /**
-   * Semantic version number.
-   *
-   * @return The database version in semver format.
-   */
-  @Override
-  public String getVersion() {
-    //...
-  }
+    /**
+     * Semantic version number.
+     *
+     * @return The database version in semver format.
+     */
+    @Override
+    public String getVersion() {
+        //...
+    }
 }
 ```
 #### Use javadoc features
@@ -533,7 +533,7 @@ import com.twitter.baz.foo.BazFoo;
 import com.twitter.Foo;
 
 interface Bar extends Foo {
-  //...
+    //...
 }
 ```
 ### Use annotations wisely
@@ -546,16 +546,16 @@ This is advisable even for fields/methods with private visibility.
 
 ```java
 class Database {
-  @Nullable private Connection connection;
+    @Nullable private Connection connection;
 
-  @Nullable
-  Connection getConnection() {
-    return connection;
-  }
+    @Nullable
+    Connection getConnection() {
+        return connection;
+    }
 
-  void setConnection(@Nullable Connection connection) {
-    this.connection = connection;
-  }
+    void setConnection(@Nullable Connection connection) {
+        this.connection = connection;
+    }
 }
 ```
 #### @VisibleForTesting
@@ -570,36 +570,36 @@ Constants are a great example of things that are frequently exposed in this way.
 // Bad.
 //   - Any adjustments to field names need to be duplicated in the test.
 class ConfigReader {
-  private static final String USER_FIELD = "user";
+    private static final String USER_FIELD = "user";
 
-  Config parseConfig(String configData) {
-    //...
-  }
+    Config parseConfig(String configData) {
+        //...
+    }
 }
 public class ConfigReaderTest {
-  @Test
-  public void testParseConfig() {
-    //...
-    assertEquals(expectedConfig, reader.parseConfig("{user: bob}"));
-  }
+    @Test
+    public void testParseConfig() {
+        //...
+        assertEquals(expectedConfig, reader.parseConfig("{user: bob}"));
+    }
 }
 
 // Good.
 //   - The test borrows directly from the same constant.
 class ConfigReader {
-  @VisibleForTesting static final String USER_FIELD = "user";
+    @VisibleForTesting static final String USER_FIELD = "user";
 
-  Config parseConfig(String configData) {
-    //...
-  }
+    Config parseConfig(String configData) {
+        //...
+    }
 }
 public class ConfigReaderTest {
-  @Test
-  public void testParseConfig() {
-    //...
-    assertEquals(expectedConfig,
+    @Test
+    public void testParseConfig() {
+        //...
+        assertEquals(expectedConfig,
         reader.parseConfig(String.format("{%s: bob}", ConfigReader.USER_FIELD)));
-  }
+    }
 }
 ```
 ### Use interfaces
@@ -613,15 +613,15 @@ Consider the pattern below as an alternative.
 
 ```java
 interface FileFetcher {
-  File getFile(String name);
+    File getFile(String name);
 
-  // All the benefits of an interface, with little source management overhead.
-  // This is particularly useful when you only expect one implementation of an interface.
-  class HdfsFileFetcher implements FileFetcher {
-    @Override File getFile(String name) {
-      //...
+    // All the benefits of an interface, with little source management overhead.
+    // This is particularly useful when you only expect one implementation of an interface.
+    class HdfsFileFetcher implements FileFetcher {
+        @Override File getFile(String name) {
+            //...
+        }
     }
-  }
 }
 ```
 #### Leverage or extend existing interfaces
@@ -632,18 +632,18 @@ This leads to highly [cohesive](http://en.wikipedia.org/wiki/Cohesion_(computer_
 // An unfortunate lack of consideration.  Anyone who wants to interact with Blobs will need to
 // write specific glue code.
 class Blobs {
-  byte[] nextBlob() {
-    //...
-  }
+    byte[] nextBlob() {
+        //...
+    }
 }
 
 // Much better.  Now the caller can easily adapt this to standard collections, or do more
 // complex things like filtering.
 class Blobs implements Iterable<byte[]> {
-  @Override
-  Iterator<byte[]> iterator() {
-    //...
-  }
+    @Override
+    Iterator<byte[]> iterator() {
+        //...
+    }
 }
 ```
 Warning - don't bend the definition of an existing interface to make this work.  If the interface
@@ -661,9 +661,9 @@ object.  While the difference sounds subtle, mocks have major benefits over fake
 
 ```java
 class RpcClient {
-  RpcClient(HttpTransport transport) {
-    //...
-  }
+    RpcClient(HttpTransport transport) {
+        //...
+    }
 }
 
 // Bad.
@@ -671,54 +671,54 @@ class RpcClient {
 //   - We need to be careful that changes to HttpTransport don't disable FakeHttpTransport.
 //   - May require a significant amount of code.
 class FakeHttpTransport extends HttpTransport {
-  @Override
-  void writeBytes(byte[] bytes) {
-    //...
-  }
+    @Override
+    void writeBytes(byte[] bytes) {
+        //...
+    }
 
-  @Override
-  byte[] readBytes() {
-    //...
-  }
+    @Override
+    byte[] readBytes() {
+        //...
+    }
 }
 
 public class RpcClientTest {
-  private RpcClient client;
-  private FakeHttpTransport transport;
+    private RpcClient client;
+    private FakeHttpTransport transport;
 
-  @Before
-  public void setUp() {
-    transport = new FakeHttpTransport();
-    client = new RpcClient(transport);
-  }
+    @Before
+    public void setUp() {
+        transport = new FakeHttpTransport();
+        client = new RpcClient(transport);
+    }
 
-  //...
+    //...
 }
 
 interface Transport {
-  void writeBytes(byte[] bytes);
-  byte[] readBytes();
+    void writeBytes(byte[] bytes);
+    byte[] readBytes();
 }
 
 class RpcClient {
-  RpcClient(Transport transport) {
-    //...
-  }
+    RpcClient(Transport transport) {
+        //...
+    }
 }
 
 // Good.
 //   - We can mock the interface and have very fine control over how it is expected to be used.
 public class RpcClientTest {
-  private RpcClient client;
-  private Transport transport;
+    private RpcClient client;
+    private Transport transport;
 
-  @Before
-  public void setUp() {
-    transport = EasyMock.createMock(Transport.class);
-    client = new RpcClient(transport);
-  }
+    @Before
+    public void setUp() {
+        transport = EasyMock.createMock(Transport.class);
+        client = new RpcClient(transport);
+    }
 
-  //...
+    //...
 }
 ```
 ### Let your callers construct support objects
@@ -727,19 +727,19 @@ public class RpcClientTest {
 // Bad.
 //   - A unit test needs to manage a temporary file on disk to test this class.
 class ConfigReader {
-  private final InputStream configStream;
-  ConfigReader(String fileName) throws IOException {
-    this.configStream = new FileInputStream(fileName);
-  }
+    private final InputStream configStream;
+    ConfigReader(String fileName) throws IOException {
+        this.configStream = new FileInputStream(fileName);
+    }
 }
 
 // Good.
 //   - Testing this class is as easy as using ByteArrayInputStream with a String.
 class ConfigReader {
-  private final InputStream configStream;
-  ConfigReader(InputStream configStream){
-    this.configStream = checkNotNull(configStream);
-  }
+    private final InputStream configStream;
+    ConfigReader(InputStream configStream){
+        this.configStream = checkNotNull(configStream);
+    }
 }
 ```
 
@@ -823,28 +823,28 @@ always be checked against null, unless null is explicitly allowed.
 // Bad.
 //   - If the file or callback are null, the problem isn't noticed until much later.
 class AsyncFileReader {
-  void readLater(File file, Closure<String> callback) {
-    scheduledExecutor.schedule(new Runnable() {
-      @Override public void run() {
-        callback.execute(readSync(file));
-      }
-    }, 1L, TimeUnit.HOURS);
-  }
+    void readLater(File file, Closure<String> callback) {
+        scheduledExecutor.schedule(new Runnable() {
+            @Override public void run() {
+                callback.execute(readSync(file));
+            }
+        }, 1L, TimeUnit.HOURS);
+    }
 }
 
 // Good.
 class AsyncFileReader {
-  void readLater(File file, Closure<String> callback) {
-    checkNotNull(file);
-    checkArgument(file.exists() && file.canRead(), "File must exist and be readable.");
-    checkNotNull(callback);
+    void readLater(File file, Closure<String> callback) {
+        checkNotNull(file);
+        checkArgument(file.exists() && file.canRead(), "File must exist and be readable.");
+        checkNotNull(callback);
 
-    scheduledExecutor.schedule(new Runnable() {
-      @Override public void run() {
-        callback.execute(readSync(file));
-      }
-    }, 1L, TimeUnit.HOURS);
-  }
+        scheduledExecutor.schedule(new Runnable() {
+            @Override public void run() {
+                callback.execute(readSync(file));
+            }
+        }, 1L, TimeUnit.HOURS);
+    }
 }
 ```
 #### Minimize visibility
@@ -855,26 +855,26 @@ writing thread-safe code.
 
 ```java
 public class Parser {
-  // Bad.
-  //   - Callers can directly access and mutate, possibly breaking internal assumptions.
-  public Map<String, String> rawFields;
+    // Bad.
+    //   - Callers can directly access and mutate, possibly breaking internal assumptions.
+    public Map<String, String> rawFields;
 
-  // Bad.
-  //   - This is probably intended to be an internal utility function.
-  public String readConfigLine() {
-    //...
-  }
+    // Bad.
+    //   - This is probably intended to be an internal utility function.
+    public String readConfigLine() {
+        //...
+    }
 }
 
 // Good.
 //   - rawFields and the utility function are hidden
 //   - The class is package-private, indicating that it should only be accessed indirectly.
 class Parser {
-  private final Map<String, String> rawFields;
+    private final Map<String, String> rawFields;
 
-  private String readConfigLine() {
-    //...
-  }
+    private String readConfigLine() {
+        //...
+    }
 }
 ```
 #### Favor immutability
@@ -887,33 +887,33 @@ not violating expectations of other users of the object, and that it's even safe
 //   - Anyone with a reference to User can modify the user's birthday.
 //   - Calling getAttributes() gives mutable access to the underlying map.
 public class User {
-  public Date birthday;
-  private final Map<String, String> attributes = Maps.newHashMap();
+    public Date birthday;
+    private final Map<String, String> attributes = Maps.newHashMap();
 
-  //...
+    //...
 
-  public Map<String, String> getAttributes() {
-    return attributes;
-  }
+    public Map<String, String> getAttributes() {
+        return attributes;
+    }
 }
 
 // Good.
 public class User {
-  private final Date birthday;
-  private final Map<String, String> attributes = Maps.newHashMap();
+    private final Date birthday;
+    private final Map<String, String> attributes = Maps.newHashMap();
 
-  //...
+    //...
 
-  public Map<String, String> getAttributes() {
-    return ImmutableMap.copyOf(attributes);
-  }
+    public Map<String, String> getAttributes() {
+        return ImmutableMap.copyOf(attributes);
+    }
 
-  // If you realize the users don't need the full map, you can avoid the map copy
-  // by providing access to individual members.
-  @Nullable
-  public String getAttribute(String attributeName) {
-    return attributes.get(attributeName);
-  }
+    // If you realize the users don't need the full map, you can avoid the map copy
+    // by providing access to individual members.
+    @Nullable
+    public String getAttribute(String attributeName) {
+        return attributes.get(attributeName);
+    }
 }
 ```
 #### Be wary of null
@@ -925,14 +925,14 @@ over `@Nullable`.  `Optional` provides better semantics around absence of a valu
 
 ```java
 void example() {
-  FileInputStream in = null;
-  try {
-    //...
-  } catch (IOException e) {
-    //...
-  } finally {
-    Closeables.closeQuietly(in);
-  }
+    FileInputStream in = null;
+    try {
+        //...
+    } catch (IOException e) {
+        //...
+    } finally {
+        Closeables.closeQuietly(in);
+    }
 }
 ```
 Even if there are no checked exceptions, there are still cases where you should use try/finally
@@ -940,35 +940,35 @@ to guarantee resource symmetry.
 
 ```java
 void example() {
-  // Bad.
-  //   - Mutex is never unlocked.
-  mutex.lock();
-  throw new NullPointerException();
-  mutex.unlock();
-
-  // Good.
-  mutex.lock();
-  try {
+    // Bad.
+    //   - Mutex is never unlocked.
+    mutex.lock();
     throw new NullPointerException();
-  } finally {
     mutex.unlock();
-  }
 
-  // Bad.
-  //   - Connection is not closed if sendMessage throws.
-  if (receivedBadMessage) {
-    conn.sendMessage("Bad request.");
-    conn.close();
-  }
-
-  // Good.
-  if (receivedBadMessage) {
+    // Good.
+    mutex.lock();
     try {
-      conn.sendMessage("Bad request.");
+        throw new NullPointerException();
     } finally {
-      conn.close();
+        mutex.unlock();
     }
-  }
+
+    // Bad.
+    //   - Connection is not closed if sendMessage throws.
+    if (receivedBadMessage) {
+        conn.sendMessage("Bad request.");
+        conn.close();
+    }
+
+    // Good.
+    if (receivedBadMessage) {
+        try {
+            conn.sendMessage("Bad request.");
+        } finally {
+            conn.close();
+        }
+    }
 }
 ```
 
@@ -979,12 +979,12 @@ Favor readability - if there's an ambiguous and unambiguous route, always favor 
 
 ```java
 void example() {
-  // Bad.
-  //   - Depending on the font, it may be difficult to discern 1001 from 100l.
-  long count = 100l + n;
+    // Bad.
+    //   - Depending on the font, it may be difficult to discern 1001 from 100l.
+    long count = 100l + n;
 
-  // Good.
-  long count = 100L + n;
+    // Good.
+    long count = 100L + n;
 }
 ```
 #### Remove dead code
@@ -1000,13 +1000,13 @@ internally without affecting users or peripheral code.
 //   - Implementations of Database must match the ArrayList return type.
 //   - Changing return type to Set<User> or List<User> could break implementations and users.
 interface Database {
-  ArrayList<User> fetchUsers(String query);
+    ArrayList<User> fetchUsers(String query);
 }
 
 // Good.
 //   - Iterable defines the minimal functionality required of the return.
 interface Database {
-  Iterable<User> fetchUsers(String query);
+    Iterable<User> fetchUsers(String query);
 }
 ```
 
@@ -1061,19 +1061,19 @@ as you can end up catching more than you really wanted to deal with.  For exampl
 
 ```java
 void example() {
-  // Bad.
-  //   - If a RuntimeException happens, the program continues rather than aborting.
-  try {
-    storage.insertUser(user);
-  } catch (Exception e) {
-    LOG.error("Failed to insert user.");
-  }
+    // Bad.
+    //   - If a RuntimeException happens, the program continues rather than aborting.
+    try {
+        storage.insertUser(user);
+    } catch (Exception e) {
+        LOG.error("Failed to insert user.");
+    }
 
-  try {
-    storage.insertUser(user);
-  } catch (StorageException e) {
-    LOG.error("Failed to insert user.");
-  }
+    try {
+        storage.insertUser(user);
+    } catch (StorageException e) {
+        LOG.error("Failed to insert user.");
+    }
 }
 ```
 ##### Don't swallow exceptions
@@ -1092,22 +1092,22 @@ on this topic.
 
 ```java
 void example() {
-  // Bad.
-  //   - Surrounding code (or higher-level code) has no idea that the thread was interrupted.
-  try {
-    lock.tryLock(1L, TimeUnit.SECONDS);
-  } catch (InterruptedException e) {
-    LOG.info("Interrupted while doing x");
-  }
+    // Bad.
+    //   - Surrounding code (or higher-level code) has no idea that the thread was interrupted.
+    try {
+        lock.tryLock(1L, TimeUnit.SECONDS);
+    } catch (InterruptedException e) {
+        LOG.info("Interrupted while doing x");
+    }
 
-  // Good.
-  //   - Interrupted state is preserved.
-  try {
-    lock.tryLock(1L, TimeUnit.SECONDS);
-  } catch (InterruptedException e) {
-    LOG.info("Interrupted while doing x");
-    Thread.currentThread().interrupt();
-  }
+    // Good.
+    //   - Interrupted state is preserved.
+    try {
+        lock.tryLock(1L, TimeUnit.SECONDS);
+    } catch (InterruptedException e) {
+        LOG.info("Interrupted while doing x");
+        Thread.currentThread().interrupt();
+    }
 }
 ```
 ##### Throw appropriate exception types
@@ -1120,24 +1120,24 @@ callers when it comes to exceptions.
 // Bad.
 //   - Caller is forced to catch Exception, trapping many unnecessary types of issues.
 interface DataStore {
-  String fetchValue(String key) throws Exception;
+    String fetchValue(String key) throws Exception;
 }
 
 // Better.
 //   - The interface leaks details about one specific implementation.
 interface DataStore {
-  String fetchValue(String key) throws SQLException, UnknownHostException;
+    String fetchValue(String key) throws SQLException, UnknownHostException;
 }
 
 // Good.
 //   - A custom exception type insulates the user from the implementation.
 //   - Different implementations aren't forced to abuse irrelevant exception types.
 interface DataStore {
-  String fetchValue(String key) throws StorageException;
+    String fetchValue(String key) throws StorageException;
 
-  static class StorageException extends Exception {
-    //...
-  }
+    class StorageException extends Exception {
+        //...
+    }
 }
 ```
 ### Use newer/better libraries
@@ -1224,22 +1224,22 @@ take the minimal interface you need to get your work done.
 // Bad.
 //   - Weigher uses hosts and port only to immediately construct another object.
 class Weigher {
-  private final double defaultInitialRate;
+    private final double defaultInitialRate;
 
-  Weigher(Iterable<String> hosts, int port, double defaultInitialRate) {
-    this.defaultInitialRate = validateRate(defaultInitialRate);
-    this.weightingService = createWeightingServiceClient(hosts, port);
-  }
+    Weigher(Iterable<String> hosts, int port, double defaultInitialRate) {
+        this.defaultInitialRate = validateRate(defaultInitialRate);
+        this.weightingService = createWeightingServiceClient(hosts, port);
+    }
 }
 
 // Good.
 class Weigher {
-  private final double defaultInitialRate;
+    private final double defaultInitialRate;
 
-  Weigher(WeightingService weightingService, double defaultInitialRate) {
-    this.defaultInitialRate = validateRate(defaultInitialRate);
-    this.weightingService = checkNotNull(weightingService);
-  }
+    Weigher(WeightingService weightingService, double defaultInitialRate) {
+        this.defaultInitialRate = validateRate(defaultInitialRate);
+        this.weightingService = checkNotNull(weightingService);
+    }
 }
 ```
 If you want to provide a convenience constructor, a factory method or an external factory
@@ -1256,50 +1256,50 @@ this:
 
 ```java
 class Example {
-  void calculate(Subject subject) {
-    double weight;
-    if (useWeightingService(subject)) {
-      try {
-        weight = weightingService.weight(subject.id);
-      } catch (RemoteException e) {
-        throw new LayerSpecificException("Failed to look up weight for " + subject, e);
-      }
-    } else {
-      weight = defaultInitialRate * (1 + onlineLearnedBoost);
-    }
+    void calculate(Subject subject) {
+        double weight;
+        if (useWeightingService(subject)) {
+            try {
+                weight = weightingService.weight(subject.id);
+            } catch (RemoteException e) {
+                throw new LayerSpecificException("Failed to look up weight for " + subject, e);
+            }
+        } else {
+            weight = defaultInitialRate * (1 + onlineLearnedBoost);
+        }
 
-    // Use weight here for further calculations
-  }
+        // Use weight here for further calculations
+    }
 }
 ```
 Instead do this:
 
 ```java
 class Example {
-  void calculate(Subject subject) {
-    double weight = calculateWeight(subject);
-    // Use weight here for further calculations
-  }
-
-  private double calculateWeight(Subject subject) throws LayerSpecificException {
-    if (useWeightingService(subject)) {
-      return fetchSubjectWeight(subject.id);
-    } else {
-      return currentDefaultRate();
+    void calculate(Subject subject) {
+        double weight = calculateWeight(subject);
+        // Use weight here for further calculations
     }
-  }
 
-  private double fetchSubjectWeight(long subjectId) {
-    try {
-      return weightingService.weight(subjectId);
-    } catch (RemoteException e) {
-      throw new LayerSpecificException("Failed to look up weight for " + subject, e);
+    private double calculateWeight(Subject subject) throws LayerSpecificException {
+        if (useWeightingService(subject)) {
+            return fetchSubjectWeight(subject.id);
+        } else {
+            return currentDefaultRate();
+        }
     }
-  }
 
-  private double currentDefaultRate() {
-    defaultInitialRate * (1 + onlineLearnedBoost);
-  }
+    private double fetchSubjectWeight(long subjectId) {
+        try {
+            return weightingService.weight(subjectId);
+        } catch (RemoteException e) {
+            throw new LayerSpecificException("Failed to look up weight for " + subject, e);
+        }
+    }
+
+    private double currentDefaultRate() {
+        defaultInitialRate * (1 + onlineLearnedBoost);
+    }
 }
 ```
 A code reader that generally trusts methods do what they say can scan calculate
@@ -1353,17 +1353,17 @@ void example() {
     //   - The null value is never realized.
     String value = null;
     try {
-      value = "The value is " + parse(foo);
+        value = "The value is " + parse(foo);
     } catch (BadException e) {
-      throw new IllegalStateException(e);
+        throw new IllegalStateException(e);
     }
 
     // Good
     String value;
     try {
-      value = "The value is " + parse(foo);
+        value = "The value is " + parse(foo);
     } catch (BadException e) {
-      throw new IllegalStateException(e);
+        throw new IllegalStateException(e);
     }
 }
 ```
