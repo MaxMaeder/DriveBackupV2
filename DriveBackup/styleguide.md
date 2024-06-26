@@ -40,7 +40,7 @@ and [Google's Java Style Guide](https://google.github.io/styleguide/javaguide.ht
   - [Fakes and mocks](#fakes-and-mocks)
   - [Let your callers construct support objects](#let-your-callers-construct-support-objects)
   - [Testing multithreaded code](#testing-multithreaded-code)
-  - [Testing antipatterns](#testing-antipatterns)
+  - [Testing anti patterns](#testing-anti-patterns)
 - [Avoid randomness in tests](#avoid-randomness-in-tests)
 - [Best practices](#best-practices)
   - [Defensive programming](#defensive-programming)
@@ -135,33 +135,43 @@ Method declaration continuations.
 
 ```java
 class Example() {
-    // Sub-optimal since line breaks are arbitrary and only filling lines.
-    String downloadAnInternet(Internet internet, Tubes tubes, Blogosphere blogs, Amount<Long, Data> bandwidth) {
+    // Suboptimal since line breaks are arbitrary and only filling lines.
+    String downloadAnInternet(Internet internet, Tubes tubes,
+        Blogosphere blogs, Amount<Long, Data> bandwidth) {
         tubes.download(internet);
         //...
     }
 
     // Acceptable.
-    String downloadAnInternet(Internet internet, Tubes tubes, Blogosphere blogs, Amount<Long, Data> bandwidth) {
+    String downloadAnInternet(Internet internet, Tubes tubes, Blogosphere blogs,
+        Amount<Long, Data> bandwidth) {
         tubes.download(internet);
         //...
     }
 
     // Nicer, as the extra newline gives visual separation to the method body.
-    String downloadAnInternet(Internet internet, Tubes tubes, Blogosphere blogs, Amount<Long, Data> bandwidth) {
+    String downloadAnInternet(Internet internet, Tubes tubes, Blogosphere blogs,
+        Amount<Long, Data> bandwidth) {
 
         tubes.download(internet);
         //...
     }
 
     // Also acceptable, but may be awkward depending on the column depth of the opening parenthesis.
-    public String downloadAnInternet(Internet internet, Tubes tubes, Blogosphere blogs, Amount<Long, Data> bandwidth) {
+    public String downloadAnInternet(Internet internet,
+                                     Tubes tubes,
+                                     Blogosphere blogs,
+                                     Amount<Long, Data> bandwidth) {
         tubes.download(internet);
         //...
     }
 
     // Preferred for easy scanning and extra column space.
-    public String downloadAnInternet(Internet internet, Tubes tubes, Blogosphere blogs, Amount<Long, Data> bandwidth) {
+    public String downloadAnInternet(
+	    Internet internet,
+        Tubes tubes,
+        Blogosphere blogs,
+        Amount<Long, Data> bandwidth) {
 
         tubes.download(internet);
         //...
@@ -768,7 +778,7 @@ performed.
 [CountDownLatch](http://docs.oracle.com/javase/8/docs/api/java/util/concurrent/CountDownLatch.html)
 is useful for state/operation synchronization when a queue does not apply.
 
-### Testing antipatterns
+### Testing anti patterns
 
 #### Time-dependence
 Code that captures real wall time can be difficult to test repeatably, especially when time deltas
@@ -798,7 +808,7 @@ one second.  Over time, this leads to very long test execution cycles.
 Using random values may seem like a good idea in a test, as it allows you to cover more test cases
 with less code.  The problem is that you lose control over which test cases you're covering.  When
 you do encounter a test failure, it may be difficult to reproduce.  Pseudorandom input with a fixed
-seed is slightly better, but in practice rarely improves test coverage.  In general it's better to
+seed is slightly better, but in practice rarely improves test coverage.  In general, it's better to
 use fixed input data that exercises known edge cases.
 
 ## Best practices
@@ -1112,7 +1122,7 @@ void example() {
 ```
 ##### Throw appropriate exception types
 Let your API users obey [catch narrow exceptions](#catch-narrow-exceptions), don't throw Exception.
-Even if you are calling another naughty API that throws Exception, at least hide that so it doesn't
+Even if you are calling another naughty API that throws Exception, at least hide that, so it doesn't
 bubble up even further.  You should also make an effort to hide implementation details from your
 callers when it comes to exceptions.
 
@@ -1215,7 +1225,7 @@ The Law of Demeter is most obviously violated by breaking the
 there are other code structures that lead to violations of the spirit of the law.
 
 #### In classes
-Take what you need, nothing more.  This often relates to [texas constructors](#stay-out-of-texas)
+Take what you need, nothing more.  This often relates to [texas constructors](#stay-out-of-texas),
 but it can also hide in constructors or methods that take few parameters.  The key idea is
 to defer assembly to the layers of the code that know enough to assemble and instead just
 take the minimal interface you need to get your work done.
@@ -1272,7 +1282,7 @@ class Example {
     }
 }
 ```
-Instead do this:
+Instead, do this:
 
 ```java
 class Example {
