@@ -1,7 +1,7 @@
 package ratismal.drivebackup.handler;
 
 import java.net.UnknownHostException;
-import java.time.ZoneOffset;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -93,7 +93,7 @@ public class DebugCollector {
         private final boolean ftpEnabled;
         private final String ftpType;
 
-        private final ZoneOffset timezone;
+        private final ZoneId timezone;
 
         private ConfigInfo() {
             Config config = ConfigParser.getConfig();

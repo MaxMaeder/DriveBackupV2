@@ -1,6 +1,7 @@
 package ratismal.drivebackup.config.configSections;
 
 import java.time.DateTimeException;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.Locale;
 
@@ -18,16 +19,16 @@ public class Advanced {
     public final boolean suppressErrors;
     public final boolean debugEnabled;
     public final Locale dateLanguage;
-    public final ZoneOffset dateTimezone;
+    public final ZoneId dateTimezone;
     public final String fileSeparator;
 
     public Advanced(
-        boolean metricsEnabled, 
-        boolean updateCheckEnabled, 
+        boolean metricsEnabled,
+        boolean updateCheckEnabled,
         boolean suppressErrors,
         boolean debugEnabled,
-        Locale dateLanguage, 
-        ZoneOffset dateTimezone, 
+        Locale dateLanguage,
+        ZoneId dateTimezone,
         String fileSeparator
         ) {
             
@@ -48,9 +49,9 @@ public class Advanced {
         boolean suppressErrors = config.getBoolean("advanced.suppress-errors");
         boolean debugEnabled = config.getBoolean("advanced.debug");
         Locale dateLanguage = new Locale(config.getString("advanced.date-language"));
-        ZoneOffset dateTimezone;
+        ZoneId dateTimezone;
         try {
-            dateTimezone = ZoneOffset.of(config.getString("advanced.date-timezone"));
+            dateTimezone = ZoneId.of(config.getString("advanced.date-timezone"));
         } catch(DateTimeException e) {
             logger.log(intl("date-format-invalid"));
             //Fallback to UTC
