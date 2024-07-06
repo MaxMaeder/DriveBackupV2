@@ -114,28 +114,30 @@ public class OneDriveUploader extends Uploader {
         try {
             String destination = normalizePath(ConfigParser.getConfig().backupStorage.remoteDirectory);
             FQID destinationId = createPath(destination);
-            Request request = new Request.Builder()
+            Request uploadRequest = new Request.Builder()
                 .addHeader("Authorization", "Bearer " + accessToken)
-                .url("https://graph.microsoft.com/v1.0/me/drive/root:/" + destination + "/" + testFile.getName() + ":/content")
+                .url("https://graph.microsoft.com/v1.0/drives/" + destinationId.driveId + "/items/" + destinationId.itemId
+                        + ":/" + testFile.getName() + ":/content")
                 .put(RequestBody.create(testFile, MediaType.parse("plain/txt")))
                 .build();
-            Response response = DriveBackup.httpClient.newCall(request).execute();
-            int statusCode = response.code();
-            response.close();
-            if (statusCode != 201) {
-                setErrorOccurred(true);
+            String testFileId;
+            try (Response response = DriveBackup.httpClient.newCall(uploadRequest).execute()) {
+                if (response.code() != 201) {
+                    setErrorOccurred(true);
+                }
+                JSONObject parsedResponse = new JSONObject(response.body().string());
+                testFileId = parsedResponse.getString("id");
             }
             TimeUnit.SECONDS.sleep(5);
-            request = new Request.Builder()
+            Request delteRequest = new Request.Builder()
                 .addHeader("Authorization", "Bearer " + accessToken)
-                .url("https://graph.microsoft.com/v1.0/me/drive/root:/" + destination + "/" + testFile.getName() + ":/")
-                .delete() // TODO delete permanently
+                .url("https://graph.microsoft.com/v1.0/drives/" + destinationId.driveId + "/items/" + testFileId)
+                .delete()
                 .build();
-            response = DriveBackup.httpClient.newCall(request).execute();
-            statusCode = response.code();
-            response.close();
-            if (statusCode != 204) {
-                setErrorOccurred(true);
+            try (Response response = DriveBackup.httpClient.newCall(delteRequest).execute()) {
+                if (response.code() != 204) {
+                    setErrorOccurred(true);
+                }
             }
         } catch (Exception exception) {
             NetUtil.catchException(exception, "graph.microsoft.com", logger);
@@ -158,7 +160,8 @@ public class OneDriveUploader extends Uploader {
             FQID destinationId = createPath(destinationPath);
             Request request = new Request.Builder()
                 .addHeader("Authorization", "Bearer " + accessToken)
-                .url("https://graph.microsoft.com/v1.0/me/drive/root:/" + destinationPath + "/" + file.getName() + ":/createUploadSession")
+                .url("https://graph.microsoft.com/v1.0/drives/" + destinationId.driveId
+                        + "/items/" + destinationId.itemId+ ":/" + file.getName() + ":/createUploadSession")
                 .post(RequestBody.create("{}", jsonMediaType))
                 .build();
             JSONObject parsedResponse;
@@ -185,12 +188,13 @@ public class OneDriveUploader extends Uploader {
                         retryCount = 0;
                     } else if (uploadResponse.code() == 201 || uploadResponse.code() == 200) {
                         break;
-                    } else { // conflict after successful upload not handled
+                    } else { // TODO conflict after successful upload not handled
                         if (retryCount > MAX_RETRY_ATTEMPTS) {
                             request = new Request.Builder().url(uploadURL).delete().build();
                             DriveBackup.httpClient.newCall(request).execute().close();
                             throw new IOException(String.format("Upload failed after %d retries. %d %s", MAX_RETRY_ATTEMPTS, uploadResponse.code(), uploadResponse.message()));
                         }
+                        // TODO handle 507 Insufficent Storage?
                         if (uploadResponse.code() >= 500 && uploadResponse.code() < 600) {
                             Thread.sleep(exponentialBackoffMillis);
                             exponentialBackoffMillis *= EXPONENTIAL_BACKOFF_FACTOR;
@@ -200,7 +204,7 @@ public class OneDriveUploader extends Uploader {
                 }
             }
             try {
-                pruneBackups(destinationPath);
+                pruneBackups(destinationId);
             } catch (Exception e) {
                 logger.log(intl("backup-method-prune-failed"));
                 throw e;
@@ -286,7 +290,7 @@ public class OneDriveUploader extends Uploader {
                 + "\", \"folder\": {}, \"@microsoft.graph.conflictBehavior\": \"fail\" }", jsonMediaType);
         Request request = new Request.Builder()
                 .addHeader("Authorization", "Bearer " + accessToken)
-                .url("https://graph.microsoft.com/v1.0/me/drive/root/children")
+                .url("https://graph.microsoft.com/v1.0/drives/" + root.driveId + "/items/" + root.itemId + "/children")
                 .post(requestBody)
                 .build();
         try (Response response = DriveBackup.httpClient.newCall(request).execute()) {
@@ -402,14 +406,14 @@ public class OneDriveUploader extends Uploader {
      * @param parent the folder containing the files
      * @throws Exception
      */
-    private void pruneBackups(String parent) throws Exception {
+    private void pruneBackups(FQID parent) throws Exception {
         int fileLimit = ConfigParser.getConfig().backupStorage.keepCount;
         if (fileLimit == -1) {
             return;
         }
         Request request = new Request.Builder()
             .addHeader("Authorization", "Bearer " + accessToken)
-            .url("https://graph.microsoft.com/v1.0/me/drive/root:/" + parent + ":/children?sort_by=createdDateTime")
+            .url("https://graph.microsoft.com/v1.0/drives/" + parent.driveId + "/items/" + parent.itemId + "/children?sort_by=createdDateTime")
             .build();
         Response response = DriveBackup.httpClient.newCall(request).execute();
         JSONObject parsedResponse = new JSONObject(response.body().string());
@@ -431,7 +435,7 @@ public class OneDriveUploader extends Uploader {
             if (fileLimit < fileIDs.size()) {
                 request = new Request.Builder()
                     .addHeader("Authorization", "Bearer " + accessToken)
-                    .url("https://graph.microsoft.com/v1.0/me/drive/items/" + fileIDValue)
+                    .url("https://graph.microsoft.com/v1.0/drives/" + parent.driveId + "/items/" + fileIDValue)
                     .delete()
                     .build();
                 DriveBackup.httpClient.newCall(request).execute().close();
