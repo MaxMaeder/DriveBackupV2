@@ -228,6 +228,181 @@ public class OneDriveUploader extends Uploader {
     public void close() {
         // nothing needs to be done
     }
+
+    /**
+     * fully qualified item id
+     */
+    private static class FQID {
+        public final String driveId;
+        public final String itemId;
+
+        public FQID(String driveId, String itemId) {
+            this.driveId = driveId;
+            this.itemId = itemId;
+        }
+    }
+
+    /**
+     * removes "." and ".." segments from the path
+     * @param path to normalize
+     * @return the normalized path
+     */
+    @NotNull
+    private String normalizePath(String path) {
+        StringBuilder normalized = new StringBuilder();
+        for (String part : path.split("[/\\\\]")) {
+            if (".".equals(part) || "..".equals(part)) {
+                continue;
+            }
+            normalized.append('/').append(part);
+        }
+        return normalized.substring(1);
+    }
+
+    /**
+     * creates all folders in the path if they don't already exist
+     * @param path to create the folders for
+     * @return FQID of the last folder in the path
+     * @throws IOException if the folder could not be created;
+     * or if the api request could not be executed due to cancellation, a connectivity problem or timeout.
+     */
+    @NotNull
+    private FQID createPath(String path) throws IOException {
+        Iterator<String> parts = Arrays.stream(path.split("/")).iterator();
+        FQID root = createRootFolder(parts.next());
+        for (; parts.hasNext(); ) {
+            String folder = parts.next();
+            root = createFolder(root, folder);
+        }
+        return root;
+    }
+
+    /**
+     * creates a folder at the root if it doesn't already exist
+     * @param root of where to create the folder
+     * @param folder name to create
+     * @return FQID of the folder
+     * @throws IOException if the folder could not be created;
+     * or if the api request could not be executed due to cancellation, a connectivity problem or timeout.
+     */
+    @NotNull
+    private FQID createFolder(FQID root, String folder) throws IOException {
+        FQID item = getFolder(root, folder);
+        if (item != null) {
+            return item;
+        }
+        RequestBody requestBody = RequestBody.create("{ \"name\": \"" + folder
+                + "\", \"folder\": {}, \"@microsoft.graph.conflictBehavior\": \"fail\" }", jsonMediaType);
+        Request request = new Request.Builder()
+                .addHeader("Authorization", "Bearer " + accessToken)
+                .url("https://graph.microsoft.com/v1.0/me/drive/root/children")
+                .post(requestBody)
+                .build();
+        try (Response response = DriveBackup.httpClient.newCall(request).execute()) {
+            if (!response.isSuccessful()) {
+                throw new IOException("Couldn't create folder " + folder);
+            }
+            JSONObject parsedResponse = new JSONObject(response.body().string());
+            String driveId = parsedResponse.getJSONObject("parentReference").getString("driveId");
+            String itemId = parsedResponse.getString("id");
+            return new FQID(driveId, itemId);
+        }
+    }
+
+    /**
+     * creates a folder at the drive root if it doesn't already exist
+     * @param folder name to create
+     * @return FQID of the folder
+     * @throws IOException if the folder could not be created;
+     * or if the api request could not be executed due to cancellation, a connectivity problem or timeout.
+     */
+    @NotNull
+    private FQID createRootFolder(String folder) throws IOException {
+        FQID item = getRootFolder(folder);
+        if (item != null) {
+            return item;
+        }
+        RequestBody requestBody = RequestBody.create("{ \"name\": \""
+                + folder + "\", \"folder\": {}, \"@name.conflictBehavior\": \"fail\" }", jsonMediaType);
+        Request request = new Request.Builder()
+                .addHeader("Authorization", "Bearer " + accessToken)
+                .url("https://graph.microsoft.com/v1.0/me/drive/root/children")
+                .post(requestBody)
+                .build();
+        try (Response response = DriveBackup.httpClient.newCall(request).execute()) {
+            if (!response.isSuccessful()) {
+                throw new IOException("Couldn't create folder " + folder);
+            }
+            JSONObject parsedResponse = new JSONObject(response.body().string());
+            String driveId = parsedResponse.getJSONObject("parentReference").getString("driveId");
+            String itemId = parsedResponse.getString("id");
+            return new FQID(driveId, itemId);
+        }
+    }
+
+    /**
+     * tries to find folder in the drive root
+     * @param folder to search
+     * @return FQID or null if not found
+     */
+    @Nullable
+    private FQID getRootFolder(String folder) {
+        try {
+            Request request = new Request.Builder()
+                .addHeader("Authorization", "Bearer " + accessToken)
+                .url("https://graph.microsoft.com/v1.0/me/drive/root:/" + folder + "?$select=id,parentReference,remoteItem")
+                .build();
+            JSONObject parsedResponse;
+            try (Response response = DriveBackup.httpClient.newCall(request).execute()) {
+                parsedResponse = new JSONObject(response.body().string());
+            }
+            if (parsedResponse.has("remoteItem")) {
+               parsedResponse = parsedResponse.optJSONObject("remoteItem");
+            }
+            String driveId = parsedResponse.getJSONObject("parentReference").getString("driveId");
+            String itemId = parsedResponse.getString("id");
+            return new FQID(driveId, itemId);
+        } catch (Exception exception) {
+            return null;
+        }
+    }
+
+    /**
+     * tries to find a folder under root
+     * @param root to search
+     * @param folder to look for
+     * @return FQID or null if not found
+     */
+    @Nullable
+    private FQID getFolder(FQID root, String folder) {
+        try {
+            Request request = new Request.Builder()
+                    .addHeader("Authorization", "Bearer " + accessToken)
+                    .url("https://graph.microsoft.com/v1.0/me/drives/" + root.driveId + "/items/" + root.itemId + "/children")
+                    .build();
+            JSONObject parsedResponse;
+            try (Response response = DriveBackup.httpClient.newCall(request).execute()) {
+                parsedResponse = new JSONObject(response.body().string());
+            }
+            JSONArray children = parsedResponse.getJSONArray("value");
+            for (int i = 0; i < children.length(); i++) {
+                JSONObject childItem = children.getJSONObject(i);
+                String folderName = childItem.getString("name");
+                if (folder.equals(folderName)) {
+                    if (childItem.has("remoteItem")) {
+                        childItem = childItem.optJSONObject("remoteItem");
+                    }
+                    String driveId = childItem.getJSONObject("parentReference").getString("driveId");
+                    String itemId = childItem.getString("id");
+                    return new FQID(driveId, itemId);
+                }
+            }
+            // TODO handle @odata.nextLink
+        } catch (Exception exception) {
+            return null;
+        }
+        return null;
+    }
     
     /**
      * Creates a folder with the specified name in the specified parent folder in the authenticated user's OneDrive.
