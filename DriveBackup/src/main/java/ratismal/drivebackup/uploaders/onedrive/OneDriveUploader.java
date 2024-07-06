@@ -109,9 +109,11 @@ public class OneDriveUploader extends Uploader {
      * Tests the OneDrive account by uploading a small file
      *  @param testFile the file to upload during the test
      */
+    @Override
     public void test(java.io.File testFile) {
         try {
-            String destination = ConfigParser.getConfig().backupStorage.remoteDirectory;
+            String destination = normalizePath(ConfigParser.getConfig().backupStorage.remoteDirectory);
+            FQID destinationId = createPath(destination);
             Request request = new Request.Builder()
                 .addHeader("Authorization", "Bearer " + accessToken)
                 .url("https://graph.microsoft.com/v1.0/me/drive/root:/" + destination + "/" + testFile.getName() + ":/content")
@@ -127,7 +129,7 @@ public class OneDriveUploader extends Uploader {
             request = new Request.Builder()
                 .addHeader("Authorization", "Bearer " + accessToken)
                 .url("https://graph.microsoft.com/v1.0/me/drive/root:/" + destination + "/" + testFile.getName() + ":/")
-                .delete()
+                .delete() // TODO delete permanently
                 .build();
             response = DriveBackup.httpClient.newCall(request).execute();
             statusCode = response.code();
@@ -143,31 +145,20 @@ public class OneDriveUploader extends Uploader {
     }
 
     /**
-     * Uploads the specified file to the authenticated user's OneDrive inside a folder for the specified file type.
+     * Uploads the specified file to the authenticated user's OneDrive inside a folder for the specified file location.
      * @param file the file
-     * @param type the type of file (ex. plugins, world)
+     * @param location of the file (ex. plugins, world)
      */
-    public void uploadFile(java.io.File file, String type) throws IOException {
+    @Override
+    public void uploadFile(java.io.File file, String location) throws IOException {
         try {
             resetRanges();
-            String destination = ConfigParser.getConfig().backupStorage.remoteDirectory;
-            ArrayList<String> typeFolders = new ArrayList<>();
-            Collections.addAll(typeFolders, destination.split("/"));
-            Collections.addAll(typeFolders, type.split("[/\\\\]"));
-            File folder = null;
-            for (String typeFolder : typeFolders) {
-                if (typeFolder.equals(".") || typeFolder.equals("..")) {
-                    continue;
-                }
-                if (folder == null) {
-                    folder = createFolder(typeFolder);
-                } else {
-                    folder = createFolder(typeFolder, folder);
-                }
-            }
+            String destinationRoot = normalizePath(ConfigParser.getConfig().backupStorage.remoteDirectory);
+            String destinationPath = destinationRoot + '/' + location;
+            FQID destinationId = createPath(destinationPath);
             Request request = new Request.Builder()
                 .addHeader("Authorization", "Bearer " + accessToken)
-                .url("https://graph.microsoft.com/v1.0/me/drive/root:/" + folder.getPath() + "/" + file.getName() + ":/createUploadSession")
+                .url("https://graph.microsoft.com/v1.0/me/drive/root:/" + destinationPath + "/" + file.getName() + ":/createUploadSession")
                 .post(RequestBody.create("{}", jsonMediaType))
                 .build();
             JSONObject parsedResponse;
@@ -209,7 +200,7 @@ public class OneDriveUploader extends Uploader {
                 }
             }
             try {
-                pruneBackups(folder);
+                pruneBackups(destinationPath);
             } catch (Exception e) {
                 logger.log(intl("backup-method-prune-failed"));
                 throw e;
@@ -541,14 +532,14 @@ public class OneDriveUploader extends Uploader {
      * @param parent the folder containing the files
      * @throws Exception
      */
-    private void pruneBackups(File parent) throws Exception {
+    private void pruneBackups(String parent) throws Exception {
         int fileLimit = ConfigParser.getConfig().backupStorage.keepCount;
         if (fileLimit == -1) {
             return;
         }
         Request request = new Request.Builder()
             .addHeader("Authorization", "Bearer " + accessToken)
-            .url("https://graph.microsoft.com/v1.0/me/drive/root:/" + parent.getPath() + ":/children?sort_by=createdDateTime")
+            .url("https://graph.microsoft.com/v1.0/me/drive/root:/" + parent + ":/children?sort_by=createdDateTime")
             .build();
         Response response = DriveBackup.httpClient.newCall(request).execute();
         JSONObject parsedResponse = new JSONObject(response.body().string());
