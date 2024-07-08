@@ -39,15 +39,13 @@ import ratismal.drivebackup.util.NetUtil;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-
-import static ratismal.drivebackup.config.Localization.intl;
+import java.util.regex.Pattern;
 
 /**
  * Created by Ratismal on 2016-01-20.
@@ -68,6 +66,7 @@ public final class GoogleDriveUploader extends Uploader {
      * A global instance of the JSON factory
      */
     private static final JsonFactory JSON_FACTORY = new JacksonFactory();
+    private static final Pattern SLASH_SPLIT_PATTERN = Pattern.compile("[/\\\\]");
     
     private String refreshToken;
     
@@ -160,7 +159,6 @@ public final class GoogleDriveUploader extends Uploader {
     public void test(java.io.File testFile) {
         try {
             String sharedDriveId = instance.getConfigHandler().getConfig().getValue("googledrive", "shared-drive-id").getString();
-            String destination = getRemoteSaveDirectory();
             File folder = getRemoteDir(null, sharedDriveId);
             File body = new File();
             body.setTitle(testFile.getName());
@@ -181,11 +179,11 @@ public final class GoogleDriveUploader extends Uploader {
     }
     
     private @NotNull List<String> getRemoteDirList(String type) {
-        String destination = ConfigParser.getConfig().backupStorage.remoteDirectory;
+        String destination = getRemoteSaveDirectory();
         List<String> typeFolders = new ArrayList<>(10);
-        Collections.addAll(typeFolders, destination.split("[/\\\\]"));
+        Collections.addAll(typeFolders, SLASH_SPLIT_PATTERN.split(destination));
         if (type != null) {
-            Collections.addAll(typeFolders, type.split("[/\\\\]"));
+            Collections.addAll(typeFolders, SLASH_SPLIT_PATTERN.split(type));
         }
         return typeFolders;
     }
@@ -217,7 +215,7 @@ public final class GoogleDriveUploader extends Uploader {
      */
     public void uploadFile(java.io.File file, String type) {
         try {
-            String sharedDriveId = ConfigParser.getConfig().backupMethods.googleDrive.sharedDriveId;
+            String sharedDriveId = instance.getConfigHandler().getConfig().getValue("googledrive", "shared-drive-id").getString();
             retrieveNewAccessToken();
             File folder = getRemoteDir(type, sharedDriveId);
             File fileMetadata = new File();
