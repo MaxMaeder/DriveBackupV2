@@ -1,20 +1,19 @@
 package ratismal.drivebackup.config.configSections;
 
+import org.bukkit.configuration.file.FileConfiguration;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
+import ratismal.drivebackup.config.configSections.BackupList.BackupListEntry.BackupLocation;
+import ratismal.drivebackup.util.FileUtil;
+import ratismal.drivebackup.util.LocalDateTimeFormatter;
+import ratismal.drivebackup.util.Logger;
+
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-
-import org.bukkit.configuration.file.FileConfiguration;
-
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
-import ratismal.drivebackup.util.Logger;
-import ratismal.drivebackup.config.configSections.BackupList.BackupListEntry.BackupLocation;
-import ratismal.drivebackup.util.FileUtil;
-import ratismal.drivebackup.util.LocalDateTimeFormatter;
 
 import static ratismal.drivebackup.config.Localization.intl;
 
@@ -124,7 +123,7 @@ public class BackupList {
             boolean create = true;
             try {
                 create = (Boolean) rawListEntry.get("create");
-            } catch (ClassCastException e) {
+            } catch (ClassCastException | NullPointerException e) {
                 // Do nothing, assume true
             }
             String[] blacklist = new String[0];
