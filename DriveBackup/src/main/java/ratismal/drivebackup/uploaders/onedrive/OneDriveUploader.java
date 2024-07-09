@@ -431,39 +431,32 @@ public class OneDriveUploader extends Uploader {
         if (fileLimit == -1) {
             return;
         }
-        Request request = new Request.Builder()
+        Request childItemRequest = new Request.Builder()
             .addHeader("Authorization", "Bearer " + accessToken)
             .url("https://graph.microsoft.com/v1.0/drives/" + parent.driveId + "/items/" + parent.itemId + "/children?sort_by=createdDateTime")
             .build();
-        Response response = DriveBackup.httpClient.newCall(request).execute();
-        JSONObject parsedResponse = new JSONObject(response.body().string());
-        response.close();
-        ArrayList<String> fileIDs = new ArrayList<>();
-        JSONArray jsonArray = parsedResponse.getJSONArray("value");
-        for (int i = 0; i < jsonArray.length(); i++) {
-            fileIDs.add(jsonArray.getJSONObject(i).getString("id"));
+        JSONArray items;
+        try (Response childItemResponse = DriveBackup.httpClient.newCall(childItemRequest).execute()) {
+            JSONObject parsedResponse = new JSONObject(childItemResponse.body().string());
+            items = parsedResponse.getJSONArray("value");
         }
-        if(fileLimit < fileIDs.size()){
-            logger.info(
-                intl("backup-method-limit-reached"), 
-                "file-count", String.valueOf(fileIDs.size()),
-                "upload-method", getName(),
-                "file-limit", String.valueOf(fileLimit));
+        if(fileLimit >= items.length()) {
+            return;
         }
-        for (Iterator<String> iterator = fileIDs.listIterator(); iterator.hasNext(); ) {
-            String fileIDValue = iterator.next();
-            if (fileLimit < fileIDs.size()) {
-                request = new Request.Builder()
-                    .addHeader("Authorization", "Bearer " + accessToken)
-                    .url("https://graph.microsoft.com/v1.0/drives/" + parent.driveId + "/items/" + fileIDValue)
-                    .delete()
-                    .build();
-                DriveBackup.httpClient.newCall(request).execute().close();
-                iterator.remove();
-            }
-            if (fileIDs.size() <= fileLimit){
-                break;
-            }
+        logger.info(
+            intl("backup-method-limit-reached"),
+            "file-count", String.valueOf(items.length()),
+            "upload-method", getName(),
+            "file-limit", String.valueOf(fileLimit));
+        int itemsToDelete = items.length() - fileLimit;
+        for (int i = 0; i < itemsToDelete; i++) {
+            String fileIDValue = items.getJSONObject(i).getString("id");
+            Request deleteRequest = new Request.Builder()
+                .addHeader("Authorization", "Bearer " + accessToken)
+                .url("https://graph.microsoft.com/v1.0/drives/" + parent.driveId + "/items/" + fileIDValue)
+                .delete()
+                .build();
+            DriveBackup.httpClient.newCall(deleteRequest).execute().close(); // TODO handle deletion failure
         }
     }
 
