@@ -8,6 +8,7 @@ import okhttp3.Response;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import ratismal.drivebackup.UploadThread.UploadLogger;
 import ratismal.drivebackup.config.ConfigParser;
@@ -21,9 +22,7 @@ import ratismal.drivebackup.util.NetUtil;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -38,10 +37,9 @@ public class OneDriveUploader extends Uploader {
     public static final int EXPONENTIAL_BACKOFF_FACTOR = 5;
     public static final int MAX_RETRY_ATTEMPTS = 3;
 
-    private UploadLogger logger;
+    private final UploadLogger logger;
     
     private long totalUploaded;
-    private long lastUploaded;
     private String accessToken = "";
     private String refreshToken;
 
@@ -194,7 +192,6 @@ public class OneDriveUploader extends Uploader {
                             DriveBackup.httpClient.newCall(request).execute().close();
                             throw new IOException(String.format("Upload failed after %d retries. %d %s", MAX_RETRY_ATTEMPTS, uploadResponse.code(), uploadResponse.message()));
                         }
-                        // TODO handle 507 Insufficent Storage?
                         if (uploadResponse.code() >= 500 && uploadResponse.code() < 600) {
                             Thread.sleep(exponentialBackoffMillis);
                             exponentialBackoffMillis *= EXPONENTIAL_BACKOFF_FACTOR;
@@ -258,8 +255,8 @@ public class OneDriveUploader extends Uploader {
 
     /**
      * joins the two paths with '/' while handling emptiness of either side
-     * @param lhs
-     * @param rhs
+     * @param lhs left hand side of to be joined path
+     * @param rhs right hand side of to be joined path
      * @return joined path
      */
     @NotNull
@@ -284,7 +281,7 @@ public class OneDriveUploader extends Uploader {
     private FQID createPath(@NotNull String path) throws IOException {
         Iterator<String> parts = Arrays.stream(path.split("/")).iterator();
         FQID root = createRootFolder(parts.next());
-        for (; parts.hasNext(); ) {
+        while (parts.hasNext()) {
             String folder = parts.next();
             root = createFolder(root, folder);
         }
@@ -389,7 +386,7 @@ public class OneDriveUploader extends Uploader {
      * @return FQID or null if not found
      */
     @Nullable
-    private FQID getFolder(@NotNull FQID root,@NotNull String folder) {
+    private FQID getFolder(@NotNull FQID root, @NotNull String folder) {
         try {
             Request request = new Request.Builder()
                     .addHeader("Authorization", "Bearer " + accessToken)
@@ -402,7 +399,7 @@ public class OneDriveUploader extends Uploader {
             JSONArray children = parsedResponse.getJSONArray("value");
             for (int i = 0; i < children.length(); i++) {
                 JSONObject childItem = children.getJSONObject(i);
-                String folderName = childItem.getString("name");
+                String folderName = childItem.getString("name"); // TODO filter non folders
                 if (folder.equals(folderName)) {
                     if (childItem.has("remoteItem")) {
                         childItem = childItem.optJSONObject("remoteItem");
@@ -424,9 +421,10 @@ public class OneDriveUploader extends Uploader {
      * <p>
      * The number of files to retain is specified by the user in the {@code config.yml}
      * @param parent the folder containing the files
-     * @throws Exception
+     * @throws IOException on request execution failure
+     * @throws JSONException if the response does not contain the expected items
      */
-    private void pruneBackups(@NotNull FQID parent) throws Exception {
+    private void pruneBackups(@NotNull FQID parent) throws Exception, JSONException {
         int fileLimit = ConfigParser.getConfig().backupStorage.keepCount;
         if (fileLimit == -1) {
             return;
@@ -440,7 +438,7 @@ public class OneDriveUploader extends Uploader {
             JSONObject parsedResponse = new JSONObject(childItemResponse.body().string());
             items = parsedResponse.getJSONArray("value");
         }
-        if(fileLimit >= items.length()) {
+        if(fileLimit >= items.length()) { // TODO filter non backup files (folders & files not created by plugin)
             return;
         }
         logger.info(
@@ -458,6 +456,7 @@ public class OneDriveUploader extends Uploader {
                 .build();
             DriveBackup.httpClient.newCall(deleteRequest).execute().close(); // TODO handle deletion failure
         }
+        // TODO handle @odata.nextLink
     }
 
     /**
@@ -482,7 +481,6 @@ public class OneDriveUploader extends Uploader {
      * Resets the number of bytes uploaded in the last chunk, and the number of bytes uploaded in total.
      */
     private void resetRanges() {
-        lastUploaded = 0;
         totalUploaded = 0;
     }
     
@@ -510,7 +508,7 @@ public class OneDriveUploader extends Uploader {
     /**
      * Gets an array of bytes to upload next from the file buffer based on the number of bytes uploaded so far.
      * @return the array of bytes
-     * @throws IOException
+     * @throws IOException on file read errors
      */
     private byte @NotNull [] getChunk() throws IOException {
         byte[] bytes = new byte[CHUNK_SIZE];
