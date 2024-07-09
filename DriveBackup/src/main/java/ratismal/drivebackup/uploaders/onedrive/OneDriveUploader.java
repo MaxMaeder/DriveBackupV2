@@ -214,7 +214,9 @@ public class OneDriveUploader extends Uploader {
             MessageUtil.sendConsoleException(exception);
             setErrorOccurred(true);
         }
-        raf.close();
+        if (raf != null) {
+            raf.close();
+        }
     }
 
     /**
@@ -231,7 +233,7 @@ public class OneDriveUploader extends Uploader {
         public final String driveId;
         public final String itemId;
 
-        public FQID(String driveId, String itemId) {
+        public FQID(@NotNull String driveId, @NotNull String itemId) {
             this.driveId = driveId;
             this.itemId = itemId;
         }
@@ -243,7 +245,7 @@ public class OneDriveUploader extends Uploader {
      * @return the normalized path
      */
     @NotNull
-    private String normalizePath(String path) {
+    private String normalizePath(@NotNull String path) {
         StringBuilder normalized = new StringBuilder();
         for (String part : path.split("[/\\\\]")) {
             if (".".equals(part) || "..".equals(part)) {
@@ -279,7 +281,7 @@ public class OneDriveUploader extends Uploader {
      * or if the api request could not be executed due to cancellation, a connectivity problem or timeout.
      */
     @NotNull
-    private FQID createPath(String path) throws IOException {
+    private FQID createPath(@NotNull String path) throws IOException {
         Iterator<String> parts = Arrays.stream(path.split("/")).iterator();
         FQID root = createRootFolder(parts.next());
         for (; parts.hasNext(); ) {
@@ -298,7 +300,7 @@ public class OneDriveUploader extends Uploader {
      * or if the api request could not be executed due to cancellation, a connectivity problem or timeout.
      */
     @NotNull
-    private FQID createFolder(FQID root, String folder) throws IOException {
+    private FQID createFolder(@NotNull FQID root,@NotNull String folder) throws IOException {
         FQID item = getFolder(root, folder);
         if (item != null) {
             return item;
@@ -329,7 +331,7 @@ public class OneDriveUploader extends Uploader {
      * or if the api request could not be executed due to cancellation, a connectivity problem or timeout.
      */
     @NotNull
-    private FQID createRootFolder(String folder) throws IOException {
+    private FQID createRootFolder(@NotNull String folder) throws IOException {
         FQID item = getRootFolder(folder);
         if (item != null) {
             return item;
@@ -358,7 +360,7 @@ public class OneDriveUploader extends Uploader {
      * @return FQID or null if not found
      */
     @Nullable
-    private FQID getRootFolder(String folder) {
+    private FQID getRootFolder(@NotNull String folder) {
         try {
             String folderUrl = folder.isEmpty() ? folder : ":/" + folder;
             Request request = new Request.Builder()
@@ -387,7 +389,7 @@ public class OneDriveUploader extends Uploader {
      * @return FQID or null if not found
      */
     @Nullable
-    private FQID getFolder(FQID root, String folder) {
+    private FQID getFolder(@NotNull FQID root,@NotNull String folder) {
         try {
             Request request = new Request.Builder()
                     .addHeader("Authorization", "Bearer " + accessToken)
@@ -424,7 +426,7 @@ public class OneDriveUploader extends Uploader {
      * @param parent the folder containing the files
      * @throws Exception
      */
-    private void pruneBackups(FQID parent) throws Exception {
+    private void pruneBackups(@NotNull FQID parent) throws Exception {
         int fileLimit = ConfigParser.getConfig().backupStorage.keepCount;
         if (fileLimit == -1) {
             return;
@@ -517,7 +519,7 @@ public class OneDriveUploader extends Uploader {
      * @return the array of bytes
      * @throws IOException
      */
-    private byte[] getChunk() throws IOException {
+    private byte @NotNull [] getChunk() throws IOException {
         byte[] bytes = new byte[CHUNK_SIZE];
         raf.seek(totalUploaded);
         int read = raf.read(bytes);
