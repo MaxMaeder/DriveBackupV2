@@ -156,7 +156,7 @@ public class OneDriveUploader extends Uploader {
         try {
             resetRanges();
             String destinationRoot = normalizePath(ConfigParser.getConfig().backupStorage.remoteDirectory);
-            String destinationPath = destinationRoot + '/' + location;
+            String destinationPath = concatPath(destinationRoot, location);
             FQID destinationId = createPath(destinationPath);
             Request request = new Request.Builder()
                 .addHeader("Authorization", "Bearer " + accessToken)
@@ -255,6 +255,23 @@ public class OneDriveUploader extends Uploader {
     }
 
     /**
+     * joins the two paths with '/' while handling emptiness of either side
+     * @param lhs
+     * @param rhs
+     * @return joined path
+     */
+    @NotNull
+    private String concatPath(@NotNull String lhs, @NotNull String rhs) {
+        if (rhs.isEmpty()) {
+            return lhs;
+        }
+        if (lhs.isEmpty()) {
+            return rhs;
+        }
+        return lhs + '/' + rhs;
+    }
+
+    /**
      * creates all folders in the path if they don't already exist
      * @param path to create the folders for
      * @return FQID of the last folder in the path
@@ -343,9 +360,10 @@ public class OneDriveUploader extends Uploader {
     @Nullable
     private FQID getRootFolder(String folder) {
         try {
+            String folderUrl = folder.isEmpty() ? folder : ":/" + folder;
             Request request = new Request.Builder()
                 .addHeader("Authorization", "Bearer " + accessToken)
-                .url("https://graph.microsoft.com/v1.0/me/drive/root:/" + folder + "?$select=id,parentReference,remoteItem")
+                .url("https://graph.microsoft.com/v1.0/me/drive/root" + folderUrl + "?$select=id,parentReference,remoteItem")
                 .build();
             JSONObject parsedResponse;
             try (Response response = DriveBackup.httpClient.newCall(request).execute()) {
