@@ -123,7 +123,7 @@ public class BackupList {
             boolean create = true;
             try {
                 create = (Boolean) rawListEntry.get("create");
-            } catch (ClassCastException e) {
+            } catch (ClassCastException | NullPointerException e) {
                 // Do nothing, assume true
             }
             String[] blacklist = new String[0];

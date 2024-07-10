@@ -57,4 +57,12 @@ public final class Timer {
         return message2.replace("<speed>", df.format(speed));
     }
 
+    /**
+     * Calculates the time
+     * @return Calculated time
+     */
+    public long getTime() {
+        return end.getTime() - start.getTime();
+    }
+
 }

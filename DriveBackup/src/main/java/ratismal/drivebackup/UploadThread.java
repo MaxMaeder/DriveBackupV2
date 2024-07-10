@@ -43,6 +43,7 @@ import java.io.File;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
@@ -69,6 +70,7 @@ public final class UploadThread implements Runnable {
     private final Initiator initiator;
     private final UploadLogger uploadLogger;
     private final FileUtil fileUtil;
+    private Timer totalTimer;
     
     /**
      * List of {@code Uploaders} to upload the backups to
@@ -115,17 +117,7 @@ public final class UploadThread implements Runnable {
         this.instance = instance;
         uploadLogger = new UploadLogger(instance, player);
         fileUtil = new FileUtil(instance, uploadLogger);
-    public UploadThread() {
-        logger = new UploadLogger() {
-            @Override
-            public void log(String input, String... placeholders) {
-                MessageUtil.Builder()
-                    .mmText(input, placeholders)
-                    .toPerm(Permission.BACKUP)
-                    .send();
-            }
-        };
-        fileUtil = new FileUtil(logger);
+        totalTimer = new Timer();
     }
 
     /**
@@ -153,6 +145,11 @@ public final class UploadThread implements Runnable {
         if (initiator != null && BackupStatusValue.NOT_RUNNING != BackupStatus.getStatus()) {
             uploadLogger.info("backup-already-running", "backup-status", getBackupStatus());
             return;
+        }
+        totalTimer.start();
+        backupStatus = BackupStatus.STARTING;
+        if (!locationsToBePruned.isEmpty()) {
+            locationsToBePruned.clear();
         }
         Thread.currentThread().setPriority(config.backupStorage.threadPriority);
         if (initiator == null) {
@@ -263,6 +260,11 @@ public final class UploadThread implements Runnable {
         }
         setLastBackupSuccessful(!errorOccurred);
         pruneLocalBackups();
+        totalTimer.end();
+        long totalBackupTime = totalTimer.getTime();
+        long totalSeconds = Duration.of(totalBackupTime, ChronoUnit.MILLIS).getSeconds();
+        logger.log(intl("backup-total-time"), "<time>", String.valueOf(totalSeconds));
+        backupStatus = BackupStatus.NOT_RUNNING;
         if (errorOccurred) {
             instance.getAPIHandler().backupError();
         } else {
@@ -505,6 +507,12 @@ public final class UploadThread implements Runnable {
                 break;
             case UPLOADING:
                 message = instance.getMessageHandler().getLangString("backup-status-uploading");
+                break;
+            case STARTING:
+                message = intl("backup-status-starting");
+                break;
+            case PRUNING:
+                message = intl("backup-status-pruning");
                 break;
             default:
                 return instance.getMessageHandler().getLangString("backup-status-not-running");

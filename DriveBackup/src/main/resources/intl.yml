@@ -64,7 +64,10 @@ backup-schedule-time-invalid: "Time invalid, skipping schedule entry <entry>"
 backup-start: "Creating backups, the server may lag for a little while..."
 backup-status-compressing: 'Compressing backup set "<set-name>", set <set-num> of <set-count>'
 backup-status-not-running: "No backups are running"
+backup-status-pruning: "Pruning backups"
+backup-status-starting: "Backup is starting"
 backup-status-uploading: 'Uploading backup set "<set-name>", set <set-num> of <set-count>'
+backup-total-time: "Backup took <time> seconds to compleate"
 backup-upload-complete: "Backup(s) uploaded"
 backup-upload-start: "Uploading backup(s)..."
 backups-interval-scheduled: "Scheduling a backup to run every <delay> minutes"
