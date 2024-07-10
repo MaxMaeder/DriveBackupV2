@@ -8,6 +8,7 @@ As users contribute translations of the plugin's `intl.yml`, they will appear he
 - Portuguese (by Atoidi)
 - Korean (by [Esherloon](https://github.com/jinoo2005609))
 - Ukranian (by [AKRGamesUa](https://github.com/AKRGamesUa))
+- Spanish (by [C4BR3R4](https://github.com/C4BR3R4))
 
 ## Contributing
 
