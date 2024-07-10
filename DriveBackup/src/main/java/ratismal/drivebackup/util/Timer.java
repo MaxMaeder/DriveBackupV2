@@ -5,8 +5,8 @@ import org.jetbrains.annotations.NotNull;
 import java.io.File;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
-import java.util.Locale;
 import java.util.Date;
+import java.util.Locale;
 
 import static ratismal.drivebackup.config.Localization.intl;
 
@@ -64,7 +64,7 @@ public class Timer {
      * Calculates the time
      * @return Calculated time
      */
-    public double getTime() {
+    public long getTime() {
         return end.getTime() - start.getTime();
     }
 
