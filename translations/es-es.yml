@@ -1,0 +1,210 @@
+# Check if someone has translated the plugin into your language already!
+# https://github.com/MaxMaeder/DriveBackupV2/tree/master/translations
+#
+# If not, feel free to contribute!
+
+auto-backups-disabled: "<dark_red>❗</dark_red> <red>Las CdS automáticas se encuentran desactivadas.</red>"
+backup-already-running: |-
+  Ya se está generando una CdS
+  <backup-status>
+backup-complete: "<dark_red>❗</dark_red> <gold>Se a completado el proceso de realización de la Copia de Seguridad.</gold>"
+backup-disabled-inactivity: "Se han desactivado las Copias de Seguridad Automáticas por inactividad."
+backup-empty-list: "La lista de Copias de Seguridad se encuentra vacía."
+backup-failed-absolute-path: |-
+  <dark_red>❗</dark_red> Problema al generar la CdS, la ruta de almacenamiento es absoluta y se esperaba una ruta relativa.
+  Una ruta absoluta puede sobrescribir archivos sensibles, consulta la documentación para obtener más información.
+  Omitiendo la ruta de almacenamiento.
+backup-file-upload-complete: "Se ha completado la Subida del archivo '<file-name>'."
+backup-file-upload-start: "Iniciando la subida del archivo '<file-name>'."
+backup-forced: "Se ha ejecutado manualmente la creación de una Copia de Seguridad."
+backup-list-blacklist-invalid: "<dark_red>❗</dark_red> Uno o varios valores de 'blacklist' (Lista de Exclusión) de <entry> CdS no es válida. Se omite la lista."
+backup-list-format-invalid: "<dark_red>❗</dark_red> El valor 'format' de <entry> CdS no es válido. Se anula la creación de la CdS."
+backup-list-glob-invalid: "<dark_red>❗</dark_red> El valor 'glob' de <entry> CdS no es válido. Se anula la creación de la CdS."
+backup-list-no-dest-specified: "<dark_red>❗</dark_red> No se ha especificado la raíz o ruta de <entry> CdS. Se anula la creación de la CdS."
+backup-list-path-invalid: "<dark_red>❗</dark_red> El valor 'path' de <entry> CdS no es válida. Se anula la creación de la CdS."
+backup-local-complete: "Se ha compactado la CdS local."
+backup-local-failed: |-
+  <dark_red>❗</dark_red> Problema al crear la CdS local.
+  Aunqué el valor de local-keep-count sea de cero, el plugin necesita crear temporalmente una copia de seguridad local.
+  Omitiendo la ruta de almacenamiento.
+backup-local-file-complete: "Se ha creado la CdS local de '<location>'"
+backup-local-file-start: "Creando una CdS local de '<location>'"
+backup-local-prune-complete: "Completado el proceso de eliminación del excedente de CdS locales."
+backup-local-prune-start: "<white>►► <bold>Procesando la Eliminación de CdS locales excedentes...</bold></white>"
+backup-local-start: "<white>►► <bold>Procesando la Creación de CdS locales...</bold></white>"
+backup-location-start: "Creando una CdS de '<location>'"
+backup-method-complete: "Se ha completado la creación de la CdS <yellow><upload-method></yellow>."
+backup-method-error-occurred: "Problema al crear la CdS en <upload-method>, verifica que todas las credenciales son correctas o intenta encontrar el problema usando <gold><click:run_command:'<diagnose-command>'><diagnose-command></click></gold>"
+backup-method-limit-reached: "Existen <file-count> archivos en la ruta de almacenamiento de <upload-method> superando el límite de <file-limit>, eliminando."
+backup-method-not-auth: |-
+  <dark_red>❗</dark_red> Fallo de autentificación, omitiendo la CdS de <upload-method>.
+  Por favor, verifica en el archivo <yellow>config.yml<yellow> que todas las credenciales son correctas.
+backup-method-not-auth-authenticator: |-
+  <dark_red>❗</dark_red> Fallo de autentificación, omitiendo la CdS de <upload-method>.
+  Por favor, intenta volver a vincular tu cuenta, usando <yellow><click:run_command:'<link-command>'><link-command></click></yellow>
+backup-method-not-linked: |-
+  <dark_red>❗</dark_red> La cuenta se encuentra sin vincular, omitiendo la CdS de <upload-method>.
+  Para enlazar tu cuenta debes usar <yellow><click:run_command:'<link-command>'><link-command></click></yellow>
+backup-method-prune-failed: "No se han podido eliminar las CdS que superaban el límite establecido."
+backup-method-shared-drive-prune-failed: |-
+  <dark_red>❗</dark_red> Problema al eliminar las CdS que superaban el límite.
+  Prueba a solicitar al propietario de la unidad compartida que aumente los permisos de tu cuenta, o desactiva la eliminación de las copias de seguridad, estableciendo en 0 la opción 'keep-count'.
+backup-method-upload-failed: "<dark_red>❗</dark_red> <red>Se ha producido un error al identificar el método de subida.</red>"
+backup-method-uploading: "Subiendo el archivo a <upload-method>."
+backup-no-methods: "No se ha activado ningún método para las CdS."
+backup-schedule-day-empty: "Día de la semana vacío, omitiendo la programación de <entry>"
+backup-schedule-day-invalid: "Día de la semana no válido, omitiendo la programación del día de la semana '<day>'."
+backup-schedule-days-invalid: "Lista de días no válida, omitiendo la programación de <entry>."
+backup-schedule-empty: "Programación de CdS vacía, desactivando la programación de CdS."
+backup-schedule-time-invalid: "Tiempo no válido, omitiendo la programación de <entry>"
+backup-start: "<dark_red>❗</dark_red> <gold>Procediendo con la creación de Copia de Seguridad.</gold> El servidor puede dejar de responder."
+backup-status-compressing: "<aqua>ℹ</aqua> Compactando <set-num> de <set-count> CdS. <dark_gray>Ruta '<set-name>'</dark_gray>"
+backup-status-not-running: "<dark_red>❗</dark_red> No hay CdS en proceso de creación."
+backup-status-uploading: "<aqua>ℹ</aqua> Subiendo <set-num> de <set-count> CdS. <dark_gray>Nombre '<set-name>'</dark_gray>"
+backup-upload-complete: "Completado el proceso de Subida."
+backup-upload-start: "<white>►► <bold>Procesando la Subida de CdS...</bold></white>"
+backups-interval-scheduled: "<green>Se ha programado la creación de una Copia de Seguridad cada</green> <dark_green><delay></dark_green> <green>minutos.</green>"
+backups-scheduled: "<green>Hay programada una CdS a las <dark_green><time></dark_green> <green>de cada</green> <dark_green><days></dark_green>.</green>"
+brief-backup-list: "DriveBackupV2 tiene programado realizar la CdS de <list>"
+brief-backup-list-empty: "nada"
+brief-backup-list-external-backups: "algunas copias externas"
+brief-backup-list-help: "¿Quieres realizar una Copia de Seguridad de alguna otra cosa? Mira en <gold><click:open_url:http://bit.ly/3xoHRAs>http://bit.ly/3xoHRAs</click></gold>"
+config-loaded: "¡Se ha cargado el archivo de configuración!"
+config-reloaded: "<gold>⚠</gold> <yellow>Se han recargado todos los archivos del plugin DriveBackupV2.</yellow>"
+connection-error: "Problema al conectar con <domain>, comprueba tu conexión y tu cortafuegos."
+date-format-invalid: "El formato de fecha de la zona horaria no es válido, usando UTC."
+debug-log-created: "URL de Depuración: <url>"
+debug-log-creating: "Generando Registro de Depuración"
+default-google-drive-name: "Mi unidad"
+drivebackup-command-header: <yellow><strikethrough>          <dark_red>DriveBackupV2</dark_red>          </yellow></strikethrough>
+drivebackup-docs-command: |-
+  <header>
+  ¿Necesitas ayuda? Puedes consultar los siguientes recursos.
+  Wiki: <yellow><click:open_url:http://bit.ly/3dDdmwK>http://bit.ly/3dDdmwK</click></yellow>
+  Discord: <yellow><click:open_url:http://bit.ly/3f4VuuT>http://bit.ly/3f4VuuT</click></yellow>
+drivebackup-help-command: |-
+  <header>
+  <yellow><click:run_command:/drivebackup>/drivebackup</click></yellow> <gray>► Muestra este menú.</gray>
+  <yellow><click:run_command:/drivebackup help>/drivebackup help</click></yellow> <gray>► Muestra los recursos de ayuda.</gray>
+  <yellow><click:run_command:/drivebackup commands>/drivebackup commands</click></yellow> <gray>► Muestra ayuda sobre este comando.</gray>
+  <yellow><click:run_command:/drivebackup v>/drivebackup [v|version]</click></yellow> <gray>► Muestra la versión del plugin.</gray>
+  <yellow><click:run_command:/drivebackup linkaccount googledrive>/drivebackup [link|linkaccount] googledrive</click></yellow> <gray>► Vincula tu cuenta de Google Drive para realizar CdS.</gray>
+  <yellow><click:run_command:/drivebackup linkaccount onedrive>/drivebackup [link|linkaccount] onedrive</click></yellow> <gray>► Vincula tu cuenta de OneDrive para realizar CdS.</gray>
+  <yellow><click:run_command:/drivebackup linkaccount dropbox>/drivebackup [link|linkaccount] dropbox</click></yellow> <gray>► Vincula tu cuenta de Dropbox para realizar CdS.</gray>
+  <yellow><click:run_command:/drivebackup linkaccount googledrive>/drivebackup [unlink|unlinkaccount] googledrive</click></yellow> <gray>► Desvincula tu cuenta de Google Drive y desactiva el método.</gray>
+  <yellow><click:run_command:/drivebackup linkaccount onedrive>/drivebackup [unlink|unlinkaccount] onedrive</click></yellow> <gray>► Desvincula tu cuenta de OneDrive y desactiva el método.</gray>
+  <yellow><click:run_command:/drivebackup linkaccount dropbox>/drivebackup [unlink|unlinkaccount] dropbox</click></yellow> <gray>► Desvincula tu cuenta de Dropbox y desactiva el método.</gray>
+  <yellow><click:run_command:/drivebackup reloadconfig>/drivebackup reloadconfig</click></yellow> <gray>► Recarga el archivo 'config.yml'.</gray>
+  <yellow><click:run_command:/drivebackup nextbackup>/drivebackup nextbackup</click></yellow> <gray>► Obtén la fecha/hora de la siguiente CdS automática.</gray>
+  <yellow><click:run_command:/drivebackup status>/drivebackup status</click></yellow> <gray>► Obtén el estado de la CdS en curso.</gray>
+  <yellow><click:run_command:/drivebackup backup>/drivebackup backup</click></yellow> <gray>► Inicia una CdS manualmente.</gray>
+  <yellow><click:run_command:/drivebackup test ftp>/drivebackup test ftp</click></yellow> <gray>► Comprueba la conexión del servidor FTP.</gray>
+  <yellow><click:run_command:/drivebackup test googledrive>/drivebackup test googledrive</click></yellow> <gray>► Comprueba la conexión de Google Drive.</gray>
+  <yellow><click:run_command:/drivebackup test onedrive>/drivebackup test onedrive</click></yellow> <gray>► Comprueba la conexión de OneDrive.</gray>
+  <yellow><click:run_command:/drivebackup test dropbox>/drivebackup test dropbox</click></yellow> <gray>► Comprueba la conexión de Dropbox.</gray>
+  <yellow><click:run_command:/drivebackup update>/drivebackup update</click></yellow> <gray>► Actualiza el plugin si existe una versión más reciente.</gray>
+drivebackup-version-command: |-
+  <header>
+  Versión del Plugin: <yellow><plugin-version></yellow>
+  Versión de Java: <yellow><java-version></yellow>
+  Sistema del Servidor: <yellow><server-software></yellow>
+  Versión del Servidor: <yellow><server-version></yellow>
+drivebackup-version-update: <yellow>¡Hay una actualización disponible!
+external-backup-base-dir-invalid: "La ruta del directorio raíz de la clave de la CdS externa <entry> no es válida, dejando en blanco."
+external-backup-format-invalid: "Formato no válido, omitiendo la CdS externa de <entry>."
+external-backup-host-port-invalid: "El Nombre del Alojamiento o el Puerto no es válido, omitiendo la CdS externa de <entry>."
+external-backup-list-blacklist-invalid: "Omitiendo la Lista de Exclusiones de CdS Externas. El valor '<entry-backup>' de la lista no es correcta ."
+external-backup-list-invalid: "Omitiendo la CdS Externa. Algún valor de la lista no es correcta <entry>."
+external-backup-list-path-invalid: "Omitiendo la CdS Externa. Alguna ruta de la lista no es correcta <entry-backup>."
+external-backup-passphrase-invalid: "La contraseña de la clave pública de la CdS externa <entry> no es válida, dejando en blanco."
+external-backup-public-key-invalid: "La ruta de la clave pública de la CdS externa <entry> no es válida, dejando en blanco."
+external-backup-type-invalid: "Tipo de CdS no válida, omitiendo la CdS externa de <entry>."
+external-backup-user-pass-invalid: "Usuario/Contraseña no válido, omitiendo la CdS externa de <entry>."
+external-database-list-blacklist-invalid: "Omitiendo la CdS Externa. El valor '<entry-backup>' de la Lista de Exclusiones de la Base de Datos no es válida."
+external-database-list-invalid: "Omitiendo la CdS externa de '<entry>'. La lista de la Base de Datos no es válida."
+external-database-list-name-invalid: "Omitiendo la CdS externa de la Base de Datos '<entry-database>'. El nombre no es válido."
+external-database-ssl-invalid: "Invalidando el uso de SSL. La configuración de la CdS externa '<entry>' no es correcta."
+external-ftp-backup-blacklisted: "Excluyendo los archivos <blacklisted-files> del servidor externo (S)FTP, incluidos en la Lista de Exclusiones de '<glob-pattern>'."
+external-ftp-backup-complete: "Se ha incluido en la CdS, los archivos del servidor (S)FTP (<socket-addr>)."
+external-ftp-backup-failed: "Problema al incluir en la CdS, los archivos desde el servidor (S)FTP (<socket-addr>). Por favor, comprueba las credenciales en el archivo <yellow>config.yml</yellow>."
+external-ftp-backup-start: "Descargando archivos desde el servidor (S)FTP (<socket-addr>) para añadirlos a la CdS."
+external-mysql-backup-blacklisted: "Excluyendo la tabla '<blacklist-entry>', incluida en la Lista de Exclusiones."
+external-mysql-backup-complete: "Se ha incluido en la CdS, las Bases de Datos del servidor MySQL (<socket-addr>)."
+external-mysql-backup-failed: "Problema al incluir en la CdS, la Base de Datos desde el servidor MySQL (<socket-addr>). Por favor, comprueba las credenciales en el archivo <yellow>config.yml</yellow>."
+external-mysql-backup-start: "Descargando las Bases de Datos desde el servidor MySQL (<socket-addr>) para añadirlo a la CdS."
+file-upload-message: "Archivo subido en <length> segundos (<speed>KB/s)"
+ftp-method-passphrase-invalid: "La contraseña de la CdS por FTP no es válida, dejando en blanco."
+ftp-method-pubic-key-invalid: "La ruta de la clave pública de la CdS por FTP no es válida, dejando en blanco."
+google-pick-shared-drive: "No tienes acceso a uno o varias Unidades Compartidas. Si quieres utilizar uno de ellos, selecciónalo o introduce su número en el chat."
+google-shared-drive-option: "<bold>[<drive-num>]</bold> <yellow><hover:show_text:Seleccionar Unidad><click:run_command:'<select-command>'><drive-name></click></hover></yellow>"
+invalid-backup-delay: "Frecuencia de creación de CdS no válida, utilizando la frecuencia predeterminada."
+keep-count-invalid: "Cantidad de CdS externas no válidas, usando el valor predeterminado (20)."
+link-account-code: "Para vincular la cuenta de '<provider>' dirígete a <gold><click:open_url:'<link-url>'><link-url></click></gold> he introduce <gold><click:copy_to_clipboard:'<link-code>'><link-code></click></gold>"
+link-provider-complete: "¡Se ha enlazado la cuenta de '<provider>'."
+link-provider-failed: "Fallo al enlazar la cuenta de '<provider>'. Por favor, vuelve a intentarlo."
+list-delimiter: ", "
+list-last-delimiter: " y "
+local-backup-backlisted: "Excluyendo <white><blacklisted-files-count></white> archivos en <white>'<glob-pattern>'</white>"
+local-backup-date-format-invalid: |-
+  <red>❗</red>No se puede analizar el formato de fecha de la CdS almacenada "<file-name>". Puede ser debido a un cambio reciente del formato en el archivo "config.yml".
+  La CdS eliminada será la primera creada.
+local-backup-failed-attributes: "No se han podido leer los atributos de '<file-path>'. Usando los valores predeterminados. ¿Tienes permiso de acceso?"
+local-backup-failed-permissions: |-
+  <dark_red>❗</dark_red> El plugin no tiene permiso de escritura en la ruta especificada y no se ha podido crear la CdS.
+  Aunque el valor de "local-keep-count" sea cero, el plugin necesita generar temporalmente una CdS física.
+  Omitiendo la ruta de almacenamiento.
+local-backup-failed-to-delete: "<dark_red>❗</dark_red> <red>No se ha podido eliminar la Copia de Seguridad.</red>"
+local-backup-failed-to-include: "<dark_red>❗</dark_red> <red>No se ha podido copiar <dark_red>'<file-path>'</dark_red>. Puede encontrase bloqueado. ¿Seguro que existe acceso al mismo?</red>"
+local-backup-file-deleted: "<dark_red>🗙</dark_red> <gold>Se ha eliminado la CdS local más antigua '<local-backup-name>'.</gold>"
+local-backup-file-failed-to-delete: "<dark_red>❗</dark_red> <red>No se ha podido eliminar la CdS</red> <dark_red>'<local-backup-name>'.</dark_red>"
+local-backup-in-backup-folder: "En la carpeta de almacenamiento se encuentran <white><files-in-backup-folder-count></white> CdS."
+local-backup-limit-not-reached: "No hay ninguna CdS que exceda del límite establecido. No se ha eiliminado ninguna CdS."
+local-backup-limit-reached: "Alcanzado el límite de <backup-limit> CdS locales."
+local-backup-no-limit: "Se omite la eliminación de CdS locales al no alcanzar el límite."
+local-backup-pruning-complete: "Completada la eliminación del excedente de CdS locales de '<location>'."
+local-backup-pruning-start: "Eliminando el excedente de CdS locales de '<location>'"
+local-keep-count-invalid: "La cantidad de CdS locales determinadas no son válidas. Se usa el valor predeterminado."
+location-empty: "La ubicación '<location>' se encuentra vacía. Se anula el procedimiento."
+metrics-error: "<dark_red>❗</dark_red> <red>No se ha podido iniciar Metrics.</red>"
+metrics-started: "<green>Iniciando Metrics..</green>"
+next-backup: "La próxima Copia de Seguridad (CdS) se generará en <yellow>%TIME minutos.</yellow>"
+next-schedule-backup: "<aqua>ℹ La siguiente CdS se creará el</aqua> <dark_aqua>%DATE</dark_aqua><aqua>.</aqua>"
+next-schedule-backup-format: "dd'/'MM'/'yyyy '<aqua>a las</aqua>' HH:mm '<aqua>horas</aqua>'"
+no-perm: "<dark_red>❗</dark_red> No tienes permiso para hacer esto."
+player-join-backup-enable: "Las CdS automáticas se encuentran activadas."
+player-join-backup-failed: |-
+  <red>¡Ha surgido un problema con la última CdS!<red>
+  Comprueba la consola para obtener más información.
+player-join-update-available: |-
+  Existe una actualización disponible, puedes obtenerla en: <yellow><click:open_url:http://bit.ly/2M14uVD>http://bit.ly/2M14uVD</click></yellow>
+  o usando <yellow><click:run_command:/drivebackup update>/drivebackup update</click></yellow>
+plugin-stop: "<dark_red>❗</dark_red> <red>¡Deteniendo el plugin!</red>"
+test-file-creation-failed: "Error al crear el archivo de prueba, vuelve a intentarlo."
+test-method-begin: "Iniciando la prueba en '<upload-method>'."
+test-method-failed: "Se ha completado la prueba de <upload-method>, por favor, comprueba el archivo <yellow>config.yml</yellow>."
+test-method-invalid: "'<specified-method>' no es un método válido."
+test-method-not-enabled: "<orange>El método de CdS de</orange> <yellow><upload-method></yellow> <orange>se encuentran desactivadas.</orange> Puedes activarla en <yellow>config.yml</yellow>"
+test-method-not-specified: "Por favor, especifica un método para realizar la prueba de CdS."
+test-method-successful: "Se ha completado la prueba de '<upload-method>'."
+thread-priority-too-high: "La prioridad de subprocesamiento es mayor a la máxima, usando la máxima."
+thread-priority-too-low: "La prioridad de subprocesamiento es menor que la mínima, usando la mínima."
+unlink-provider-complete: "<dark_red>❗</dark_red> No se ha vinculado la cuenta de '<provider>'."
+unlink-provider-failed: "<dark_red>❗</dark_red> Problema al desvincular la cuenta de '<provider>'. Por favor, vuelve a intentarlo."
+update-checker-failed: "<dark_red>❗</dark_red> <red>Ha surgido un problema al intentar comprobar cual es la última versión de DriveBackupV2.</red>"
+update-checker-new-release: |-
+  Se ha publicado la nueva versión <latest-version> de DriveBackup y se está ejecutando la versión <current-version>
+  Actualiza en: <yellow><click:open_url:http://bit.ly/2VGtF7L>http://bit.ly/2VGtF7L</click></yellow>" o usando <yellow><click:run_command:/drivebackup update>/drivebackup update</click></yellow>
+update-checker-started: "<yellow>Comprobando actualizaciones...</yellow>"
+update-checker-unsupported-release: |-
+  ¡Se está ejecutando la versión <current-version> incompatible!
+  Se recomienda usar la versión <latest-version>.
+  Si el plugin se ha actualizado recientemente, ignora este mensaje.
+updater-fetch-failed: "<dark_red>❗</dark_red> No se ha podido comprobar cual es la última versión de DriveBackupV2."
+updater-no-updates: "¡Estás usando la última versión de DriveBackupV2!"
+updater-start: "Intentando descargar la última versión de DriveBackupV2."
+updater-successful: "¡El plugin se ha actualizado! Reinicia el servidor para aplicar la actualización."
+updater-update-failed: "Ha surgido un problema al actualizar el plugin, consulta la consola para obtener más información."
+upload-error-check: "Comprobando si la subida de ha realizado correctamente..."
+upload-no-errors: "La subida se ha realizado correctamente sin problemas."
+zip-compression-too-high: "Factor de compresión mayor que la máxima, usando la máxima."
+zip-compression-too-low: "Factor de compresión menor que la mínima, usando la mínima."
