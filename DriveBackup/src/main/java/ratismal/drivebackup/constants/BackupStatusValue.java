@@ -14,6 +14,8 @@ public enum BackupStatusValue {
      */
     COMPRESSING,
     
+    STARTING,
+    PRUNING,
     /**
      * The backup thread is uploading the files
      */

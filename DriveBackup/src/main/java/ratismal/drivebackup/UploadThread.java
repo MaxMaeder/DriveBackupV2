@@ -87,7 +87,7 @@ public final class UploadThread implements Runnable {
     private List<BackupListEntry> backupList;
     
     private LocalDateTime nextIntervalBackupTime;
-    private boolean lastBackupSuccessful = true;
+    private static boolean lastBackupSuccessful = true;
 
     /**
      * The backup currently being backed up by the
@@ -117,7 +117,7 @@ public final class UploadThread implements Runnable {
         this.instance = instance;
         uploadLogger = new UploadLogger(instance, player);
         fileUtil = new FileUtil(instance, uploadLogger);
-        totalTimer = new Timer();
+        totalTimer = new Timer(instance);
     }
 
     /**
@@ -147,7 +147,7 @@ public final class UploadThread implements Runnable {
             return;
         }
         totalTimer.start();
-        backupStatus = BackupStatus.STARTING;
+        BackupStatus.setStatus(BackupStatusValue.STARTING);
         if (!locationsToBePruned.isEmpty()) {
             locationsToBePruned.clear();
         }
@@ -259,12 +259,13 @@ public final class UploadThread implements Runnable {
             PlayerListener.setAutoBackupsActive(false);
         }
         setLastBackupSuccessful(!errorOccurred);
+        BackupStatus.setStatus(BackupStatusValue.PRUNING);
         pruneLocalBackups();
         totalTimer.end();
         long totalBackupTime = totalTimer.getTime();
         long totalSeconds = Duration.of(totalBackupTime, ChronoUnit.MILLIS).getSeconds();
-        logger.log(intl("backup-total-time"), "<time>", String.valueOf(totalSeconds));
-        backupStatus = BackupStatus.NOT_RUNNING;
+        uploadLogger.log("backup-total-time", "<time>", String.valueOf(totalSeconds));
+        BackupStatus.setStatus(BackupStatusValue.NOT_RUNNING);
         if (errorOccurred) {
             instance.getAPIHandler().backupError();
         } else {
@@ -509,10 +510,10 @@ public final class UploadThread implements Runnable {
                 message = instance.getMessageHandler().getLangString("backup-status-uploading");
                 break;
             case STARTING:
-                message = intl("backup-status-starting");
+                message = instance.getMessageHandler().getLangString("backup-status-starting");
                 break;
             case PRUNING:
-                message = intl("backup-status-pruning");
+                message = instance.getMessageHandler().getLangString("backup-status-pruning");
                 break;
             default:
                 return instance.getMessageHandler().getLangString("backup-status-not-running");
