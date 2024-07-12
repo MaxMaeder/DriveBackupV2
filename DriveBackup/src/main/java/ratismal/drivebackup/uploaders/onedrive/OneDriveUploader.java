@@ -237,20 +237,22 @@ public class OneDriveUploader extends Uploader {
     }
 
     /**
-     * removes "." and ".." segments from the path
+     * removes "." and ".." segments from the path,
+     * replaces all separators with '/',
+     * discards the first leading and trailing separator
      * @param path to normalize
-     * @return the normalized path
+     * @return the normalized relative path
      */
     @NotNull
-    private String normalizePath(@NotNull String path) {
+    private static String normalizePath(@NotNull String path) {
         StringBuilder normalized = new StringBuilder();
         for (String part : path.split("[/\\\\]")) {
-            if (".".equals(part) || "..".equals(part)) {
+            if (part.isEmpty() || ".".equals(part) || "..".equals(part)) {
                 continue;
             }
             normalized.append('/').append(part);
         }
-        return normalized.substring(1);
+        return normalized.substring(Math.min(normalized.length(), 1));
     }
 
     /**
@@ -260,12 +262,18 @@ public class OneDriveUploader extends Uploader {
      * @return joined path
      */
     @NotNull
-    private String concatPath(@NotNull String lhs, @NotNull String rhs) {
+    private static String concatPath(@NotNull String lhs, @NotNull String rhs) {
         if (rhs.isEmpty()) {
             return lhs;
         }
         if (lhs.isEmpty()) {
             return rhs;
+        }
+        if(lhs.endsWith("/")) {
+            lhs = lhs.substring(0, lhs.length() - 1);
+        }
+        if(rhs.startsWith("/")) {
+            rhs = rhs.substring(1);
         }
         return lhs + '/' + rhs;
     }
