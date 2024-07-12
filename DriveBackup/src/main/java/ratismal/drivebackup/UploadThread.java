@@ -67,7 +67,7 @@ public class UploadThread implements Runnable {
     private CommandSender initiator;
     private final UploadLogger logger;
     private final FileUtil fileUtil;
-    private Timer totalTimer;
+    private final Timer totalTimer;
 
     /**
      * The current status of the backup thread
