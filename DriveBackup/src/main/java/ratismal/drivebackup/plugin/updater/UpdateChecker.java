@@ -7,9 +7,11 @@ import org.jetbrains.annotations.Contract;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import ratismal.drivebackup.config.ConfigParser;
+import ratismal.drivebackup.constants.Initiator;
 import ratismal.drivebackup.http.HttpClient;
+import ratismal.drivebackup.platforms.bukkit.BukkitPlugin;
 import ratismal.drivebackup.plugin.DriveBackup;
-import ratismal.drivebackup.util.Logger;
+import ratismal.drivebackup.uploaders.UploadLogger;
 import ratismal.drivebackup.util.MessageUtil;
 import ratismal.drivebackup.util.NetUtil;
 import ratismal.drivebackup.util.SchedulerUtil;
@@ -40,7 +42,7 @@ public class UpdateChecker {
         UpdateChecker checker = new UpdateChecker();
         if (ConfigParser.getConfig().advanced.updateCheckEnabled) {
             plugin.getServer().getScheduler().runTaskTimerAsynchronously(plugin, () -> {
-                Logger logger = (input, placeholders) -> MessageUtil.Builder().mmText(input, placeholders).send();
+                UploadLogger logger = new UploadLogger(BukkitPlugin.getInstance(), Initiator.CONSOLE);
                 try {
                     if (!hasSentStartMessage) {
                         logger.log(intl("update-checker-started"));
@@ -51,15 +53,15 @@ public class UpdateChecker {
                     latestVersion = UpdateChecker.getLatest();
                     //check if the current version is outdated
                     if (latestVersion.isNewerThan(currentVersion)) {
-                        logger.log(
-                            intl("update-checker-new-release"),
-                            "latest-version", latestVersion.toString(),
-                            "current-version", currentVersion.toString());
+                        //logger.log(
+                            //intl("update-checker-new-release"),
+                            //"latest-version", latestVersion.toString(),
+                            //"current-version", currentVersion.toString());
                     } else if (currentVersion.isNewerThan(latestVersion)) {
-                        logger.log(
-                            intl("update-checker-unsupported-release"),
-                            "latest-version", latestVersion.toString(),
-                            "current-version", currentVersion.toString());
+                        //logger.log(
+                            //intl("update-checker-unsupported-release"),
+                            //"latest-version", latestVersion.toString(),
+                            //"current-version", currentVersion.toString());
                     }
                 } catch (Exception e) {
                     NetUtil.catchException(e, "api.github.com", logger);

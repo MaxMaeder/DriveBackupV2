@@ -6,10 +6,11 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.server.ServerCommandEvent;
 import org.jetbrains.annotations.NotNull;
+import ratismal.drivebackup.constants.Initiator;
+import ratismal.drivebackup.platforms.bukkit.BukkitPlugin;
 import ratismal.drivebackup.plugin.DriveBackup;
 import ratismal.drivebackup.uploaders.UploadLogger;
 import ratismal.drivebackup.uploaders.googledrive.GoogleDriveUploader;
-import ratismal.drivebackup.util.MessageUtil;
 
 @Deprecated
 public class ChatInputListener implements Listener {
@@ -36,13 +37,8 @@ public class ChatInputListener implements Listener {
      */
     private static boolean handleInput(CommandSender sender, String input) {
         if (DriveBackup.chatInputPlayers.contains(sender)) {
-            UploadLogger uploadLogger = new UploadLogger() {
-                @Override
-                public void log(String input, String... placeholders) {
-                    MessageUtil.Builder().mmText(input, placeholders).to(sender).send();
-                }
-            };
-            new GoogleDriveUploader(uploadLogger).finalizeSharedDrives(sender, input);
+            UploadLogger logger = new UploadLogger(BukkitPlugin.getInstance(), Initiator.CONSOLE);
+            new GoogleDriveUploader(BukkitPlugin.getInstance(), logger).finalizeSharedDrives(sender, input);
             DriveBackup.chatInputPlayers.remove(sender);
             return true;
         }

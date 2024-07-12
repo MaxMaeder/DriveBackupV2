@@ -4,9 +4,13 @@ import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
 import org.bukkit.command.CommandSender;
+import ratismal.drivebackup.constants.Initiator;
 import ratismal.drivebackup.http.HttpClient;
+import ratismal.drivebackup.objects.Player;
+import ratismal.drivebackup.platforms.DriveBackupInstance;
+import ratismal.drivebackup.platforms.bukkit.BukkitPlugin;
 import ratismal.drivebackup.plugin.DriveBackup;
-import ratismal.drivebackup.util.Logger;
+import ratismal.drivebackup.uploaders.UploadLogger;
 import ratismal.drivebackup.util.MessageUtil;
 
 import java.io.File;
@@ -57,7 +61,7 @@ public class Updater {
     }
 
     public void runUpdater(CommandSender initiator) {
-        Logger logger = (input, placeholders) -> MessageUtil.Builder().mmText(input, placeholders).to(initiator).send();
+        UploadLogger logger = new UploadLogger(BukkitPlugin.getInstance(), Initiator.CONSOLE);
         if (UpdateChecker.isUpdateAvailable()) {
             if (UpdateChecker.getLatestDownloadUrl() != null) {
                 try {

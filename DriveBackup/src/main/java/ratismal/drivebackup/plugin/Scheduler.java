@@ -7,6 +7,7 @@ import ratismal.drivebackup.UploadThread;
 import ratismal.drivebackup.config.ConfigParser;
 import ratismal.drivebackup.config.ConfigParser.Config;
 import ratismal.drivebackup.config.configSections.BackupScheduling.BackupScheduleEntry;
+import ratismal.drivebackup.platforms.bukkit.BukkitPlugin;
 import ratismal.drivebackup.util.MessageUtil;
 import ratismal.drivebackup.util.SchedulerUtil;
 
@@ -78,7 +79,7 @@ public class Scheduler {
                     }
                     backupTasks.add(taskScheduler.runTaskTimerAsynchronously(
                         DriveBackup.getInstance(), 
-                        new UploadThread(),
+                        new UploadThread(BukkitPlugin.getInstance()),
                         SchedulerUtil.sToTicks(ChronoUnit.SECONDS.between(now, startingOccurrence)),
                         SchedulerUtil.sToTicks(ChronoUnit.SECONDS.between(previousOccurrence, nextOccurrence))
                     ).getTaskId());
@@ -121,11 +122,11 @@ public class Scheduler {
             long interval = SchedulerUtil.sToTicks(config.backupStorage.delay * 60L);
             backupTasks.add(taskScheduler.runTaskTimerAsynchronously(
                     DriveBackup.getInstance(),
-                    new UploadThread(),
+                    new UploadThread(BukkitPlugin.getInstance()),
                     interval,
                     interval
             ).getTaskId());
-            UploadThread.updateNextIntervalBackupTime();
+            //UploadThread.updateNextIntervalBackupTime();
         }
     }
 

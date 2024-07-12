@@ -104,6 +104,7 @@ public final class UploadThread implements Runnable {
         initiator = Initiator.AUTOMATIC;
         uploadLogger = new UploadLogger(instance, initiator);
         fileUtil = new FileUtil(instance, uploadLogger);
+        totalTimer = new Timer(instance);
     }
     
     /**

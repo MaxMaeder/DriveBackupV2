@@ -85,13 +85,13 @@ public class ConfigParser {
      */
     public void reload(List<CommandSender> initiators) {
         parsedConfig = new Config(
-            BackupStorage.parse(config, logger),
-            BackupScheduling.parse(config, logger),
-            BackupList.parse(config, logger),
-            ExternalBackups.parse(config, logger),
-            BackupMethods.parse(config, logger),
-            Messages.parse(config, logger),
-            Advanced.parse(config, logger)
+            BackupStorage.parse(config),
+            BackupScheduling.parse(config),
+            BackupList.parse(config),
+            ExternalBackups.parse(config),
+            BackupMethods.parse(config),
+            Messages.parse(config),
+            Advanced.parse(config)
         );
     }
 
@@ -99,13 +99,13 @@ public class ConfigParser {
     public static Config defaultConfig() {
         FileConfiguration config = DriveBackup.getInstance().getConfig();
         return new Config(
-            BackupStorage.parse(config, logger),
-            BackupScheduling.parse(config, logger),
-            BackupList.parse(config, logger),
-            ExternalBackups.parse(config, logger),
-            BackupMethods.parse(config, logger),
-            Messages.parse(config, logger),
-            Advanced.parse(config, logger)
+            BackupStorage.parse(config),
+            BackupScheduling.parse(config),
+            BackupList.parse(config),
+            ExternalBackups.parse(config),
+            BackupMethods.parse(config),
+            Messages.parse(config),
+            Advanced.parse(config)
         );
     }
 

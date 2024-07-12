@@ -7,7 +7,11 @@ import org.jetbrains.annotations.NotNull;
 import ratismal.drivebackup.TestThread;
 import ratismal.drivebackup.UploadThread;
 import ratismal.drivebackup.config.PermissionHandler;
+import ratismal.drivebackup.constants.Initiator;
 import ratismal.drivebackup.constants.Permission;
+import ratismal.drivebackup.handler.BackupStatus;
+import ratismal.drivebackup.objects.Player;
+import ratismal.drivebackup.platforms.bukkit.BukkitPlugin;
 import ratismal.drivebackup.plugin.DriveBackup;
 import ratismal.drivebackup.uploaders.AuthenticationProvider;
 import ratismal.drivebackup.uploaders.Authenticator;
@@ -81,13 +85,13 @@ public class CommandHandler implements CommandExecutor {
                 }
                 switch (args[1].toLowerCase(Locale.ROOT)) {
                     case "googledrive":
-                        Authenticator.authenticateUser(AuthenticationProvider.GOOGLE_DRIVE, sender);
+                        Authenticator.authenticateUser(AuthenticationProvider.GOOGLE_DRIVE, sender, BukkitPlugin.getInstance());
                         break;
                     case "onedrive":
-                        Authenticator.authenticateUser(AuthenticationProvider.ONEDRIVE, sender);
+                        Authenticator.authenticateUser(AuthenticationProvider.ONEDRIVE, sender, BukkitPlugin.getInstance());
                         break;
                     case "dropbox":
-                        Authenticator.authenticateUser(AuthenticationProvider.DROPBOX, sender);
+                        Authenticator.authenticateUser(AuthenticationProvider.DROPBOX, sender, BukkitPlugin.getInstance());
                         break;
                     default:
                         BasicCommands.sendHelp(sender);
@@ -104,15 +108,16 @@ public class CommandHandler implements CommandExecutor {
                     BasicCommands.sendNoPerms(sender);
                     break;
                 }
+                Player player = new Player(sender.getName(), null);
                 switch (args[1].toLowerCase(Locale.ROOT)) {
                     case "googledrive":
-                        Authenticator.unAuthenticateUser(AuthenticationProvider.GOOGLE_DRIVE, sender);
+                        Authenticator.unAuthenticateUser(AuthenticationProvider.GOOGLE_DRIVE, player, BukkitPlugin.getInstance());
                         break;
                     case "onedrive":
-                        Authenticator.unAuthenticateUser(AuthenticationProvider.ONEDRIVE, sender);
+                        Authenticator.unAuthenticateUser(AuthenticationProvider.ONEDRIVE, player, BukkitPlugin.getInstance());
                         break;
                     case "dropbox":
-                        Authenticator.unAuthenticateUser(AuthenticationProvider.DROPBOX, sender);
+                        Authenticator.unAuthenticateUser(AuthenticationProvider.DROPBOX, player, BukkitPlugin.getInstance());
                         break;
                     default:
                         BasicCommands.sendHelp(sender);
@@ -124,14 +129,14 @@ public class CommandHandler implements CommandExecutor {
                     BasicCommands.sendNoPerms(sender);
                     break;
                 }
-                MessageUtil.Builder().mmText(UploadThread.getBackupStatus()).to(sender).toConsole(false).send();
+                MessageUtil.Builder().mmText(BackupStatus.getStatus().toString()).to(sender).toConsole(false).send();
                 break;
             case "nextbackup":
                 if (!PermissionHandler.hasPerm(sender, Permission.GET_NEXT_BACKUP)) {
                     BasicCommands.sendNoPerms(sender);
                     break;
                 }
-                MessageUtil.Builder().mmText(UploadThread.getNextAutoBackup()).to(sender).toConsole(false).send();
+                //MessageUtil.Builder().mmText(UploadThread.getNextAutoBackup()).to(sender).toConsole(false).send();
                 break;
             case "backup":
                 if (!PermissionHandler.hasPerm(sender, Permission.BACKUP)) {
@@ -139,7 +144,7 @@ public class CommandHandler implements CommandExecutor {
                     break;
                 }
                 MessageUtil.Builder().mmText(intl("backup-forced")).to(sender).send();
-                Runnable uploadThread = new UploadThread(sender);
+                Runnable uploadThread = new UploadThread(BukkitPlugin.getInstance(), Initiator.CONSOLE);
                 new Thread(uploadThread).start();
                 break;
             case "test":
@@ -147,7 +152,7 @@ public class CommandHandler implements CommandExecutor {
                     BasicCommands.sendNoPerms(sender);
                     break;
                 }
-                Runnable testThread = new TestThread(sender, args);
+                Runnable testThread = new TestThread(BukkitPlugin.getInstance(), new Player(sender.getName(), null), args);
                 new Thread(testThread).start();
                 break;
             case "update":

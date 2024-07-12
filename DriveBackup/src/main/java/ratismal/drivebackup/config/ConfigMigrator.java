@@ -1,16 +1,16 @@
 package ratismal.drivebackup.config;
 
-import java.util.List;
-
 import org.apache.commons.lang.ObjectUtils;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
-
 import org.jetbrains.annotations.Contract;
 import ratismal.drivebackup.config.ConfigParser.Config;
-import ratismal.drivebackup.util.Logger;
+import ratismal.drivebackup.constants.Initiator;
+import ratismal.drivebackup.platforms.bukkit.BukkitPlugin;
 import ratismal.drivebackup.plugin.DriveBackup;
-import ratismal.drivebackup.util.MessageUtil;
+import ratismal.drivebackup.uploaders.UploadLogger;
+
+import java.util.List;
 
 @Deprecated
 public class ConfigMigrator {
@@ -32,7 +32,7 @@ public class ConfigMigrator {
     }
 
     public void migrate() {
-        Logger logger = (input, placeholders) -> MessageUtil.Builder().mmText(input, placeholders).to(initiators).send();
+        UploadLogger logger = new UploadLogger(BukkitPlugin.getInstance(), Initiator.CONSOLE);
         if (config.isSet("version") && config.getInt("version") >= Config.VERSION) {
             return;
         }

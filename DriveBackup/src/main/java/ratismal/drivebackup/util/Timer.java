@@ -7,6 +7,7 @@ import ratismal.drivebackup.platforms.DriveBackupInstance;
 import java.io.File;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Locale;
@@ -62,7 +63,7 @@ public final class Timer {
      * @return Calculated time
      */
     public long getTime() {
-        return end.getTime() - start.getTime();
+        return Duration.between(start, end).getSeconds();
     }
 
 }
