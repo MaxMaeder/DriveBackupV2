@@ -179,6 +179,7 @@ public class UploadThread implements Runnable {
             }
         };
         fileUtil = new FileUtil(logger);
+        totalTimer = new Timer();
     }
 
     /**
