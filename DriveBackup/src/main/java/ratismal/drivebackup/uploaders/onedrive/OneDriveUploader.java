@@ -127,16 +127,7 @@ public class OneDriveUploader extends Uploader {
                 testFileId = parsedResponse.getString("id");
             }
             TimeUnit.SECONDS.sleep(5);
-            Request delteRequest = new Request.Builder()
-                .addHeader("Authorization", "Bearer " + accessToken)
-                .url("https://graph.microsoft.com/v1.0/drives/" + destinationId.driveId + "/items/" + testFileId)
-                .delete()
-                .build();
-            try (Response response = DriveBackup.httpClient.newCall(delteRequest).execute()) {
-                if (response.code() != 204) {
-                    setErrorOccurred(true);
-                }
-            }
+            recycleItem(destinationId.driveId, testFileId);
         } catch (Exception exception) {
             NetUtil.catchException(exception, "graph.microsoft.com", logger);
             MessageUtil.sendConsoleException(exception);
@@ -425,6 +416,27 @@ public class OneDriveUploader extends Uploader {
     }
 
     /**
+     * moves an item to the recycle bin
+     *
+     * @param driveId the ID of the drive of the item
+     * @param itemId the ID of the item to be deleted
+     * @throws IOException if the request could not be executed
+     * @throws GraphApiErrorException if the item was not deleted
+     */
+    private void recycleItem(@NotNull String driveId, @NotNull String itemId) throws IOException, GraphApiErrorException {
+        Request delteRequest = new Request.Builder()
+            .addHeader("Authorization", "Bearer " + accessToken)
+            .url("https://graph.microsoft.com/v1.0/drives/" + driveId + "/items/" + itemId)
+            .delete()
+            .build();
+        try (Response response = DriveBackup.httpClient.newCall(delteRequest).execute()) {
+            if (response.code() != 204 && response.code() != 404) {
+                throw new GraphApiErrorException(response);
+            }
+        }
+    }
+
+    /**
      * Deletes the oldest files in the specified folder past the number to retain from the authenticated user's OneDrive.
      * <p>
      * The number of files to retain is specified by the user in the {@code config.yml}
@@ -456,13 +468,8 @@ public class OneDriveUploader extends Uploader {
             "file-limit", String.valueOf(fileLimit));
         int itemsToDelete = items.length() - fileLimit;
         for (int i = 0; i < itemsToDelete; i++) {
-            String fileIDValue = items.getJSONObject(i).getString("id");
-            Request deleteRequest = new Request.Builder()
-                .addHeader("Authorization", "Bearer " + accessToken)
-                .url("https://graph.microsoft.com/v1.0/drives/" + parent.driveId + "/items/" + fileIDValue)
-                .delete()
-                .build();
-            DriveBackup.httpClient.newCall(deleteRequest).execute().close(); // TODO handle deletion failure
+            String itemId = items.getJSONObject(i).getString("id");
+            recycleItem(parent.driveId, itemId);
         }
         // TODO handle @odata.nextLink
     }
