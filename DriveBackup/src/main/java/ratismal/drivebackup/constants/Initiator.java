@@ -5,5 +5,9 @@ public enum Initiator {
     CONSOLE,
     AUTOMATIC,
     API,
-    OTHER
+    OTHER;
+    
+    public boolean isAuto() {
+        return AUTOMATIC == this;
+    }
 }

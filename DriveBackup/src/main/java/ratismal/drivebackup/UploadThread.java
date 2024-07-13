@@ -66,10 +66,10 @@ import java.util.TreeMap;
 public final class UploadThread implements Runnable {
     
     private static final String LINK_COMMAND = "/drivebackup linkaccount ";
-    private final DriveBackupInstance instance;
-    private final Initiator initiator;
-    private final UploadLogger uploadLogger;
-    private final FileUtil fileUtil;
+    private DriveBackupInstance instance;
+    private Initiator initiator;
+    private UploadLogger uploadLogger;
+    private FileUtil fileUtil;
     private Timer totalTimer;
     
     /**
@@ -100,11 +100,7 @@ public final class UploadThread implements Runnable {
      * @param instance the instance of the plugin
      */
     public UploadThread(DriveBackupInstance instance) {
-        this.instance = instance;
-        initiator = Initiator.AUTOMATIC;
-        uploadLogger = new UploadLogger(instance, initiator);
-        fileUtil = new FileUtil(instance, uploadLogger);
-        totalTimer = new Timer(instance);
+        setup(instance, Initiator.AUTOMATIC);
     }
     
     /**
@@ -114,11 +110,8 @@ public final class UploadThread implements Runnable {
      * @param player the player who initiated the backup
      */
     public UploadThread(DriveBackupInstance instance, Player player) {
-        initiator = Initiator.PLAYER;
-        this.instance = instance;
         uploadLogger = new UploadLogger(instance, player);
-        fileUtil = new FileUtil(instance, uploadLogger);
-        totalTimer = new Timer(instance);
+        setup(instance, Initiator.PLAYER);
     }
 
     /**
@@ -131,10 +124,17 @@ public final class UploadThread implements Runnable {
         if (Initiator.PLAYER == initiator) {
             throw new IllegalArgumentException("initiator cannot be a player, use the other constructor instead");
         }
-        this.instance = instance;
+        setup(instance, initiator);
+    }
+    
+    private void setup(DriveBackupInstance instance, Initiator initiator) {
         this.initiator = initiator;
-        uploadLogger = new UploadLogger(instance, initiator);
+        this.instance = instance;
+        if (uploadLogger == null) {
+            uploadLogger = new UploadLogger(instance, initiator);
+        }
         fileUtil = new FileUtil(instance, uploadLogger);
+        totalTimer = new Timer(instance);
     }
 
     /**
@@ -147,13 +147,13 @@ public final class UploadThread implements Runnable {
             uploadLogger.info("backup-already-running", "backup-status", getBackupStatus());
             return;
         }
-        totalTimer.start();
         BackupStatus.setStatus(BackupStatusValue.STARTING);
+        totalTimer.start();
         if (!locationsToBePruned.isEmpty()) {
             locationsToBePruned.clear();
         }
         Thread.currentThread().setPriority(config.backupStorage.threadPriority);
-        if (initiator == null) {
+        if (initiator.isAuto()) {
             updateNextIntervalBackupTime();
         }
         if (!instance.getAPIHandler().shouldStartBackup()) {
@@ -252,7 +252,7 @@ public final class UploadThread implements Runnable {
             uploadLogger.log("upload-no-errors");
         }
         uploadLogger.broadcast("backup-complete");
-        if (initiator == null) {
+        if (initiator.isAuto()) {
             uploadLogger.broadcast(getNextAutoBackup());
         }
         if (config.backupStorage.backupsRequirePlayers && Bukkit.getOnlinePlayers().isEmpty() && PlayerListener.isAutoBackupsActive()) {
