@@ -20,6 +20,7 @@ import ratismal.drivebackup.uploaders.Uploader;
 import ratismal.drivebackup.util.MessageUtil;
 import ratismal.drivebackup.util.NetUtil;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.Arrays;
@@ -38,7 +39,7 @@ public class OneDriveUploader extends Uploader {
     public static final int MAX_RETRY_ATTEMPTS = 3;
 
     private final UploadLogger logger;
-    
+
     private long totalUploaded;
     private String accessToken = "";
     private String refreshToken;
@@ -47,6 +48,7 @@ public class OneDriveUploader extends Uploader {
 
     private static final MediaType zipMediaType = MediaType.parse("application/zip; charset=utf-8");
     private static final MediaType jsonMediaType = MediaType.parse("application/json; charset=utf-8");
+    private static final MediaType textMediaType = MediaType.parse("text/plain");
 
     /**
      * Size of the file chunks to upload to OneDrive
@@ -108,26 +110,13 @@ public class OneDriveUploader extends Uploader {
      *  @param testFile the file to upload during the test
      */
     @Override
-    public void test(java.io.File testFile) {
+    public void test(File testFile) {
         try {
             String destination = normalizePath(ConfigParser.getConfig().backupStorage.remoteDirectory);
             FQID destinationId = createPath(destination);
-            Request uploadRequest = new Request.Builder()
-                .addHeader("Authorization", "Bearer " + accessToken)
-                .url("https://graph.microsoft.com/v1.0/drives/" + destinationId.driveId + "/items/" + destinationId.itemId
-                        + ":/" + testFile.getName() + ":/content")
-                .put(RequestBody.create(testFile, MediaType.parse("plain/txt")))
-                .build();
-            String testFileId;
-            try (Response response = DriveBackup.httpClient.newCall(uploadRequest).execute()) {
-                if (response.code() != 201) {
-                    setErrorOccurred(true);
-                }
-                JSONObject parsedResponse = new JSONObject(response.body().string());
-                testFileId = parsedResponse.getString("id");
-            }
+            FQID testFileId = uploadSmallFile(testFile, destinationId);
             TimeUnit.SECONDS.sleep(5);
-            recycleItem(destinationId.driveId, testFileId);
+            recycleItem(testFileId.driveId, testFileId.itemId);
         } catch (Exception exception) {
             NetUtil.catchException(exception, "graph.microsoft.com", logger);
             MessageUtil.sendConsoleException(exception);
@@ -141,7 +130,7 @@ public class OneDriveUploader extends Uploader {
      * @param location of the file (ex. plugins, world)
      */
     @Override
-    public void uploadFile(java.io.File file, String location) throws IOException {
+    public void uploadFile(File file, String location) throws IOException {
         try {
             resetRanges();
             String destinationRoot = normalizePath(ConfigParser.getConfig().backupStorage.remoteDirectory);
@@ -433,6 +422,31 @@ public class OneDriveUploader extends Uploader {
             if (response.code() != 204 && response.code() != 404) {
                 throw new GraphApiErrorException(response);
             }
+        }
+    }
+
+    /**
+     * upload a file up to 250MB in size
+     * @param file to upload
+     * @param destinationFolder to upload the file into
+     * @return FQID of the uploaded file
+     * @throws IOException if the request could not be executed
+     * @throws GraphApiErrorException if the file could not be uploaded
+     */
+    @NotNull
+    private FQID uploadSmallFile(@NotNull File file, @NotNull FQID destinationFolder) throws IOException, GraphApiErrorException {
+        Request uploadRequest = new Request.Builder()
+            .addHeader("Authorization", "Bearer " + accessToken)
+            .url("https://graph.microsoft.com/v1.0/drives/" + destinationFolder.driveId + "/items/" + destinationFolder.itemId
+                + ":/" + file.getName() + ":/content")
+            .put(RequestBody.create(file, textMediaType))
+            .build();
+        try (Response response = DriveBackup.httpClient.newCall(uploadRequest).execute()) {
+            if (response.code() != 201) {
+                throw new GraphApiErrorException(response);
+            }
+            JSONObject parsedResponse = new JSONObject(response.body().string());
+            return new FQID(destinationFolder.driveId, parsedResponse.getString("id"));
         }
     }
 
