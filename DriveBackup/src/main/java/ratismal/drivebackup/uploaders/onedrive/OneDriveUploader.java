@@ -25,7 +25,6 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.Arrays;
 import java.util.Iterator;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import static ratismal.drivebackup.config.Localization.intl;
@@ -40,7 +39,6 @@ public class OneDriveUploader extends Uploader {
 
     private final UploadLogger logger;
 
-    private long totalUploaded;
     private String accessToken = "";
     private String refreshToken;
 
@@ -50,16 +48,8 @@ public class OneDriveUploader extends Uploader {
     private static final MediaType jsonMediaType = MediaType.parse("application/json; charset=utf-8");
     private static final MediaType textMediaType = MediaType.parse("text/plain");
 
-    /**
-     * Size of the file chunks to upload to OneDrive
-     */
-    private static final int CHUNK_SIZE = 5 * 1024 * 1024;
+    private static final int UPLOAD_CHUNK_SIZE = 5 * 1024 * 1024;
 
-    /**
-     * File upload buffer
-     */
-    private RandomAccessFile raf;
-    
     /**
      * Creates an instance of the {@code OneDriveUploader} object
      */
@@ -68,7 +58,6 @@ public class OneDriveUploader extends Uploader {
         this.logger = logger;
         setAuthProvider(AuthenticationProvider.ONEDRIVE);
         try {
-            setRanges(new String[0]);
             refreshToken = Authenticator.getRefreshToken(AuthenticationProvider.ONEDRIVE);
             retrieveNewAccessToken();
         } catch (Exception e) {
@@ -105,6 +94,7 @@ public class OneDriveUploader extends Uploader {
             accessToken = parsedResponse.getString("access_token");
         }
     }
+
     @Override
     public boolean isAuthenticated() {
         return !accessToken.isEmpty();
@@ -135,28 +125,25 @@ public class OneDriveUploader extends Uploader {
      * @param location of the file (ex. plugins, world)
      */
     @Override
-    public void uploadFile(File file, String location) throws IOException {
+    public void uploadFile(File file, String location) {
         try {
-            resetRanges();
             String destinationRoot = normalizePath(ConfigParser.getConfig().backupStorage.remoteDirectory);
             String destinationPath = concatPath(destinationRoot, location);
             FQID destinationId = createPath(destinationPath);
             String uploadURL = createUploadSession(file.getName(), destinationId);
-            raf = new RandomAccessFile(file, "r");
-            uploadToSession(uploadURL, file.length());
-            try {
-                pruneBackups(destinationId);
-            } catch (Exception e) {
-                logger.log(intl("backup-method-prune-failed"));
-                throw e;
+            try (RandomAccessFile raf = new RandomAccessFile(file, "r")) {
+                uploadToSession(uploadURL, raf);
+                try {
+                    pruneBackups(destinationId);
+                } catch (Exception e) {
+                    logger.log(intl("backup-method-prune-failed"));
+                    throw e;
+                }
             }
         } catch (Exception exception) {
             NetUtil.catchException(exception, "graph.microsoft.com", logger);
             MessageUtil.sendConsoleException(exception);
             setErrorOccurred(true);
-        }
-        if (raf != null) {
-            raf.close();
         }
     }
 
@@ -453,27 +440,32 @@ public class OneDriveUploader extends Uploader {
      * uploads the file to a session with the given upload URL. some errors are handled via automatic retries.
      *
      * @param uploadURL of the upload session
-     * @param fileSize of the file to upload
-     * @throws IOException if a request could not be executed
+     * @param randomAccessFile to upload
+     * @throws IOException if a request could not be executed, or randomAccessFile could not be read
      * @throws GraphApiErrorException with the last error after max retries
      * @throws InterruptedException if interrupted during retries
+     * @throws JSONException if the responses do not have the expected values
+     * @throws NumberFormatException if the responses do not have the expected values
+     * @throws IndexOutOfBoundsException if the responses do not have the expected values
      */
-    private void uploadToSession(@NotNull String uploadURL, long fileSize)
+    private void uploadToSession(@NotNull String uploadURL, @NotNull RandomAccessFile randomAccessFile)
         throws IOException, GraphApiErrorException, InterruptedException {
         int exponentialBackoffMillis = EXPONENTIAL_BACKOFF_MILLIS_DEFAULT;
         int retryCount = 0;
+        Range range = new Range(0, UPLOAD_CHUNK_SIZE);
         while (true) {
-            byte[] bytesToUpload = getChunk();
+            byte[] bytesToUpload = getChunk(randomAccessFile, range);
             Request uploadRequest = new Request.Builder()
-                .addHeader("Content-Range", String.format("bytes %d-%d/%d", getTotalUploaded(), getTotalUploaded() + bytesToUpload.length - 1, fileSize))
+                .addHeader("Content-Range", String.format("bytes %d-%d/%d",
+                    range.start, range.start + bytesToUpload.length - 1, randomAccessFile.length()))
                 .url(uploadURL)
                 .put(RequestBody.create(bytesToUpload, zipMediaType))
                 .build();
             try (Response uploadResponse = DriveBackup.httpClient.newCall(uploadRequest).execute()) {
                 if (uploadResponse.code() == 202) {
-                    JSONObject parsedResponse = new JSONObject(uploadResponse.body().string());
-                    List<Object> nextExpectedRanges = parsedResponse.getJSONArray("nextExpectedRanges").toList();
-                    setRanges(nextExpectedRanges.toArray(new String[0]));
+                    JSONObject responseObject = new JSONObject(uploadResponse.body().string());
+                    JSONArray expectedRanges = responseObject.getJSONArray("nextExpectedRanges");
+                    range = new Range(expectedRanges.getString(0), UPLOAD_CHUNK_SIZE);
                     exponentialBackoffMillis = EXPONENTIAL_BACKOFF_MILLIS_DEFAULT;
                     retryCount = 0;
                 } else if (uploadResponse.code() == 201 || uploadResponse.code() == 200) {
@@ -540,67 +532,52 @@ public class OneDriveUploader extends Uploader {
      */
     private static class Range {
         private final long start;
-        private final long end;
+        private final int length;
 
         /**
          * Creates an instance of the {@code Range} object
          * @param start the index of the first byte
-         * @param end the index of the last byte
+         * @param length of the range
          */
-        private Range(long start, long end) {
+        public Range(long start, int length) {
             this.start = start;
-            this.end = end;
+            this.length = length;
         }
-    }
 
-    /**
-     * Resets the number of bytes uploaded in the last chunk, and the number of bytes uploaded in total.
-     */
-    private void resetRanges() {
-        totalUploaded = 0;
-    }
-    
-    /**
-     * Sets the number of bytes uploaded in the last chunk,
-     * and the number of bytes uploaded in total from the ranges of bytes the OneDrive API requested to be uploaded last.
-     * @param stringRanges the ranges of bytes requested
-     */
-    private void setRanges(@NotNull String[] stringRanges) {
-        Range[] ranges = new Range[stringRanges.length];
-        for (int i = 0; i < stringRanges.length; i++) {
-            long start = Long.parseLong(stringRanges[i].substring(0, stringRanges[i].indexOf('-')));
-            String s = stringRanges[i].substring(stringRanges[i].indexOf('-') + 1);
-            long end = 0;
-            if (!s.isEmpty()) {
-                end = Long.parseLong(s);
+        /**
+         * Creates an instance of the {@code Range} object
+         * @param range in the format of {@code 000-000 or 000-}
+         * @param maxLength to clamp the range to
+         * @throws NumberFormatException if parseLong fails on range
+         * @throws IndexOutOfBoundsException if range has no {@code -}
+         */
+        public Range(@NotNull String range, int maxLength) {
+            int dash = range.indexOf('-');
+            this.start = Long.parseLong(range.substring(0, dash));
+            String rhs = range.substring(dash + 1);
+            long end = Long.MAX_VALUE;
+            if (!rhs.isEmpty()) {
+                end = Long.parseLong(rhs);
             }
-            ranges[i] = new Range(start, end);
-        }
-        if (ranges.length > 0) {
-            totalUploaded = ranges[0].start;
+            this.length = (int)Math.min((end - start) + 1, maxLength);
         }
     }
 
     /**
-     * Gets an array of bytes to upload next from the file buffer based on the number of bytes uploaded so far.
-     * @return the array of bytes
+     * gets an array of bytes to upload next from the file buffer
+     * @param raf file to get chunk from
+     * @param range in file to get chunk from
+     * @return the array of bytes; may be smaller than range if {@code raf.length() - range.start < range.length}
      * @throws IOException on file read errors
      */
-    private byte @NotNull [] getChunk() throws IOException {
-        byte[] bytes = new byte[CHUNK_SIZE];
-        raf.seek(totalUploaded);
-        int read = raf.read(bytes);
-        if (read < CHUNK_SIZE) {
-            bytes = Arrays.copyOf(bytes, read);
+    private static byte @NotNull [] getChunk(RandomAccessFile raf, Range range) throws IOException {
+        if (range.start >= raf.length()) {
+            return new byte[0];
         }
+        int chunkSize = (int)Math.min(range.length, raf.length() - range.start);
+        byte[] bytes = new byte[chunkSize];
+        raf.seek(range.start);
+        raf.read(bytes);
         return bytes;
-    }
-
-    /**
-     * Gets the number of bytes uploaded in total
-     * @return the number of bytes
-     */
-    private long getTotalUploaded() {
-        return totalUploaded;
     }
 }
