@@ -128,7 +128,7 @@ public class OneDriveUploader extends Uploader {
     public void uploadFile(File file, String location) {
         try {
             String destinationRoot = normalizePath(ConfigParser.getConfig().backupStorage.remoteDirectory);
-            String destinationPath = concatPath(destinationRoot, location);
+            String destinationPath = concatPath(destinationRoot, normalizePath(location));
             FQID destinationId = createPath(destinationPath);
             String uploadURL = createUploadSession(file.getName(), destinationId);
             try (RandomAccessFile raf = new RandomAccessFile(file, "r")) {
