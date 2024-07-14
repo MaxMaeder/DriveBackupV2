@@ -68,9 +68,9 @@ public class OneDriveUploader extends Uploader {
         this.logger = logger;
         setAuthProvider(AuthenticationProvider.ONEDRIVE);
         try {
+            setRanges(new String[0]);
             refreshToken = Authenticator.getRefreshToken(AuthenticationProvider.ONEDRIVE);
             retrieveNewAccessToken();
-            setRanges(new String[0]);
         } catch (Exception e) {
             MessageUtil.sendConsoleException(e);
             setErrorOccurred(true);
@@ -79,6 +79,9 @@ public class OneDriveUploader extends Uploader {
 
     /**
      * Gets a new OneDrive access token for the authenticated user
+     * @throws Exception if the clientId could not be decrypted
+     * @throws IOException if the request could not be executed, or was not successful
+     * @throws JSONException if the response does not contain the expected values
      */
     private void retrieveNewAccessToken() throws Exception {
         RequestBody requestBody = new FormBody.Builder()
@@ -92,13 +95,15 @@ public class OneDriveUploader extends Uploader {
             .url("https://login.microsoftonline.com/common/oauth2/v2.0/token")
             .post(requestBody)
             .build();
-        Response response = DriveBackup.httpClient.newCall(request).execute();
-        JSONObject parsedResponse = new JSONObject(response.body().string());
-        response.close();
-        if (!response.isSuccessful()) {
-            return;
+        try (Response response = DriveBackup.httpClient.newCall(request).execute()) {
+            JSONObject parsedResponse = new JSONObject(response.body().string());
+            if (!response.isSuccessful()) {
+                String error = parsedResponse.optString("error");
+                String description = parsedResponse.optString("error_description");
+                throw new IOException(String.format("%s : %s", error, description));
+            }
+            accessToken = parsedResponse.getString("access_token");
         }
-        accessToken = parsedResponse.getString("access_token");
     }
     @Override
     public boolean isAuthenticated() {
@@ -262,11 +267,12 @@ public class OneDriveUploader extends Uploader {
      * creates all folders in the path if they don't already exist
      * @param path to create the folders for
      * @return FQID of the last folder in the path
-     * @throws IOException if the folder could not be created;
-     * or if the api request could not be executed due to cancellation, a connectivity problem or timeout.
+     * @throws IOException if the request could not be executed
+     * @throws GraphApiErrorException if the folder could not be found or created
+     * @throws JSONException if the response does not contain the expected items
      */
     @NotNull
-    private FQID createPath(@NotNull String path) throws IOException {
+    private FQID createPath(@NotNull String path) throws IOException, GraphApiErrorException {
         Iterator<String> parts = Arrays.stream(path.split("/")).iterator();
         FQID root = createRootFolder(parts.next());
         while (parts.hasNext()) {
@@ -281,25 +287,26 @@ public class OneDriveUploader extends Uploader {
      * @param root of where to create the folder
      * @param folder name to create
      * @return FQID of the folder
-     * @throws IOException if the folder could not be created;
-     * or if the api request could not be executed due to cancellation, a connectivity problem or timeout.
+     * @throws IOException if the request could not be executed
+     * @throws GraphApiErrorException if the folder could not be found or created
+     * @throws JSONException if the response does not contain the expected items
      */
     @NotNull
-    private FQID createFolder(@NotNull FQID root,@NotNull String folder) throws IOException {
+    private FQID createFolder(@NotNull FQID root, @NotNull String folder) throws IOException, GraphApiErrorException {
         FQID item = getFolder(root, folder);
         if (item != null) {
             return item;
         }
         RequestBody requestBody = RequestBody.create("{ \"name\": \"" + folder
-                + "\", \"folder\": {}, \"@microsoft.graph.conflictBehavior\": \"fail\" }", jsonMediaType);
+            + "\", \"folder\": {}, \"@microsoft.graph.conflictBehavior\": \"fail\" }", jsonMediaType);
         Request request = new Request.Builder()
-                .addHeader("Authorization", "Bearer " + accessToken)
-                .url("https://graph.microsoft.com/v1.0/drives/" + root.driveId + "/items/" + root.itemId + "/children")
-                .post(requestBody)
-                .build();
+            .addHeader("Authorization", "Bearer " + accessToken)
+            .url("https://graph.microsoft.com/v1.0/drives/" + root.driveId + "/items/" + root.itemId + "/children")
+            .post(requestBody)
+            .build();
         try (Response response = DriveBackup.httpClient.newCall(request).execute()) {
-            if (!response.isSuccessful()) {
-                throw new IOException("Couldn't create folder " + folder);
+            if (response.code() != 201) {
+                throw new GraphApiErrorException(response);
             }
             JSONObject parsedResponse = new JSONObject(response.body().string());
             String driveId = parsedResponse.getJSONObject("parentReference").getString("driveId");
@@ -312,25 +319,26 @@ public class OneDriveUploader extends Uploader {
      * creates a folder at the drive root if it doesn't already exist
      * @param folder name to create
      * @return FQID of the folder
-     * @throws IOException if the folder could not be created;
-     * or if the api request could not be executed due to cancellation, a connectivity problem or timeout.
+     * @throws IOException if the request could not be executed
+     * @throws GraphApiErrorException if the root could not be found or created
+     * @throws JSONException if the response does not contain the expected items
      */
     @NotNull
-    private FQID createRootFolder(@NotNull String folder) throws IOException {
+    private FQID createRootFolder(@NotNull String folder) throws IOException, GraphApiErrorException {
         FQID item = getRootFolder(folder);
         if (item != null) {
             return item;
         }
         RequestBody requestBody = RequestBody.create("{ \"name\": \""
-                + folder + "\", \"folder\": {}, \"@name.conflictBehavior\": \"fail\" }", jsonMediaType);
+            + folder + "\", \"folder\": {}, \"@name.conflictBehavior\": \"fail\" }", jsonMediaType);
         Request request = new Request.Builder()
-                .addHeader("Authorization", "Bearer " + accessToken)
-                .url("https://graph.microsoft.com/v1.0/me/drive/root/children")
-                .post(requestBody)
-                .build();
+            .addHeader("Authorization", "Bearer " + accessToken)
+            .url("https://graph.microsoft.com/v1.0/me/drive/root/children")
+            .post(requestBody)
+            .build();
         try (Response response = DriveBackup.httpClient.newCall(request).execute()) {
-            if (!response.isSuccessful()) {
-                throw new IOException("Couldn't create folder " + folder);
+            if (response.code() != 201) {
+                throw new GraphApiErrorException(response);
             }
             JSONObject parsedResponse = new JSONObject(response.body().string());
             String driveId = parsedResponse.getJSONObject("parentReference").getString("driveId");
@@ -343,28 +351,33 @@ public class OneDriveUploader extends Uploader {
      * tries to find folder in the drive root
      * @param folder to search
      * @return FQID or null if not found
+     * @throws IOException if the request could not be executed
+     * @throws GraphApiErrorException if the root could not be retrieved
+     * @throws JSONException if the response does not contain the expected items
      */
     @Nullable
-    private FQID getRootFolder(@NotNull String folder) {
-        try {
-            String folderUrl = folder.isEmpty() ? folder : ":/" + folder;
-            Request request = new Request.Builder()
-                .addHeader("Authorization", "Bearer " + accessToken)
-                .url("https://graph.microsoft.com/v1.0/me/drive/root" + folderUrl + "?$select=id,parentReference,remoteItem")
-                .build();
-            JSONObject parsedResponse;
-            try (Response response = DriveBackup.httpClient.newCall(request).execute()) {
-                parsedResponse = new JSONObject(response.body().string());
+    private FQID getRootFolder(@NotNull String folder) throws IOException, GraphApiErrorException {
+        String folderUrl = folder.isEmpty() ? folder : ":/" + folder;
+        Request request = new Request.Builder()
+            .addHeader("Authorization", "Bearer " + accessToken)
+            .url("https://graph.microsoft.com/v1.0/me/drive/root" + folderUrl + "?$select=id,parentReference,remoteItem")
+            .build();
+        JSONObject parsedResponse;
+        try (Response response = DriveBackup.httpClient.newCall(request).execute()) {
+            if (response.code() == 404) {
+                return null;
             }
-            if (parsedResponse.has("remoteItem")) {
-               parsedResponse = parsedResponse.optJSONObject("remoteItem");
+            if (!response.isSuccessful()) {
+                throw new GraphApiErrorException(response);
             }
-            String driveId = parsedResponse.getJSONObject("parentReference").getString("driveId");
-            String itemId = parsedResponse.getString("id");
-            return new FQID(driveId, itemId);
-        } catch (Exception exception) {
-            return null;
+            parsedResponse = new JSONObject(response.body().string());
         }
+        if (parsedResponse.has("remoteItem")) {
+           parsedResponse = parsedResponse.getJSONObject("remoteItem");
+        }
+        String driveId = parsedResponse.getJSONObject("parentReference").getString("driveId");
+        String itemId = parsedResponse.getString("id");
+        return new FQID(driveId, itemId);
     }
 
     /**
@@ -372,35 +385,36 @@ public class OneDriveUploader extends Uploader {
      * @param root to search
      * @param folder to look for
      * @return FQID or null if not found
+     * @throws IOException if the request could not be executed
+     * @throws GraphApiErrorException if the children could not be retrieved
+     * @throws JSONException if the response does not contain the expected items
      */
     @Nullable
-    private FQID getFolder(@NotNull FQID root, @NotNull String folder) {
-        try {
-            Request request = new Request.Builder()
-                    .addHeader("Authorization", "Bearer " + accessToken)
-                    .url("https://graph.microsoft.com/v1.0/me/drives/" + root.driveId + "/items/" + root.itemId + "/children")
-                    .build();
-            JSONObject parsedResponse;
-            try (Response response = DriveBackup.httpClient.newCall(request).execute()) {
-                parsedResponse = new JSONObject(response.body().string());
+    private FQID getFolder(@NotNull FQID root, @NotNull String folder) throws IOException, GraphApiErrorException {
+        Request request = new Request.Builder()
+                .addHeader("Authorization", "Bearer " + accessToken)
+                .url("https://graph.microsoft.com/v1.0/drives/" + root.driveId + "/items/" + root.itemId + "/children")
+                .build();
+        JSONArray children;
+        try (Response response = DriveBackup.httpClient.newCall(request).execute()) {
+            if (!response.isSuccessful()) {
+                throw new GraphApiErrorException(response);
             }
-            JSONArray children = parsedResponse.getJSONArray("value");
-            for (int i = 0; i < children.length(); i++) {
-                JSONObject childItem = children.getJSONObject(i);
-                String folderName = childItem.getString("name"); // TODO filter non folders
-                if (folder.equals(folderName)) {
-                    if (childItem.has("remoteItem")) {
-                        childItem = childItem.optJSONObject("remoteItem");
-                    }
-                    String driveId = childItem.getJSONObject("parentReference").getString("driveId");
-                    String itemId = childItem.getString("id");
-                    return new FQID(driveId, itemId);
-                }
-            }
-            // TODO handle @odata.nextLink
-        } catch (Exception exception) {
-            return null;
+            children = new JSONObject(response.body().string()).getJSONArray("value");
         }
+        for (int i = 0; i < children.length(); i++) {
+            JSONObject childItem = children.getJSONObject(i);
+            String folderName = childItem.getString("name"); // TODO filter non folders
+            if (folder.equals(folderName)) {
+                if (childItem.has("remoteItem")) {
+                    childItem = childItem.getJSONObject("remoteItem");
+                }
+                String driveId = childItem.getJSONObject("parentReference").getString("driveId");
+                String itemId = childItem.getString("id");
+                return new FQID(driveId, itemId);
+            }
+        }
+        // TODO handle @odata.nextLink
         return null;
     }
 
@@ -410,7 +424,7 @@ public class OneDriveUploader extends Uploader {
      * @param driveId the ID of the drive of the item
      * @param itemId the ID of the item to be deleted
      * @throws IOException if the request could not be executed
-     * @throws GraphApiErrorException if the item was not deleted
+     * @throws GraphApiErrorException if the item was not recycled
      */
     private void recycleItem(@NotNull String driveId, @NotNull String itemId) throws IOException, GraphApiErrorException {
         Request delteRequest = new Request.Builder()
@@ -456,9 +470,10 @@ public class OneDriveUploader extends Uploader {
      * The number of files to retain is specified by the user in the {@code config.yml}
      * @param parent the folder containing the files
      * @throws IOException on request execution failure
+     * @throws GraphApiErrorException if the children could not be retrieved
      * @throws JSONException if the response does not contain the expected items
      */
-    private void pruneBackups(@NotNull FQID parent) throws Exception, JSONException {
+    private void pruneBackups(@NotNull FQID parent) throws IOException, GraphApiErrorException {
         int fileLimit = ConfigParser.getConfig().backupStorage.keepCount;
         if (fileLimit == -1) {
             return;
@@ -469,8 +484,10 @@ public class OneDriveUploader extends Uploader {
             .build();
         JSONArray items;
         try (Response childItemResponse = DriveBackup.httpClient.newCall(childItemRequest).execute()) {
-            JSONObject parsedResponse = new JSONObject(childItemResponse.body().string());
-            items = parsedResponse.getJSONArray("value");
+            if (!childItemResponse.isSuccessful()) {
+                throw new GraphApiErrorException(childItemResponse);
+            }
+            items = new JSONObject(childItemResponse.body().string()).getJSONArray("value");
         }
         if(fileLimit >= items.length()) { // TODO filter non backup files (folders & files not created by plugin)
             return;
