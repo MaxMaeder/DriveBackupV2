@@ -141,50 +141,9 @@ public class OneDriveUploader extends Uploader {
             String destinationRoot = normalizePath(ConfigParser.getConfig().backupStorage.remoteDirectory);
             String destinationPath = concatPath(destinationRoot, location);
             FQID destinationId = createPath(destinationPath);
-            Request request = new Request.Builder()
-                .addHeader("Authorization", "Bearer " + accessToken)
-                .url("https://graph.microsoft.com/v1.0/drives/" + destinationId.driveId
-                        + "/items/" + destinationId.itemId+ ":/" + file.getName() + ":/createUploadSession")
-                .post(RequestBody.create("{}", jsonMediaType))
-                .build();
-            JSONObject parsedResponse;
-            try (Response response = DriveBackup.httpClient.newCall(request).execute()) {
-                parsedResponse = new JSONObject(response.body().string());
-            }
-            String uploadURL = parsedResponse.getString("uploadUrl");
+            String uploadURL = createUploadSession(file.getName(), destinationId);
             raf = new RandomAccessFile(file, "r");
-            int exponentialBackoffMillis = EXPONENTIAL_BACKOFF_MILLIS_DEFAULT;
-            int retryCount = 0;
-            while (true) {
-                byte[] bytesToUpload = getChunk();
-                request = new Request.Builder()
-                    .addHeader("Content-Range", String.format("bytes %d-%d/%d", getTotalUploaded(), getTotalUploaded() + bytesToUpload.length - 1, file.length()))
-                    .url(uploadURL)
-                    .put(RequestBody.create(bytesToUpload, zipMediaType))
-                    .build();
-                try (Response uploadResponse = DriveBackup.httpClient.newCall(request).execute()) {
-                    if (uploadResponse.code() == 202) {
-                        parsedResponse = new JSONObject(uploadResponse.body().string());
-                        List<Object> nextExpectedRanges = parsedResponse.getJSONArray("nextExpectedRanges").toList();
-                        setRanges(nextExpectedRanges.toArray(new String[0]));
-                        exponentialBackoffMillis = EXPONENTIAL_BACKOFF_MILLIS_DEFAULT;
-                        retryCount = 0;
-                    } else if (uploadResponse.code() == 201 || uploadResponse.code() == 200) {
-                        break;
-                    } else { // TODO conflict after successful upload not handled
-                        if (retryCount > MAX_RETRY_ATTEMPTS) {
-                            request = new Request.Builder().url(uploadURL).delete().build();
-                            DriveBackup.httpClient.newCall(request).execute().close();
-                            throw new IOException(String.format("Upload failed after %d retries. %d %s", MAX_RETRY_ATTEMPTS, uploadResponse.code(), uploadResponse.message()));
-                        }
-                        if (uploadResponse.code() >= 500 && uploadResponse.code() < 600) {
-                            Thread.sleep(exponentialBackoffMillis);
-                            exponentialBackoffMillis *= EXPONENTIAL_BACKOFF_FACTOR;
-                        }
-                        retryCount++;
-                    }
-                }
-            }
+            uploadToSession(uploadURL, file.length());
             try {
                 pruneBackups(destinationId);
             } catch (Exception e) {
@@ -461,6 +420,77 @@ public class OneDriveUploader extends Uploader {
             }
             JSONObject parsedResponse = new JSONObject(response.body().string());
             return new FQID(destinationFolder.driveId, parsedResponse.getString("id"));
+        }
+    }
+
+    /**
+     * creates an upload session for a file in a destination folder on OneDrive.
+     *
+     * @param fileName of the file to upload
+     * @param destinationFolder as FQID
+     * @return String with the upload URL for the file
+     * @throws IOException if there is an error executing the request
+     * @throws GraphApiErrorException if the upload session was not created
+     * @throws JSONException if the response does not contain the expected values
+     */
+    @NotNull
+    private String createUploadSession(@NotNull String fileName, @NotNull FQID destinationFolder) throws IOException, GraphApiErrorException {
+        Request request = new Request.Builder()
+            .addHeader("Authorization", "Bearer " + accessToken)
+            .url("https://graph.microsoft.com/v1.0/drives/" + destinationFolder.driveId
+                + "/items/" + destinationFolder.itemId + ":/" + fileName + ":/createUploadSession")
+            .post(RequestBody.create("{}", jsonMediaType))
+            .build();
+        try (Response response = DriveBackup.httpClient.newCall(request).execute()) {
+            if (!response.isSuccessful()) {
+                throw new GraphApiErrorException(response);
+            }
+            return new JSONObject(response.body().string()).getString("uploadUrl");
+        }
+    }
+
+    /**
+     * uploads the file to a session with the given upload URL. some errors are handled via automatic retries.
+     *
+     * @param uploadURL of the upload session
+     * @param fileSize of the file to upload
+     * @throws IOException if a request could not be executed
+     * @throws GraphApiErrorException with the last error after max retries
+     * @throws InterruptedException if interrupted during retries
+     */
+    private void uploadToSession(@NotNull String uploadURL, long fileSize)
+        throws IOException, GraphApiErrorException, InterruptedException {
+        int exponentialBackoffMillis = EXPONENTIAL_BACKOFF_MILLIS_DEFAULT;
+        int retryCount = 0;
+        while (true) {
+            byte[] bytesToUpload = getChunk();
+            Request uploadRequest = new Request.Builder()
+                .addHeader("Content-Range", String.format("bytes %d-%d/%d", getTotalUploaded(), getTotalUploaded() + bytesToUpload.length - 1, fileSize))
+                .url(uploadURL)
+                .put(RequestBody.create(bytesToUpload, zipMediaType))
+                .build();
+            try (Response uploadResponse = DriveBackup.httpClient.newCall(uploadRequest).execute()) {
+                if (uploadResponse.code() == 202) {
+                    JSONObject parsedResponse = new JSONObject(uploadResponse.body().string());
+                    List<Object> nextExpectedRanges = parsedResponse.getJSONArray("nextExpectedRanges").toList();
+                    setRanges(nextExpectedRanges.toArray(new String[0]));
+                    exponentialBackoffMillis = EXPONENTIAL_BACKOFF_MILLIS_DEFAULT;
+                    retryCount = 0;
+                } else if (uploadResponse.code() == 201 || uploadResponse.code() == 200) {
+                    break;
+                } else { // TODO conflict after successful upload not handled
+                    if (retryCount > MAX_RETRY_ATTEMPTS) {
+                        Request cancelRequest = new Request.Builder().url(uploadURL).delete().build();
+                        DriveBackup.httpClient.newCall(cancelRequest).execute().close();
+                        throw new GraphApiErrorException(uploadResponse);
+                    }
+                    if (uploadResponse.code() >= 500 && uploadResponse.code() < 600) {
+                        TimeUnit.MILLISECONDS.sleep(exponentialBackoffMillis);
+                        exponentialBackoffMillis *= EXPONENTIAL_BACKOFF_FACTOR;
+                    }
+                    retryCount++;
+                }
+            }
         }
     }
 
