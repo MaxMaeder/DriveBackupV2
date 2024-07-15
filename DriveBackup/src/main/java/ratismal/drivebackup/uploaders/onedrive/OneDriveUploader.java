@@ -23,8 +23,11 @@ import ratismal.drivebackup.util.NetUtil;
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Iterator;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import static ratismal.drivebackup.config.Localization.intl;
@@ -336,19 +339,7 @@ public class OneDriveUploader extends Uploader {
      */
     @Nullable
     private FQID getFolder(@NotNull FQID root, @NotNull String folder) throws IOException, GraphApiErrorException {
-        Request request = new Request.Builder()
-                .addHeader("Authorization", "Bearer " + accessToken)
-                .url("https://graph.microsoft.com/v1.0/drives/" + root.driveId + "/items/" + root.itemId + "/children")
-                .build();
-        JSONArray children;
-        try (Response response = DriveBackup.httpClient.newCall(request).execute()) {
-            if (!response.isSuccessful()) {
-                throw new GraphApiErrorException(response);
-            }
-            children = new JSONObject(response.body().string()).getJSONArray("value");
-        }
-        for (int i = 0; i < children.length(); i++) {
-            JSONObject childItem = children.getJSONObject(i);
+        for (JSONObject childItem : getChildren(root, "?select=name,id,parentReference,remoteItem")) {
             String folderName = childItem.getString("name"); // TODO filter non folders
             if (folder.equals(folderName)) {
                 if (childItem.has("remoteItem")) {
@@ -359,8 +350,43 @@ public class OneDriveUploader extends Uploader {
                 return new FQID(driveId, itemId);
             }
         }
-        // TODO handle @odata.nextLink
         return null;
+    }
+
+    /**
+     * gets all children for a given folder
+     * @param folder to query
+     * @param queryParams line like "?$select=name"
+     * @throws IOException on request execution failure
+     * @throws GraphApiErrorException if the children could not be retrieved
+     * @throws JSONException if the response does not contain the expected items
+     */
+    @NotNull
+    private List<JSONObject> getChildren(@NotNull FQID folder, @NotNull String queryParams) throws IOException, GraphApiErrorException {
+        ArrayList<JSONObject> allChildren = new ArrayList<>();
+        String targetUrl = "https://graph.microsoft.com/v1.0/me/drives/" + folder.driveId
+                + "/items/" + folder.itemId + "/children" + queryParams;
+        while (true) {
+            Request request = new Request.Builder()
+                    .addHeader("Authorization", "Bearer " + accessToken)
+                    .url(targetUrl)
+                    .build();
+            try (Response response = DriveBackup.httpClient.newCall(request).execute()) {
+                if (!response.isSuccessful()) {
+                    throw new GraphApiErrorException(response);
+                }
+                JSONObject parsedResponse = new JSONObject(response.body().string());
+                JSONArray someChildren = parsedResponse.getJSONArray("value");
+                allChildren.ensureCapacity(parsedResponse.getInt("@odata.count"));
+                for (int i = 0; i < someChildren.length(); i++) {
+                    allChildren.add(someChildren.getJSONObject(i));
+                }
+                if (!parsedResponse.has("@odata.nextLink")) {
+                    return allChildren;
+                }
+                targetUrl = parsedResponse.getString("@odata.nextLink");
+            }
+        }
     }
 
     /**
@@ -499,31 +525,21 @@ public class OneDriveUploader extends Uploader {
         if (fileLimit == -1) {
             return;
         }
-        Request childItemRequest = new Request.Builder()
-            .addHeader("Authorization", "Bearer " + accessToken)
-            .url("https://graph.microsoft.com/v1.0/drives/" + parent.driveId + "/items/" + parent.itemId + "/children?sort_by=createdDateTime")
-            .build();
-        JSONArray items;
-        try (Response childItemResponse = DriveBackup.httpClient.newCall(childItemRequest).execute()) {
-            if (!childItemResponse.isSuccessful()) {
-                throw new GraphApiErrorException(childItemResponse);
-            }
-            items = new JSONObject(childItemResponse.body().string()).getJSONArray("value");
-        }
-        if(fileLimit >= items.length()) { // TODO filter non backup files (folders & files not created by plugin)
+        List<JSONObject> childItems = getChildren(parent, "?$select=id,createdDateTime");
+        if(fileLimit >= childItems.size()) {
             return;
         }
         logger.info(
             intl("backup-method-limit-reached"),
-            "file-count", String.valueOf(items.length()),
+            "file-count", String.valueOf(childItems.size()),
             "upload-method", getName(),
             "file-limit", String.valueOf(fileLimit));
-        int itemsToDelete = items.length() - fileLimit;
+        childItems.sort(Comparator.comparing(item -> item.getString("createdDateTime")));
+        int itemsToDelete = childItems.size() - fileLimit;
         for (int i = 0; i < itemsToDelete; i++) {
-            String itemId = items.getJSONObject(i).getString("id");
+            String itemId = childItems.get(i).getString("id");
             recycleItem(parent.driveId, itemId);
         }
-        // TODO handle @odata.nextLink
     }
 
     /**
