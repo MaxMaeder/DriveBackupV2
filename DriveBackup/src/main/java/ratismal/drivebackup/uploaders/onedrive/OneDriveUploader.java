@@ -499,10 +499,13 @@ public class OneDriveUploader extends Uploader {
                     retryCount = 0;
                 } else if (uploadResponse.code() == 201 || uploadResponse.code() == 200) {
                     break;
-                } else { // TODO 404 409 416
-                    if (retryCount > MAX_RETRY_ATTEMPTS) {
+                } else { // TODO 416
+                    if (retryCount > MAX_RETRY_ATTEMPTS || uploadResponse.code() == 409) {
                         Request cancelRequest = new Request.Builder().url(uploadURL).delete().build();
                         DriveBackup.httpClient.newCall(cancelRequest).execute().close();
+                        throw new GraphApiErrorException(uploadResponse);
+                    }
+                    if (uploadResponse.code() == 404) {
                         throw new GraphApiErrorException(uploadResponse);
                     }
                     if (uploadResponse.code() >= 500 && uploadResponse.code() < 600) {
