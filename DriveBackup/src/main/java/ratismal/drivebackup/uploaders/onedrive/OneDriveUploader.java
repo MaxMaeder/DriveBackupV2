@@ -368,7 +368,7 @@ public class OneDriveUploader extends Uploader {
     @NotNull
     private List<JSONObject> getChildren(@NotNull FQID folder, @NotNull String queryParams) throws IOException, GraphApiErrorException {
         ArrayList<JSONObject> allChildren = new ArrayList<>();
-        String targetUrl = "https://graph.microsoft.com/v1.0/me/drives/" + folder.driveId
+        String targetUrl = "https://graph.microsoft.com/v1.0/drives/" + folder.driveId
                 + "/items/" + folder.itemId + "/children" + queryParams;
         while (true) {
             Request request = new Request.Builder()
@@ -499,16 +499,21 @@ public class OneDriveUploader extends Uploader {
                     retryCount = 0;
                 } else if (uploadResponse.code() == 201 || uploadResponse.code() == 200) {
                     break;
-                } else { // TODO 416
+                } else {
                     if (retryCount > MAX_RETRY_ATTEMPTS || uploadResponse.code() == 409) {
                         Request cancelRequest = new Request.Builder().url(uploadURL).delete().build();
                         DriveBackup.httpClient.newCall(cancelRequest).execute().close();
                         throw new GraphApiErrorException(uploadResponse);
-                    }
-                    if (uploadResponse.code() == 404) {
+                    } else if (uploadResponse.code() == 404) {
                         throw new GraphApiErrorException(uploadResponse);
-                    }
-                    if (uploadResponse.code() >= 500 && uploadResponse.code() < 600) {
+                    } else if (uploadResponse.code() == 416) {
+                        Request statusRequest = new Request.Builder().url(uploadURL).build();
+                        try (Response statusResponse = DriveBackup.httpClient.newCall(statusRequest).execute()) {
+                            JSONObject responseObject = new JSONObject(statusResponse.body().string());
+                            JSONArray expectedRanges = responseObject.getJSONArray("nextExpectedRanges");
+                            range = new Range(expectedRanges.getString(0), UPLOAD_CHUNK_SIZE);
+                        }
+                    } else if (uploadResponse.code() >= 500 && uploadResponse.code() < 600) {
                         TimeUnit.MILLISECONDS.sleep(exponentialBackoffMillis);
                         exponentialBackoffMillis *= EXPONENTIAL_BACKOFF_FACTOR;
                     }
