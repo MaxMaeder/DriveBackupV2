@@ -33,11 +33,9 @@ import static ratismal.drivebackup.config.Localization.intl;
  * Created by Redemption on 2/24/2016.
  */
 public class OneDriveUploader extends Uploader {
-    public static final int EXPONENTIAL_BACKOFF_MILLIS_DEFAULT = 1000;
-    public static final int EXPONENTIAL_BACKOFF_FACTOR = 5;
-    public static final int MAX_RETRY_ATTEMPTS = 3;
-
-    private final UploadLogger logger;
+    private static final int EXPONENTIAL_BACKOFF_MILLIS_DEFAULT = 1000;
+    private static final int EXPONENTIAL_BACKOFF_FACTOR = 5;
+    private static final int MAX_RETRY_ATTEMPTS = 3;
 
     private String accessToken = "";
     private String refreshToken;
@@ -48,6 +46,7 @@ public class OneDriveUploader extends Uploader {
     private static final MediaType jsonMediaType = MediaType.parse("application/json; charset=utf-8");
     private static final MediaType textMediaType = MediaType.parse("text/plain");
 
+    // as per ms docs should be multiple of 320 KiB (327'680 bytes)
     private static final int UPLOAD_CHUNK_SIZE = 5 * 1024 * 1024;
 
     /**
@@ -212,7 +211,7 @@ public class OneDriveUploader extends Uploader {
     /**
      * creates all folders in the path if they don't already exist
      * @param path to create the folders for
-     * @return FQID of the last folder in the path
+     * @return {@link OneDriveUploader.FQID FQID} of the last folder in the path
      * @throws IOException if the request could not be executed
      * @throws GraphApiErrorException if the folder could not be found or created
      * @throws JSONException if the response does not contain the expected items
@@ -232,7 +231,7 @@ public class OneDriveUploader extends Uploader {
      * creates a folder at the root if it doesn't already exist
      * @param root of where to create the folder
      * @param folder name to create
-     * @return FQID of the folder
+     * @return {@link OneDriveUploader.FQID FQID} of the folder
      * @throws IOException if the request could not be executed
      * @throws GraphApiErrorException if the folder could not be found or created
      * @throws JSONException if the response does not contain the expected items
@@ -264,7 +263,7 @@ public class OneDriveUploader extends Uploader {
     /**
      * creates a folder at the drive root if it doesn't already exist
      * @param folder name to create
-     * @return FQID of the folder
+     * @return {@link OneDriveUploader.FQID FQID} of the folder
      * @throws IOException if the request could not be executed
      * @throws GraphApiErrorException if the root could not be found or created
      * @throws JSONException if the response does not contain the expected items
@@ -296,7 +295,7 @@ public class OneDriveUploader extends Uploader {
     /**
      * tries to find folder in the drive root
      * @param folder to search
-     * @return FQID or null if not found
+     * @return {@link OneDriveUploader.FQID FQID} or null if not found
      * @throws IOException if the request could not be executed
      * @throws GraphApiErrorException if the root could not be retrieved
      * @throws JSONException if the response does not contain the expected items
@@ -330,7 +329,7 @@ public class OneDriveUploader extends Uploader {
      * tries to find a folder under root
      * @param root to search
      * @param folder to look for
-     * @return FQID or null if not found
+     * @return {@link OneDriveUploader.FQID FQID} or null if not found
      * @throws IOException if the request could not be executed
      * @throws GraphApiErrorException if the children could not be retrieved
      * @throws JSONException if the response does not contain the expected items
@@ -389,7 +388,7 @@ public class OneDriveUploader extends Uploader {
      * upload a file up to 250MB in size
      * @param file to upload
      * @param destinationFolder to upload the file into
-     * @return FQID of the uploaded file
+     * @return {@link OneDriveUploader.FQID FQID} of the uploaded file
      * @throws IOException if the request could not be executed
      * @throws GraphApiErrorException if the file could not be uploaded
      */
@@ -414,8 +413,8 @@ public class OneDriveUploader extends Uploader {
      * creates an upload session for a file in a destination folder on OneDrive.
      *
      * @param fileName of the file to upload
-     * @param destinationFolder as FQID
-     * @return String with the upload URL for the file
+     * @param destinationFolder as {@link OneDriveUploader.FQID FQID}
+     * @return {@link String} with the upload URL for the file
      * @throws IOException if there is an error executing the request
      * @throws GraphApiErrorException if the upload session was not created
      * @throws JSONException if the response does not contain the expected values
@@ -470,7 +469,7 @@ public class OneDriveUploader extends Uploader {
                     retryCount = 0;
                 } else if (uploadResponse.code() == 201 || uploadResponse.code() == 200) {
                     break;
-                } else { // TODO conflict after successful upload not handled
+                } else { // TODO 404 409 416
                     if (retryCount > MAX_RETRY_ATTEMPTS) {
                         Request cancelRequest = new Request.Builder().url(uploadURL).delete().build();
                         DriveBackup.httpClient.newCall(cancelRequest).execute().close();
@@ -535,7 +534,7 @@ public class OneDriveUploader extends Uploader {
         private final int length;
 
         /**
-         * Creates an instance of the {@code Range} object
+         * Creates an instance of the {@link OneDriveUploader.Range Range} object
          * @param start the index of the first byte
          * @param length of the range
          */
@@ -545,7 +544,7 @@ public class OneDriveUploader extends Uploader {
         }
 
         /**
-         * Creates an instance of the {@code Range} object
+         * Creates an instance of the {@link OneDriveUploader.Range Range} object
          * @param range in the format of {@code 000-000 or 000-}
          * @param maxLength to clamp the range to
          * @throws NumberFormatException if parseLong fails on range
