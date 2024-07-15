@@ -339,9 +339,13 @@ public class OneDriveUploader extends Uploader {
      */
     @Nullable
     private FQID getFolder(@NotNull FQID root, @NotNull String folder) throws IOException, GraphApiErrorException {
-        for (JSONObject childItem : getChildren(root, "?select=name,id,parentReference,remoteItem")) {
-            String folderName = childItem.getString("name"); // TODO filter non folders
-            if (folder.equals(folderName)) {
+        String queryParams = "?select=name,id,folder,parentReference,remoteItem";
+        for (JSONObject childItem : getChildren(root, queryParams)) {
+            String itemName = childItem.getString("name");
+            if (folder.equals(itemName)) {
+                if (!childItem.has("folder")) {
+                    return null;
+                }
                 if (childItem.has("remoteItem")) {
                     childItem = childItem.getJSONObject("remoteItem");
                 }
