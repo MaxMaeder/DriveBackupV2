@@ -300,7 +300,7 @@ public class UploadThread implements Runnable {
         totalTimer.end();
         long totalBackupTime = totalTimer.getTime();
         long totalSeconds = Duration.of(totalBackupTime, ChronoUnit.MILLIS).getSeconds();
-        logger.log(intl("backup-total-time"), "<time>", String.valueOf(totalSeconds));
+        logger.log(intl("backup-total-time"), "time", String.valueOf(totalSeconds));
         backupStatus = BackupStatus.NOT_RUNNING;
         if (errorOccurred) {
             DriveBackupApi.backupError();
