@@ -53,6 +53,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.TreeMap;
 
 import static ratismal.drivebackup.config.Localization.intl;
@@ -582,14 +584,11 @@ public class UploadThread implements Runnable {
     public static String getNextAutoBackup() {
         Config config = ConfigParser.getConfig();
         if (config.backupScheduling.enabled) {
-            long now = ZonedDateTime.now(config.advanced.dateTimezone).toEpochSecond();
-            ZonedDateTime nextBackupDate = Collections.min(Scheduler.getBackupDatesList(), new Comparator<ZonedDateTime>() {
-                public int compare(ZonedDateTime d1, ZonedDateTime d2) {
-                    long diff1 = Math.abs(d1.toEpochSecond() - now);
-                    long diff2 = Math.abs(d2.toEpochSecond() - now);
-                    return Long.compare(diff1, diff2);
-                }
-            });
+            ZonedDateTime now = ZonedDateTime.now(config.advanced.dateTimezone);
+            ZonedDateTime nextBackupDate = Scheduler.getBackupDatesList().stream()
+                .filter(zdt -> zdt.isAfter(now))
+                .min(Comparator.naturalOrder())
+                .orElseThrow(NoSuchElementException::new);
             DateTimeFormatter backupDateFormatter = DateTimeFormatter.ofPattern(intl("next-schedule-backup-format"), config.advanced.dateLanguage);
             return intl("next-schedule-backup").replaceAll("%DATE", nextBackupDate.format(backupDateFormatter));
         } else if (config.backupStorage.delay != -1) {
