@@ -1,7 +1,7 @@
 package ratismal.drivebackup.plugin;
 
 import java.time.DayOfWeek;
-import java.time.ZoneOffset;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.TextStyle;
@@ -54,7 +54,7 @@ public class Scheduler {
             SchedulerUtil.cancelTasks(backupTasks);
             backupDatesList.clear();
             for (BackupScheduleEntry entry : config.backupScheduling.schedule) {
-                ZoneOffset timezone = config.advanced.dateTimezone;
+                ZoneId timezone = config.advanced.dateTimezone;
                 for (DayOfWeek day : entry.days) {
                     ZonedDateTime previousOccurrence = ZonedDateTime.now(timezone)
                         .with(TemporalAdjusters.previous(day))
