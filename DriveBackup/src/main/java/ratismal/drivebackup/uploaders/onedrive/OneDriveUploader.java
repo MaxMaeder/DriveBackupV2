@@ -381,7 +381,7 @@ public class OneDriveUploader extends Uploader {
                 }
                 JSONObject parsedResponse = new JSONObject(response.body().string());
                 JSONArray someChildren = parsedResponse.getJSONArray("value");
-                allChildren.ensureCapacity(parsedResponse.getInt("@odata.count"));
+                allChildren.ensureCapacity(parsedResponse.optInt("@odata.count", someChildren.length()));
                 for (int i = 0; i < someChildren.length(); i++) {
                     allChildren.add(someChildren.getJSONObject(i));
                 }
