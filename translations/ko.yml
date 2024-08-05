@@ -64,7 +64,10 @@ backup-schedule-time-invalid: "시간이 잘못되어 스케줄 항목 <entry>�
 backup-start: "백업을 생성하는 중, 서버가 잠시 느려질 수 있습니다..."
 backup-status-compressing: '백업 세트 "<set-name>" 압축 중, 세트 <set-count>개 중 <set-num>'
 backup-status-not-running: "백업이 실행 중이지 않습니다."
+backup-status-pruning: "백업을 정리하는 중"
+backup-status-starting: "백업을 시작하는 중"
 backup-status-uploading: '백업 세트 "<set-name>" 업로드 중, 세트 <set-count>개 중 <set-num>'
+backup-total-time: "백업이 <time>초 만에 완료되었습니다."
 backup-upload-complete: "백업 업로드 완료"
 backup-upload-start: "백업을 업로드합니다..."
 backups-interval-scheduled: "매 <delay>분마다 백업을 실행하도록 스케줄링합니다."
