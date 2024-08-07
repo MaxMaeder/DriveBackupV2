@@ -16,7 +16,7 @@ router.post('/', async function (req, res) {
 
   switch (req.body.type) {
     case ('googledrive'):
-      verifyURL = `https://accounts.google.com/o/oauth2/v2/auth?scope=https://www.googleapis.com/auth/drive&access_type=offline&prompt=consent&response_type=code&state=${user_code}&redirect_uri=${AUTH_URL}/callback&client_id=602937851350-q69l9u3njis7nhb15cb7qmddqtrmhrg7.apps.googleusercontent.com`;
+      verifyURL = `https://accounts.google.com/o/oauth2/v2/auth?scope=https://www.googleapis.com/auth/drive.appdata&access_type=offline&prompt=consent&response_type=code&state=${user_code}&redirect_uri=${AUTH_URL}/callback&client_id=602937851350-q69l9u3njis7nhb15cb7qmddqtrmhrg7.apps.googleusercontent.com`;
       break;
     case ('dropbox'):
       verifyURL = `https://www.dropbox.com/oauth2/authorize?token_access_type=offline&response_type=code&client_id=9as745vm8v7g0rr&redirect_uri=${AUTH_URL}/callback&state=${user_code}`;
