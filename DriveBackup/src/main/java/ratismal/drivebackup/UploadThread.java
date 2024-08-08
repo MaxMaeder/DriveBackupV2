@@ -617,7 +617,7 @@ public class UploadThread implements Runnable {
     @NotNull
     @Contract (pure = true)
     private static String getSocketAddress(@NotNull ExternalBackupSource externalBackup) {
-        return externalBackup.hostname + ":" + externalBackup.port;
+        return externalBackup.hostname + "-" + externalBackup.port;
     }
 
     /**
