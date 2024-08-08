@@ -148,9 +148,13 @@ public class BackupMethods {
     @NotNull
     @Contract ("_, _ -> new")
     public static BackupMethods parse(@NotNull FileConfiguration config, Logger logger) {
+        String googleSharedDriveId = config.getString("googledrive.shared-drive-id").trim();
+        if (!Strings.isNullOrEmpty(googleSharedDriveId)) {
+            logger.log(intl("shared-drive-deprecated"));
+        }
         GoogleDriveBackupMethod googleDriveMethod = new GoogleDriveBackupMethod(
             config.getBoolean("googledrive.enabled"),
-            config.getString("googledrive.shared-drive-id").trim()
+            googleSharedDriveId
             );
         OneDriveBackupMethod oneDriveMethod = new OneDriveBackupMethod(
             config.getBoolean("onedrive.enabled")

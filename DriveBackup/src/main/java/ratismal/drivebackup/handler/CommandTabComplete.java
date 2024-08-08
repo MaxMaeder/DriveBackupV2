@@ -41,13 +41,13 @@ public class CommandTabComplete implements TabCompleter {
                 List<String> commandList = new ArrayList<>(10);
                 commandList.add("v");
                 commandList.add("help");
+                commandList.add("commands");
                 if (hasPerm(player, Permission.LINK_ACCOUNTS)) {
                     commandList.add("linkaccount");
+                    commandList.add("unlinkaccount");
                 }
                 if (hasPerm(player, Permission.RELOAD_CONFIG)) {
                     commandList.add("reloadconfig");
-                }
-                if (hasPerm(player, Permission.RELOAD_CONFIG)) {
                     commandList.add("debug");
                 }
                 if (hasPerm(player, Permission.GET_BACKUP_STATUS)) {
@@ -58,11 +58,7 @@ public class CommandTabComplete implements TabCompleter {
                 }
                 if (hasPerm(player, Permission.BACKUP)) {
                     commandList.add("backup");
-                }
-                if (hasPerm(player, Permission.BACKUP)) {
                     commandList.add("test");
-                }
-                if (hasPerm(player, Permission.BACKUP)) {
                     commandList.add("update");
                 }
                 return commandList;

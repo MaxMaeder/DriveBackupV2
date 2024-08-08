@@ -2,12 +2,14 @@ package ratismal.drivebackup.uploaders.googledrive;
 
 import com.google.api.client.auth.oauth2.BearerToken;
 import com.google.api.client.auth.oauth2.Credential;
+import com.google.api.client.googleapis.json.GoogleJsonResponseException;
 import com.google.api.client.http.FileContent;
 import com.google.api.client.http.HttpRequestInitializer;
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
+import com.google.api.client.util.Strings;
 import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.model.ChildList;
 import com.google.api.services.drive.model.ChildReference;
@@ -85,6 +87,13 @@ public class GoogleDriveUploader extends Uploader {
         try {
             refreshToken = Authenticator.getRefreshToken(AuthenticationProvider.GOOGLE_DRIVE);
             retrieveNewAccessToken();
+            String sharedDriveId = ConfigParser.getConfig().backupMethods.googleDrive.sharedDriveId;
+            if (!Strings.isNullOrEmpty(sharedDriveId)) {
+                drives = service.drives().list().execute().getItems();
+            }
+        } catch (GoogleJsonResponseException e) {
+            logger.log(intl("shared-drive-error"));
+            setErrorOccurred(true);
         } catch (Exception e) {
             MessageUtil.sendConsoleException(e);
             setErrorOccurred(true);
@@ -221,7 +230,7 @@ public class GoogleDriveUploader extends Uploader {
             try {
                 pruneBackups(folder);
             } catch (Exception e) {
-                if (!sharedDriveId.isEmpty()) {
+                if (!Strings.isNullOrEmpty(sharedDriveId)) {
                     logger.log(intl("backup-method-shared-drive-prune-failed"));
                 } else {
                     logger.log(intl("backup-method-prune-failed"));
