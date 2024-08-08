@@ -231,17 +231,18 @@ public class UploadThread implements Runnable {
         backupBackingUp = 0;
         ServerUtil.setAutoSave(false);
         for (BackupListEntry set : backupList) {
-            for(Path folder : set.location.getPaths()) {
+            backupBackingUp++;
+            for (Path folder : set.location.getPaths()) {
                 if (set.create) {
                     makeBackupFile(folder.toString(), set.formatter, Arrays.asList(set.blacklist));
                 }
             }
-            backupBackingUp++;
         }
         ServerUtil.setAutoSave(true);
         logger.log(intl("backup-local-complete"));
         logger.log(intl("backup-upload-start"));
         backupStatus = BackupStatus.UPLOADING;
+        backupBackingUp = 0;
         uploaders = new ArrayList<>(5);
         if (config.backupMethods.googleDrive.enabled) {
             uploaders.add(new GoogleDriveUploader(logger));
@@ -377,6 +378,7 @@ public class UploadThread implements Runnable {
     
     private void uploadBackupFiles(List<Uploader> uploaders) {
         for (BackupListEntry set : backupList) {
+            backupBackingUp++;
             for(Path folder : set.location.getPaths()) {
                 uploadFile(folder.toString(), set.formatter, uploaders);
             }
@@ -570,10 +572,10 @@ public class UploadThread implements Runnable {
                 return intl("backup-status-not-running");
         }
         BackupListEntry[] backupList = config.backupList.list;
-        String backupSetName = backupList[backupBackingUp].location.toString();
+        String backupSetName = backupList[backupBackingUp - 1].location.toString();
         return message
             .replace("<set-name>", backupSetName)
-            .replace("<set-num>", String.valueOf(backupBackingUp + 1))
+            .replace("<set-num>", String.valueOf(backupBackingUp))
             .replace("<set-count>", String.valueOf(backupList.length));
     }
 
