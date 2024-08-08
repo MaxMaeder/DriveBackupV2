@@ -145,20 +145,7 @@ public class Authenticator {
                         response.close();
                         if (parsedResponse.has("refresh_token")) {
                             saveRefreshToken(provider, (String) parsedResponse.get("refresh_token"));
-                            if (provider.getId() == "googledrive") {
-                                UploadLogger uploadLogger = new UploadLogger() {
-                                    @Override
-                                    public void log(String input, String... placeholders) {
-                                        MessageUtil.Builder()
-                                                .mmText(input, placeholders)
-                                                .to(initiator)
-                                                .send();
-                                    }
-                                };
-                                new GoogleDriveUploader(uploadLogger).setupSharedDrives(initiator);
-                            } else {
-                                linkSuccess(initiator, provider, logger);
-                            }
+                            linkSuccess(initiator, provider, logger);
                             cancelPollTask();
                         } else if (
                             (provider == AuthenticationProvider.ONEDRIVE && !parsedResponse.getString("error").equals("authorization_pending")) ||

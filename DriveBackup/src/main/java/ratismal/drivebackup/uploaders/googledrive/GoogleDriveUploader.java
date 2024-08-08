@@ -85,7 +85,6 @@ public class GoogleDriveUploader extends Uploader {
         try {
             refreshToken = Authenticator.getRefreshToken(AuthenticationProvider.GOOGLE_DRIVE);
             retrieveNewAccessToken();
-            drives = service.drives().list().execute().getItems();
         } catch (Exception e) {
             MessageUtil.sendConsoleException(e);
             setErrorOccurred(true);
