@@ -129,23 +129,28 @@ public class OneDriveUploader extends Uploader {
     @Override
     public void uploadFile(File file, String location) {
         try {
+            retrieveNewAccessToken();
             String destinationRoot = normalizePath(ConfigParser.getConfig().backupStorage.remoteDirectory);
             String destinationPath = concatPath(destinationRoot, normalizePath(location));
             FQID destinationId = createPath(destinationPath);
             String uploadURL = createUploadSession(file.getName(), destinationId);
             try (RandomAccessFile raf = new RandomAccessFile(file, "r")) {
                 uploadToSession(uploadURL, raf);
-                try {
-                    pruneBackups(destinationId);
-                } catch (Exception e) {
-                    logger.log(intl("backup-method-prune-failed"));
-                    throw e;
-                }
             }
-        } catch (Exception exception) {
+            try {
+                pruneBackups(destinationId);
+            } catch (Exception e) {
+                logger.log(intl("backup-method-prune-failed"));
+                throw e;
+            }
+        }
+        catch (Exception exception) {
             NetUtil.catchException(exception, "graph.microsoft.com", logger);
             MessageUtil.sendConsoleException(exception);
             setErrorOccurred(true);
+            if (exception instanceof InterruptedException) {
+                Thread.currentThread().interrupt();
+            }
         }
     }
 
