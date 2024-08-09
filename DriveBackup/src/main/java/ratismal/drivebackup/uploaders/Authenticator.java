@@ -7,10 +7,8 @@ import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONObject;
-import ratismal.drivebackup.UploadThread.UploadLogger;
 import ratismal.drivebackup.handler.commandHandler.BasicCommands;
 import ratismal.drivebackup.plugin.DriveBackup;
-import ratismal.drivebackup.uploaders.googledrive.GoogleDriveUploader;
 import ratismal.drivebackup.util.Logger;
 import ratismal.drivebackup.util.MessageUtil;
 import ratismal.drivebackup.util.NetUtil;
@@ -198,12 +196,12 @@ public class Authenticator {
         BasicCommands.sendBriefBackupList(initiator);
     }
 
-    private static void saveRefreshToken(@NotNull AuthenticationProvider provider, String token) throws Exception {
+    public static void saveRefreshToken(@NotNull AuthenticationProvider provider, String token) throws IOException {
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("refresh_token", token);
-        FileWriter file = new FileWriter(provider.getCredStoreLocation());
-        file.write(jsonObject.toString());
-        file.close();
+        try (FileWriter file = new FileWriter(provider.getCredStoreLocation())) {
+            file.write(jsonObject.toString());
+        }
     }
 
     private static void enableBackupMethod(@NotNull AuthenticationProvider provider, Logger logger) {

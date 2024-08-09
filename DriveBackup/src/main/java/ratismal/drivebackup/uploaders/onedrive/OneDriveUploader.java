@@ -60,7 +60,7 @@ public class OneDriveUploader extends Uploader {
         this.logger = logger;
         setAuthProvider(AuthenticationProvider.ONEDRIVE);
         try {
-            refreshToken = Authenticator.getRefreshToken(AuthenticationProvider.ONEDRIVE);
+            refreshToken = Authenticator.getRefreshToken(getAuthProvider());
             retrieveNewAccessToken();
         } catch (Exception e) {
             MessageUtil.sendConsoleException(e);
@@ -76,7 +76,7 @@ public class OneDriveUploader extends Uploader {
      */
     private void retrieveNewAccessToken() throws Exception {
         RequestBody requestBody = new FormBody.Builder()
-            .add("client_id", Obfusticate.decrypt(AuthenticationProvider.ONEDRIVE.getClientId()))
+            .add("client_id", Obfusticate.decrypt(getAuthProvider().getClientId()))
             .add("scope", "offline_access Files.ReadWrite")
             .add("refresh_token", refreshToken)
             .add("grant_type", "refresh_token")
@@ -94,6 +94,7 @@ public class OneDriveUploader extends Uploader {
                 throw new IOException(String.format("%s : %s", error, description));
             }
             accessToken = parsedResponse.getString("access_token");
+            refreshToken = parsedResponse.getString("refresh_token");
         }
     }
 
@@ -158,7 +159,11 @@ public class OneDriveUploader extends Uploader {
     * Closes any remaining connections retrieveNewAccessToken
     */
     public void close() {
-        // nothing needs to be done
+        try {
+            Authenticator.saveRefreshToken(getAuthProvider(), refreshToken);
+        } catch (Exception e) {
+            MessageUtil.sendConsoleException(e);
+        }
     }
 
     /**
