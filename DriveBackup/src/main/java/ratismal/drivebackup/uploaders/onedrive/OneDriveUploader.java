@@ -12,7 +12,6 @@ import org.jetbrains.annotations.Nullable;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import ratismal.drivebackup.config.ConfigParser;
 import ratismal.drivebackup.http.HttpClient;
 import ratismal.drivebackup.platforms.DriveBackupInstance;
 import ratismal.drivebackup.uploaders.AuthenticationProvider;
@@ -20,7 +19,6 @@ import ratismal.drivebackup.uploaders.Authenticator;
 import ratismal.drivebackup.uploaders.Obfusticate;
 import ratismal.drivebackup.uploaders.UploadLogger;
 import ratismal.drivebackup.uploaders.Uploader;
-import ratismal.drivebackup.util.MessageUtil;
 import ratismal.drivebackup.util.NetUtil;
 
 import java.io.File;
@@ -39,32 +37,20 @@ import java.util.concurrent.TimeUnit;
  * Created by Redemption on 2/24/2016.
  */
 public final class OneDriveUploader extends Uploader {
+    private static final MediaType zipMediaType = MediaType.parse("application/zip; charset=utf-8");
+    private static final MediaType jsonMediaType = MediaType.parse("application/json; charset=utf-8");
+    private static final MediaType textMediaType = MediaType.parse("text/plain");
     private static final int EXPONENTIAL_BACKOFF_MILLIS_DEFAULT = 1000;
     private static final int EXPONENTIAL_BACKOFF_FACTOR = 5;
     private static final int MAX_RETRY_ATTEMPTS = 3;
     private static final String UPLOADER_NAME = "OneDrive";
     private static final String ID = "onedrive";
-    /**
-     * Size of the file chunks to upload to OneDrive
-     */
-    private static final int CHUNK_SIZE = 5 * 1024 * 1024;
     
-    private long totalUploaded;
-    private long lastUploaded;
     private String accessToken = "";
     private String refreshToken;
 
-    private static final MediaType zipMediaType = MediaType.parse("application/zip; charset=utf-8");
-    private static final MediaType jsonMediaType = MediaType.parse("application/json; charset=utf-8");
-    private static final MediaType textMediaType = MediaType.parse("text/plain");
-
     // as per ms docs should be multiple of 320 KiB (327'680 bytes)
     private static final int UPLOAD_CHUNK_SIZE = 5 * 1024 * 1024;
-
-    /**
-     * File upload buffer
-     */
-    private RandomAccessFile raf;
     
     /**
      * Creates an instance of the {@code OneDriveUploader} object
@@ -75,7 +61,7 @@ public final class OneDriveUploader extends Uploader {
             refreshToken = Authenticator.getRefreshToken(AuthenticationProvider.ONEDRIVE);
             retrieveNewAccessToken();
         } catch (Exception e) {
-            MessageUtil.sendConsoleException(e);
+            instance.getLoggingHandler().error("Error occurred while initializing OneDrive Uploader",e);
             setErrorOccurred(true);
         }
     }
@@ -113,7 +99,7 @@ public final class OneDriveUploader extends Uploader {
         accessToken = parsedResponse.getString("access_token");
     }
     
-    @Contract (pure = true)
+    @Contract(pure = true)
     @Override
     public boolean isAuthenticated() {
         return !accessToken.isEmpty();
@@ -126,10 +112,10 @@ public final class OneDriveUploader extends Uploader {
     @Override
     public void test(File testFile) {
         try {
-            String destination = normalizePath(ConfigParser.getConfig().backupStorage.remoteDirectory);
+            String destination = normalizePath(getRemoteSaveDirectory());
             FQID destinationId = createPath(destination);
             FQID testFileId = uploadSmallFile(testFile, destinationId);
-            TimeUnit.SECONDS.sleep(5);
+            TimeUnit.SECONDS.sleep(5L);
             recycleItem(testFileId.driveId, testFileId.itemId);
         } catch (Exception exception) {
             NetUtil.catchException(exception, "graph.microsoft.com", logger);
@@ -146,7 +132,7 @@ public final class OneDriveUploader extends Uploader {
     @Override
     public void uploadFile(File file, String location) {
         try {
-            String destinationRoot = normalizePath(ConfigParser.getConfig().backupStorage.remoteDirectory);
+            String destinationRoot = normalizePath(getRemoteSaveDirectory());
             String destinationPath = concatPath(destinationRoot, normalizePath(location));
             FQID destinationId = createPath(destinationPath);
             String uploadURL = createUploadSession(file.getName(), destinationId);
@@ -178,13 +164,14 @@ public final class OneDriveUploader extends Uploader {
      * fully qualified item id
      */
     private static class FQID {
-        public final String driveId;
-        public final String itemId;
+        private final String driveId;
+        private final String itemId;
 
-        public FQID(@NotNull String driveId, @NotNull String itemId) {
+        FQID(@NotNull String driveId, @NotNull String itemId) {
             this.driveId = driveId;
             this.itemId = itemId;
         }
+        
     }
 
     /**
@@ -339,7 +326,7 @@ public final class OneDriveUploader extends Uploader {
             parsedResponse = new JSONObject(response.body().string());
         }
         if (parsedResponse.has("remoteItem")) {
-           parsedResponse = parsedResponse.getJSONObject("remoteItem");
+            parsedResponse = parsedResponse.getJSONObject("remoteItem");
         }
         String driveId = parsedResponse.getJSONObject("parentReference").getString("driveId");
         String itemId = parsedResponse.getString("id");
@@ -412,7 +399,7 @@ public final class OneDriveUploader extends Uploader {
     }
 
     /**
-     * moves an item to the recycle bin
+     * Moves an item to the recycle bin
      *
      * @param driveId the ID of the drive of the item
      * @param itemId the ID of the item to be deleted
@@ -458,7 +445,7 @@ public final class OneDriveUploader extends Uploader {
     }
 
     /**
-     * creates an upload session for a file in a destination folder on OneDrive.
+     * Creates an upload session for a file in a destination folder on OneDrive.
      *
      * @param fileName of the file to upload
      * @param destinationFolder as {@link OneDriveUploader.FQID FQID}
@@ -551,7 +538,7 @@ public final class OneDriveUploader extends Uploader {
      * @throws JSONException if the response does not contain the expected items
      */
     private void pruneBackups(@NotNull FQID parent) throws IOException, GraphApiErrorException {
-        int fileLimit = ConfigParser.getConfig().backupStorage.keepCount;
+        int fileLimit = getKeepCount();
         if (fileLimit == -1) {
             return;
         }
@@ -575,36 +562,36 @@ public final class OneDriveUploader extends Uploader {
     /**
      * A range of bytes
      */
-    private static class Range {
+    private static final class Range {
         private final long start;
         private final int length;
 
         /**
-         * Creates an instance of the {@link OneDriveUploader.Range Range} object
+         * Creates an instance of the range object
          * @param start the index of the first byte
          * @param length of the range
          */
-        public Range(long start, int length) {
+        private Range(long start, int length) {
             this.start = start;
             this.length = length;
         }
 
         /**
-         * Creates an instance of the {@link OneDriveUploader.Range Range} object
+         * Creates an instance of the range object
          * @param range in the format of {@code 000-000 or 000-}
          * @param maxLength to clamp the range to
          * @throws NumberFormatException if parseLong fails on range
          * @throws IndexOutOfBoundsException if range has no {@code -}
          */
-        public Range(@NotNull String range, int maxLength) {
+        private Range(@NotNull String range, int maxLength) {
             int dash = range.indexOf('-');
-            this.start = Long.parseLong(range.substring(0, dash));
+            start = Long.parseLong(range.substring(0, dash));
             String rhs = range.substring(dash + 1);
             long end = Long.MAX_VALUE;
             if (!rhs.isEmpty()) {
                 end = Long.parseLong(rhs);
             }
-            this.length = (int)Math.min((end - start) + 1, maxLength);
+            length = (int)Math.min((end - start) + 1, maxLength);
         }
     }
 
@@ -625,4 +612,5 @@ public final class OneDriveUploader extends Uploader {
         raf.read(bytes);
         return bytes;
     }
+    
 }
