@@ -105,6 +105,7 @@ drivebackup-help-command: |-
   <gold><click:run_command:/drivebackup linkaccount onedrive>/drivebackup [unlink|unlinkaccount] onedrive</click></gold> - Unlinks your OneDrive account and disables method
   <gold><click:run_command:/drivebackup linkaccount dropbox>/drivebackup [unlink|unlinkaccount] dropbox</click></gold> - Unlinks your Dropbox account and disables method
   <gold><click:run_command:/drivebackup reloadconfig>/drivebackup reloadconfig</click></gold> - Reloads the config.yml
+  <gold><click:run_command:/drivebackup debug>/drivebackup debug</click></gold> - Gathers useful info for troubleshooting the plugin
   <gold><click:run_command:/drivebackup nextbackup>/drivebackup nextbackup</click></gold> - Gets the time/date of the next auto backup
   <gold><click:run_command:/drivebackup status>/drivebackup status</click></gold> - Gets the status of the running backup
   <gold><click:run_command:/drivebackup backup>/drivebackup backup</click></gold> - Manually initiates a backup
@@ -214,6 +215,12 @@ player-join-update-available: |-
   An update is available, get it here: <gold><click:open_url:https://bit.ly/2M14uVD>https://bit.ly/2M14uVD</click></gold>
   or by running <gold><click:run_command:/drivebackup update>/drivebackup update</click></gold>
 plugin-stop: "Stopping plugin!"
+shared-drive-deprecated: |-
+  Due to new restrictions from Google we are no longer able to support shared drives on new account links.
+  Any existing links are able to continue to use this feature for now.
+shared-drive-error: |-
+  An error has occurred while fetching your shared drive.
+  Please ensure the shared-drive-id is correct or remove to continue using your personal drive."
 test-file-creation-failed: "Test file creation failed, please try again"
 test-method-begin: "Beginning the test on <upload-method>"
 test-method-failed: "The <upload-method> test was unsuccessful, please check the

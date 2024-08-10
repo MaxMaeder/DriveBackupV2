@@ -2,12 +2,14 @@ package ratismal.drivebackup.uploaders.googledrive;
 
 import com.google.api.client.auth.oauth2.BearerToken;
 import com.google.api.client.auth.oauth2.Credential;
+import com.google.api.client.googleapis.json.GoogleJsonResponseException;
 import com.google.api.client.http.FileContent;
 import com.google.api.client.http.HttpRequestInitializer;
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
+import com.google.api.client.util.Strings;
 import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.model.ChildList;
 import com.google.api.services.drive.model.ChildReference;
@@ -88,7 +90,13 @@ public final class GoogleDriveUploader extends Uploader {
         try {
             refreshToken = Authenticator.getRefreshToken(AuthenticationProvider.GOOGLE_DRIVE);
             retrieveNewAccessToken();
-            drives = service.drives().list().execute().getItems();
+            String sharedDriveId = instance.getConfigHandler().getConfig().getValue("googledrive", "shared-drive-id").getString();
+            if (!Strings.isNullOrEmpty(sharedDriveId)) {
+                drives = service.drives().list().execute().getItems();
+            }
+        } catch (GoogleJsonResponseException e) {
+            logger.log(intl("shared-drive-error"));
+            setErrorOccurred(true);
         } catch (Exception e) {
             instance.getLoggingHandler().error("Failed to create Google Drive uploader", e);
             setErrorOccurred(true);
@@ -230,7 +238,7 @@ public final class GoogleDriveUploader extends Uploader {
             try {
                 pruneBackups(folder);
             } catch (Exception e) {
-                if (!sharedDriveId.isEmpty()) {
+                if (!Strings.isNullOrEmpty(sharedDriveId)) {
                     logger.log("backup-method-shared-drive-prune-failed");
                 } else {
                     logger.log("backup-method-prune-failed");

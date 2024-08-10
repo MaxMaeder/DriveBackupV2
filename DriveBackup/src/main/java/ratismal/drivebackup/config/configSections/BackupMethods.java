@@ -144,10 +144,14 @@ public class BackupMethods {
 
     @NotNull
     @Contract ("_ -> new")
-    public static BackupMethods parse(@NotNull FileConfiguration config) {
+    public static BackupMethods parse(@NotNull FileConfiguration config, Logger logger) {
+        String googleSharedDriveId = config.getString("googledrive.shared-drive-id").trim();
+        if (!Strings.isNullOrEmpty(googleSharedDriveId)) {
+            logger.log(intl("shared-drive-deprecated"));
+        }
         GoogleDriveBackupMethod googleDriveMethod = new GoogleDriveBackupMethod(
             config.getBoolean("googledrive.enabled"),
-            config.getString("googledrive.shared-drive-id").trim()
+            googleSharedDriveId
             );
         OneDriveBackupMethod oneDriveMethod = new OneDriveBackupMethod(
             config.getBoolean("onedrive.enabled")
@@ -184,14 +188,16 @@ public class BackupMethods {
         if (!Strings.isNullOrEmpty(config.getString("ftp.sftp-public-key")) && ftpEnabled) {
             try {
                 publicKey = ConfigParser.verifyPath(config.getString("ftp.sftp-public-key"));
-            } catch (InvalidPathException ignored) {
+            } catch (InvalidPathException e) {
+                logger.log(intl("ftp-method-pubic-key-invalid"));
             }
         }
         String baseDir = "";
         if (!Strings.isNullOrEmpty(config.getString("ftp.base-dir")) && ftpEnabled) {
             try {
                 baseDir = ConfigParser.verifyPath(config.getString("ftp.base-dir"));
-            } catch (InvalidPathException ignored) {
+            } catch (InvalidPathException e) {
+                logger.log(intl("ftp-method-passphrase-invalid"));
             }
         }
         FTPBackupMethod ftpMethod = new FTPBackupMethod(
