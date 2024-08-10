@@ -51,12 +51,13 @@ import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.TreeMap;
 
 /**
@@ -536,12 +537,12 @@ public final class UploadThread implements Runnable {
         if (config.getValue("scheduled-backups").getBoolean()) {
             String offset = instance.getConfigHandler().getConfig().getValue("advanced", "date-timezone").getString();
             ZoneOffset zoneOffset = ZoneOffset.of(offset);
-            long now = ZonedDateTime.now(zoneOffset).toEpochSecond();
-            ZonedDateTime nextBackupDate = Collections.min(Scheduler.getBackupDatesList(), (d1, d2) -> {
-                long diff1 = Math.abs(d1.toEpochSecond() - now);
-                long diff2 = Math.abs(d2.toEpochSecond() - now);
-                return Long.compare(diff1, diff2);
-            });
+            ZonedDateTime now = ZonedDateTime.now(zoneOffset);
+            //TODO remove use of scheduler
+            ZonedDateTime nextBackupDate = Scheduler.getBackupDatesList().stream()
+                                                    .filter(zdt -> zdt.isAfter(now))
+                                                    .min(Comparator.naturalOrder())
+                                                    .orElseThrow(NoSuchElementException::new);
             String dateLanguageString = instance.getConfigHandler().getConfig().getValue("advanced", "date-language").getString();
             Locale dateLanguage = Locale.forLanguageTag(dateLanguageString);
             String format = instance.getMessageHandler().getLangString("next-schedule-backup-format");
