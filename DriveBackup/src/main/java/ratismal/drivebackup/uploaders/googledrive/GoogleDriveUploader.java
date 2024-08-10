@@ -95,7 +95,7 @@ public final class GoogleDriveUploader extends Uploader {
                 drives = service.drives().list().execute().getItems();
             }
         } catch (GoogleJsonResponseException e) {
-            logger.log(intl("shared-drive-error"));
+            logger.log("shared-drive-error");
             setErrorOccurred(true);
         } catch (Exception e) {
             instance.getLoggingHandler().error("Failed to create Google Drive uploader", e);
