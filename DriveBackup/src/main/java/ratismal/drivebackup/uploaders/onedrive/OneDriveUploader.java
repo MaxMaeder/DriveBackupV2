@@ -20,7 +20,6 @@ import ratismal.drivebackup.uploaders.Authenticator;
 import ratismal.drivebackup.uploaders.Obfusticate;
 import ratismal.drivebackup.uploaders.UploadLogger;
 import ratismal.drivebackup.uploaders.Uploader;
-import ratismal.drivebackup.uploaders.UploaderUtils;
 import ratismal.drivebackup.util.MessageUtil;
 import ratismal.drivebackup.util.NetUtil;
 
@@ -29,8 +28,8 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -54,8 +53,6 @@ public final class OneDriveUploader extends Uploader {
     private long lastUploaded;
     private String accessToken = "";
     private String refreshToken;
-
-    public static final String UPLOADER_NAME = "OneDrive";
 
     private static final MediaType zipMediaType = MediaType.parse("application/zip; charset=utf-8");
     private static final MediaType jsonMediaType = MediaType.parse("application/json; charset=utf-8");
@@ -158,7 +155,7 @@ public final class OneDriveUploader extends Uploader {
                 try {
                     pruneBackups(destinationId);
                 } catch (Exception e) {
-                    logger.log(intl("backup-method-prune-failed"));
+                    logger.log("backup-method-prune-failed");
                     throw e;
                 }
             }
@@ -273,7 +270,7 @@ public final class OneDriveUploader extends Uploader {
             .url("https://graph.microsoft.com/v1.0/drives/" + root.driveId + "/items/" + root.itemId + "/children")
             .post(requestBody)
             .build();
-        try (Response response = DriveBackup.httpClient.newCall(request).execute()) {
+        try (Response response = HttpClient.getHttpClient().newCall(request).execute()) {
             if (response.code() != 201) {
                 throw new GraphApiErrorException(response);
             }
@@ -396,7 +393,7 @@ public final class OneDriveUploader extends Uploader {
                     .addHeader("Authorization", "Bearer " + accessToken)
                     .url(targetUrl)
                     .build();
-            try (Response response = DriveBackup.httpClient.newCall(request).execute()) {
+            try (Response response = HttpClient.getHttpClient().newCall(request).execute()) {
                 if (!response.isSuccessful()) {
                     throw new GraphApiErrorException(response);
                 }
@@ -428,7 +425,7 @@ public final class OneDriveUploader extends Uploader {
             .url("https://graph.microsoft.com/v1.0/drives/" + driveId + "/items/" + itemId)
             .delete()
             .build();
-        try (Response response = DriveBackup.httpClient.newCall(delteRequest).execute()) {
+        try (Response response = HttpClient.getHttpClient().newCall(delteRequest).execute()) {
             if (response.code() != 204 && response.code() != 404) {
                 throw new GraphApiErrorException(response);
             }
@@ -451,7 +448,7 @@ public final class OneDriveUploader extends Uploader {
                 + ":/" + file.getName() + ":/content")
             .put(RequestBody.create(file, textMediaType))
             .build();
-        try (Response response = DriveBackup.httpClient.newCall(uploadRequest).execute()) {
+        try (Response response = HttpClient.getHttpClient().newCall(uploadRequest).execute()) {
             if (response.code() != 201) {
                 throw new GraphApiErrorException(response);
             }
@@ -478,7 +475,7 @@ public final class OneDriveUploader extends Uploader {
                 + "/items/" + destinationFolder.itemId + ":/" + fileName + ":/createUploadSession")
             .post(RequestBody.create("{}", jsonMediaType))
             .build();
-        try (Response response = DriveBackup.httpClient.newCall(request).execute()) {
+        try (Response response = HttpClient.getHttpClient().newCall(request).execute()) {
             if (!response.isSuccessful()) {
                 throw new GraphApiErrorException(response);
             }
@@ -511,7 +508,7 @@ public final class OneDriveUploader extends Uploader {
                 .url(uploadURL)
                 .put(RequestBody.create(bytesToUpload, zipMediaType))
                 .build();
-            try (Response uploadResponse = DriveBackup.httpClient.newCall(uploadRequest).execute()) {
+            try (Response uploadResponse = HttpClient.getHttpClient().newCall(uploadRequest).execute()) {
                 if (uploadResponse.code() == 202) {
                     JSONObject responseObject = new JSONObject(uploadResponse.body().string());
                     JSONArray expectedRanges = responseObject.getJSONArray("nextExpectedRanges");
@@ -523,13 +520,13 @@ public final class OneDriveUploader extends Uploader {
                 } else {
                     if (retryCount > MAX_RETRY_ATTEMPTS || uploadResponse.code() == 409) {
                         Request cancelRequest = new Request.Builder().url(uploadURL).delete().build();
-                        DriveBackup.httpClient.newCall(cancelRequest).execute().close();
+                        HttpClient.getHttpClient().newCall(cancelRequest).execute().close();
                         throw new GraphApiErrorException(uploadResponse);
                     } else if (uploadResponse.code() == 404) {
                         throw new GraphApiErrorException(uploadResponse);
                     } else if (uploadResponse.code() == 416) {
                         Request statusRequest = new Request.Builder().url(uploadURL).build();
-                        try (Response statusResponse = DriveBackup.httpClient.newCall(statusRequest).execute()) {
+                        try (Response statusResponse = HttpClient.getHttpClient().newCall(statusRequest).execute()) {
                             JSONObject responseObject = new JSONObject(statusResponse.body().string());
                             JSONArray expectedRanges = responseObject.getJSONArray("nextExpectedRanges");
                             range = new Range(expectedRanges.getString(0), UPLOAD_CHUNK_SIZE);
@@ -562,11 +559,11 @@ public final class OneDriveUploader extends Uploader {
         if(fileLimit >= childItems.size()) {
             return;
         }
-        logger.info(
-            intl("backup-method-limit-reached"),
-            "file-count", String.valueOf(childItems.size()),
-            "upload-method", getName(),
-            "file-limit", String.valueOf(fileLimit));
+        Map<String, String> placeholders = new HashMap<>();
+        placeholders.put("upload-method", getName());
+        placeholders.put("file-count", String.valueOf(childItems.size()));
+        placeholders.put("file-limit", String.valueOf(fileLimit));
+        logger.info("backup-method-limit-reached", placeholders);
         childItems.sort(Comparator.comparing(item -> item.getString("createdDateTime")));
         int itemsToDelete = childItems.size() - fileLimit;
         for (int i = 0; i < itemsToDelete; i++) {
