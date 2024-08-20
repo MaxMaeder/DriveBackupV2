@@ -1,0 +1,255 @@
+# Check if someone has translated the plugin into your language already!
+# https://github.com/MaxMaeder/DriveBackupV2/tree/master/translations
+#
+# If not, feel free to contribute!
+
+auto-backups-disabled: "自動バックアップは無効です"
+backup-already-running: |-
+  既にバックアップを実行中です
+  <backup-status>
+backup-complete: "バックアップが完了しました"
+backup-disabled-inactivity: "非アクティブのため自動バックアップを無効にします"
+backup-empty-list: "バックアップリストは空です"
+backup-failed-absolute-path: |-
+  バックアップの作成に失敗しました。バックアップするフォルダへのパスは絶対パスですが、相対パスが必要です
+絶対パスはその他の重要なファイルを上書きする可能性があります。詳細についてはドキュメントを参照してください
+バックアップ場所のスキップします
+backup-file-upload-complete: '"<file-name>" のアップロードが完了しました'
+backup-file-upload-start: '"<file-name>" を開始しています'
+backup-forced: "強制的にバックアップを作成します..."
+backup-list-blacklist-invalid: "ブラックリストに登録されたエントリーが無効です。スキップします。 <entry>"
+backup-list-format-invalid: "ファイルフォーマットが無効です。 スキップします。 <entry>"
+backup-list-glob-invalid: "指定されたGlobが無効です。スキップします。<entry> " 
+backup-list-no-dest-specified: "フォルダーパスまたはglobが指定されていないためスキップします。 <entry>"
+backup-list-path-invalid: "指定されたフォルダーパスが無効なためスキップしています。 <entry>"
+backup-local-complete: "ローカルバックアップが圧縮・作成されました"
+backup-local-failed: |-
+  ローカルバックアップの作成に失敗しました。
+  local-keep-count が 0 に設定されている場合でも、プラグインは一時的にローカルにバックアップを作成する必要があります。
+  バックアップ場所をスキップしています。
+backup-local-file-complete: '"<location>" のバックアップを作成しました'
+backup-local-file-start: '"<location>" のバックアップを作成中です'
+backup-local-prune-complete: "ローカルバックアップの整理が完了しました"
+backup-local-prune-start: "ローカルバックアップを整理中です"
+backup-local-start: "ローカルバックアップの作成、圧縮を実行中です"
+backup-method-complete: "<gold><upload-method></gold> へのバックアップが完了しました"
+backup-method-error-occurred: "<upload-method> へのバックアップに失敗しました
+  ログイン情報が正しいことを確認・または、
+  <gold><click:run_command:'<diagnose-command>'><diagnose-command></click></gold>
+  で問題を特定してください。"
+backup-method-limit-reached: "<upload-method> の現在のバックアップ場所には <file-count> 個のファイルがあり、
+  <file-limit> 個の制限を超えているため削除を行います。
+  削除中"
+backup-method-not-auth: |-
+  <upload-method>へのバックアップに失敗したためスキップしています。
+  <gold>config.yml<gold>のログイン情報が正しいことを確認してください。
+backup-method-not-auth-authenticator: |-
+  <upload-method>へのバックアップに失敗したためスキップしています。
+  <gold><click:run_command:'<link-command>'><link-command></click></gold> コマンドで再度連携をしてください。
+backup-method-not-linked: |-
+  <upload-method> のアカウントがリンクされていません。
+  リンクするには、 <gold><click:run_command:'<link-command>'><link-command></click></gold> コマンドを実行してください。
+backup-method-prune-failed: "バックアップの整理に失敗しました"
+backup-method-shared-drive-prune-failed: |-
+  バックアップの整理に失敗しました。
+  共有ドライブの所有者にアカウントに権限を追加するよう依頼するか、keep-count を0に設定してバックアップの削除を無効にしてください。
+backup-method-upload-failed: "アップロードに失敗しました"
+backup-method-uploading: "<upload-method> にファイルをアップロード中"
+backup-no-methods: "有効化されているバックアップ方法がありません"
+backup-schedule-day-empty: "曜日リストが空なので、スケジュールをスキップします<entry>"
+backup-schedule-day-invalid: '曜日にエラーがあるため、曜日 "<day>" をスキップします'
+backup-schedule-days-invalid: "曜日のリストにエラーがあるため、スケジュールをスキップします <entry>"
+backup-schedule-empty: "バックアップスケジュールが空なので、スケジュールベースのバックアップを無効にします"
+backup-schedule-time-invalid: "時間が無効です。 スキップします <entry>"
+backup-start: "現在バックアップを作成しているため、サーバーにラグが発生する可能性があります。"
+backup-status-compressing: 'バックアップ"<set-name>" の <set-number> / <set-count> を圧縮しています'
+backup-status-not-running: "実行中のバックアップはありません"
+backup-status-pruning: "バックアップを整理中"
+backup-status-starting: "バックアップを開始中"
+backup-status-uploading: 'バックアップ"<set-name>" の <set-number> / <set-count> をアップロードしています'
+backup-total-time: "バックアップに <time> 秒かかりました。"
+backup-upload-complete: "バックアップのアップロードが完了しました。"
+backup-upload-start: "バックアップをアップロードしています。"
+backups-interval-scheduled: "<delay> 分ごとにバックアップを実行します。"
+backups-scheduled: "<days> ごとの <time> にバックアップを実行するようにスケジュールしています。"
+brief-backup-list: "DriveBackupV2 は <list> をバックアップしています。"
+brief-backup-list-empty: "該当なし"
+brief-backup-list-external-backups: "いくつかの外部バックアップ"
+brief-backup-list-help: "他にバックアップしたいものがある場合は次のリンクを参照してください。
+  <gold><click:open_url:https://bit.ly/3xoHRAs>https://bit.ly/3xoHRAs</click></go\
+  ld>"
+config-loaded: "設定を読み込みました！"
+config-reloaded: "設定を再読み込みしました！"
+connection-error: "<domain> への接続に失敗しました。 インターネット接続と
+  サーバーのファイアウォール設定をご確認ください。"
+date-format-invalid: "タイムゾーンが無効です。世界標準時を使用します。"
+debug-log-created: "デバッグURL: <url>"
+debug-log-creating: "デバッグログを作成しています"
+default-google-drive-name: "My Drive"
+drivebackup-command-header: <gold>|====== <dark_red>DriveBackupV2</dark_red> ======|</gold>
+drivebackup-docs-command: |-
+  <header>
+  ヘルプが必要ですか？これらの情報を参照してください！
+  Wiki: <gold><click:open_url:https://bit.ly/3dDdmwK>https://bit.ly/3dDdmwK</click></gold>
+  Discord: <gold><click:open_url:https://bit.ly/3f4VuuT>https://bit.ly/3f4VuuT</click></gold>
+drivebackup-help-command: |-
+  <header>
+  <gold><click:run_command:/drivebackup>/drivebackup</click></gold> - このメニューを表示
+  <gold><click:run_command:/drivebackup help>/drivebackup help</click></gold> - ヘルプ情報を表示
+  <gold><click:run_command:/drivebackup commands>/drivebackup commands</click></gold> - コマンドのヘルプページを表示
+  <gold><click:run_command:/drivebackup v>/drivebackup [v|version]</click></gold> - プラグインのバージョンを表示
+  <gold><click:run_command:/drivebackup linkaccount googledrive>/drivebackup [link|linkaccount] googledrive</click></gold> - バックアップ用にGoogle Driveを連携します。
+  <gold><click:run_command:/drivebackup linkaccount onedrive>/drivebackup [link|linkaccount] onedrive</click></gold> - バックアップ用にOneDriveを連携します。
+  <gold><click:run_command:/drivebackup linkaccount dropbox>/drivebackup [link|linkaccount] dropbox</click></gold> - バックアップ用にDropboxを連携します。
+  <gold><click:run_command:/drivebackup linkaccount googledrive>/drivebackup [unlink|unlinkaccount] googledrive</click></gold> - Google Drive連携を解除し無効にします。
+  <gold><click:run_command:/drivebackup linkaccount onedrive>/drivebackup [unlink|unlinkaccount] onedrive</click></gold> - OneDrive連携を解除し無効にします。
+  <gold><click:run_command:/drivebackup linkaccount dropbox>/drivebackup [unlink|unlinkaccount] dropbox</click></gold> - Dropbox連携を解除し無効にします。
+  <gold><click:run_command:/drivebackup reloadconfig>/drivebackup reloadconfig</click></gold> - config.yml を再読み込みします。
+  <gold><click:run_command:/drivebackup debug>/drivebackup debug</click></gold> - 不具合の解析に役立つ情報を表示します。
+  <gold><click:run_command:/drivebackup nextbackup>/drivebackup nextbackup</click></gold> - 次の自動バックアップが実行される時間を表示します。
+  <gold><click:run_command:/drivebackup status>/drivebackup status</click></gold> - 現在実行中のバックアップのステータスを表示します。
+  <gold><click:run_command:/drivebackup backup>/drivebackup backup</click></gold> - 手動でバックアップを実行します。
+  <gold><click:run_command:/drivebackup test ftp>/drivebackup test ftp</click></gold> - (S)FTP serverへの接続をテストします。
+  <gold><click:run_command:/drivebackup test googledrive>/drivebackup test googledrive</click></gold> - Google Drive への接続をテストします。
+  <gold><click:run_command:/drivebackup test onedrive>/drivebackup test onedrive</click></gold> - OneDrive への接続をテストします。
+  <gold><click:run_command:/drivebackup test dropbox>/drivebackup test dropbox</click></gold> - Dropbox への接続をテストします。
+  <gold><click:run_command:/drivebackup update>/drivebackup update</click></gold> - プラグインを最新版にアップデートします。
+drivebackup-version-command: |-
+  <header>
+  プラグインバージョン: <gold><plugin-version></gold>
+  Javaバージョン: <gold><java-version></gold>
+  サーバーソフトウェア: <gold><server-software></gold>
+  サーバーのバージョン: <gold><server-version></gold>
+drivebackup-version-update: <gold>プラグインにアップデートがあります。
+external-backup-base-dir-invalid: "外部バックアップへの
+  ベースディレクトリキーが無効です。 スキップします。<entry>"
+external-backup-format-invalid: "外部バックアップのフォーマットが無効です。スキップします。 <entry>"
+external-backup-host-port-invalid: "外部バックアップのホスト名またはポートが無効です。スキップします。 <entry>"
+external-backup-list-blacklist-invalid: "外部バックアップのブラックリストが無効です。
+  スキップします。 <entry-backup>"
+external-backup-list-invalid: "バックアップリストが無効です。スキップします。 <entry>"
+external-backup-list-path-invalid: "外部バックアップのパスが無効です。スキップします。 <entry-backup>"
+external-backup-passphrase-invalid: "外部バックアップのパスワードが無効です。スキップします。 <entry>"
+external-backup-public-key-invalid: "外部バックアップのパブリックキーへのパスが無効です。スキップします。 <entry>"
+external-backup-type-invalid: "外部バックアップの種類が無効です。スキップします。 <entry>"
+external-backup-user-pass-invalid: "外部バックアップのユーザー名またはパスワードが無効です。スキップします。 <entry>"
+external-database-list-blacklist-invalid: "外部バックアップのデータベースリストの
+  ブラックリストが無効です。スキップします。<entry-backup>"
+external-database-list-invalid: "外部バックアップのデータベース一覧が無効です。スキップします。 <entry>"
+external-database-list-name-invalid: "外部バックアップのデータベース名が無効です。スキップします。 <entry-database>"
+external-database-ssl-invalid: "外部バックアップのデータベースのSSLの設定が無効です。SSLを使用せずに接続をします。 <entry>"
+external-ftp-backup-blacklisted: '<blacklisted-files> ファイルは
+  ブラックリストに登録されていたため除外しました: 
+  "<glob-pattern>"'
+external-ftp-backup-complete: "(S)FTP サーバー (<socket-addr>) からのファイルが
+  バックアップに正常に含まれました"
+external-ftp-backup-failed: (S)FTP サーバー (<socket-addr>) からのファイルを
+  バックアップに追加できませんでした。<gold>config.yml</gold>に設定されている
+  認証情報をご確認ください。
+external-ftp-backup-start: "(S)FTP server (<socket-addr>) からバックアップに含めるファイルをダウンロードしています。"
+external-mysql-backup-blacklisted: '"<blacklist-entry>" はブラックリストに登録されているため、
+  バックアップから除外しました。'
+external-mysql-backup-complete: "MySQLサーバー (<socket-addr>)からのデータベースが
+  正常にバックアップに含まれました。"
+external-mysql-backup-failed: MySQLサーバー (<socket-addr>) からのデータベースを
+  バックアップに追加できませんでした。<gold>config.yml</gold>に設定されている
+  認証情報をご確認ください。
+external-mysql-backup-start: "MySQL server (<socket-addr>) 
+  からバックアップに含めるファイルをダウンロードしています。"
+file-upload-message: "ファイルは <length> 秒 (<speed>KB/s) でアップロードされました。"
+ftp-method-passphrase-invalid: "FTPのパスワードが無効です。スキップします。"
+ftp-method-pubic-key-invalid: "FTPのパブリックキーへのパスが無効です。スキップします。"
+google-pick-shared-drive: "1 つ以上の共有ドライブにアクセスできます。
+  使用したいドライブを選択、または
+  チャットでその番号を返信してください。"
+google-shared-drive-option: "<bold>[<drive-num>]</bold>
+  <gold><hover:show_text:Select
+  Drive><click:run_command:'<select-command>'><drive-name></click></hover></gol\
+  d>"
+invalid-backup-delay: "バックアップの周期時間が無効です。デフォルトが使用されます。"
+keep-count-invalid: "保持するバックアップの数が無効です。デフォルトが使用されます。"
+link-account-code: "<provider> アカウントにリンクするには、
+  <gold><click:open_url:'<link-url>'><link-url></click></gold> にアクセスし、
+  <gold><click:copy_to_clipboard:'<link-code>'><link-code></click></gold> と入力してください。"
+link-provider-complete: "<provider> アカウントがリンクされました!"
+link-provider-failed: "<provider> アカウントへのリンクに失敗しました。"
+list-delimiter: ", "
+list-last-delimiter: ", "
+local-backup-backlisted: '<blacklisted-files-count> ファイルはブラックリストに登録
+  されているため、バックアップから除外しました。 "<glob-pattern>"'
+local-backup-date-format-invalid: |-
+  保存されたバックアップ"<file-name>"の日付形式を解析できません。これは、config.yml で日付形式が更新されていることが原因である可能性があります
+  このバックアップは最初に削除されます
+local-backup-failed-attributes: '"<file-path>"の属性の読み取りに失敗しました。代わりにデフォルトを使用します。アクセスする権限がない可能性があります'
+local-backup-failed-permissions: |-
+  書き込み権限が不足しているためローカルバックアップの作成に失敗しました。
+  local-keep-count が 0 に設定されている場合でも、プラグインは一時的にローカルにバックアップを作成する必要があります。
+  バックアップ場所をスキップしています。
+local-backup-failed-to-delete: "ローカルバックアップの削除に失敗しました"
+local-backup-failed-to-include: '"<file-path>"をバックアップに含めることができませんでした。
+  ロックされているか、権限がない可能性があります。'
+local-backup-file-deleted: 'ローカルバックアップ "<local-backup-name>" を削除しました。'
+local-backup-file-failed-to-delete: 'ローカルバックアップ "<local-backup-name>" の削除に失敗しました。'
+local-backup-in-backup-folder: "<files-in-backup-folder-count> 個のファイルはバックアップ
+  に使用されたフォルダ内にあるため、バックアップから除外しました。"
+local-backup-limit-not-reached: "現在作成されたバックアップは <backup-count> 個、制限の <backup-limit> 個まで余裕があるため整理をスキップしました。"
+local-backup-limit-reached: "<backup-count> 個のファイルが <backup-limit> の
+  ローカル制限を超えているため、最も古いものを削除します"
+local-backup-no-limit: "ローカルバックアップの上限が設定されていないため整理をスキップしました。"
+local-backup-pruning-complete: '"<location>" のバックアップ整理が完了しました。'
+local-backup-pruning-start: '"<location>" のバックアップ整理を実行中'
+local-keep-count-invalid: "ローカルバックアップ上限が無効なため、デフォルトを使用しています。"
+local-save-directory-not-relative: "ローカル保存ディレクトリは相対的ではないため、サーバーディレクトリを基準にしています"
+location-empty: "<location> は空なためスキップしました。"
+metrics-error: "メトリックの開始に失敗しました"
+metrics-started: "メトリックを開始しました"
+next-backup: "次のバックアップは %TIME 分後に行われます。"
+next-schedule-backup: "次のバックアップは %DATE に行われます。"
+next-schedule-backup-format: "h:mm a EEE, MMM d O"
+no-perm: "権限がありません。"
+player-join-backup-enable: "自動バックアップを有効にしています"
+player-join-backup-failed: |-
+  <red>最後に実行されたバックアップは失敗しています。<red>
+  コンソールのエラーログを確認してください。
+player-join-update-available: |-
+  アップデートがあります。<gold><click:open_url:https://bit.ly/2M14uVD>https://bit.ly/2M14uVD</click></gold> にてダウンロード、
+  または <gold><click:run_command:/drivebackup update>/drivebackup update</click></gold> コマンドを実行してください。
+plugin-stop: "プラグインを停止中"
+shared-drive-deprecated: |-
+  Google からの新しい制限により、新しいアカウント リンクで共有ドライブをサポートできなくなりました。
+  既存の連携では、今のところ引き続きこの機能を使用できます。
+shared-drive-error: |-
+  共有ドライブの取得中にエラーが発生しました。
+  共有ドライブ ID が正しいことを確認するか、削除して個人用ドライブを使用してください。"
+test-file-creation-failed: "テストファイルの作成に失敗しました。もう一度お試しください。"
+test-method-begin: "<upload-method> のテストを開始中"
+test-method-failed: "<upload-method> のテストに失敗しました。
+  <gold>config.yml</gold> を確認してください。"
+test-method-invalid: '"<specified-method>" は有効なバックアップ方法ではありません。'
+test-method-not-enabled: "<upload-method> のバックアップは無効化されています。
+  <gold>config.yml</gold> で有効にできます。"
+test-method-not-specified: "テストしたいバックアップ方法を選択してください。"
+test-method-successful: "<upload-method> のテストに成功しました。"
+thread-priority-too-high: "入力されたスレッドの優先度が最大値を超えています。最大値を使用しています"
+thread-priority-too-low: "入力されたスレッドの優先度が最小値を超えています。最小値を使用しています"
+unlink-provider-complete: "<provider> アカウントの連携が解除されました。"
+unlink-provider-failed: "<provider> アカウントの連係解除に失敗しました。もう一度やり直してください。"
+update-checker-failed: "最新の DriveBackupV2 リリースの確認中に問題が発生しました"
+update-checker-new-release: |-
+  DriveBackup バージョン <latest-version> がリリースされました。現在、バージョン <current-version> を実行しています
+  更新するには<gold><click:open_url:https://bit.ly/2VGtF7L>https://bit.ly/2VGtF7L</click></gold>" または <gold><click:run_command:/drivebackup update>/drivebackup update</click></gold>を実行してください。
+update-checker-started: "アップデートを確認中"
+update-checker-unsupported-release: |-
+  サポートされていないリリースを実行しています。
+  推奨リリースは <latest-version> ですが、<current-version> を実行しています。
+  プラグインが最近更新された場合は、このメッセージを無視してください。
+updater-fetch-failed: "DriveBackupV2 の最新バージョンの取得に失敗しました。"
+updater-no-updates: "サーバーは DriveBackupV2 の最新バージョンを実行しています。"
+updater-start: "DriveBackupV2 の最新バージョンをダウンロードしています。"
+updater-successful: "アップデートに成功しました。
+  変更を適用するにはサーバーを再起動してください。"
+updater-update-failed: "アップデートに失敗しました。詳細はコンソールを確認してください。"
+upload-error-check: "アップロードにエラーがないか確認中..."
+upload-no-errors: "アップロードのエラーはありませんでした。"
+zip-compression-too-high: "入力されたZIP圧縮レベルは最大値を超えています。最大値を使用しています"
+zip-compression-too-low: "入力されたZIP圧縮レベルは最小値を超えています。最小値を使用しています"
