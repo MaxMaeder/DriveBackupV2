@@ -51,17 +51,12 @@ public class FileUtil {
         TreeMap<Long, File> backupList = new TreeMap<>();
         String path = new File(ConfigParser.getConfig().backupStorage.localDirectory).getAbsolutePath() + "/" + location;
         File[] files = new File(path).listFiles();
+        if (files == null) {
+            return backupList;
+        }
         for (File file : files) {
             if (file.getName().endsWith(".zip")) {
-                //String fileName = file.getName();
-                // try {
-                //     ZonedDateTime date = formatter.parse(fileName);
-                //     backupList.put(date.toEpochSecond(), file);
-                // } catch (Exception e) {
-                // Fallback to using file creation date if the file name doesn't match the format.
                 backupList.put((file.lastModified() / 1000), file);
-                //     logger.log(intl("local-backup-date-format-invalid"), "file-name", fileName);
-                // }
             }
         }
         return backupList;
