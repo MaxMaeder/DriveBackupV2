@@ -1,9 +1,7 @@
 package ratismal.drivebackup.uploaders.webdav;
 
-import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ratismal.drivebackup.uploaders.Uploader;
-import ratismal.drivebackup.uploaders.Authenticator.AuthenticationProvider;
 import ratismal.drivebackup.UploadThread.UploadLogger;
 import ratismal.drivebackup.config.ConfigParser;
 import ratismal.drivebackup.config.configSections.BackupMethods.WebDAVBackupMethod;
@@ -20,8 +18,75 @@ import java.util.concurrent.TimeUnit;
 import com.github.sardine.DavResource;
 import com.github.sardine.Sardine;
 import com.github.sardine.SardineFactory;
+import com.github.sardine.impl.SardineImpl;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.NTCredentials;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.CredentialsProvider;
+import org.apache.http.client.config.AuthSchemes;
+import org.apache.http.client.config.CookieSpecs;
+import org.apache.http.client.config.RequestConfig;
+import org.apache.http.impl.client.BasicCredentialsProvider;
+import org.apache.http.impl.client.HttpClientBuilder;
 
 import static ratismal.drivebackup.config.Localization.intl;
+
+/**
+ * {@link SardineFactory} replacement to customize {@link HttpClientBuilder} while retaining {@link SardineImpl} settings
+ */
+class SardineCannery {
+
+    /**
+     * Creates a new instance of {@link Sardine} with the given username and password, and standard cookie specs
+     *
+     * @param username Use in authentication header credentials
+     * @param password Use in authentication header credentials
+     * @return a new {@link Sardine} instance with the specified credentials, and standard cookie specs
+     */
+    static Sardine make(String username, String password) {
+        // helper class to get a builder with the same settings as SardineImpl, and standard cookie specs
+        // because builder can't be extracted from SardineImpl due to being private
+        class SardineCanneryHelper extends SardineImpl {
+            private final HttpClientBuilder builder;
+
+            private SardineCanneryHelper(String username, String password) {
+                super();
+                this.builder = this.configure(null, this.createDefaultCredentialsProvider(username, password))
+                        .setDefaultRequestConfig(RequestConfig.custom()
+                            .setExpectContinueEnabled(false)
+                            // replicated settings from createDefaultCredentialsProvider above, new below
+                            .setCookieSpec(CookieSpecs.STANDARD).build());
+            }
+
+            // sadly private in SardineImpl so copied here
+            private CredentialsProvider createDefaultCredentialsProvider(String username, String password)
+            {
+                CredentialsProvider provider = new BasicCredentialsProvider();
+                if (username != null)
+                {
+                    provider.setCredentials(
+                        new AuthScope(AuthScope.ANY_HOST, AuthScope.ANY_PORT, AuthScope.ANY_REALM, AuthSchemes.NTLM),
+                        new NTCredentials(username, password, null, null));
+                    provider.setCredentials(
+                        new AuthScope(AuthScope.ANY_HOST, AuthScope.ANY_PORT, AuthScope.ANY_REALM, AuthSchemes.BASIC),
+                        new UsernamePasswordCredentials(username, password));
+                    provider.setCredentials(
+                        new AuthScope(AuthScope.ANY_HOST, AuthScope.ANY_PORT, AuthScope.ANY_REALM, AuthSchemes.DIGEST),
+                        new UsernamePasswordCredentials(username, password));
+                    provider.setCredentials(
+                        new AuthScope(AuthScope.ANY_HOST, AuthScope.ANY_PORT, AuthScope.ANY_REALM, AuthSchemes.SPNEGO),
+                        new NTCredentials(username, password, null, null));
+                    provider.setCredentials(
+                        new AuthScope(AuthScope.ANY_HOST, AuthScope.ANY_PORT, AuthScope.ANY_REALM, AuthSchemes.KERBEROS),
+                        new UsernamePasswordCredentials(username, password));
+                }
+                return provider;
+            }
+        }
+        SardineCanneryHelper cannery = new SardineCanneryHelper(username, password);
+        return new SardineImpl(cannery.builder);
+    }
+}
 
 public class WebDAVUploader extends Uploader {
 
@@ -37,7 +102,7 @@ public class WebDAVUploader extends Uploader {
         this.logger = logger;
         try {
             _remoteBaseFolder = new URL(webdav.hostname + "/" + webdav.remoteDirectory);
-            sardine = SardineFactory.begin(webdav.username, webdav.password);
+            sardine = SardineCannery.make(webdav.username, webdav.password);
             sardine.enablePreemptiveAuthentication(_remoteBaseFolder.getHost());
             createDirectory(_remoteBaseFolder.toString());
         } catch (Exception e) {
@@ -106,30 +171,6 @@ public class WebDAVUploader extends Uploader {
             MessageUtil.sendConsoleException(exception);
             setErrorOccurred(true);
         }
-    }
-
-    /**
-     * Returns a list of the paths of the files inside the specified folder and subfolders.
-     * @param folderPath the path of the folder
-     * @return the list of file paths
-     */
-    public ArrayList<String> getFiles(String folderPath) {
-        ArrayList<String> filePaths = new ArrayList<>();
-        try {
-            //TODO path
-            List<DavResource> resources = sardine.list(new URL(_remoteBaseFolder + "/" + folderPath).toString());
-            for (DavResource resource : resources) {
-                if (resource.isDirectory()) {
-                    filePaths.addAll(prependToAll(getFiles(resource.getName()), new File(resource.getName()).getName() + '/'));
-                } else {
-                    filePaths.add(resource.getName());
-                }
-            }
-        } catch (Exception e) {
-            MessageUtil.sendConsoleException(e);
-            setErrorOccurred(true);
-        }
-        return filePaths;
     }
 
     /**
@@ -202,19 +243,5 @@ public class WebDAVUploader extends Uploader {
         } catch (IOException exception) {
             //Sardine throws an error when the file exists instead of returning a boolean.
         }
-    }
-
-    /**
-     * Prepends the specified String to each element in the specified ArrayList.
-     * @param list the ArrayList
-     * @param string the String
-     * @return the new ArrayList
-     */
-    @Contract ("_, _ -> param1")
-    private static ArrayList<String> prependToAll(@NotNull ArrayList<String> list, String string) {
-        for (int i = 0; i < list.size(); i++) {
-            list.set(i, string + list.get(i));
-        }
-        return list;
     }
 }
