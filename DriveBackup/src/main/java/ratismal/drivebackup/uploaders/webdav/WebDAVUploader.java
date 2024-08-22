@@ -1,6 +1,5 @@
 package ratismal.drivebackup.uploaders.webdav;
 
-import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ratismal.drivebackup.uploaders.Uploader;
 import ratismal.drivebackup.UploadThread.UploadLogger;
@@ -175,30 +174,6 @@ public class WebDAVUploader extends Uploader {
     }
 
     /**
-     * Returns a list of the paths of the files inside the specified folder and subfolders.
-     * @param folderPath the path of the folder
-     * @return the list of file paths
-     */
-    public ArrayList<String> getFiles(String folderPath) {
-        ArrayList<String> filePaths = new ArrayList<>();
-        try {
-            //TODO path
-            List<DavResource> resources = sardine.list(new URL(_remoteBaseFolder + "/" + folderPath).toString());
-            for (DavResource resource : resources) {
-                if (resource.isDirectory()) {
-                    filePaths.addAll(prependToAll(getFiles(resource.getName()), new File(resource.getName()).getName() + '/'));
-                } else {
-                    filePaths.add(resource.getName());
-                }
-            }
-        } catch (Exception e) {
-            MessageUtil.sendConsoleException(e);
-            setErrorOccurred(true);
-        }
-        return filePaths;
-    }
-
-    /**
      * Deletes the oldest files past the number to retain from the FTP server inside the specified folder for the file type.
      * <p>
      * The number of files to retain is specified by the user in the {@code config.yml}
@@ -268,19 +243,5 @@ public class WebDAVUploader extends Uploader {
         } catch (IOException exception) {
             //Sardine throws an error when the file exists instead of returning a boolean.
         }
-    }
-
-    /**
-     * Prepends the specified String to each element in the specified ArrayList.
-     * @param list the ArrayList
-     * @param string the String
-     * @return the new ArrayList
-     */
-    @Contract ("_, _ -> param1")
-    private static ArrayList<String> prependToAll(@NotNull ArrayList<String> list, String string) {
-        for (int i = 0; i < list.size(); i++) {
-            list.set(i, string + list.get(i));
-        }
-        return list;
     }
 }
