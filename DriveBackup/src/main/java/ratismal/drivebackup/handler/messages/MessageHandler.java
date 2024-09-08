@@ -170,6 +170,11 @@ public abstract class MessageHandler {
         return this;
     }
     
+    public MessageHandler miniMessage(String text) {
+        message.add(MiniMessage.miniMessage().deserialize(getMMColor() + text));
+        return this;
+    }
+    
     /**
      * Adds a player to send the message to
      *

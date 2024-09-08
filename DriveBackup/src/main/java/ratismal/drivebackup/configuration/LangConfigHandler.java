@@ -279,6 +279,8 @@ public final class LangConfigHandler {
         defaults.node("upload-no-errors").set("No upload errors found");
         defaults.node("zip-compression-too-high").set("Inputted zip compression more than maximum, using maximum");
         defaults.node("zip-compression-too-low").set("Inputted zip compression less than minimum, using minimum");
+        defaults.node("config-reloaded").set("Config reloaded!");
+        defaults.node("config-reload-fail").set("Failed to reload config, check console for errors");
         
         return defaults;
     }

@@ -4,7 +4,6 @@ import okhttp3.FormBody;
 import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
-import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONException;
@@ -12,7 +11,6 @@ import org.json.JSONObject;
 import ratismal.drivebackup.configuration.ConfigHandler;
 import ratismal.drivebackup.configuration.ConfigurationSection;
 import ratismal.drivebackup.constants.Initiator;
-import ratismal.drivebackup.handler.commandHandler.BasicCommands;
 import ratismal.drivebackup.handler.task.TaskIdentifier;
 import ratismal.drivebackup.http.HttpClient;
 import ratismal.drivebackup.objects.Player;
@@ -54,9 +52,9 @@ public final class Authenticator {
      * using the OAuth 2.0-device authorization grant flow.
      * 
      * @param provider an {@code AuthenticationProvider}
-     * @param initiator user who initiated the authentication
+     * @param player user who initiated the authentication
      */
-    public static void authenticateUser(AuthenticationProvider provider, CommandSender initiator, DriveBackupInstance instance) {
+    public static void authenticateUser(AuthenticationProvider provider, Player player, DriveBackupInstance instance) {
         UploadLogger logger = new UploadLogger(instance, Initiator.OTHER);
         cancelPollTask(instance);
         try {
@@ -121,9 +119,9 @@ public final class Authenticator {
                         saveRefreshToken(provider, (String) parsedResponse1.get("refresh_token"));
                         if (provider.getId().equals("googledrive")) {
                             UploadLogger uploadLogger = new UploadLogger(instance, Initiator.OTHER);
-                            new GoogleDriveUploader(instance, uploadLogger).setupSharedDrives(initiator);
+                            new GoogleDriveUploader(instance, uploadLogger).setupSharedDrives(player);
                         } else {
-                            linkSuccess(initiator, provider, logger, instance);
+                            linkSuccess(player, provider, logger, instance);
                         }
                         cancelPollTask(instance);
                     } else if (
@@ -172,11 +170,11 @@ public final class Authenticator {
         }
     }
 
-    public static void linkSuccess(CommandSender initiator, @NotNull AuthenticationProvider provider, @NotNull UploadLogger logger, DriveBackupInstance instance) {
+    public static void linkSuccess(Player player, @NotNull AuthenticationProvider provider, @NotNull UploadLogger logger, DriveBackupInstance instance) {
         logger.log("link-provider-complete", "provider", provider.getName());
         enableBackupMethod(provider, logger, instance);
-        //TODO
-        BasicCommands.sendBriefBackupList(initiator);
+        //TODO send backup list
+        //BasicCommands.sendBriefBackupList(initiator);
     }
 
     private static void saveRefreshToken(@NotNull AuthenticationProvider provider, String token) throws Exception {

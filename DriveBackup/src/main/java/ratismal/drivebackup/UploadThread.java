@@ -87,7 +87,7 @@ public final class UploadThread implements Runnable {
      */
     private List<BackupListEntry> backupList;
     
-    private LocalDateTime nextIntervalBackupTime;
+    private static LocalDateTime nextIntervalBackupTime;
     private static boolean lastBackupSuccessful = true;
 
     /**
@@ -254,7 +254,7 @@ public final class UploadThread implements Runnable {
         }
         uploadLogger.broadcast("backup-complete");
         if (initiator.isAuto()) {
-            uploadLogger.broadcast(getNextAutoBackup());
+            uploadLogger.broadcast(getNextAutoBackup(instance));
         }
         if (config.backupStorage.backupsRequirePlayers && Bukkit.getOnlinePlayers().isEmpty() && PlayerListener.isAutoBackupsActive()) {
             uploadLogger.info("backup-disabled-inactivity");
@@ -532,7 +532,7 @@ public final class UploadThread implements Runnable {
      * Gets the date/time of the next automatic backup, if enabled.
      * @return the time and/or date of the next automatic backup formatted using the messages in the {@code config.yml}
      */
-    public String getNextAutoBackup() {
+    public static String getNextAutoBackup(DriveBackupInstance instance) {
         ConfigurationObject config = instance.getConfigHandler().getConfig();
         if (config.getValue("scheduled-backups").getBoolean()) {
             String offset = instance.getConfigHandler().getConfig().getValue("advanced", "date-timezone").getString();

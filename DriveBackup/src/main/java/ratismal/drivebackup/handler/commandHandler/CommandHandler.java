@@ -46,12 +46,14 @@ public class CommandHandler implements CommandExecutor {
         }
         switch (args[0].toLowerCase(Locale.ROOT)) {
             case "help":
+            case "h":
                 BasicCommands.sendDocs(sender);
                 break;
             case "commands":
                 BasicCommands.sendHelp(sender);
                 break;
             case "version":
+            case "ver":
             case "v":
                 BasicCommands.sendVersion(sender);
                 break;
@@ -85,13 +87,13 @@ public class CommandHandler implements CommandExecutor {
                 }
                 switch (args[1].toLowerCase(Locale.ROOT)) {
                     case "googledrive":
-                        Authenticator.authenticateUser(AuthenticationProvider.GOOGLE_DRIVE, sender, BukkitPlugin.getInstance());
+                        //Authenticator.authenticateUser(AuthenticationProvider.GOOGLE_DRIVE, sender, BukkitPlugin.getInstance());
                         break;
                     case "onedrive":
-                        Authenticator.authenticateUser(AuthenticationProvider.ONEDRIVE, sender, BukkitPlugin.getInstance());
+                        //Authenticator.authenticateUser(AuthenticationProvider.ONEDRIVE, sender, BukkitPlugin.getInstance());
                         break;
                     case "dropbox":
-                        Authenticator.authenticateUser(AuthenticationProvider.DROPBOX, sender, BukkitPlugin.getInstance());
+                        //Authenticator.authenticateUser(AuthenticationProvider.DROPBOX, sender, BukkitPlugin.getInstance());
                         break;
                     default:
                         BasicCommands.sendHelp(sender);

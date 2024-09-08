@@ -145,4 +145,5 @@ public final class ConfigHandler {
     public void reload() throws ConfigurateException {
         ConfigurationUtils.loadConfig(configurationObject);
     }
+    
 }

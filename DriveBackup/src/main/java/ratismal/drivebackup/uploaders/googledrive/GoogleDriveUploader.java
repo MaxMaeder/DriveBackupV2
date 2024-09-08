@@ -21,6 +21,7 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
+import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Contract;
@@ -263,7 +264,7 @@ public final class GoogleDriveUploader extends Uploader {
     /**
      * Setup for authenticated user that has access to one or more shared drives.
      */
-    public void setupSharedDrives(CommandSender initiator) {
+    public void setupSharedDrives(ratismal.drivebackup.objects.Player player) {
         if (drives != null && !drives.isEmpty()) {
             logger.log("google-pick-shared-drive");
             String msg = instance.getMessageHandler().getLangString("default-google-drive-name");
@@ -281,18 +282,20 @@ public final class GoogleDriveUploader extends Uploader {
                 logger.log("google-shared-drive-option", placeholders2);
             }
             //TODO
+            Player bukkitPlayer = Bukkit.getPlayer(player.getUuid());
+            CommandSender initiator = bukkitPlayer;
             if (initiator instanceof Player) {
-                Player player = (Player) initiator;
-                DriveBackup.chatInputPlayers.add(player);
+                Player player1 = (Player) initiator;
+                DriveBackup.chatInputPlayers.add(player1);
             } else {
                 DriveBackup.chatInputPlayers.add(initiator);
             }
         } else {
-            Authenticator.linkSuccess(initiator, getAuthProvider(), logger, instance);
+            Authenticator.linkSuccess(player, getAuthProvider(), logger, instance);
         }
     }
 
-    public void finalizeSharedDrives(CommandSender initiator, String input) {
+    public void finalizeSharedDrives(ratismal.drivebackup.objects.Player player, String input) {
         final String idKey = "googledrive.shared-drive-id";
         ConfigHandler configHandler = instance.getConfigHandler();
         CommentedConfigurationNode config = configHandler.getConfig().getConfig();
@@ -301,19 +304,19 @@ public final class GoogleDriveUploader extends Uploader {
                 if (input.equals(drive.getId())) {
                     config.node(idKey).set(input);
                     configHandler.save();
-                    Authenticator.linkSuccess(initiator, getAuthProvider(), logger, instance);
+                    Authenticator.linkSuccess(player, getAuthProvider(), logger, instance);
                     return;
                 }
             }
             if ("1".equals(input)) {
                 config.node(idKey).set("");
                 configHandler.save();
-                Authenticator.linkSuccess(initiator, getAuthProvider(), logger, instance);
+                Authenticator.linkSuccess(player, getAuthProvider(), logger, instance);
                 return;
             } else if (input.matches("[0-9]+")) {
                 config.node(idKey).set(drives.get(Integer.parseInt(input) - 2).getId());
                 configHandler.save();
-                Authenticator.linkSuccess(initiator, getAuthProvider(), logger, instance);
+                Authenticator.linkSuccess(player, getAuthProvider(), logger, instance);
                 return;
             }
         } catch (Exception e) {
