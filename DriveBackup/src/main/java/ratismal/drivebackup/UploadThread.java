@@ -187,13 +187,32 @@ public class UploadThread implements Runnable {
      */
     @Override
     public void run() {
-        Config config = ConfigParser.getConfig();
         if (initiator != null && backupStatus != BackupStatus.NOT_RUNNING) {
             logger.initiatorError(
-                intl("backup-already-running"), 
+                intl("backup-already-running"),
                 "backup-status", getBackupStatus());
             return;
         }
+        try {
+            run_internal();
+        } catch (Exception e) {
+            lastBackupSuccessful = false;
+            throw e;
+        } finally {
+            backupStatus = BackupStatus.NOT_RUNNING;
+            if (lastBackupSuccessful) {
+                DriveBackupApi.backupDone();
+            } else {
+                DriveBackupApi.backupError();
+            }
+        }
+    }
+
+    /**
+     * actual backup logic
+     */
+    void run_internal() {
+        Config config = ConfigParser.getConfig();
         totalTimer.start();
         backupStatus = BackupStatus.STARTING;
         if (!locationsToBePruned.isEmpty()) {
@@ -302,12 +321,6 @@ public class UploadThread implements Runnable {
         long totalBackupTime = totalTimer.getTime();
         long totalSeconds = Duration.of(totalBackupTime, ChronoUnit.MILLIS).getSeconds();
         logger.log(intl("backup-total-time"), "time", String.valueOf(totalSeconds));
-        backupStatus = BackupStatus.NOT_RUNNING;
-        if (errorOccurred) {
-            DriveBackupApi.backupError();
-        } else {
-            DriveBackupApi.backupDone();
-        }
     }
 
     private void ensureMethodsAuthenticated() {
