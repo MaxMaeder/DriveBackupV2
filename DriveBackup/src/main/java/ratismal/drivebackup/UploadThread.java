@@ -47,14 +47,12 @@ import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
-import java.util.Optional;
 import java.util.TreeMap;
 
 import static ratismal.drivebackup.config.Localization.intl;
@@ -563,11 +561,9 @@ public class UploadThread implements Runnable {
                 message = intl("backup-status-uploading");
                 break;
             case STARTING:
-                message = intl("backup-status-starting");
-                break;
+                return intl("backup-status-starting");
             case PRUNING:
-                message = intl("backup-status-pruning");
-                break;
+                return intl("backup-status-pruning");
             default:
                 return intl("backup-status-not-running");
         }
@@ -604,7 +600,7 @@ public class UploadThread implements Runnable {
      * Sets the time of the next interval-based backup to the current time + the configured interval.
      */
     public static void updateNextIntervalBackupTime() {
-        nextIntervalBackupTime = LocalDateTime.now().plus(ConfigParser.getConfig().backupStorage.delay, ChronoUnit.MINUTES);
+        nextIntervalBackupTime = LocalDateTime.now().plusMinutes(ConfigParser.getConfig().backupStorage.delay);
     }
 
     public static boolean wasLastBackupSuccessful() {
