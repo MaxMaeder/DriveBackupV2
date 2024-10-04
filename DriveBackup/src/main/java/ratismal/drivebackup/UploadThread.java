@@ -47,14 +47,12 @@ import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
-import java.util.Optional;
 import java.util.TreeMap;
 
 import static ratismal.drivebackup.config.Localization.intl;
@@ -118,7 +116,7 @@ public class UploadThread implements Runnable {
     /**
      * The backup currently being backed up by the 
      */
-    private static int backupBackingUp;
+    private static int backupBackingUp = 0;
     
     public abstract static class UploadLogger implements Logger {
         public void broadcast(String input, String... placeholders) {
@@ -572,7 +570,7 @@ public class UploadThread implements Runnable {
                 return intl("backup-status-not-running");
         }
         BackupListEntry[] backupList = config.backupList.list;
-        String backupSetName = backupList[backupBackingUp - 1].location.toString();
+        String backupSetName = backupList[backupBackingUp].location.toString();
         return message
             .replace("<set-name>", backupSetName)
             .replace("<set-num>", String.valueOf(backupBackingUp))
