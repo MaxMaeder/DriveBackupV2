@@ -187,13 +187,32 @@ public class UploadThread implements Runnable {
      */
     @Override
     public void run() {
-        Config config = ConfigParser.getConfig();
         if (initiator != null && backupStatus != BackupStatus.NOT_RUNNING) {
             logger.initiatorError(
-                intl("backup-already-running"), 
+                intl("backup-already-running"),
                 "backup-status", getBackupStatus());
             return;
         }
+        try {
+            run_internal();
+        } catch (Exception e) {
+            lastBackupSuccessful = false;
+            throw e;
+        } finally {
+            backupStatus = BackupStatus.NOT_RUNNING;
+            if (lastBackupSuccessful) {
+                DriveBackupApi.backupDone();
+            } else {
+                DriveBackupApi.backupError();
+            }
+        }
+    }
+
+    /**
+     * actual backup logic
+     */
+    void run_internal() {
+        Config config = ConfigParser.getConfig();
         totalTimer.start();
         backupStatus = BackupStatus.STARTING;
         if (!locationsToBePruned.isEmpty()) {
@@ -302,12 +321,6 @@ public class UploadThread implements Runnable {
         long totalBackupTime = totalTimer.getTime();
         long totalSeconds = Duration.of(totalBackupTime, ChronoUnit.MILLIS).getSeconds();
         logger.log(intl("backup-total-time"), "time", String.valueOf(totalSeconds));
-        backupStatus = BackupStatus.NOT_RUNNING;
-        if (errorOccurred) {
-            DriveBackupApi.backupError();
-        } else {
-            DriveBackupApi.backupDone();
-        }
     }
 
     private void ensureMethodsAuthenticated() {
@@ -561,11 +574,9 @@ public class UploadThread implements Runnable {
                 message = intl("backup-status-uploading");
                 break;
             case STARTING:
-                message = intl("backup-status-starting");
-                break;
+                return intl("backup-status-starting");
             case PRUNING:
-                message = intl("backup-status-pruning");
-                break;
+                return intl("backup-status-pruning");
             default:
                 return intl("backup-status-not-running");
         }
@@ -608,7 +619,7 @@ public class UploadThread implements Runnable {
      * Sets the time of the next interval-based backup to the current time + the configured interval.
      */
     public static void updateNextIntervalBackupTime() {
-        nextIntervalBackupTime = LocalDateTime.now().plus(ConfigParser.getConfig().backupStorage.delay, ChronoUnit.MINUTES);
+        nextIntervalBackupTime = LocalDateTime.now().plusMinutes(ConfigParser.getConfig().backupStorage.delay);
     }
 
     public static boolean wasLastBackupSuccessful() {
