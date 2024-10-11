@@ -570,10 +570,16 @@ public class UploadThread implements Runnable {
                 return intl("backup-status-not-running");
         }
         BackupListEntry[] backupList = config.backupList.list;
-        String backupSetName = backupList[backupBackingUp].location.toString();
+        int backup = 0;
+        //edge case when its in between backup steps where number is set to 0
+        int backupNumber = Math.max(0, backupBackingUp-1);
+        if (backupNumber <= backupList.length) {
+            backup = backupNumber;
+        }
+        String backupSetName = backupList[backup].location.toString();
         return message
             .replace("<set-name>", backupSetName)
-            .replace("<set-num>", String.valueOf(backupBackingUp))
+            .replace("<set-num>", String.valueOf(backupNumber+1))
             .replace("<set-count>", String.valueOf(backupList.length));
     }
 
