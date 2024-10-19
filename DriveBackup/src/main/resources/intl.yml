@@ -67,7 +67,7 @@ backup-status-not-running: "No backups are running"
 backup-status-pruning: "Pruning backups"
 backup-status-starting: "Backup is starting"
 backup-status-uploading: 'Uploading backup set "<set-name>", set <set-num> of <set-count>'
-backup-total-time: "Backup took <time> seconds to compleate"
+backup-total-time: "Backup took <time> seconds to complete"
 backup-upload-complete: "Backup(s) uploaded"
 backup-upload-start: "Uploading backup(s)..."
 backups-interval-scheduled: "Scheduling a backup to run every <delay> minutes"
