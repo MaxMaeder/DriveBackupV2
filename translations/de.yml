@@ -1,0 +1,204 @@
+#German(Deutsch) translation by THE_13joker1 (https://github.com/the13joker1)
+auto-backups-disabled: "Automatische Backups sind deaktiviert"
+backup-already-running: "Ein Backup läuft bereits"
+backup-complete: "Backup abgeschlossen"
+backup-disabled-inactivity: "Automatische Backups werden aufgrund von Inaktivität deaktiviert"
+backup-empty-list: "Die Backupliste ist leer"
+backup-failed-absolute-path: |
+  Backup fehlgeschlagen, der Pfad zum zu sichernden Ordner ist absolut, ein relativer Pfad wurde erwartet.
+  Ein absoluter Pfad kann sensible Dateien überschreiben, siehe die Dokumentation für weitere Informationen.
+  Überspringe Backup-Speicherort.
+backup-file-upload-complete: 'Upload(s) für Datei "<file-name>" abgeschlossen'
+backup-file-upload-start: 'Starte Upload(s) für Datei "<file-name>"'
+backup-forced: "Backup wird erzwungen"
+backup-list-blacklist-invalid: "Schwarze Liste im Backup-Eintrag <entry> ungültig, wird ausgelassen"
+backup-list-format-invalid: "Format ungültig, überspringe Backuplisteneintrag <entry>"
+backup-list-glob-invalid: "Glob ungültig, überspringe Backuplisteneintrag <entry>"
+backup-list-no-dest-specified: "Kein Pfad oder Glob angegeben, überspringe Backuplisteneintrag <entry>"
+backup-list-path-invalid: "Pfad ungültig, überspringe Backuplisteneintrag <entry>"
+backup-local-complete: "Lokales Backup(s) erstellt und komprimiert"
+backup-local-failed: |
+  Lokales Backup konnte nicht erstellt werden.
+  Auch wenn local-keep-count auf Null gesetzt ist, muss das Plugin vorübergehend ein lokales Backup erstellen.
+  Überspringe Backup-Speicherort.
+backup-local-file-complete: 'Lokales Backup für "<location>" erstellt'
+backup-local-file-start: 'Erstelle lokales Backup für "<location>"'
+backup-local-prune-complete: "Löschen lokaler Backups abgeschlossen"
+backup-local-prune-start: "Löschen lokaler Backups wird gestartet"
+backup-local-start: "Erstelle lokales Backup(s) und komprimiere..."
+backup-method-complete: "Backup auf <gold><upload-method></gold> abgeschlossen"
+backup-method-error-occurred: |
+  Fehler beim Backup auf <upload-method>, überprüfe alle Anmeldeinformationen oder diagnostiziere das Problem mit
+  <gold><click:run_command:'<diagnose-command>'><diagnose-command></click></gold>.
+backup-method-limit-reached: "Es gibt <file-count> Datei(en) im aktuellen Backup-Speicherort auf <upload-method>, die das Limit von <file-limit> überschreiten, lösche"
+backup-method-not-auth: |
+  Backup auf <upload-method> übersprungen, Authentifizierung fehlgeschlagen.
+  Bitte überprüfe alle Anmeldeinformationen in der <gold>config.yml</gold>.
+backup-method-not-auth-authenticator: |
+  Backup auf <upload-method> übersprungen, Authentifizierung fehlgeschlagen.
+  Versuche, dein Konto erneut zu verlinken, führe <gold><click:run_command:'<link-command>'><link-command></click></gold> aus.
+backup-method-not-linked: |
+  Backup auf <upload-method> übersprungen, Konto noch nicht verlinkt.
+  Um dein Konto zu verlinken, führe <gold><click:run_command:'<link-command>'><link-command></click></gold> aus.
+backup-method-prune-failed: "Fehler beim Löschen von Backups, die das Limit überschreiten"
+backup-method-shared-drive-prune-failed: |
+  Fehler beim Löschen von Backups, die das Limit überschreiten.
+  Versuche, den Besitzer des geteilten Laufwerks zu bitten, deine Kontoberechtigungen zu erhöhen, oder setze keep-count auf 0, um das Löschen von Backups zu deaktivieren.
+backup-method-upload-failed: "Upload fehlgeschlagen"
+backup-method-uploading: "Datei wird auf <upload-method> hochgeladen"
+backup-no-methods: "Keine Backup-Methode aktiviert"
+backup-schedule-day-empty: "Tagesliste der Woche leer, überspringe Zeitplaneintrag <entry>"
+backup-schedule-day-invalid: 'Tag der Woche ungültig, überspringe Tag der Woche "<day>"'
+backup-schedule-days-invalid: "Tagesliste ungültig, überspringe Zeitplaneintrag <entry>"
+backup-schedule-empty: "Backup-Zeitplan leer, deaktiviere zeitplanbasierte Backups"
+backup-schedule-time-invalid: "Zeit ungültig, überspringe Zeitplaneintrag <entry>"
+backup-start: "Backups werden erstellt, der Server könnte kurzzeitig verzögert reagieren..."
+backup-status-compressing: 'Komprimiere Backup-Satz "<set-name>", Satz <set-num> von <set-count>'
+backup-status-not-running: "Keine Backups laufen"
+backup-status-pruning: "Backups werden gelöscht"
+backup-status-starting: "Backup wird gestartet"
+backup-status-uploading: 'Backup-Satz "<set-name>" wird hochgeladen, Satz <set-num> von <set-count>'
+backup-total-time: "Backup dauerte <time> Sekunden"
+backup-upload-complete: "Backup(s) hochgeladen"
+backup-upload-start: "Backup(s) werden hochgeladen..."
+backups-interval-scheduled: "Backup wird geplant, um alle <delay> Minuten zu laufen"
+backups-scheduled: "Backup wird geplant, um um <time> jeden <days> zu laufen"
+brief-backup-list: "DriveBackupV2 sichert derzeit <list>"
+brief-backup-list-empty: "nichts"
+brief-backup-list-external-backups: "einige externe Backups"
+brief-backup-list-help: "Möchtest du etwas anderes sichern? Sieh dir <gold><click:open_url:https://bit.ly/3xoHRAs>https://bit.ly/3xoHRAs</click></gold> an"
+config-loaded: "Konfiguration geladen!"
+config-reloaded: "Konfiguration neu geladen!"
+connection-error: "Verbindung zu <domain> fehlgeschlagen, überprüfe deine Netzwerkverbindung und Server-Firewall"
+date-format-invalid: "Datumsformat-Zeitzone ungültig, UTC wird verwendet"
+debug-log-created: "Debug-URL: <url>"
+debug-log-creating: "Debug-Protokoll wird erstellt"
+default-google-drive-name: "Mein Laufwerk"
+drivebackup-command-header: <gold>|====== <dark_red>DriveBackupV2</dark_red> ======|</gold>
+drivebackup-docs-command: |
+  <header>
+  Brauchst du Hilfe? Sieh dir diese nützlichen Ressourcen an!
+  Wiki: <gold><click:open_url:https://bit.ly/3dDdmwK>https://bit.ly/3dDdmwK</click></gold>
+  Discord: <gold><click:open_url:https://bit.ly/3f4VuuT>https://bit.ly/3f4VuuT</click></gold>
+drivebackup-help-command: |
+  <header>
+  <gold><click:run_command:/drivebackup>/drivebackup</click></gold> - Zeigt dieses Menü an
+  <gold><click:run_command:/drivebackup help>/drivebackup help</click></gold> - Zeigt Hilferessourcen an
+  <gold><click:run_command:/drivebackup commands>/drivebackup commands</click></gold> - Zeigt diese Befehlshilfeseite an
+  <gold><click:run_command:/drivebackup v>/drivebackup [v|version]</click></gold> - Zeigt die Plugin-Version an
+  <gold><click:run_command:/drivebackup linkaccount googledrive>/drivebackup [link|linkaccount] googledrive</click></gold> - Verknüpft dein Google Drive-Konto für Backups
+  <gold><click:run_command:/drivebackup linkaccount onedrive>/drivebackup [link|linkaccount] onedrive</click></gold> - Verknüpft dein OneDrive-Konto für Backups
+  <gold><click:run_command:/drivebackup linkaccount dropbox>/drivebackup [link|linkaccount] dropbox</click></gold> - Verknüpft dein Dropbox-Konto für Backups
+drivebackup-version-command: |
+  <header>
+  Plugin-Version: <gold><plugin-version></gold>
+  Java-Version: <gold><java-version></gold>
+  Server-Software: <gold><server-software></gold>
+  Server-Software-Version: <gold><server-version></gold>
+drivebackup-version-update: <gold>Plugin-Update verfügbar!
+external-backup-base-dir-invalid: "Pfad zum Basisverzeichnis ungültig im externen Backup-Eintrag <entry>, bleibt leer"
+external-backup-format-invalid: "Format ungültig, überspringe externen Backup-Eintrag <entry>"
+external-backup-host-port-invalid: "Hostname/Port ungültig, überspringe externen Backup-Eintrag <entry>"
+external-backup-list-blacklist-invalid: "Schwarze Liste im externen Backup-Backup-Eintrag <entry-backup> ungültig, wird ausgelassen"
+external-backup-list-invalid: "Backupliste ungültig, überspringe externen Backup-Eintrag <entry>"
+external-backup-list-path-invalid: "Pfad ungültig, überspringe externen Backup-Backup-Eintrag <entry-backup>"
+external-backup-passphrase-invalid: "Passphrase im externen Backup-Eintrag <entry> ungültig, bleibt leer"
+external-backup-public-key-invalid: "Pfad zum öffentlichen Schlüssel im externen Backup-Eintrag <entry> ungültig, bleibt leer"
+external-backup-type-invalid: "Backup-Typ ungültig, überspringe externen Backup-Eintrag <entry>"
+external-backup-user-pass-invalid: "Benutzername/Passwort ungültig, überspringe externen Backup-Eintrag <entry>"
+external-database-list-blacklist-invalid: "Schwarze Liste in der externen Datenbank-Backuplisteintrag <entry-backup> ungültig, wird ausgelassen"
+external-database-list-invalid: "Datenbankliste ungültig, überspringe externen Backup-Eintrag <entry>"
+external-database-list-name-invalid: "Name ungültig, überspringe externen Datenbank-Backuplisteintrag <entry-database>"
+external-database-ssl-invalid: "SSL-Einstellung ungültig im externen Backup-Eintrag <entry>, SSL wird nicht verwendet"
+external-ftp-backup-blacklisted: 'Die Datei(en) <blacklisted-files> wurde(n) beim Backup vom externen (S)FTP-Server nicht einbezogen, da sie durch "<glob-pattern>" gesperrt sind'
+external-ftp-backup-complete: "Dateien von einem (S)FTP-Server (<socket-addr>) wurden erfolgreich im Backup einbezogen"
+external-ftp-backup-failed: "Fehler beim Einbeziehen von Dateien von einem (S)FTP-Server (<socket-addr>) im Backup, überprüfe die Server-Anmeldeinformationen in der <gold>config.yml</gold>"
+external-ftp-backup-start: "Dateien werden von einem (S)FTP-Server (<socket-addr>) heruntergeladen, um im Backup einbezogen zu werden"
+external-mysql-backup-blacklisted: 'Die Tabelle "<blacklist-entry>" wurde nicht im Backup einbezogen, da sie gesperrt ist'
+external-mysql-backup-complete: "Datenbanken von einem MySQL-Server (<socket-addr>) wurden erfolgreich im Backup einbezogen"
+external-mysql-backup-failed: "Fehler beim Einbeziehen von Datenbanken von einem MySQL-Server (<socket-addr>) im Backup, überprüfe die Server-Anmeldeinformationen in der <gold>config.yml</gold>"
+external-mysql-backup-start: "Datenbanken werden von einem MySQL-Server (<socket-addr>) heruntergeladen, um im Backup einbezogen zu werden"
+file-upload-message: "Datei in <length> Sekunden hochgeladen (<speed>KB/s)"
+ftp-method-passphrase-invalid: "Passphrase ungültig für die FTP-Backup-Methode, bleibt leer"
+ftp-method-public-key-invalid: "Pfad zum öffentlichen Schlüssel ungültig für die FTP-Backup-Methode, bleibt leer"
+google-pick-shared-drive: "Du hast Zugriff auf ein oder mehrere geteilte Laufwerke, wenn du eines davon nutzen möchtest, wähle es entweder aus oder antworte mit der entsprechenden Nummer im Chat."
+google-shared-drive-option: "<bold>[<drive-num>]</bold>
+  <gold><hover:show_text:Drive auswählen><click:run_command:'<select-command>'><drive-name></click></hover></gold>"
+invalid-backup-delay: "Der eingegebene Backup-Verzögerungswert ist ungültig, der Standardwert wird verwendet"
+keep-count-invalid: "Der eingegebene Beibehaltungswert ist ungültig, der Standardwert wird verwendet"
+link-account-code: "Um dein <provider>-Konto zu verknüpfen, gehe zu <gold><click:open_url:'<link-url>'><link-url></click></gold> und gib <gold><click:copy_to_clipboard:'<link-code>'><link-code></click></gold> ein"
+link-provider-complete: "Dein <provider>-Konto ist verknüpft!"
+link-provider-failed: "Verknüpfung deines <provider>-Kontos fehlgeschlagen, bitte versuche es erneut"
+list-delimiter: ", "
+list-last-delimiter: " und "
+local-backup-blacklisted: 'Die Datei(en) <blacklisted-files-count> wurde(n) beim lokalen Backup nicht einbezogen, da sie durch "<glob-pattern>" gesperrt sind'
+local-backup-date-format-invalid: |
+  Das Datumsformat des gespeicherten Backups "<file-name>" konnte nicht analysiert werden, dies kann daran liegen, dass das Datumsformat in der config.yml aktualisiert wurde.
+  Das Backup wird als erstes gelöscht.
+local-backup-failed-attributes: 'Fehler beim Lesen der Attribute für "<file-path>", Standardwerte werden verwendet. Hast du die Berechtigung, darauf zuzugreifen?'
+local-backup-failed-permissions: |
+  Lokales Backup konnte nicht erstellt werden, das Plugin hat keine Berechtigung, am erforderlichen Dateisystem-Speicherort zu schreiben.
+  Auch wenn local-keep-count auf Null gesetzt ist, muss das Plugin vorübergehend ein lokales Backup erstellen.
+  Überspringe Backup-Speicherort.
+local-backup-failed-to-delete: "Löschen des lokalen Backups fehlgeschlagen"
+local-backup-failed-to-include: 'Fehler beim Einbeziehen von "<file-path>" im Backup, ist es gesperrt? Hast du die Berechtigung, darauf zuzugreifen?'
+local-backup-file-deleted: 'Löschen des lokalen Backups "<local-backup-name>"'
+local-backup-file-failed-to-delete: 'Fehler beim Löschen des lokalen Backups "<local-backup-name>"'
+local-backup-in-backup-folder: 'Die Datei(en) <files-in-backup-folder-count> wurde(n) beim Backup nicht einbezogen, da sie sich im Verzeichnis für Backups befinden'
+local-backup-limit-not-reached: "Lokales Backup-Limit nicht erreicht mit einer Anzahl von <backup-count> und einem Limit von <backup-limit>, Überspringen des Löschens"
+local-backup-limit-reached: "Es gibt <backup-count> Datei(en), die das lokale Limit von <backup-limit> überschreiten, älteste wird gelöscht"
+local-backup-no-limit: "Lokales Backup-Limit ist auf 0 gesetzt, überspringe das Löschen"
+local-backup-pruning-complete: 'Löschen lokaler Backups für "<location>" abgeschlossen'
+local-backup-pruning-start: 'Löschen lokaler Backups für "<location>" wird gestartet'
+local-keep-count-invalid: "Der eingegebene Wert für die lokale Beibehaltung ist ungültig, der Standardwert wird verwendet"
+local-save-directory-not-relative: "Das lokale Speicherverzeichnis ist nicht relativ, mache es relativ zum Serververzeichnis"
+location-empty: "Speicherort <location> ist leer, überspringe"
+metrics-error: "Fehler beim Starten der Metriken"
+metrics-started: "Metriken gestartet"
+next-backup: "Das nächste Backup ist in %TIME Minuten"
+next-schedule-backup: "Das nächste Backup ist um %DATE geplant"
+next-schedule-backup-format: "h:mm a EEE, MMM d O"
+no-perm: "Du hast keine Berechtigung, dies zu tun!"
+player-join-backup-enable: "Automatische Backups werden aktiviert"
+player-join-backup-failed: |
+  <red>Das letzte Backup ist fehlgeschlagen!<red>
+  Sieh in der Konsole für weitere Informationen nach.
+player-join-update-available: |
+  Ein Update ist verfügbar, hole es dir hier: <gold><click:open_url:https://bit.ly/2M14uVD>https://bit.ly/2M14uVD</click></gold>
+  oder durch Ausführen von <gold><click:run_command:/drivebackup update>/drivebackup update</click></gold>
+plugin-stop: "Plugin wird gestoppt!"
+shared-drive-deprecated: |
+  Aufgrund neuer Beschränkungen von Google können wir keine geteilten Laufwerke bei neuen Kontoverknüpfungen mehr unterstützen.
+  Alle bestehenden Verknüpfungen können diese Funktion vorerst weiterhin nutzen.
+shared-drive-error: |
+  Es ist ein Fehler beim Abrufen deines geteilten Laufwerks aufgetreten.
+  Bitte stelle sicher, dass die shared-drive-id korrekt ist, oder entferne sie, um weiterhin dein persönliches Laufwerk zu verwenden.
+test-file-creation-failed: "Fehler beim Erstellen der Testdatei, bitte versuche es erneut"
+test-method-begin: "Test der <upload-method> wird gestartet"
+test-method-failed: "Der <upload-method>-Test war nicht erfolgreich, überprüfe die <gold>config.yml</gold>"
+test-method-invalid: '"<specified-method>" ist keine gültige Backup-Methode'
+test-method-not-enabled: "<upload-method>-Backups sind deaktiviert, du kannst sie in der <gold>config.yml</gold> aktivieren"
+test-method-not-specified: "Bitte gib eine Backup-Methode an, die getestet werden soll"
+test-method-successful: "Der <upload-method>-Test war erfolgreich"
+thread-priority-too-high: "Der eingegebene Thread-Prioritätswert ist höher als das Maximum, das Maximum wird verwendet"
+thread-priority-too-low: "Der eingegebene Thread-Prioritätswert ist niedriger als das Minimum, das Minimum wird verwendet"
+unlink-provider-complete: "Dein <provider>-Konto wurde entlinkt!"
+unlink-provider-failed: "Fehler beim Entlinken deines <provider>-Kontos, bitte versuche es erneut"
+update-checker-failed: "Es gab ein Problem beim Versuch, die neueste Version von DriveBackupV2 zu überprüfen"
+update-checker-new-release: |
+  DriveBackup-Version <latest-version> wurde veröffentlicht, du verwendest derzeit Version <current-version>.
+  Aktualisiere hier: <gold><click:open_url:https://bit.ly/2VGtF7L>https://bit.ly/2VGtF7L</click></gold> oder durch Ausführen von <gold><click:run_command:/drivebackup update>/drivebackup update</click></gold>
+update-checker-started: "Suche nach Updates..."
+update-checker-unsupported-release: |
+  Du verwendest eine nicht unterstützte Version!
+  Die empfohlene Version ist <latest-version>, und du verwendest <current-version>.
+  Wenn das Plugin gerade aktualisiert wurde, kannst du diese Nachricht ignorieren.
+updater-fetch-failed: "Die neueste Version von DriveBackupV2 konnte nicht abgerufen werden"
+updater-no-updates: "Du verwendest die neueste Version von DriveBackupV2!"
+updater-start: "Versuche, die neueste Version von DriveBackupV2 herunterzuladen"
+updater-successful: "Plugin erfolgreich aktualisiert! Bitte starte deinen Server neu, um die Änderungen zu übernehmen"
+updater-update-failed: "Plugin-Update fehlgeschlagen, siehe Konsole für weitere Informationen"
+upload-error-check: "Überprüfung auf Upload-Fehler..."
+upload-no-errors: "Keine Upload-Fehler gefunden"
+zip-compression-too-high: "Der eingegebene ZIP-Komprimierungswert ist höher als das Maximum, das Maximum wird verwendet"
+zip-compression-too-low: "Der eingegebene ZIP-Komprimierungswert ist niedriger als das Minimum, das Minimum wird verwendet"
