@@ -177,7 +177,7 @@ public final class Authenticator {
         //BasicCommands.sendBriefBackupList(initiator);
     }
 
-    private static void saveRefreshToken(@NotNull AuthenticationProvider provider, String token) throws Exception {
+    public static void saveRefreshToken(@NotNull AuthenticationProvider provider, String token) throws Exception {
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("refresh_token", token);
         try (FileWriter file = new FileWriter(provider.getCredStoreLocation())) {

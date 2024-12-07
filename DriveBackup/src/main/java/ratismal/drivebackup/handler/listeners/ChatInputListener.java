@@ -7,6 +7,7 @@ import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.server.ServerCommandEvent;
 import org.jetbrains.annotations.NotNull;
 import ratismal.drivebackup.constants.Initiator;
+import ratismal.drivebackup.objects.Player;
 import ratismal.drivebackup.platforms.bukkit.BukkitPlugin;
 import ratismal.drivebackup.plugin.DriveBackup;
 import ratismal.drivebackup.uploaders.UploadLogger;
@@ -38,10 +39,12 @@ public class ChatInputListener implements Listener {
     private static boolean handleInput(CommandSender sender, String input) {
         if (DriveBackup.chatInputPlayers.contains(sender)) {
             UploadLogger logger = new UploadLogger(BukkitPlugin.getInstance(), Initiator.CONSOLE);
-            new GoogleDriveUploader(BukkitPlugin.getInstance(), logger).finalizeSharedDrives(sender, input);
+            Player player = new Player(sender.getName(), ((org.bukkit.entity.Player) sender).getUniqueId());
+            new GoogleDriveUploader(BukkitPlugin.getInstance(), logger).finalizeSharedDrives(player, input);
             DriveBackup.chatInputPlayers.remove(sender);
             return true;
         }
         return false;
     }
+    
 }
