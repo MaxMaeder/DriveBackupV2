@@ -93,7 +93,7 @@ public final class UploadThread implements Runnable {
     /**
      * The backup currently being backed up by the
      */
-    private int backupBackingUp;
+    private static int backupBackingUp;
 
     /**
      * Creates an instance of the {@code UploadThread} object
@@ -143,11 +143,30 @@ public final class UploadThread implements Runnable {
      */
     @Override
     public void run() {
-        Config config = ConfigParser.getConfig();
         if (initiator != null && BackupStatusValue.NOT_RUNNING != BackupStatus.getStatus()) {
             uploadLogger.info("backup-already-running", "backup-status", getBackupStatus());
             return;
         }
+        try {
+            run_internal();
+        } catch (Exception e) {
+            lastBackupSuccessful = false;
+            throw e;
+        } finally {
+            BackupStatus.setStatus(BackupStatusValue.NOT_RUNNING);
+            if (lastBackupSuccessful) {
+                instance.getAPIHandler().backupError();
+            } else {
+                instance.getAPIHandler().backupDone();
+            }
+        }
+    }
+
+    /**
+     * actual backup logic
+     */
+    void run_internal() {
+        Config config = ConfigParser.getConfig();
         BackupStatus.setStatus(BackupStatusValue.STARTING);
         totalTimer.start();
         if (!locationsToBePruned.isEmpty()) {
@@ -268,11 +287,6 @@ public final class UploadThread implements Runnable {
         long totalSeconds = Duration.of(totalBackupTime, ChronoUnit.MILLIS).getSeconds();
         uploadLogger.log("backup-total-time", "time", String.valueOf(totalSeconds));
         BackupStatus.setStatus(BackupStatusValue.NOT_RUNNING);
-        if (errorOccurred) {
-            instance.getAPIHandler().backupError();
-        } else {
-            instance.getAPIHandler().backupDone();
-        }
     }
     
     @Contract (mutates = "this")
@@ -521,10 +535,16 @@ public final class UploadThread implements Runnable {
                 return instance.getMessageHandler().getLangString("backup-status-not-running");
         }
         BackupListEntry[] backupList = config.backupList.list;
-        String backupSetName = backupList[backupBackingUp].location.toString();
+        int backup = 0;
+        //edge case when its in between backup steps where number is set to 0
+        int backupNumber = Math.max(0, backupBackingUp-1);
+        if (backupNumber <= backupList.length) {
+            backup = backupNumber;
+        }
+        String backupSetName = backupList[backup].location.toString();
         return message
             .replace("<set-name>", backupSetName)
-            .replace("<set-num>", String.valueOf(backupBackingUp + 1))
+            .replace("<set-num>", String.valueOf(backupNumber+1))
             .replace("<set-count>", String.valueOf(backupList.length));
     }
 

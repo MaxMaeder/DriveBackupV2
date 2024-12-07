@@ -84,19 +84,16 @@ public final class OneDriveUploader extends Uploader {
             .url("https://login.microsoftonline.com/common/oauth2/v2.0/token")
             .post(requestBody)
             .build();
-        Response response = HttpClient.getHttpClient().newCall(request).execute();
-        ResponseBody body = response.body();
-        if (body == null) {
-            throw new IOException("Response Body is null");
+        try (Response response = HttpClient.getHttpClient().newCall(request).execute()) {
+            JSONObject parsedResponse = new JSONObject(response.body().string());
+            if (!response.isSuccessful()) {
+                String error = parsedResponse.optString("error");
+                String description = parsedResponse.optString("error_description");
+                throw new IOException(String.format("%s : %s", error, description));
+            }
+            accessToken = parsedResponse.getString("access_token");
+            refreshToken = parsedResponse.getString("refresh_token");
         }
-        JSONObject parsedResponse = new JSONObject(body.string());
-        response.close();
-        if (!response.isSuccessful()) {
-            String error = parsedResponse.optString("error");
-            String description = parsedResponse.optString("error_description");
-            throw new IOException(String.format("%s : %s", error, description));
-        }
-        accessToken = parsedResponse.getString("access_token");
     }
     
     @Contract(pure = true)
@@ -132,6 +129,7 @@ public final class OneDriveUploader extends Uploader {
     @Override
     public void uploadFile(File file, String location) {
         try {
+            retrieveNewAccessToken();
             String destinationRoot = normalizePath(getRemoteSaveDirectory());
             String destinationPath = concatPath(destinationRoot, normalizePath(location));
             FQID destinationId = createPath(destinationPath);
@@ -149,6 +147,9 @@ public final class OneDriveUploader extends Uploader {
             NetUtil.catchException(exception, "graph.microsoft.com", logger);
             instance.getLoggingHandler().error("Error occurred while uploading to OneDrive", exception);
             setErrorOccurred(true);
+            if (exception instanceof InterruptedException) {
+                Thread.currentThread().interrupt();
+            }
         }
     }
 
@@ -157,7 +158,11 @@ public final class OneDriveUploader extends Uploader {
     */
     @Contract (pure = true)
     public void close() {
-        // nothing needs to be done
+        try {
+            Authenticator.saveRefreshToken(getAuthProvider(), refreshToken);
+        } catch (Exception e) {
+            instance.getLoggingHandler().error("Failed to save refresh token", e);
+        }
     }
 
     /**
