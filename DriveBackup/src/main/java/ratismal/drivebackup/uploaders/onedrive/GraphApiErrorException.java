@@ -4,8 +4,8 @@ import okhttp3.Response;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.json.JSONArray;
-import org.json.JSONObject;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -111,4 +111,5 @@ public class GraphApiErrorException extends Exception {
         this.innerErrors = innerErrors;
         this.details = details;
     }
+    
 }

@@ -7,10 +7,10 @@ import okhttp3.ResponseBody;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONObject;
-import ratismal.drivebackup.configuration.ConfigurationObject;
 import ratismal.drivebackup.handler.logging.PrefixedLogger;
 import ratismal.drivebackup.http.HttpClient;
 import ratismal.drivebackup.platforms.DriveBackupInstance;
+import ratismal.drivebackup.configuration.ConfigurationObject;
 
 import java.io.File;
 import java.io.IOException;

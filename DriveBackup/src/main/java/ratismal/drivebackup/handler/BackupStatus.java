@@ -1,21 +1,15 @@
 package ratismal.drivebackup.handler;
 
-import org.jetbrains.annotations.Contract;
+import lombok.Getter;
+import lombok.Setter;
 import ratismal.drivebackup.constants.BackupStatusValue;
 
-public class BackupStatus {
+public final class BackupStatus {
     
+    @Getter
+    @Setter
     private static BackupStatusValue status = BackupStatusValue.NOT_RUNNING;
     
     private BackupStatus() {}
-    
-    @Contract (pure = true)
-    public static BackupStatusValue getStatus() {
-        return status;
-    }
-    
-    public static void setStatus(BackupStatusValue status) {
-        BackupStatus.status = status;
-    }
     
 }

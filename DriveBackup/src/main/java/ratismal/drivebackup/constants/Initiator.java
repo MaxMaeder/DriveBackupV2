@@ -10,4 +10,5 @@ public enum Initiator {
     public boolean isAuto() {
         return AUTOMATIC == this;
     }
+    
 }

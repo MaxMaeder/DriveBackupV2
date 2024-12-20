@@ -7,7 +7,7 @@ import io.minio.Result;
 import io.minio.UploadObjectArgs;
 import io.minio.messages.Item;
 import org.jetbrains.annotations.NotNull;
-import ratismal.drivebackup.config.configSections.BackupMethods.S3BackupMethod;
+import ratismal.drivebackup.configuration.ConfigurationSection;
 import ratismal.drivebackup.platforms.DriveBackupInstance;
 import ratismal.drivebackup.uploaders.UploadLogger;
 import ratismal.drivebackup.uploaders.Uploader;
@@ -20,23 +20,27 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
 
-public class S3Uploader extends Uploader {
+public final class S3Uploader extends Uploader {
 
     private static final String UPLOADER_NAME = "S3";
     private static final String UPLOADER_ID = "s3";
 
     private MinioClient minioClient;
     
-    private String _bucket;
-    private String _hostname;
+    private String bucket;
+    private String hostname;
 
-    public S3Uploader(DriveBackupInstance instance, UploadLogger logger, S3BackupMethod config) {
+    public S3Uploader(DriveBackupInstance instance, UploadLogger logger) {
         super(instance, UPLOADER_NAME, UPLOADER_ID, null, logger);
+        ConfigurationSection section = instance.getConfigHandler().getConfig().getSection("s3");
         try {
-            _hostname = new URL(config.endpoint).getHost();
-            _bucket = config.bucket;
-            minioClient = MinioClient.builder().endpoint(config.endpoint).credentials(config.accessKey, config.secretKey).build();
-        } catch(Exception e) {
+            String endpoint = section.getValue("endpoint").getString();
+            hostname = new URL(endpoint).getHost();
+            bucket = section.getValue("bucket").getString();
+            String accessKey = section.getValue("access-key").getString();
+            String secretKey = section.getValue("secret-key").getString();
+            minioClient = MinioClient.builder().endpoint(endpoint).credentials(accessKey, secretKey).build();
+        } catch (Exception e) {
             instance.getLoggingHandler().error("Failed to initialize S3 uploader", e);
             setErrorOccurred(true);
         }
@@ -45,11 +49,11 @@ public class S3Uploader extends Uploader {
     @Override
     public void test(File testFile) {
         try {
-            minioClient.uploadObject(UploadObjectArgs.builder().bucket(_bucket).object(testFile.getName()).filename(testFile.getAbsolutePath()).build());
+            minioClient.uploadObject(UploadObjectArgs.builder().bucket(bucket).object(testFile.getName()).filename(testFile.getAbsolutePath()).build());
             Thread.sleep(5L);
-            minioClient.removeObject(RemoveObjectArgs.builder().bucket(_bucket).object(testFile.getName()).build());
+            minioClient.removeObject(RemoveObjectArgs.builder().bucket(bucket).object(testFile.getName()).build());
         } catch (Exception exception) {
-            NetUtil.catchException(exception, _hostname, logger);
+            NetUtil.catchException(exception, hostname, logger);
             instance.getLoggingHandler().error("Failed to test S3 uploader", exception);
             setErrorOccurred(true);
         }
@@ -60,7 +64,7 @@ public class S3Uploader extends Uploader {
         type = normalizeType(type);
         try {
             String key = type + "/" + file.getName();
-            minioClient.uploadObject(UploadObjectArgs.builder().bucket(_bucket).object(key).filename(file.getAbsolutePath()).build());
+            minioClient.uploadObject(UploadObjectArgs.builder().bucket(bucket).object(key).filename(file.getAbsolutePath()).build());
             try {
                 pruneBackups(type);
             } catch (Exception e) {
@@ -68,7 +72,7 @@ public class S3Uploader extends Uploader {
                 throw e;
             }
         } catch(Exception exception) {
-            NetUtil.catchException(exception, _hostname, logger);
+            NetUtil.catchException(exception, hostname, logger);
             instance.getLoggingHandler().error("Failed to upload file to S3", exception);
             setErrorOccurred(true);
         }
@@ -92,7 +96,7 @@ public class S3Uploader extends Uploader {
             logger.info("backup-method-limit-reached", placeholders);
             while (files.size() > fileLimit) {
                 Map.Entry<ZonedDateTime, Item> firstEntry = files.firstEntry();
-                minioClient.removeObject(RemoveObjectArgs.builder().bucket(_bucket).object(firstEntry.getValue().objectName()).build());
+                minioClient.removeObject(RemoveObjectArgs.builder().bucket(bucket).object(firstEntry.getValue().objectName()).build());
                 files.remove(firstEntry.getKey());
             }
         }
@@ -103,7 +107,7 @@ public class S3Uploader extends Uploader {
         type = normalizeType(type);
         String prefix = type + "/";
         TreeMap<ZonedDateTime, Item> files = new TreeMap<>();
-        for (Result<Item> result : minioClient.listObjects(ListObjectsArgs.builder().bucket(_bucket).prefix(prefix).build())) {
+        for (Result<Item> result : minioClient.listObjects(ListObjectsArgs.builder().bucket(bucket).prefix(prefix).build())) {
             Item item = result.get();
             files.put(item.lastModified(), item);
         }

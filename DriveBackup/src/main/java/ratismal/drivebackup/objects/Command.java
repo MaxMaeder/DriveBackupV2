@@ -1,5 +1,6 @@
 package ratismal.drivebackup.objects;
 
+import lombok.Getter;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -11,6 +12,7 @@ import org.jetbrains.annotations.Nullable;
  * args are the arguments passed with the command,
  * and player is the player who ran the command.
  */
+@Getter
 public final class Command {
     
     private final @NotNull String baseCommand;
@@ -24,25 +26,6 @@ public final class Command {
         this.subCommand = subCommand;
         this.args = args.clone();
         this.player = player;
-    }
-    
-    @Contract (pure = true)
-    public @NotNull String getBaseCommand() {
-        return baseCommand;
-    }
-    
-    @Contract (pure = true)
-    public @Nullable String getSubCommand() {
-        return subCommand;
-    }
-    
-    public String[] getArgs() {
-        return args.clone();
-    }
-    
-    @Contract (pure = true)
-    public @NotNull Player getPlayer() {
-        return player;
     }
     
 }

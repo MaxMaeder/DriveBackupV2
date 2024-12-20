@@ -80,6 +80,13 @@ public final class UploadLogger {
         msg.send();
     }
     
+    public void logRaw(String key) {
+        MessageHandler msg = messageHandler.Builder();
+        msg.miniMessage(key);
+        msg.toConsole(ConsoleLogLevel.INFO);
+        msg.send();
+    }
+    
     public void log(String key, Throwable throwable) {
         MessageHandler msg = messageHandler.Builder();
         msg.getLang(key);
@@ -111,4 +118,89 @@ public final class UploadLogger {
         msg.toConsole(ConsoleLogLevel.INFO);
         msg.send();
     }
+    
+    public void broadcastRaw(String message) {
+        MessageHandler msg = messageHandler.Builder();
+        msg.miniMessage(message);
+        msg.toAll();
+        msg.toConsole(ConsoleLogLevel.INFO);
+        msg.send();
+    }
+    
+    public void warn(String key, String placeholder, String value) {
+        MessageHandler msg = messageHandler.Builder();
+        msg.getLang(key, placeholder, value);
+        if (Initiator.PLAYER == initiator) {
+            msg.to(player);
+        }
+        msg.toConsole(ConsoleLogLevel.WARNING);
+        msg.send();
+    }
+    
+    public void warn(String key, Map<String, String> placeholders) {
+        MessageHandler msg = messageHandler.Builder();
+        msg.getLang(key, placeholders);
+        if (Initiator.PLAYER == initiator) {
+            msg.to(player);
+        }
+        msg.toConsole(ConsoleLogLevel.WARNING);
+        msg.send();
+    }
+    
+    public void warn(String key) {
+        MessageHandler msg = messageHandler.Builder();
+        msg.getLang(key);
+        if (Initiator.PLAYER == initiator) {
+            msg.to(player);
+        }
+        msg.toConsole(ConsoleLogLevel.WARNING);
+        msg.send();
+    }
+    
+    public void warn(String key, Throwable throwable) {
+        MessageHandler msg = messageHandler.Builder();
+        msg.getLang(key);
+        msg.addThrowable(throwable);
+        msg.toConsole(ConsoleLogLevel.WARNING);
+        msg.send();
+    }
+    
+    public void error(String key, String placeholder, String value) {
+        MessageHandler msg = messageHandler.Builder();
+        msg.getLang(key, placeholder, value);
+        if (Initiator.PLAYER == initiator) {
+            msg.to(player);
+        }
+        msg.toConsole(ConsoleLogLevel.ERROR);
+        msg.send();
+    }
+    
+    public void error(String key, Map<String, String> placeholders) {
+        MessageHandler msg = messageHandler.Builder();
+        msg.getLang(key, placeholders);
+        if (Initiator.PLAYER == initiator) {
+            msg.to(player);
+        }
+        msg.toConsole(ConsoleLogLevel.ERROR);
+        msg.send();
+    }
+    
+    public void error(String key) {
+        MessageHandler msg = messageHandler.Builder();
+        msg.getLang(key);
+        if (Initiator.PLAYER == initiator) {
+            msg.to(player);
+        }
+        msg.toConsole(ConsoleLogLevel.ERROR);
+        msg.send();
+    }
+    
+    public void error(String key, Throwable throwable) {
+        MessageHandler msg = messageHandler.Builder();
+        msg.getLang(key);
+        msg.addThrowable(throwable);
+        msg.toConsole(ConsoleLogLevel.ERROR);
+        msg.send();
+    }
+    
 }

@@ -2,8 +2,6 @@ package ratismal.drivebackup;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import ratismal.drivebackup.config.ConfigParser;
-import ratismal.drivebackup.config.ConfigParser.Config;
 import ratismal.drivebackup.objects.Player;
 import ratismal.drivebackup.platforms.DriveBackupInstance;
 import ratismal.drivebackup.uploaders.UploadLogger;
@@ -73,6 +71,10 @@ public final class TestThread implements Runnable {
             logger.log("test-method-invalid", "specified-method", method);
         }
     }
+    
+    private boolean isMethodEnabled(String method) {
+        return instance.getConfigHandler().getConfig().getSection(method).getValue("enabled").getBoolean();
+    }
 
     /**
      * Tests a specific upload method
@@ -81,11 +83,10 @@ public final class TestThread implements Runnable {
      * @param method name of the upload method to test
      */
     private void testUploadMethod(String testFileName, int testFileSize, @NotNull String method) throws Exception {
-        Config config = ConfigParser.getConfig();
         Uploader uploadMethod;
         switch (method) {
             case "googledrive":
-                if (config.backupMethods.googleDrive.enabled) {
+                if (isMethodEnabled("googledrive")) {
                     uploadMethod = new GoogleDriveUploader(instance, logger);
                 } else {
                     sendMethodDisabled(logger, "GoogleDrive");
@@ -93,7 +94,7 @@ public final class TestThread implements Runnable {
                 }
                 break;
             case "onedrive":
-                if (config.backupMethods.oneDrive.enabled) {
+                if (isMethodEnabled("onedrive")) {
                     uploadMethod = new OneDriveUploader(instance, logger);
                 } else {
                     sendMethodDisabled(logger, "OneDrive");
@@ -101,7 +102,7 @@ public final class TestThread implements Runnable {
                 }
                 break;
             case "dropbox":
-                if (config.backupMethods.dropbox.enabled) {
+                if (isMethodEnabled("dropbox")) {
                     uploadMethod = new DropboxUploader(instance, logger);
                 } else {
                     sendMethodDisabled(logger, "Dropbox");
@@ -109,32 +110,32 @@ public final class TestThread implements Runnable {
                 }
                 break;
             case "webdav":
-                if (config.backupMethods.webdav.enabled) {
-                    uploadMethod = new WebDAVUploader(instance, logger, config.backupMethods.webdav);
+                if (isMethodEnabled("webdav")) {
+                    uploadMethod = new WebDAVUploader(instance, logger);
                 } else {
                     sendMethodDisabled(logger, "WebDAV");
                     return;
                 }
                 break;
             case "nextcloud":
-                if (config.backupMethods.nextcloud.enabled) {
-                    uploadMethod = new NextcloudUploader(instance, logger, config.backupMethods.nextcloud);
+                if (isMethodEnabled("nextcloud")) {
+                    uploadMethod = new NextcloudUploader(instance, logger);
                 } else {
                     sendMethodDisabled(logger, "Nextcloud");
                     return;
                 }
                 break;
             case "s3":
-                if (config.backupMethods.s3.enabled) {
-                    uploadMethod = new S3Uploader(instance, logger, config.backupMethods.s3);
+                if (isMethodEnabled("s3")) {
+                    uploadMethod = new S3Uploader(instance, logger);
                 } else {
                     sendMethodDisabled(logger, "S3");
                     return;
                 }
                 break;
             case "ftp":
-                if (config.backupMethods.ftp.enabled) {
-                    uploadMethod = new FTPUploader(instance, logger, config.backupMethods.ftp);
+                if (isMethodEnabled("ftp")) {
+                    uploadMethod = new FTPUploader(instance, logger);
                 } else {
                     sendMethodDisabled(logger, "FTP");
                     return;
@@ -144,8 +145,9 @@ public final class TestThread implements Runnable {
                 throw new IllegalArgumentException("Invalid method");
         }
         logger.log("test-method-begin", "upload-method", uploadMethod.getName());
-        String localTestFilePath = config.backupStorage.localDirectory + File.separator + testFileName;
-        new File(config.backupStorage.localDirectory).mkdirs();
+        String localDir = instance.getConfigHandler().getConfig().getValue("remote-save-directory").getString();
+        String localTestFilePath = localDir + File.separator + testFileName;
+        new File(localDir).mkdirs();
         try (FileOutputStream fos = new FileOutputStream(localTestFilePath)) {
             SecureRandom byteGenerator = new SecureRandom();
             byte[] randomBytes = new byte[testFileSize];
@@ -153,8 +155,7 @@ public final class TestThread implements Runnable {
             fos.write(randomBytes);
             fos.flush();
         } catch (Exception exception) {
-            logger.log("test-file-creation-failed");
-            instance.getLoggingHandler().error("Failed to create test file", exception);
+            logger.error("test-file-creation-failed", exception);
         }
         File testFile = new File(localTestFilePath);
         uploadMethod.test(testFile);

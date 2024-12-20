@@ -2,8 +2,13 @@ name: DriveBackupV2
 version: ${project.version}
 api-version: 1.13
 description: Creates and Uploads backups to Google Drive/OneDrive or by (S)FTP
-main: ratismal.drivebackup.plugin.DriveBackup
+main: ratismal.drivebackup.platforms.bukkit.BukkitPlugin
 author: MaxTheGinus
+authors:
+  - MaxTheGinus
+  - rhld16
+  - LRMtheBoss
+  - StillGreen-san
 website: https://github.com/MaxMaeder/DriveBackupV2/
 commands:
   drivebackup:

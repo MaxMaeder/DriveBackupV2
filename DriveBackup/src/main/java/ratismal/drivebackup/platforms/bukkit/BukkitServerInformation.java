@@ -42,4 +42,5 @@ public final class BukkitServerInformation implements ServerInformation {
         }
         return addons;
     }
+    
 }

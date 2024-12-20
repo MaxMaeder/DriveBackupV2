@@ -3,9 +3,10 @@ package ratismal.drivebackup.uploaders.webdav;
 import com.github.sardine.DavResource;
 import com.github.sardine.Sardine;
 import com.github.sardine.SardineFactory;
+import lombok.Getter;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import ratismal.drivebackup.config.configSections.BackupMethods.WebDAVBackupMethod;
+import ratismal.drivebackup.configuration.ConfigurationSection;
 import ratismal.drivebackup.platforms.DriveBackupInstance;
 import ratismal.drivebackup.uploaders.UploadLogger;
 import ratismal.drivebackup.uploaders.Uploader;
@@ -29,18 +30,39 @@ public class WebDAVUploader extends Uploader {
     private static final String ID = "webdav";
     
     protected Sardine sardine;
-    private URL _remoteBaseFolder;
+    private URL remoteBaseFolder;
+    @Getter
+    protected String username;
+    @Getter
+    protected String hostname;
     
     /**
      * Creates an instance of the {@code WebDAVUploader} object using the server credentials specified by the user in the {@code config.yml}
      */
-    public WebDAVUploader(DriveBackupInstance instance, UploadLogger logger, WebDAVBackupMethod webdav) {
+    public WebDAVUploader(DriveBackupInstance instance, UploadLogger logger) {
+        this(instance, logger, false);
+    }
+    
+    public WebDAVUploader(DriveBackupInstance instance, UploadLogger logger, boolean isNextCloud) {
         super(instance, UPLOADER_NAME, ID, null, logger);
+        ConfigurationSection config;
+        if (isNextCloud) {
+            config = instance.getConfigHandler().getConfig().getSection("nextcloud");
+        } else {
+            config = instance.getConfigHandler().getConfig().getSection("webdav");
+        }
         try {
-            _remoteBaseFolder = new URL(webdav.hostname + "/" + webdav.remoteDirectory);
-            sardine = SardineFactory.begin(webdav.username, webdav.password);
-            sardine.enablePreemptiveAuthentication(_remoteBaseFolder.getHost());
-            createDirectory(_remoteBaseFolder.toString());
+            String hostname = config.getValue("hostname").getString();
+            String remoteDirectory = config.getValue("remote-directory").getString();
+            if (remoteDirectory == null) {
+                remoteDirectory = getRemoteSaveDirectory();
+            }
+            remoteBaseFolder = new URL(hostname + "/" + remoteDirectory);
+            username = config.getValue("username").getString();
+            String password = config.getValue("password").getString();
+            sardine = SardineFactory.begin(username, password);
+            sardine.enablePreemptiveAuthentication(remoteBaseFolder.getHost());
+            createDirectory(remoteBaseFolder.toString());
         } catch (Exception e) {
             instance.getLoggingHandler().error("Failed to create WebDAV uploader", e);
             setErrorOccurred(true);
@@ -65,12 +87,12 @@ public class WebDAVUploader extends Uploader {
      */
     public void test(File testFile) {
         try {
-            URL target = new URL(_remoteBaseFolder + "/" + testFile.getName());
+            URL target = new URL(remoteBaseFolder + "/" + testFile.getName());
             realUploadFile(testFile, target);
             TimeUnit.SECONDS.sleep(5L);
             sardine.delete(target.toString());
         } catch (Exception exception) {
-            NetUtil.catchException(exception, _remoteBaseFolder.getHost(), logger);
+            NetUtil.catchException(exception, remoteBaseFolder.getHost(), logger);
             instance.getLoggingHandler().error("Failed to test WebDAV uploader", exception);
             setErrorOccurred(true);
         }
@@ -90,8 +112,8 @@ public class WebDAVUploader extends Uploader {
     public void uploadFile(File file, String type) {
         try {
             type = type.replaceAll(".{1,2}[/\\\\]", "");
-            createDirectory(_remoteBaseFolder.toString() + "/" + type);
-            URL target = new URL(_remoteBaseFolder + "/" + type + "/" + file.getName());
+            createDirectory(remoteBaseFolder.toString() + "/" + type);
+            URL target = new URL(remoteBaseFolder + "/" + type + "/" + file.getName());
             realUploadFile(file, target);
             try {
                 pruneBackups(type);
@@ -100,7 +122,7 @@ public class WebDAVUploader extends Uploader {
                 throw e;
             }
         } catch (Exception exception) {
-            NetUtil.catchException(exception, _remoteBaseFolder.getHost(), logger);
+            NetUtil.catchException(exception, remoteBaseFolder.getHost(), logger);
             instance.getLoggingHandler().error("Failed to upload file to WebDAV", exception);
             setErrorOccurred(true);
         }
@@ -115,7 +137,7 @@ public class WebDAVUploader extends Uploader {
         ArrayList<String> filePaths = new ArrayList<>();
         try {
             //TODO path
-            List<DavResource> resources = sardine.list(new URL(_remoteBaseFolder + "/" + folderPath).toString());
+            List<DavResource> resources = sardine.list(new URL(remoteBaseFolder + "/" + folderPath).toString());
             for (DavResource resource : resources) {
                 if (resource.isDirectory()) {
                     filePaths.addAll(prependToAll(getFiles(resource.getName()), new File(resource.getName()).getName() + '/'));
@@ -150,7 +172,7 @@ public class WebDAVUploader extends Uploader {
             placeholders.put("file-limit", String.valueOf(fileLimit));
             logger.info("backup-method-limit-reached", placeholders);
             while (files.size() > fileLimit) {
-                sardine.delete(new URL(_remoteBaseFolder + "/" + type + "/" + files.firstEntry().getValue().getName()).toString());
+                sardine.delete(new URL(remoteBaseFolder + "/" + type + "/" + files.firstEntry().getValue().getName()).toString());
                 files.remove(files.firstKey());
             }
         }
@@ -164,7 +186,7 @@ public class WebDAVUploader extends Uploader {
     @NotNull
     private TreeMap<Instant, DavResource> getZipFiles(String type) throws Exception {
         TreeMap<Instant, DavResource> files = new TreeMap<>();
-        List<DavResource> resources = sardine.list(new URL(_remoteBaseFolder + "/" + type).toString());
+        List<DavResource> resources = sardine.list(new URL(remoteBaseFolder + "/" + type).toString());
         for (DavResource resource : resources) {
             if (resource.getName().endsWith(".zip")) {
                 files.put(resource.getModified().toInstant(), resource);

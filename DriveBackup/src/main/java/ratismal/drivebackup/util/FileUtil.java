@@ -2,7 +2,6 @@ package ratismal.drivebackup.util;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import ratismal.drivebackup.config.ConfigParser;
 import ratismal.drivebackup.platforms.DriveBackupInstance;
 import ratismal.drivebackup.uploaders.UploadLogger;
 
@@ -162,8 +161,7 @@ public final class FileUtil {
                 }
                 logger.log("local-backup-pruning-complete", "location", location);
             } catch (Exception e) {
-                logger.log("local-backup-failed-to-delete");
-                MessageUtil.sendConsoleException(e);
+                logger.log("local-backup-failed-to-delete", e);
             }
         } else {
             logger.info("local-backup-no-limit");
@@ -293,7 +291,7 @@ public final class FileUtil {
         BasicFileAttributes fileAttributes = Files.readAttributes(file.toPath(), BasicFileAttributes.class);
         if (fileAttributes.isRegularFile()) {
             // Verify not backing up previous backups
-            if (file.getCanonicalPath().startsWith(new File(ConfigParser.getConfig().backupStorage.localDirectory).getCanonicalPath())) {
+            if (file.getCanonicalPath().startsWith(new File(instance.getConfigHandler().getConfig().getValue("local-save-directory").getString()).getCanonicalPath())) {
                 fileList.incFilesInBackupFolder();
                 return;
             }

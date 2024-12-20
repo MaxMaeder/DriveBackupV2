@@ -112,6 +112,12 @@ public final class ConfigHandler {
         nextcloud.node("username").set("username");
         nextcloud.node("password").set("password");
         nextcloud.node("chunk-size").set(20_000_000);
+        CommentedConfigurationNode s3 = defaults.node("s3");
+        s3.node("enable").set(Boolean.FALSE);
+        s3.node("endpoint").set("https://s3.amazonaws.com");
+        s3.node("bucket").set("bucket");
+        s3.node("access-key").set("access-key");
+        s3.node("secret-key").set("secret-key");
         CommentedConfigurationNode ftp = defaults.node("ftp");
         ftp.node("enable").set(Boolean.FALSE);
         ftp.node("hostname").set("ftp.example.com");

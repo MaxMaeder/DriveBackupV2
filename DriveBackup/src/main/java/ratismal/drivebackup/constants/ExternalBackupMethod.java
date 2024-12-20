@@ -1,7 +1,9 @@
 package ratismal.drivebackup.constants;
 
+import lombok.Getter;
 import org.jetbrains.annotations.Contract;
 
+@Getter
 public enum ExternalBackupMethod {
     FTP("FTP"),
     SFTP("SFTP");
@@ -14,13 +16,9 @@ public enum ExternalBackupMethod {
     }
     
     @Contract (pure = true)
-    public String getName() {
-        return name;
-    }
-    
-    @Contract (pure = true)
     @Override
     public String toString() {
         return name;
     }
+    
 }

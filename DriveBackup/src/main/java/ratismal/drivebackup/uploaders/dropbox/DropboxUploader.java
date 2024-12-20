@@ -282,7 +282,7 @@ public final class DropboxUploader extends Uploader {
      */
     public DropboxUploader(DriveBackupInstance instance, UploadLogger logger) {
         super(instance, UPLOADER_NAME, ID, AuthenticationProvider.DROPBOX, logger);
-        refreshToken = Authenticator.getRefreshToken(AuthenticationProvider.DROPBOX);
+        refreshToken = Authenticator.getRefreshToken(AuthenticationProvider.DROPBOX, instance);
         try {
             retrieveNewAccessToken();
         } catch (Exception e) {

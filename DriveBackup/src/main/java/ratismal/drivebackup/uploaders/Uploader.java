@@ -1,18 +1,31 @@
 package ratismal.drivebackup.uploaders;
 
+import lombok.Getter;
+import lombok.Setter;
+import lombok.experimental.Accessors;
 import org.jetbrains.annotations.Contract;
 import ratismal.drivebackup.platforms.DriveBackupInstance;
 
 import java.io.File;
 import java.io.IOException;
 
+@Accessors(makeFinal = true)
 public abstract class Uploader {
     
     protected final DriveBackupInstance instance;
-    protected String name;
-    protected String id;
-    protected boolean authenticated;
-    protected boolean errorOccurred;
+    @Getter
+    @Setter
+    private String name;
+    @Getter
+    @Setter
+    private String id;
+    @Getter
+    @Setter
+    @Accessors(makeFinal = false)
+    private boolean authenticated;
+    @Setter
+    private boolean errorOccurred;
+    @Getter
     protected final AuthenticationProvider authProvider;
     protected final UploadLogger logger;
     
@@ -28,40 +41,8 @@ public abstract class Uploader {
         this.logger = logger;
     }
     
-    public String getName() {
-        return name;
-    }
-    
-    protected void setName(String name) {
-        this.name = name;
-    }
-    
-    public String getId() {
-        return id;
-    }
-    
-    protected void setId(String id) {
-        this.id = id;
-    }
-    
-    public AuthenticationProvider getAuthProvider() {
-        return authProvider;
-    }
-    
-    public boolean isAuthenticated() {
-        return authenticated;
-    }
-    
-    protected void setAuthenticated(boolean authenticated) {
-        this.authenticated = authenticated;
-    }
-    
     public boolean didErrorOccur() {
         return errorOccurred;
-    }
-    
-    protected void setErrorOccurred(boolean errorOccurred) {
-        this.errorOccurred = errorOccurred;
     }
     
     public abstract void test(File testFile);
@@ -74,7 +55,7 @@ public abstract class Uploader {
         return instance.getConfigHandler().getConfig().getValue("local-save-directory").getString();
     }
     
-    protected String getRemoteSaveDirectory() {
+    public String getRemoteSaveDirectory() {
         return instance.getConfigHandler().getConfig().getValue("remote-save-directory").getString();
     }
     

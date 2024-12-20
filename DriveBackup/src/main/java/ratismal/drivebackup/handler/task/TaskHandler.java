@@ -45,4 +45,5 @@ public interface TaskHandler {
     void cancelTask(TaskIdentifier taskId);
     
     void cancelAllTasks();
+    
 }

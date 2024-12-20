@@ -1,7 +1,9 @@
 package ratismal.drivebackup.constants;
 
+import lombok.Getter;
 import org.jetbrains.annotations.Contract;
 
+@Getter
 public enum BackupMethod {
     GOOGLE_DRIVE("Google Drive"),
     ONE_DRIVE("OneDrive"),
@@ -19,13 +21,9 @@ public enum BackupMethod {
     }
     
     @Contract (pure = true)
-    public String getName() {
-        return name;
-    }
-    
-    @Contract (pure = true)
     @Override
     public String toString() {
         return name;
     }
+    
 }

@@ -258,13 +258,13 @@ public abstract class MessageHandler {
      * Sends the message to the recipients
      */
     public void send() {
-        if (addPrefix) {
-            TextComponent prefix = LegacyComponentSerializer.legacyAmpersand().deserialize(
-                    configHandler.getConfig().getValue("advanced", "prefix").getString());
-            message.add(0, prefix);
-        }
         if (sendToConsole || throwable != null) {
             sendConsole();
+        }
+        if (addPrefix) {
+            TextComponent prefix = LegacyComponentSerializer.legacyAmpersand().deserialize(
+                    configHandler.getConfig().getValue("messages", "prefix").getString());
+            message.add(0, prefix);
         }
         if (configHandler.getConfig().getValue("messages", "send-in-chat").getBoolean()) {
             for (Player player : recipients) {
@@ -306,6 +306,14 @@ public abstract class MessageHandler {
                 }
                 break;
         }
+    }
+    
+    public void error(String key, Throwable throwable) {
+        MessageHandler messageHandler = Builder();
+        messageHandler.getLang(key);
+        messageHandler.addThrowable(throwable);
+        messageHandler.toConsole(ConsoleLogLevel.ERROR);
+        messageHandler.send();
     }
     
     protected abstract void sendPlayer(Player player);

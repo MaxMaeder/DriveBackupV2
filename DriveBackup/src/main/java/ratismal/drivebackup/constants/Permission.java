@@ -1,8 +1,10 @@
 package ratismal.drivebackup.constants;
 
+import lombok.Getter;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
+@Getter
 public enum Permission {
     
     BACKUP("backup"),
@@ -27,11 +29,6 @@ public enum Permission {
     @Contract (pure = true)
     public @NotNull String getFullPermission() {
         return PERMISSION_PREFIX + node;
-    }
-    
-    @Contract (pure = true)
-    public String getNode() {
-        return node;
     }
     
     @Contract (pure = true)

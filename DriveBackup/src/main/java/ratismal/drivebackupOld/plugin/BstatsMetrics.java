@@ -1,0 +1,78 @@
+package ratismal.drivebackupOld.plugin;
+
+import org.bstats.bukkit.Metrics;
+import org.bstats.charts.SimplePie;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
+import ratismal.drivebackupOld.config.ConfigParser;
+import ratismal.drivebackupOld.config.ConfigParser.Config;
+import ratismal.drivebackup.platforms.bukkit.BukkitPlugin;
+
+@Deprecated
+public class BstatsMetrics {
+    private static final int METRICS_ID = 7537;
+
+    public static void initMetrics(@NotNull BukkitPlugin instance) {
+        boolean metricsEnabled = instance.getConfigHandler().getConfig().getValue("advanced", "metricsEnabled").getBoolean();
+        if (metricsEnabled) {
+            try {
+                BstatsMetrics metrics = new BstatsMetrics(instance);
+                metrics.updateMetrics();
+                instance.getMessageHandler().Builder().getLang("metrics-started").toConsole().send();
+            } catch (Exception e) {
+                instance.getMessageHandler().Builder().getLang("metrics-error").toConsole().send();
+            }
+        }
+    }
+
+    private final Metrics metrics;
+
+    public BstatsMetrics(BukkitPlugin plugin) {
+        metrics = new Metrics(plugin, METRICS_ID);
+    }
+
+    public void updateMetrics() {
+        Config config = ConfigParser.getConfig();
+        metrics.addCustomChart(new SimplePie("automaticBackupType", () -> {
+            if (config.backupScheduling.enabled) {
+                return "Schedule Based";
+            } else if (config.backupStorage.delay != -1L) {
+                return "Interval Based";
+            } else {
+                return "Not Enabled";
+            }
+        }));
+        metrics.addCustomChart(new SimplePie("backupMethodEnabled", () -> enabled(
+            config.backupMethods.googleDrive.enabled ||
+            config.backupMethods.oneDrive.enabled ||
+            config.backupMethods.dropbox.enabled ||
+            config.backupMethods.webdav.enabled ||
+            config.backupMethods.nextcloud.enabled ||
+            config.backupMethods.ftp.enabled)));
+        metrics.addCustomChart(new SimplePie("googleDriveEnabled", () -> enabled(config.backupMethods.googleDrive.enabled)));
+        metrics.addCustomChart(new SimplePie("oneDriveEnabled", () -> enabled(config.backupMethods.oneDrive.enabled)));
+        metrics.addCustomChart(new SimplePie("dropboxEnabled", () -> enabled(config.backupMethods.dropbox.enabled)));
+        metrics.addCustomChart(new SimplePie("webdavEnabled", () -> enabled(config.backupMethods.webdav.enabled)));
+        metrics.addCustomChart(new SimplePie("nextcloudEnabled", () -> enabled(config.backupMethods.nextcloud.enabled)));
+        metrics.addCustomChart(new SimplePie("ftpEnabled", () -> enabled(config.backupMethods.ftp.enabled)));
+        if (config.backupMethods.ftp.enabled) {
+            metrics.addCustomChart(new SimplePie("sftpEnabled", () -> {
+                if (config.backupMethods.ftp.sftp) {
+                    return "FTP using SSH";
+                }
+                return "FTP";
+            }));
+        }
+        metrics.addCustomChart(new SimplePie("updateCheckEnabled", () -> enabled(config.advanced.updateCheckEnabled)));
+    }
+
+    @NotNull
+    @Contract (pure = true)
+    private static String enabled(boolean enabled) {
+        if (enabled) {
+            return "Enabled";
+        }
+        return "Disabled";
+    }
+    
+}

@@ -120,12 +120,10 @@ public final class UpdateHandler {
         }
     }
     
-    @Contract (pure = true)
     public Version getCurrentVersion() {
         return current;
     }
     
-    @Contract (pure = true)
     public Version getLatestVersion() {
         return latest;
     }

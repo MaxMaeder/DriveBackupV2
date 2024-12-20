@@ -1,7 +1,9 @@
 package ratismal.drivebackup.handler.task;
 
+import lombok.Getter;
 import org.jetbrains.annotations.Contract;
 
+@Getter
 public final class TaskIdentifier {
     
     private final int taskId;
@@ -11,8 +13,4 @@ public final class TaskIdentifier {
         this.taskId = taskId;
     }
     
-    @Contract (pure = true)
-    public int getTaskId() {
-        return taskId;
-    }
 }

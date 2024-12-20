@@ -1,10 +1,12 @@
 package ratismal.drivebackup.handler.debug;
 
+import lombok.Getter;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
+@Getter
 public final class AddonInfo {
     private final AddonType type;
     private final String name;
@@ -29,23 +31,4 @@ public final class AddonInfo {
         return new AddonInfo(AddonType.MOD, name, version, authors);
     }
     
-    @Contract (pure = true)
-    public AddonType getType() {
-        return type;
-    }
-    
-    @Contract (pure = true)
-    public String getName() {
-        return name;
-    }
-    
-    @Contract (pure = true)
-    public String getVersion() {
-        return version;
-    }
-    
-    @Contract (pure = true)
-    public List<String> getAuthors() {
-        return authors;
-    }
 }

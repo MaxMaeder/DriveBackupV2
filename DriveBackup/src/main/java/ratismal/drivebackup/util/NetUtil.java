@@ -5,7 +5,6 @@ import ratismal.drivebackup.uploaders.UploadLogger;
 
 import java.net.UnknownHostException;
 
-@Deprecated
 public final class NetUtil {
     
     @Contract (pure = true)
@@ -15,6 +14,7 @@ public final class NetUtil {
         if (!(exception instanceof UnknownHostException)) {
             return;
         }
-        logger.log("connection-error", "domain", domain);
+        logger.error("connection-error", "domain", domain);
     }
+    
 }

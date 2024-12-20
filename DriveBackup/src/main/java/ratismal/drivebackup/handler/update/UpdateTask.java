@@ -54,4 +54,5 @@ public final class UpdateTask implements Runnable {
             logger.info("No new version available");
         }
     }
+    
 }

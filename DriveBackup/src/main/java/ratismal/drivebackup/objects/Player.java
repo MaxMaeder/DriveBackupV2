@@ -1,26 +1,24 @@
 package ratismal.drivebackup.objects;
 
+import lombok.Getter;
 import org.jetbrains.annotations.Contract;
 
 import java.util.UUID;
 
+@Getter
 public final class Player {
-    private final String name;
+    private String name;
     private final UUID uuid;
 
     @Contract (pure = true)
-    public Player(String name, UUID uuid) {
+    public Player(UUID uuid, String name) {
         this.name = name;
         this.uuid = uuid;
     }
-
+    
     @Contract (pure = true)
-    public String getName() {
-        return name;
+    public Player(UUID uuid) {
+        this.uuid = uuid;
     }
-
-    @Contract (pure = true)
-    public UUID getUuid() {
-        return uuid;
-    }
+    
 }

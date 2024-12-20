@@ -1,9 +1,11 @@
 package ratismal.drivebackup.util;
 
+import lombok.Getter;
 import org.jetbrains.annotations.Contract;
 
 import java.nio.file.PathMatcher;
 
+@Getter
 public final class BlacklistEntry {
     private String globPattern;
     private PathMatcher pathMatcher;
@@ -20,19 +22,5 @@ public final class BlacklistEntry {
     public void incBlacklistedFiles() {
         blacklistedFiles++;
     }
-
-    @Contract (pure = true)
-    public String getGlobPattern() {
-        return globPattern;
-    }
-
-    @Contract (pure = true)
-    public PathMatcher getPathMatcher() {
-        return pathMatcher;
-    }
-
-    @Contract (pure = true)
-    public int getBlacklistedFiles() {
-        return blacklistedFiles;
-    }
+    
 }

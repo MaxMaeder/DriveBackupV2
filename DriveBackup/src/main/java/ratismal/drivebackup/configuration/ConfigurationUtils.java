@@ -40,10 +40,12 @@ public final class ConfigurationUtils {
             configObject.setExtension(findExtension(configObject.getFolder(), configObject.getFileName()));
             } catch (IllegalArgumentException e) {
                 saveDefaultConfig(configObject.getFolder(), configObject.getFileName(), "conf", configObject.getDefaults());
+                configObject.setExtension("conf");
             }
         }
-        File file = findFile(configObject.getFolder(), configObject.getFileName(), configObject.getExtension());
-        switch (configObject.getExtension()) {
+        String extension2 = configObject.getExtension();
+        File file = findFile(configObject.getFolder(), configObject.getFileName(), extension2);
+        switch (extension2) {
             case "conf":
                 configObject.setConfig(loadHocon(file));
                 return;

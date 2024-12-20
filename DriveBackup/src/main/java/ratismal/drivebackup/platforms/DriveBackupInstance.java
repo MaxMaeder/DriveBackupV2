@@ -10,12 +10,18 @@ import ratismal.drivebackup.handler.permission.PermissionHandler;
 import ratismal.drivebackup.handler.player.PlayerHandler;
 import ratismal.drivebackup.handler.task.TaskHandler;
 import ratismal.drivebackup.handler.update.UpdateHandler;
+import ratismal.drivebackup.objects.Player;
 import ratismal.drivebackup.util.Version;
 
 import java.io.File;
 import java.util.concurrent.ExecutionException;
 
 public interface DriveBackupInstance {
+    
+    void addChatInputPlayer(Player player);
+    
+    void removeChatInputPlayer(Player player);
+    boolean isChatInputPlayer(Player player);
     
     PermissionHandler getPermissionHandler();
     File getJarFile();

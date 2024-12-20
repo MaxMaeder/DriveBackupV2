@@ -21,9 +21,6 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
-import org.bukkit.Bukkit;
-import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -32,7 +29,6 @@ import org.spongepowered.configurate.CommentedConfigurationNode;
 import ratismal.drivebackup.configuration.ConfigHandler;
 import ratismal.drivebackup.http.HttpClient;
 import ratismal.drivebackup.platforms.DriveBackupInstance;
-import ratismal.drivebackup.plugin.DriveBackup;
 import ratismal.drivebackup.uploaders.AuthenticationProvider;
 import ratismal.drivebackup.uploaders.Authenticator;
 import ratismal.drivebackup.uploaders.Obfusticate;
@@ -89,7 +85,7 @@ public final class GoogleDriveUploader extends Uploader {
     public GoogleDriveUploader(DriveBackupInstance instance, UploadLogger logger) {
         super(instance, UPLOADER_NAME,  ID, AuthenticationProvider.GOOGLE_DRIVE, logger);
         try {
-            refreshToken = Authenticator.getRefreshToken(AuthenticationProvider.GOOGLE_DRIVE);
+            refreshToken = Authenticator.getRefreshToken(AuthenticationProvider.GOOGLE_DRIVE, instance);
             retrieveNewAccessToken();
             String sharedDriveId = instance.getConfigHandler().getConfig().getValue("googledrive", "shared-drive-id").getString();
             if (!Strings.isNullOrEmpty(sharedDriveId)) {
@@ -264,6 +260,7 @@ public final class GoogleDriveUploader extends Uploader {
     /**
      * Setup for authenticated user that has access to one or more shared drives.
      */
+    //TODO: deal with console
     public void setupSharedDrives(ratismal.drivebackup.objects.Player player) {
         if (drives != null && !drives.isEmpty()) {
             logger.log("google-pick-shared-drive");
@@ -281,15 +278,7 @@ public final class GoogleDriveUploader extends Uploader {
                 placeholders2.put("drive-name", drive.getName());
                 logger.log("google-shared-drive-option", placeholders2);
             }
-            //TODO
-            Player bukkitPlayer = Bukkit.getPlayer(player.getUuid());
-            CommandSender initiator = bukkitPlayer;
-            if (initiator instanceof Player) {
-                Player player1 = (Player) initiator;
-                DriveBackup.chatInputPlayers.add(player1);
-            } else {
-                DriveBackup.chatInputPlayers.add(initiator);
-            }
+            instance.addChatInputPlayer(player);
         } else {
             Authenticator.linkSuccess(player, getAuthProvider(), logger, instance);
         }

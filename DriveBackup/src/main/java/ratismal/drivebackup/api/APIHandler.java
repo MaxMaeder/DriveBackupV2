@@ -36,10 +36,13 @@ public class APIHandler {
     
     @Contract (pure = true)
     public static APIHandler getInstance() {
+        if (instanceAPIHandler == null) {
+            throw new IllegalStateException("APIHandler has not been initialized");
+        }
         return instanceAPIHandler;
     }
     
-    public DriveBackupInstance getDBInstance() {
+    DriveBackupInstance getDBInstance() {
         return instance;
     }
     
@@ -120,4 +123,5 @@ public class APIHandler {
             }
         }
     }
+    
 }

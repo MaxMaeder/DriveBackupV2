@@ -10,11 +10,7 @@ import net.schmizz.sshj.userauth.method.AuthPassword;
 import net.schmizz.sshj.userauth.method.AuthPublickey;
 import net.schmizz.sshj.userauth.password.PasswordFinder;
 import net.schmizz.sshj.userauth.password.Resource;
-import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import ratismal.drivebackup.config.ConfigParser;
-import ratismal.drivebackup.config.ConfigParser.Config;
-import ratismal.drivebackup.config.configSections.BackupMethods.FTPBackupMethod;
 import ratismal.drivebackup.platforms.DriveBackupInstance;
 import ratismal.drivebackup.uploaders.UploadLogger;
 
@@ -41,24 +37,23 @@ public final class SFTPUploader {
     private StatefulSFTPClient sftpClient;
 
     private String initialRemoteFolder;
-    private final String _localBaseFolder;
-    private final String _remoteBaseFolder;
+    private final String localBaseFolder;
+    private final String remoteBaseFolder;
 
     /**
      * Creates an instance of the {@code SFTPUploader} object using the server credentials specified by the user in the {@code config.yml}
      * @throws Exception
      */
-    public SFTPUploader(DriveBackupInstance instance, UploadLogger logger) throws Exception {
+    public SFTPUploader(DriveBackupInstance instance, UploadLogger logger, FTPUploader ftpUploader) throws Exception {
         this.instance = instance;
         this.logger = logger;
-        Config config = ConfigParser.getConfig();
-        FTPBackupMethod ftp = config.backupMethods.ftp;
-        connect(ftp.hostname, ftp.port, ftp.username, ftp.password, ftp.publicKey, ftp.passphrase);
-        _localBaseFolder = ".";
-        if (Strings.isNullOrEmpty(ftp.remoteDirectory)) {
-            _remoteBaseFolder = instance.getConfigHandler().getConfig().getValue("remote-save-directory").getString();
+        FTPDetails ftpDetails = FTPDetails.load(instance);
+        connect(ftpDetails.getHost(), ftpDetails.getPort(), ftpDetails.getUsername(), ftpDetails.getPassword(), ftpDetails.getPublicKey(), ftpDetails.getPassphrase());
+        localBaseFolder = ".";
+        if (Strings.isNullOrEmpty(ftpDetails.getDirectory())) {
+            remoteBaseFolder = ftpUploader.getRemoteSaveDirectory();
         } else {
-            _remoteBaseFolder = ftp.remoteDirectory + "/" + instance.getConfigHandler().getConfig().getValue("remote-save-directory").getString();
+            remoteBaseFolder = ftpDetails.getDirectory() + ftpUploader.sep() + ftpUploader.getRemoteSaveDirectory();
         }
     }
 
@@ -78,8 +73,8 @@ public final class SFTPUploader {
         this.instance = instance;
         this.logger = logger;
         connect(host, port, username, password, publicKey, passphrase);
-        _localBaseFolder = localBaseFolder;
-        _remoteBaseFolder = remoteBaseFolder;
+        this.localBaseFolder = localBaseFolder;
+        this.remoteBaseFolder = remoteBaseFolder;
     }
 
     /**
@@ -145,7 +140,7 @@ public final class SFTPUploader {
      */
     public void test(@NotNull File testFile) throws Exception {
         resetWorkingDirectory();
-        createThenEnter(_remoteBaseFolder);
+        createThenEnter(remoteBaseFolder);
         sftpClient.put(testFile.getAbsolutePath(), testFile.getName());
         TimeUnit.SECONDS.sleep(5L);
         sftpClient.rm(testFile.getName());
@@ -159,7 +154,7 @@ public final class SFTPUploader {
      */
     public void uploadFile(@NotNull File file, String type) throws Exception {
         resetWorkingDirectory();
-        createThenEnter(_remoteBaseFolder);
+        createThenEnter(remoteBaseFolder);
         createThenEnter(type);
         sftpClient.put(file.getAbsolutePath(), file.getName());
         try {
@@ -178,12 +173,12 @@ public final class SFTPUploader {
      */
     public void downloadFile(String filePath, String type) throws Exception {
         resetWorkingDirectory();
-        sftpClient.cd(_remoteBaseFolder);
-        File outputFile = new File(_localBaseFolder + "/" + type);
+        sftpClient.cd(remoteBaseFolder);
+        File outputFile = new File(localBaseFolder + "/" + type);
         if (!outputFile.exists()) {
             outputFile.mkdirs();
         }
-        sftpClient.get(filePath, _localBaseFolder + "/" + type + "/" + new File(filePath).getName());
+        sftpClient.get(filePath, localBaseFolder + "/" + type + "/" + new File(filePath).getName());
     }
 
     /**
@@ -198,11 +193,11 @@ public final class SFTPUploader {
     public @NotNull List<String> getFiles(String type) throws Exception {
         List<String> result = new ArrayList<>();
         resetWorkingDirectory();
-        sftpClient.cd(_remoteBaseFolder);
+        sftpClient.cd(remoteBaseFolder);
         sftpClient.cd(type);
         for (RemoteResourceInfo file : sftpClient.ls()) {
             if (file.isDirectory()) {
-                result.addAll(prependToAll(getFiles(file.getPath()), file.getName() + "/"));
+                result.addAll(FTPUploader.prependToAll(getFiles(file.getPath()), file.getName() + "/"));
             } else {
                 result.add(file.getName());
             }
@@ -272,16 +267,5 @@ public final class SFTPUploader {
     private void resetWorkingDirectory() throws IOException {
         sftpClient.cd(initialRemoteFolder);
     }
-
-    /**
-     * Prepends the specified String to each element in the specified ArrayList.
-     * @param list the ArrayList
-     * @param string the String
-     * @return the new ArrayList
-     */
-    @Contract ("_, _ -> param1")
-    private static @NotNull List<String> prependToAll(@NotNull List<String> list, String string) {
-        list.replaceAll(s -> string + s);
-        return list;
-    }
+    
 }

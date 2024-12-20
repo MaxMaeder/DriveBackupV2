@@ -10,7 +10,9 @@ import java.text.DecimalFormatSymbols;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 
 public final class Timer {
     private Instant start;
@@ -47,23 +49,33 @@ public final class Timer {
      * @param file file that was uploaded
      * @return message
      */
-    public String getUploadTimeMessage(@NotNull File file) {
+    public void sendUploadTimeMessage(@NotNull File file) {
         DecimalFormat df = new DecimalFormat("#.##");
-        Locale locale = Locale.forLanguageTag(instance.getConfigHandler().getConfig().getValue("advanced", "date-language").getString());
+        String configLanguage = instance.getConfigHandler().getConfig().getValue("advanced", "date-language").getString();
+        Locale locale = Locale.forLanguageTag(configLanguage);
         df.setDecimalFormatSymbols(DecimalFormatSymbols.getInstance(locale));
+        long kb = file.length() / 1024L;
         long length = ChronoUnit.SECONDS.between(start, end);
-        long speed = (file.length() / 1024L) / length;
-        String message = instance.getMessageHandler().getLangString("file-upload-message");
-        String message2 = message.replace("<length>", df.format(length));
-        return message2.replace("<speed>", df.format(speed));
+        long speed;
+        if (length >= 1) {
+            speed = kb / length;
+        } else {
+            long milis = ChronoUnit.MILLIS.between(start, end);
+            speed = (long) (kb / (milis / 1000.0));
+        }
+        Map<String, String> placeholders = new HashMap <>(3);
+        placeholders.put("length", df.format(length));
+        placeholders.put("speed", df.format(speed));
+        placeholders.put("size", df.format(kb));
+        instance.getMessageHandler().Builder().toConsole().getLang("file-upload-message", placeholders).send();
     }
 
     /**
      * Calculates the time
-     * @return Calculated time
+     * @return Calculated time in seconds
      */
     public long getTime() {
         return Duration.between(start, end).getSeconds();
     }
-
+    
 }

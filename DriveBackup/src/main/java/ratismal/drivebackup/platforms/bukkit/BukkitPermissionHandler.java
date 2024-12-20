@@ -44,11 +44,12 @@ public final class BukkitPermissionHandler implements PermissionHandler {
         }
         List<Player> players = new ArrayList<>(10);
         for (org.bukkit.entity.Player bukkitPlayer : server.getOnlinePlayers()) {
-            Player player = new Player(bukkitPlayer.getName(), bukkitPlayer.getUniqueId());
+            Player player = new Player(bukkitPlayer.getUniqueId(), bukkitPlayer.getName());
             if (hasPermission(player, permission)) {
                 players.add(player);
             }
         }
         return players;
     }
+    
 }

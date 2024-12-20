@@ -3,12 +3,14 @@ package ratismal.drivebackup.platforms.bukkit;
 import net.kyori.adventure.platform.bukkit.BukkitAudiences;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
-import org.bukkit.command.CommandSender;
+import org.bukkit.command.PluginCommand;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.spongepowered.configurate.ConfigurateException;
+import ratismal.drivebackup.Scheduler;
+import ratismal.drivebackup.UploadThread;
 import ratismal.drivebackup.api.APIHandler;
 import ratismal.drivebackup.configuration.ConfigHandler;
 import ratismal.drivebackup.configuration.ConfigMigrator;
@@ -20,13 +22,19 @@ import ratismal.drivebackup.handler.player.PlayerHandler;
 import ratismal.drivebackup.handler.task.TaskHandler;
 import ratismal.drivebackup.handler.update.UpdateHandler;
 import ratismal.drivebackup.http.HttpLogger;
+import ratismal.drivebackup.objects.Player;
 import ratismal.drivebackup.platforms.DriveBackupInstance;
-import ratismal.drivebackup.plugin.BstatsMetrics;
+import ratismal.drivebackup.platforms.bukkit.commandHandler.CommandHandler;
+import ratismal.drivebackup.platforms.bukkit.commandHandler.CommandTabComplete;
+import ratismal.drivebackup.platforms.bukkit.listeners.BukkitChatInputListener;
+import ratismal.drivebackup.platforms.bukkit.listeners.BukkitPlayerListener;
 import ratismal.drivebackup.util.Version;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
 public final class BukkitPlugin extends JavaPlugin implements DriveBackupInstance {
@@ -35,17 +43,31 @@ public final class BukkitPlugin extends JavaPlugin implements DriveBackupInstanc
     private PermissionHandler permissionHandler;
     private ConfigHandler configHandler;
     private TaskHandler taskHandler;
-    private LoggingHandler loggingHandler;
+    private BukkitLoggingHandler loggingHandler;
     private LangConfigHandler langConfigHandler;
     private static BukkitPlugin instance;
     private BukkitMessageHandler bukkitMessageHandler;
     private BukkitAudiences adventure;
-    private ArrayList<CommandSender> chatInputPlayers;
+    private Set<Player> chatInputPlayers;
     private Version currentVersion;
     private BukkitPlayerHandler playerHandler;
     private APIHandler apiHandler;
     private final Collection<String> autoSaveWorlds = new ArrayList<>(3);
     
+    @Override
+    public void addChatInputPlayer(Player player) {
+        chatInputPlayers.add(player);
+    }
+    
+    @Override
+    public void removeChatInputPlayer(Player player) {
+        chatInputPlayers.remove(player);
+    }
+    
+    @Override
+    public boolean isChatInputPlayer(final Player player) {
+        return chatInputPlayers.contains(player);
+    }
     
     @Contract (pure = true)
     @Override
@@ -135,6 +157,7 @@ public final class BukkitPlugin extends JavaPlugin implements DriveBackupInstanc
         HttpLogger.setInstance(this);
         loggingHandler = new BukkitLoggingHandler(this, getLogger());
         configHandler = new ConfigHandler(this);
+        loggingHandler.loadConfig();
         langConfigHandler = new LangConfigHandler(this);
         if (ConfigMigrator.isMigrationRequired(configHandler)) {
             try {
@@ -147,17 +170,25 @@ public final class BukkitPlugin extends JavaPlugin implements DriveBackupInstanc
         adventure = BukkitAudiences.create(this);
         playerHandler = new BukkitPlayerHandler(this);
         bukkitMessageHandler = new BukkitMessageHandler(this);
-        chatInputPlayers = new ArrayList<>(1);
+        chatInputPlayers = new HashSet<>(1);
         permissionHandler = new BukkitPermissionHandler(getServer());
         taskHandler = new BukkitTaskHandler(this);
         
-        
-        //getCommand("drivebackup").setExecutor(new BukkitCommandHandler());
-        //getCommand("drivebackup").setTabCompleter(new BukkitCommandTabComplete());
+        PluginCommand mainCommand = getCommand("drivebackup");
+        if (mainCommand != null) {
+            mainCommand.setExecutor(new CommandHandler(this));
+            mainCommand.setTabCompleter(new CommandTabComplete(this));
+        } else {
+            loggingHandler.error("Failed to register main command");
+            disable();
+            return;
+        }
         PluginManager pm = getServer().getPluginManager();
-        //pm.registerEvents(new BukkitChatListener(), this);
-        //pm.registerEvents(new BukkitPlayerListener(), this);
-        BstatsMetrics.initMetrics(this);
+        pm.registerEvents(new BukkitChatInputListener(this), this);
+        pm.registerEvents(new BukkitPlayerListener(this), this);
+        Scheduler scheduler = new Scheduler(this);
+        scheduler.startBackupThread();
+        UploadThread.setScheduler(scheduler);
         updateHandler = new UpdateHandler(this);
         apiHandler = new APIHandler(this);
     }
@@ -165,6 +196,8 @@ public final class BukkitPlugin extends JavaPlugin implements DriveBackupInstanc
     @Contract (pure = true)
     @Override
     public void onDisable() {
+        UploadThread.getScheduler().stopBackupThread();
+        bukkitMessageHandler.Builder().getLang("plugin-stop").toConsole().send();
     }
     
     @Override
@@ -184,6 +217,9 @@ public final class BukkitPlugin extends JavaPlugin implements DriveBackupInstanc
     @Contract (pure = true)
     @Override
     public void disableWorldAutoSave() throws InterruptedException, ExecutionException {
+        if (!configHandler.getConfig().getValue("disable-saving-during-backups").getBoolean()) {
+            return;
+        }
         Bukkit.getScheduler().callSyncMethod(this, () -> {
             for (World world : Bukkit.getWorlds()) {
                 if (world.isAutoSave()) {
@@ -198,6 +234,9 @@ public final class BukkitPlugin extends JavaPlugin implements DriveBackupInstanc
     @Contract (pure = true)
     @Override
     public void enableWorldAutoSave() throws InterruptedException, ExecutionException {
+        if (!configHandler.getConfig().getValue("disable-saving-during-backups").getBoolean()) {
+            return;
+        }
         Bukkit.getScheduler().callSyncMethod(this, () -> {
             for (World world : Bukkit.getWorlds()) {
                 String worldName = world.getName();

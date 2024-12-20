@@ -116,7 +116,7 @@ public final class Authenticator {
                     JSONObject parsedResponse1 = new JSONObject(body1.string());
                     response1.close();
                     if (parsedResponse1.has("refresh_token")) {
-                        saveRefreshToken(provider, (String) parsedResponse1.get("refresh_token"));
+                        saveRefreshToken(provider, (String) parsedResponse1.get("refresh_token"), instance);
                         if (provider.getId().equals("googledrive")) {
                             UploadLogger uploadLogger = new UploadLogger(instance, Initiator.OTHER);
                             new GoogleDriveUploader(instance, uploadLogger).setupSharedDrives(player);
@@ -153,7 +153,7 @@ public final class Authenticator {
         }
         disableBackupMethod(provider, logger, instance);
         try {
-            File credStoreFile = new File(provider.getCredStoreLocation());
+            File credStoreFile = new File(provider.getCredStoreLocation(instance.getDataDirectory()));
             if (credStoreFile.exists()) {
                 credStoreFile.delete();
             }
@@ -177,10 +177,10 @@ public final class Authenticator {
         //BasicCommands.sendBriefBackupList(initiator);
     }
 
-    public static void saveRefreshToken(@NotNull AuthenticationProvider provider, String token) throws Exception {
+    public static void saveRefreshToken(@NotNull AuthenticationProvider provider, String token, DriveBackupInstance instance) throws Exception {
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("refresh_token", token);
-        try (FileWriter file = new FileWriter(provider.getCredStoreLocation())) {
+        try (FileWriter file = new FileWriter(provider.getCredStoreLocation(instance.getDataDirectory()))) {
             file.write(jsonObject.toString());
         }
     }
@@ -192,9 +192,9 @@ public final class Authenticator {
             try {
                 configHandler.getConfig().getConfig().node(provider.getId()).node("enabled").set(Boolean.TRUE);
                 configHandler.save();
-                logger.log("Automatically enabled " + provider.getName() + " backups");
+                logger.logRaw("Automatically enabled " + provider.getName() + " backups");
             } catch (Exception e) {
-                logger.log("Failed to enable " + provider.getName() + " backups");
+                logger.logRaw("Failed to enable " + provider.getName() + " backups");
                 instance.getLoggingHandler().error("Failed to enable " + provider.getName() + " backups", e);
             }
         }
@@ -207,18 +207,18 @@ public final class Authenticator {
             try {
                 configHandler.getConfig().getConfig().node(provider.getId()).node("enabled").set(Boolean.FALSE);
                 configHandler.save();
-                logger.log("Automatically disabled " + provider.getName() + " backups");
+                logger.logRaw("Automatically disabled " + provider.getName() + " backups");
             } catch (Exception e) {
-                logger.log("Failed to disable " + provider.getName() + " backups");
+                logger.logRaw("Failed to disable " + provider.getName() + " backups");
                 instance.getLoggingHandler().error("Failed to disable " + provider.getName() + " backups", e);
             }
         }
     }
 
     @NotNull
-    public static String getRefreshToken(AuthenticationProvider provider) {
+    public static String getRefreshToken(AuthenticationProvider provider, DriveBackupInstance instance) {
         try {
-            String clientJSON = processCredentialJsonFile(provider);
+            String clientJSON = processCredentialJsonFile(provider, instance);
             JSONObject clientJsonObject = new JSONObject(clientJSON);
             String readRefreshToken = (String) clientJsonObject.get("refresh_token");
             if (readRefreshToken == null || readRefreshToken.isEmpty()) {
@@ -230,14 +230,14 @@ public final class Authenticator {
         }
     }
 
-    public static boolean hasRefreshToken(AuthenticationProvider provider) {
+    public static boolean hasRefreshToken(AuthenticationProvider provider, DriveBackupInstance instance) {
         // what am I doing with my life?
-        return !getRefreshToken(provider).isEmpty();
+        return !getRefreshToken(provider, instance).isEmpty();
     }
 
     @NotNull
-    private static String processCredentialJsonFile(@NotNull AuthenticationProvider provider) throws IOException {
-        try (BufferedReader br = new BufferedReader(new FileReader(provider.getCredStoreLocation()))) {
+    private static String processCredentialJsonFile(@NotNull AuthenticationProvider provider, DriveBackupInstance instance) throws IOException {
+        try (BufferedReader br = new BufferedReader(new FileReader(provider.getCredStoreLocation(instance.getDataDirectory())))) {
             StringBuilder sb = new StringBuilder(1_000);
             String line = br.readLine();
             while (line != null) {

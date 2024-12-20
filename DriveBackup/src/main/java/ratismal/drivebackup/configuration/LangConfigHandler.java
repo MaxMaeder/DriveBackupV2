@@ -9,7 +9,7 @@ import ratismal.drivebackup.handler.logging.PrefixedLogger;
 import ratismal.drivebackup.platforms.DriveBackupInstance;
 
 public final class LangConfigHandler {
-    private static final String LANG_FILE_NAME = "lang";
+    private static final String LANG_FILE_NAME = "intl";
     private static final String FAILED_TO_LOAD = "Failed to load intl, using defaults";
     
     private final DriveBackupInstance instance;
@@ -106,7 +106,7 @@ public final class LangConfigHandler {
         defaults.node("backup-status-compressing").set("Compressing backup set \"<set-name>\", set <set-num> of <set-count>");
         defaults.node("backup-status-not-running").set("No backups are running");
         defaults.node("backup-status-uploading").set("Uploading backup set \"<set-name>\", set <set-num> of <set-count>");
-        defaults.node("backup-upload-complete").set("Backup(s) uploaded");
+        defaults.node("backup-total-time").set("Backup took <time> seconds to complete");        defaults.node("backup-upload-complete").set("Backup(s) uploaded");
         defaults.node("backup-upload-start").set("Uploading backup(s)...");
         defaults.node("backups-interval-scheduled").set("Scheduling a backup to run every <delay> minutes");
         defaults.node("backups-scheduled").set("Scheduling a backup to run at <time> every <days>");

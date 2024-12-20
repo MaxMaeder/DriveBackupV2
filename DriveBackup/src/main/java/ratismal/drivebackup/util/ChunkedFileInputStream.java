@@ -61,8 +61,7 @@ public final class ChunkedFileInputStream extends InputStream {
         position = 0;
         return true;
     }
-
-    @Contract (pure = true)
+    
     public int getCurrentChunk() {
         return current_chunk;
     }
@@ -78,4 +77,5 @@ public final class ChunkedFileInputStream extends InputStream {
     protected void finalize() {
         input = null;
     }
+    
 }

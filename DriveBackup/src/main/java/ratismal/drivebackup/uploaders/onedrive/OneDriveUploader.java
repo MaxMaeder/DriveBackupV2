@@ -5,7 +5,6 @@ import okhttp3.MediaType;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
-import okhttp3.ResponseBody;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -58,7 +57,7 @@ public final class OneDriveUploader extends Uploader {
     public OneDriveUploader(DriveBackupInstance instance, UploadLogger logger) {
         super(instance, UPLOADER_NAME, ID, AuthenticationProvider.ONEDRIVE, logger);
         try {
-            refreshToken = Authenticator.getRefreshToken(AuthenticationProvider.ONEDRIVE);
+            refreshToken = Authenticator.getRefreshToken(AuthenticationProvider.ONEDRIVE, instance);
             retrieveNewAccessToken();
         } catch (Exception e) {
             instance.getLoggingHandler().error("Error occurred while initializing OneDrive Uploader",e);
@@ -159,7 +158,7 @@ public final class OneDriveUploader extends Uploader {
     @Contract (pure = true)
     public void close() {
         try {
-            Authenticator.saveRefreshToken(getAuthProvider(), refreshToken);
+            Authenticator.saveRefreshToken(getAuthProvider(), refreshToken, instance);
         } catch (Exception e) {
             instance.getLoggingHandler().error("Failed to save refresh token", e);
         }

@@ -2,6 +2,7 @@ package ratismal.drivebackup.platforms.bukkit;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import ratismal.drivebackup.configuration.ConfigurationSection;
 import ratismal.drivebackup.handler.logging.LoggingHandler;
 import ratismal.drivebackup.handler.logging.PrefixedLogger;
@@ -18,13 +19,16 @@ public final class BukkitLoggingHandler implements LoggingHandler {
     private final DriveBackupInstance driveBackupInstance;
     private final Logger logger;
     private final Map<String, PrefixedLogger> prefixedLoggers;
-    private final ConfigurationSection advancedSection;
+    private @Nullable ConfigurationSection advancedSection;
     
     @Contract (pure = true)
     public BukkitLoggingHandler(@NotNull DriveBackupInstance driveBackupInstance, Logger logger) {
         this.logger = logger;
         this.driveBackupInstance = driveBackupInstance;
         prefixedLoggers = new HashMap<>(10);
+    }
+    
+    public void loadConfig() {
         advancedSection = driveBackupInstance.getConfigHandler().getConfig().getSection("advanced");
     }
     
@@ -59,7 +63,10 @@ public final class BukkitLoggingHandler implements LoggingHandler {
     }
     
     private String handleError(String message, Throwable throwable) {
-        boolean suppress = advancedSection.getValue("suppress-errors").getBoolean();
+        boolean suppress = false;
+        if (advancedSection != null) {
+            suppress = advancedSection.getValue("suppress-errors").getBoolean();
+        }
         if (suppress) {
             return message;
         }
@@ -88,14 +95,14 @@ public final class BukkitLoggingHandler implements LoggingHandler {
     
     @Override
     public void debug(String message) {
-        if (advancedSection.getValue("debug").getBoolean()) {
+        if (advancedSection != null && advancedSection.getValue("debug").getBoolean()) {
             logger.info(message);
         }
     }
     
     @Override
     public void debug(String message, Throwable throwable) {
-        if (advancedSection.getValue("debug").getBoolean()) {
+        if (advancedSection != null && advancedSection.getValue("debug").getBoolean()) {
             logger.info(() -> handleError(message, throwable));
         }
     }
@@ -111,4 +118,5 @@ public final class BukkitLoggingHandler implements LoggingHandler {
         prefixedLoggers.put(prefixLowerCase, prefixedLogger);
         return prefixedLogger;
     }
+    
 }
