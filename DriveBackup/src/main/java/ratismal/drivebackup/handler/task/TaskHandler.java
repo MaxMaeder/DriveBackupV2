@@ -46,4 +46,8 @@ public interface TaskHandler {
     
     void cancelAllTasks();
     
+    default long toTicks(long time, TimeUnit unit) {
+        return unit.toSeconds(time) * 20L;
+    }
+    
 }

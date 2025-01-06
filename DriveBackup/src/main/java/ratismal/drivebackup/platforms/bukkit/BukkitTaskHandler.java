@@ -24,25 +24,25 @@ public final class BukkitTaskHandler implements TaskHandler {
     
     @Override
     public @NotNull TaskIdentifier scheduleSyncRepeatingTask(Runnable runnable, long delay, long period, @NotNull TimeUnit unit) {
-        BukkitTask task = scheduler.runTaskTimer(instance, runnable, unit.toSeconds(delay), unit.toSeconds(period));
+        BukkitTask task = scheduler.runTaskTimer(instance, runnable, toTicks(delay, unit), toTicks(period, unit));
         return new TaskIdentifier(task.getTaskId());
     }
     
     @Override
     public @NotNull TaskIdentifier scheduleAsyncRepeatingTask(Runnable runnable, long delay, long period, @NotNull TimeUnit unit) {
-        BukkitTask task = scheduler.runTaskTimerAsynchronously(instance, runnable, unit.toSeconds(delay), unit.toSeconds(period));
+        BukkitTask task = scheduler.runTaskTimerAsynchronously(instance, runnable, toTicks(delay, unit), toTicks(period, unit));
         return new TaskIdentifier(task.getTaskId());
     }
     
     @Override
     public @NotNull TaskIdentifier scheduleSyncDelayedTask(Runnable runnable, long delay, @NotNull TimeUnit unit) {
-        BukkitTask task = scheduler.runTaskLater(instance, runnable, unit.toSeconds(delay));
+        BukkitTask task = scheduler.runTaskLater(instance, runnable, toTicks(delay, unit));
         return new TaskIdentifier(task.getTaskId());
     }
     
     @Override
     public @NotNull TaskIdentifier scheduleAsyncDelayedTask(Runnable runnable, long delay, @NotNull TimeUnit unit) {
-        BukkitTask task = scheduler.runTaskLaterAsynchronously(instance, runnable, unit.toSeconds(delay));
+        BukkitTask task = scheduler.runTaskLaterAsynchronously(instance, runnable, toTicks(delay, unit));
         return new TaskIdentifier(task.getTaskId());
     }
     
