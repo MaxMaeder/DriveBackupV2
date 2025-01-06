@@ -1,10 +1,12 @@
-#German(Deutsch) translation by THE_13joker1 (https://github.com/the13joker1)
+#German(Deutsch) translation by THE_13joker1 (https://github.com/the13joker1) & StillGreen-san (https://github.com/StillGreen-san)
 auto-backups-disabled: "Automatische Backups sind deaktiviert"
-backup-already-running: "Ein Backup läuft bereits"
+backup-already-running: |-
+  Ein Backup läuft bereits
+  <backup-status>
 backup-complete: "Backup abgeschlossen"
 backup-disabled-inactivity: "Automatische Backups werden aufgrund von Inaktivität deaktiviert"
 backup-empty-list: "Die Backupliste ist leer"
-backup-failed-absolute-path: |
+backup-failed-absolute-path: |-
   Backup fehlgeschlagen, der Pfad zum zu sichernden Ordner ist absolut, ein relativer Pfad wurde erwartet.
   Ein absoluter Pfad kann sensible Dateien überschreiben, siehe die Dokumentation für weitere Informationen.
   Überspringe Backup-Speicherort.
@@ -17,7 +19,7 @@ backup-list-glob-invalid: "Glob ungültig, überspringe Backuplisteneintrag <ent
 backup-list-no-dest-specified: "Kein Pfad oder Glob angegeben, überspringe Backuplisteneintrag <entry>"
 backup-list-path-invalid: "Pfad ungültig, überspringe Backuplisteneintrag <entry>"
 backup-local-complete: "Lokales Backup(s) erstellt und komprimiert"
-backup-local-failed: |
+backup-local-failed: |-
   Lokales Backup konnte nicht erstellt werden.
   Auch wenn local-keep-count auf Null gesetzt ist, muss das Plugin vorübergehend ein lokales Backup erstellen.
   Überspringe Backup-Speicherort.
@@ -27,21 +29,21 @@ backup-local-prune-complete: "Löschen lokaler Backups abgeschlossen"
 backup-local-prune-start: "Löschen lokaler Backups wird gestartet"
 backup-local-start: "Erstelle lokales Backup(s) und komprimiere..."
 backup-method-complete: "Backup auf <gold><upload-method></gold> abgeschlossen"
-backup-method-error-occurred: |
-  Fehler beim Backup auf <upload-method>, überprüfe alle Anmeldeinformationen oder diagnostiziere das Problem mit
-  <gold><click:run_command:'<diagnose-command>'><diagnose-command></click></gold>.
+backup-method-error-occurred: "Fehler beim Backup auf <upload-method>,
+  überprüfe alle Anmeldeinformationen oder diagnostiziere das Problem mit
+  <gold><click:run_command:'<diagnose-command>'><diagnose-command></click></gold>."
 backup-method-limit-reached: "Es gibt <file-count> Datei(en) im aktuellen Backup-Speicherort auf <upload-method>, die das Limit von <file-limit> überschreiten, lösche"
-backup-method-not-auth: |
+backup-method-not-auth: |-
   Backup auf <upload-method> übersprungen, Authentifizierung fehlgeschlagen.
   Bitte überprüfe alle Anmeldeinformationen in der <gold>config.yml</gold>.
-backup-method-not-auth-authenticator: |
+backup-method-not-auth-authenticator: |-
   Backup auf <upload-method> übersprungen, Authentifizierung fehlgeschlagen.
   Versuche, dein Konto erneut zu verlinken, führe <gold><click:run_command:'<link-command>'><link-command></click></gold> aus.
-backup-method-not-linked: |
+backup-method-not-linked: |-
   Backup auf <upload-method> übersprungen, Konto noch nicht verlinkt.
   Um dein Konto zu verlinken, führe <gold><click:run_command:'<link-command>'><link-command></click></gold> aus.
 backup-method-prune-failed: "Fehler beim Löschen von Backups, die das Limit überschreiten"
-backup-method-shared-drive-prune-failed: |
+backup-method-shared-drive-prune-failed: |-
   Fehler beim Löschen von Backups, die das Limit überschreiten.
   Versuche, den Besitzer des geteilten Laufwerks zu bitten, deine Kontoberechtigungen zu erhöhen, oder setze keep-count auf 0, um das Löschen von Backups zu deaktivieren.
 backup-method-upload-failed: "Upload fehlgeschlagen"
@@ -73,14 +75,14 @@ connection-error: "Verbindung zu <domain> fehlgeschlagen, überprüfe deine Netz
 date-format-invalid: "Datumsformat-Zeitzone ungültig, UTC wird verwendet"
 debug-log-created: "Debug-URL: <url>"
 debug-log-creating: "Debug-Protokoll wird erstellt"
-default-google-drive-name: "Mein Laufwerk"
+default-google-drive-name: "Meine Ablage"
 drivebackup-command-header: <gold>|====== <dark_red>DriveBackupV2</dark_red> ======|</gold>
-drivebackup-docs-command: |
+drivebackup-docs-command: |-
   <header>
   Brauchst du Hilfe? Sieh dir diese nützlichen Ressourcen an!
   Wiki: <gold><click:open_url:https://bit.ly/3dDdmwK>https://bit.ly/3dDdmwK</click></gold>
   Discord: <gold><click:open_url:https://bit.ly/3f4VuuT>https://bit.ly/3f4VuuT</click></gold>
-drivebackup-help-command: |
+drivebackup-help-command: |-
   <header>
   <gold><click:run_command:/drivebackup>/drivebackup</click></gold> - Zeigt dieses Menü an
   <gold><click:run_command:/drivebackup help>/drivebackup help</click></gold> - Zeigt Hilferessourcen an
@@ -89,7 +91,20 @@ drivebackup-help-command: |
   <gold><click:run_command:/drivebackup linkaccount googledrive>/drivebackup [link|linkaccount] googledrive</click></gold> - Verknüpft dein Google Drive-Konto für Backups
   <gold><click:run_command:/drivebackup linkaccount onedrive>/drivebackup [link|linkaccount] onedrive</click></gold> - Verknüpft dein OneDrive-Konto für Backups
   <gold><click:run_command:/drivebackup linkaccount dropbox>/drivebackup [link|linkaccount] dropbox</click></gold> - Verknüpft dein Dropbox-Konto für Backups
-drivebackup-version-command: |
+  <gold><click:run_command:/drivebackup linkaccount googledrive>/drivebackup [unlink|unlinkaccount] googledrive</click></gold> - Hebt die Verknüpfung zu deinem Google Drive-Konto auf und deaktiviert diese Methode
+  <gold><click:run_command:/drivebackup linkaccount onedrive>/drivebackup [unlink|unlinkaccount] onedrive</click></gold> - Hebt die Verknüpfung zu deinem OneDrive-Konto auf und deaktiviert diese Methode
+  <gold><click:run_command:/drivebackup linkaccount dropbox>/drivebackup [unlink|unlinkaccount] dropbox</click></gold> - Hebt die Verknüpfung zu deinem Dropbox-Konto auf und deaktiviert diese Methode
+  <gold><click:run_command:/drivebackup reloadconfig>/drivebackup reloadconfig</click></gold> - Läd config.yml neu
+  <gold><click:run_command:/drivebackup debug>/drivebackup debug</click></gold> - Sammelt nützliche Informationen zur Fehlerbehebung des Plugins
+  <gold><click:run_command:/drivebackup nextbackup>/drivebackup nextbackup</click></gold> - Ruft Datum und Uhrzeit des nächsten automatischen Backups ab
+  <gold><click:run_command:/drivebackup status>/drivebackup status</click></gold> - Ruft den Status des laufenden Backups ab
+  <gold><click:run_command:/drivebackup backup>/drivebackup backup</click></gold> - Startet manuell ein Backup
+  <gold><click:run_command:/drivebackup test ftp>/drivebackup test ftp</click></gold> - Testet die Verbindung zum (S)FTP Server
+  <gold><click:run_command:/drivebackup test googledrive>/drivebackup test googledrive</click></gold> - Testet die Verbindung zu Google Drive
+  <gold><click:run_command:/drivebackup test onedrive>/drivebackup test onedrive</click></gold> - Testet die Verbindung zu OneDrive
+  <gold><click:run_command:/drivebackup test dropbox>/drivebackup test dropbox</click></gold> - Testet die Verbindung zu Dropbox
+  <gold><click:run_command:/drivebackup update>/drivebackup update</click></gold> - Aktualisiert das Plugin falls eine neue Version verfügbar ist
+drivebackup-version-command: |-
   <header>
   Plugin-Version: <gold><plugin-version></gold>
   Java-Version: <gold><java-version></gold>
@@ -132,11 +147,11 @@ link-provider-failed: "Verknüpfung deines <provider>-Kontos fehlgeschlagen, bit
 list-delimiter: ", "
 list-last-delimiter: " und "
 local-backup-blacklisted: 'Die Datei(en) <blacklisted-files-count> wurde(n) beim lokalen Backup nicht einbezogen, da sie durch "<glob-pattern>" gesperrt sind'
-local-backup-date-format-invalid: |
+local-backup-date-format-invalid: |-
   Das Datumsformat des gespeicherten Backups "<file-name>" konnte nicht analysiert werden, dies kann daran liegen, dass das Datumsformat in der config.yml aktualisiert wurde.
   Das Backup wird als erstes gelöscht.
 local-backup-failed-attributes: 'Fehler beim Lesen der Attribute für "<file-path>", Standardwerte werden verwendet. Hast du die Berechtigung, darauf zuzugreifen?'
-local-backup-failed-permissions: |
+local-backup-failed-permissions: |-
   Lokales Backup konnte nicht erstellt werden, das Plugin hat keine Berechtigung, am erforderlichen Dateisystem-Speicherort zu schreiben.
   Auch wenn local-keep-count auf Null gesetzt ist, muss das Plugin vorübergehend ein lokales Backup erstellen.
   Überspringe Backup-Speicherort.
@@ -160,17 +175,17 @@ next-schedule-backup: "Das nächste Backup ist um %DATE geplant"
 next-schedule-backup-format: "h:mm a EEE, MMM d O"
 no-perm: "Du hast keine Berechtigung, dies zu tun!"
 player-join-backup-enable: "Automatische Backups werden aktiviert"
-player-join-backup-failed: |
+player-join-backup-failed: |-
   <red>Das letzte Backup ist fehlgeschlagen!<red>
   Sieh in der Konsole für weitere Informationen nach.
-player-join-update-available: |
+player-join-update-available: |-
   Ein Update ist verfügbar, hole es dir hier: <gold><click:open_url:https://bit.ly/2M14uVD>https://bit.ly/2M14uVD</click></gold>
   oder durch Ausführen von <gold><click:run_command:/drivebackup update>/drivebackup update</click></gold>
 plugin-stop: "Plugin wird gestoppt!"
-shared-drive-deprecated: |
+shared-drive-deprecated: |-
   Aufgrund neuer Beschränkungen von Google können wir keine geteilten Laufwerke bei neuen Kontoverknüpfungen mehr unterstützen.
   Alle bestehenden Verknüpfungen können diese Funktion vorerst weiterhin nutzen.
-shared-drive-error: |
+shared-drive-error: |-
   Es ist ein Fehler beim Abrufen deines geteilten Laufwerks aufgetreten.
   Bitte stelle sicher, dass die shared-drive-id korrekt ist, oder entferne sie, um weiterhin dein persönliches Laufwerk zu verwenden.
 test-file-creation-failed: "Fehler beim Erstellen der Testdatei, bitte versuche es erneut"
@@ -182,14 +197,14 @@ test-method-not-specified: "Bitte gib eine Backup-Methode an, die getestet werde
 test-method-successful: "Der <upload-method>-Test war erfolgreich"
 thread-priority-too-high: "Der eingegebene Thread-Prioritätswert ist höher als das Maximum, das Maximum wird verwendet"
 thread-priority-too-low: "Der eingegebene Thread-Prioritätswert ist niedriger als das Minimum, das Minimum wird verwendet"
-unlink-provider-complete: "Dein <provider>-Konto wurde entlinkt!"
-unlink-provider-failed: "Fehler beim Entlinken deines <provider>-Kontos, bitte versuche es erneut"
+unlink-provider-complete: "Verknüpfung zu deinem <provider>-Konto wurde aufgehoben!"
+unlink-provider-failed: "Fehler beim aufheben der Verknüpfung zu deinem <provider>-Konto, bitte versuche es erneut"
 update-checker-failed: "Es gab ein Problem beim Versuch, die neueste Version von DriveBackupV2 zu überprüfen"
-update-checker-new-release: |
+update-checker-new-release: |-
   DriveBackup-Version <latest-version> wurde veröffentlicht, du verwendest derzeit Version <current-version>.
   Aktualisiere hier: <gold><click:open_url:https://bit.ly/2VGtF7L>https://bit.ly/2VGtF7L</click></gold> oder durch Ausführen von <gold><click:run_command:/drivebackup update>/drivebackup update</click></gold>
 update-checker-started: "Suche nach Updates..."
-update-checker-unsupported-release: |
+update-checker-unsupported-release: |-
   Du verwendest eine nicht unterstützte Version!
   Die empfohlene Version ist <latest-version>, und du verwendest <current-version>.
   Wenn das Plugin gerade aktualisiert wurde, kannst du diese Nachricht ignorieren.
