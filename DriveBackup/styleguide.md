@@ -25,7 +25,6 @@ and [Google's Java Style Guide](https://google.github.io/styleguide/javaguide.ht
 
 ## Table of contents
 
-- [Recommended reading](#recommended-reading)
 - [Coding style](#coding-style)
   - [Formatting](#formatting)
   - [Field, class, and method declarations](#field-class-and-method-declarations)
@@ -54,14 +53,6 @@ and [Google's Java Style Guide](https://google.github.io/styleguide/javaguide.ht
   - [Manage threads properly](#manage-threads-properly)
   - [Avoid unnecessary code](#avoid-unnecessary-code)
   - [The 'fast' implementation](#the-fast-implementation)
-
-## Recommended reading
-- Effective Java from Joshua Bloch
-- [Java Concurrency in Practice](http://jcip.net/)
-
-- [Code Complete 2](https://stevemcconnell.com/books/)<br />
-  Not java-specific, but a good handbook for programming best-practices.<br />
-  The link also lists several other books.
 
 ## Coding style
 
@@ -209,10 +200,8 @@ void example() {
 #### No tabs
 An oldie, but goodie.  We've found tab characters to cause more harm than good.
 
-#### 100 column limit
-You should follow the convention set by the body of code you are working with.
-We tend to use 100 columns for a balance between fewer continuation lines but still easily
-fitting two editor tabs side-by-side on a reasonably-high resolution display.
+#### Column limit
+You should follow the convention set by the body of code you are working with, and keep the code readable.
 
 #### CamelCase for types, camelCase for variables, UPPER_SNAKE for constants
 
@@ -336,7 +325,7 @@ void example() {
     return (a << (8 * n) + 1) | 0xFF;
 }
 ```
-It's even good to be *really* obvious.
+It's even good to be *really* obvious, especially for larger expressions.
 
 ```java
 void example() {
@@ -506,27 +495,6 @@ history and `OWNERS` files to determine ownership of a body of code.
 
 ### Imports
 
-#### Import ordering
-Imports are grouped by top-level package, with blank lines separating groups.  Static imports are
-grouped in the same way, in a section below traditional imports.
-
-```java
-import java.*;
-import javax.*;
-
-import scala.*;
-
-import com.*;
-
-import net.*;
-
-import org.*;
-
-import com.twitter.*;
-
-import static java.*;
-```
-
 #### No wildcard imports
 Wildcard imports make the source of an imported class less clear.  They also tend to hide a high
 class [fan-out](http://en.wikipedia.org/wiki/Coupling_(computer_programming)#Module_coupling).<br />
@@ -546,6 +514,10 @@ interface Bar extends Foo {
     //...
 }
 ```
+
+#### No unused imports
+Unused imports should be removed. IDEs will normally take care of this.
+
 ### Use annotations wisely
 
 #### @Nullable
@@ -931,22 +903,28 @@ Use `@Nullable` where prudent, but favor
 [Optional](https://docs.oracle.com/javase/8/docs/api/index.html)
 over `@Nullable`.  `Optional` provides better semantics around absence of a value.
 
-#### Clean up with finally
+#### Clean up resources
 
 ```java
 void example() {
-    FileInputStream in = null;
+    try (FileReader fr = new FileReader(path);
+            BufferedReader br = new BufferedReader(fr)) {
+        return br.readLine();
+    }
+
+    mutex.lock();
     try {
         //...
     } catch (IOException e) {
         //...
     } finally {
-        Closeables.closeQuietly(in);
+        mutex.unlock();
     }
 }
 ```
 Even if there are no checked exceptions, there are still cases where you should use try/finally
 to guarantee resource symmetry.
+The try-with-resources statement can simplify the try/finally construct for all types implementing AutoCloseable.
 
 ```java
 void example() {
