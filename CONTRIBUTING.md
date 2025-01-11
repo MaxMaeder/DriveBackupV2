@@ -18,15 +18,13 @@ If you found a bug or want to suggest a new feature see [issues/new/choose](http
 
 The plugin is build using Maven, to build the plugin use `mvn package`. Build artifacts can be cleaned with `mvn clean`.
 
-We recommend [IntelliJ IDEA](https://www.jetbrains.com/idea/) as an IDE, but others like [VSCode](https://code.visualstudio.com/) or [Eclipse IDE](https://eclipseide.org/) should work fine.
-TODO recommended run/debug configuration?
+We recommend [IntelliJ IDEA](https://www.jetbrains.com/idea/) as an IDE, but others like [VSCode](https://code.visualstudio.com/) or [Eclipse IDE](https://eclipseide.org/) should also work fine.
+In any case make sure you can build/run/debug from within your IDE ([steps for IntelliJ](https://gist.github.com/StillGreen-san/e2c42fee924612eb44319cf6d62d93c5)).
 
 We don't employ any automatic formatting, just keep formatting consistent with the rest of the codebase.
 See [style guide](DriveBackup/styleguide.md) for details.
 
-TODO specify style guide used
-
-TODO specify coding conventions not covered by or different from style guide
+The [style guide](DriveBackup/styleguide.md) also includes more general advice, make sure to read it.
 
 We target Java 8 to support older versions of Minecraft and not introduce additional requirements when using them.
 
@@ -38,8 +36,4 @@ Before submitting your changes make sure to test them using the latest LTS JRE.
 If you need to test changes that affect an uploader test with a backup >= 5GB where possible.
 
 When submitting your change specify what you tested, especially if you could not test all affected components.
-
-### JS
-
-TODO Everything Authenticator related
 

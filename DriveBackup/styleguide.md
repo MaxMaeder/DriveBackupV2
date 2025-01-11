@@ -18,7 +18,7 @@ If following the guide causes unnecessary hoop-jumping or otherwise less-readabl
 *readability trumps the guide*.  However, if the more 'readable' variant comes with
 perils or pitfalls, readability may be sacrificed.
 
-In general, much of our style and conventions mirror the
+In general, much of our style and conventions roughly mirror the
 [Code Conventions for the Java Programming Language](http://www.oracle.com/technetwork/java/codeconvtoc-136057.html)
 and [Google's Java Style Guide](https://google.github.io/styleguide/javaguide.html).
 
