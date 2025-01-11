@@ -44,7 +44,7 @@ public final class UpdateHandler {
             logger.info("Starting update check thread...");
             updateTask = new UpdateTask(instance, this);
             current = instance.getCurrentVersion();
-            instance.getTaskHandler().scheduleAsyncRepeatingTask(updateTask, 0L, 6L, TimeUnit.HOURS);
+            instance.getTaskHandler().scheduleRepeatingTask(0L, 6L, TimeUnit.HOURS, updateTask);
         } else {
             logger.info("Update check is disabled");
         }

@@ -11,7 +11,6 @@ import org.json.JSONObject;
 import ratismal.drivebackup.configuration.ConfigHandler;
 import ratismal.drivebackup.configuration.ConfigurationSection;
 import ratismal.drivebackup.constants.Initiator;
-import ratismal.drivebackup.handler.task.TaskIdentifier;
 import ratismal.drivebackup.http.HttpClient;
 import ratismal.drivebackup.objects.Player;
 import ratismal.drivebackup.platforms.DriveBackupInstance;
@@ -25,6 +24,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 public final class Authenticator {
@@ -42,7 +42,7 @@ public final class Authenticator {
      */
     private static final String CLIENT_SECRET = "fyKCRZRyJeHW5PzGJvQkL4dr2zRHRmwTaOutG7BBhQM=";
 
-    private static TaskIdentifier taskId;
+    private static ScheduledFuture<?> taskId;
     
     @Contract (pure = true)
     private Authenticator() {}
@@ -56,7 +56,7 @@ public final class Authenticator {
      */
     public static void authenticateUser(AuthenticationProvider provider, Player player, DriveBackupInstance instance) {
         UploadLogger logger = new UploadLogger(instance, Initiator.OTHER);
-        cancelPollTask(instance);
+        cancelPollTask();
         try {
             FormBody.Builder requestBody = new FormBody.Builder()
                 .add("type", provider.getId());
@@ -89,7 +89,8 @@ public final class Authenticator {
             placeholders.put("link-code", userCode);
             placeholders.put("provider", provider.getName());
             logger.log("link-account-code", placeholders);
-            taskId = instance.getTaskHandler().scheduleSyncRepeatingTask(() -> {
+            taskId = instance.getTaskHandler().scheduleRepeatingTask(
+                    responseCheckDelay, responseCheckDelay, TimeUnit.SECONDS,() -> {
                 try {
                     FormBody.Builder requestBody1 = new FormBody.Builder()
                         .add("device_code", deviceCode)
@@ -123,7 +124,7 @@ public final class Authenticator {
                         } else {
                             linkSuccess(player, provider, logger, instance);
                         }
-                        cancelPollTask(instance);
+                        cancelPollTask();
                     } else if (
                             (AuthenticationProvider.ONEDRIVE == provider && !parsedResponse1.getString("error").equals("authorization_pending")) ||
                             (provider != AuthenticationProvider.ONEDRIVE && !parsedResponse1.get("msg").equals("code_not_authenticated"))
@@ -134,9 +135,9 @@ public final class Authenticator {
                 } catch (Exception exception) {
                     NetUtil.catchException(exception, AUTH_URL, logger);
                     logger.log("link-provider-failed", "provider", provider.getName());
-                    cancelPollTask(instance);
+                    cancelPollTask();
                 }
-            }, responseCheckDelay, responseCheckDelay, TimeUnit.SECONDS);
+            });
         } catch (Exception exception) {
             NetUtil.catchException(exception, AUTH_URL, logger);
             logger.log("link-provider-failed", "provider", provider.getName());
@@ -164,9 +165,9 @@ public final class Authenticator {
         logger.log("unlink-provider-complete", "provider", provider.getName());
     }
 
-    private static void cancelPollTask(DriveBackupInstance instance) {
+    private static void cancelPollTask() {
         if (taskId != null) {
-            instance.getTaskHandler().cancelTask(taskId);
+            taskId.cancel(false);
         }
     }
 

@@ -19,7 +19,7 @@ import ratismal.drivebackup.handler.debug.ServerInformation;
 import ratismal.drivebackup.handler.logging.LoggingHandler;
 import ratismal.drivebackup.handler.permission.PermissionHandler;
 import ratismal.drivebackup.handler.player.PlayerHandler;
-import ratismal.drivebackup.handler.task.TaskHandler;
+import ratismal.drivebackup.handler.task.IndependentTaskHandler;
 import ratismal.drivebackup.handler.update.UpdateHandler;
 import ratismal.drivebackup.http.HttpLogger;
 import ratismal.drivebackup.objects.Player;
@@ -35,14 +35,15 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 public final class BukkitPlugin extends JavaPlugin implements DriveBackupInstance {
     
     private UpdateHandler updateHandler;
     private PermissionHandler permissionHandler;
     private ConfigHandler configHandler;
-    private TaskHandler taskHandler;
     private BukkitLoggingHandler loggingHandler;
     private LangConfigHandler langConfigHandler;
     private static BukkitPlugin instance;
@@ -52,7 +53,13 @@ public final class BukkitPlugin extends JavaPlugin implements DriveBackupInstanc
     private Version currentVersion;
     private BukkitPlayerHandler playerHandler;
     private APIHandler apiHandler;
+    private IndependentTaskHandler taskHandler;
     private final Collection<String> autoSaveWorlds = new ArrayList<>(3);
+    
+    @Override
+    public <T> Future<T> callSyncMethod(Callable<T> callable) {
+        return Bukkit.getScheduler().callSyncMethod(this, callable);
+    }
     
     @Override
     public void addChatInputPlayer(Player player) {
@@ -67,6 +74,11 @@ public final class BukkitPlugin extends JavaPlugin implements DriveBackupInstanc
     @Override
     public boolean isChatInputPlayer(final Player player) {
         return chatInputPlayers.contains(player);
+    }
+    
+    @Override
+    public IndependentTaskHandler getTaskHandler() {
+        return taskHandler;
     }
     
     @Contract (pure = true)
@@ -172,8 +184,7 @@ public final class BukkitPlugin extends JavaPlugin implements DriveBackupInstanc
         bukkitMessageHandler = new BukkitMessageHandler(this);
         chatInputPlayers = new HashSet<>(1);
         permissionHandler = new BukkitPermissionHandler(getServer());
-        taskHandler = new BukkitTaskHandler(this);
-        
+        taskHandler = new IndependentTaskHandler(loggingHandler);
         PluginCommand mainCommand = getCommand("drivebackup");
         if (mainCommand != null) {
             mainCommand.setExecutor(new CommandHandler(this));
@@ -206,12 +217,6 @@ public final class BukkitPlugin extends JavaPlugin implements DriveBackupInstanc
             currentVersion = Version.parse(getDescription().getVersion().split("-")[0]);
         }
         return currentVersion;
-    }
-    
-    @Contract (pure = true)
-    @Override
-    public @NotNull TaskHandler getTaskHandler() {
-        return taskHandler;
     }
     
     @Contract (pure = true)

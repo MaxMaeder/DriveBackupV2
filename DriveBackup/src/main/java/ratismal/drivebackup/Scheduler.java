@@ -1,13 +1,11 @@
 package ratismal.drivebackup;
 
 import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.Nullable;
 import org.spongepowered.configurate.CommentedConfigurationNode;
 import org.spongepowered.configurate.serialize.SerializationException;
 import ratismal.drivebackup.configuration.ConfigurationObject;
 import ratismal.drivebackup.handler.logging.LoggingInterface;
-import ratismal.drivebackup.handler.task.TaskHandler;
-import ratismal.drivebackup.handler.task.TaskIdentifier;
+import ratismal.drivebackup.handler.task.IndependentTaskHandler;
 import ratismal.drivebackup.objects.BackupScheduleEntry;
 import ratismal.drivebackup.platforms.DriveBackupInstance;
 
@@ -29,6 +27,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 public class Scheduler {
@@ -41,13 +40,12 @@ public class Scheduler {
     /**
      * List of the IDs of the scheduled backup tasks
      */
-    private static final List<TaskIdentifier> backupTasks = new ArrayList<>(2);
+    private static final List<ScheduledFuture<?>> backupTasks = new ArrayList<>(2);
 
     /**
      * ID of the schedule drift correction task
      */
-    @Nullable
-    private static TaskIdentifier scheduleDriftTask = null;
+    private static ScheduledFuture<?> scheduleDriftTask = null;
 
     /**
      * List of Dates representing each time a scheduled backup will occur.
@@ -61,8 +59,8 @@ public class Scheduler {
     }
     
     private void cancelAllTasks() {
-        for (TaskIdentifier taskId : backupTasks) {
-            instance.getTaskHandler().cancelTask(taskId);
+        for (ScheduledFuture<?> taskId : backupTasks) {
+            taskId.cancel(false);
         }
     }
     
@@ -151,7 +149,7 @@ public class Scheduler {
      */
     public void startBackupThread() {
         ConfigurationObject config1 = instance.getConfigHandler().getConfig();
-        TaskHandler taskHandler = instance.getTaskHandler();
+        IndependentTaskHandler taskHandler = instance.getTaskHandler();
         cancelAllTasks();
         if (config1.getValue("scheduled-backups").getBoolean()) {
             if (backupSchedule.isEmpty()) {
@@ -188,9 +186,9 @@ public class Scheduler {
                         }
                         long delay = ChronoUnit.SECONDS.between(now, startingOccurrence);
                         long period = ChronoUnit.SECONDS.between(previousBackup, nextBackup);
-                        TaskIdentifier task = taskHandler.scheduleAsyncRepeatingTask(() -> {
+                        ScheduledFuture<?> task = taskHandler.scheduleRepeatingTask(delay, period, TimeUnit.SECONDS, () -> {
                             new UploadThread(instance);
-                        }, delay, period, TimeUnit.SECONDS);
+                        });
                         backupTasks.add(task);
                         backupDatesList.add(startingOccurrence);
                     }
@@ -225,24 +223,26 @@ public class Scheduler {
                         .getLang("scheduled-backup-scheduled", placeholders).send();
             }
             if (scheduleDriftTask != null) {
-                taskHandler.cancelTask(scheduleDriftTask);
+                scheduleDriftTask.cancel(false);
             }
-            scheduleDriftTask = taskHandler.scheduleAsyncRepeatingTask(
-                    this::startBackupThread,
+            scheduleDriftTask = taskHandler.scheduleRepeatingTask(
                     SCHEDULE_DRIFT_CORRECTION_INTERVAL,
                     SCHEDULE_DRIFT_CORRECTION_INTERVAL,
-                    TimeUnit.SECONDS);
+                    TimeUnit.SECONDS,
+                    this::startBackupThread);
         } else if (config1.getValue("delay").getLong() != -1L) {
             if (scheduleDriftTask != null) {
-                taskHandler.cancelTask(scheduleDriftTask);
+                scheduleDriftTask.cancel(false);
             }
             long delayMinutes = config1.getValue("delay").getLong();
             instance.getMessageHandler().Builder().toConsole()
                     .getLang("backups-interval-scheduled", "delay",
                             String.valueOf(delayMinutes)).send();
-            backupTasks.add(taskHandler.scheduleAsyncRepeatingTask(
-                    () -> new UploadThread(instance),
-                    delayMinutes, delayMinutes, TimeUnit.MINUTES));
+            backupTasks.add(taskHandler.scheduleRepeatingTask(
+                    delayMinutes,
+                    delayMinutes,
+                    TimeUnit.MINUTES,
+                    () -> new UploadThread(instance)));
             UploadThread.updateNextIntervalBackupTime(instance);
         }
     }

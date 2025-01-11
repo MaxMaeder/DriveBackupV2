@@ -42,7 +42,7 @@ public final class UpdateTask implements Runnable {
             logger.info(message);
             Collection<Player> players = instance.getPermissionHandler().getPlayersWithPermission(Permission.RELOAD_CONFIG);
             try {
-                instance.getTaskHandler().callSyncMethod(() -> {
+                instance.callSyncMethod(() -> {
                     instance.getPlayerHandler().sendMessage(players, message);
                     return Boolean.TRUE;
                 }).get();

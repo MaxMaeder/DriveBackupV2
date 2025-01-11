@@ -8,21 +8,26 @@ import ratismal.drivebackup.handler.logging.LoggingHandler;
 import ratismal.drivebackup.handler.messages.MessageHandler;
 import ratismal.drivebackup.handler.permission.PermissionHandler;
 import ratismal.drivebackup.handler.player.PlayerHandler;
-import ratismal.drivebackup.handler.task.TaskHandler;
+import ratismal.drivebackup.handler.task.IndependentTaskHandler;
 import ratismal.drivebackup.handler.update.UpdateHandler;
 import ratismal.drivebackup.objects.Player;
 import ratismal.drivebackup.util.Version;
 
 import java.io.File;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 public interface DriveBackupInstance {
+    
+    <T> Future<T> callSyncMethod(Callable<T> callable);
     
     void addChatInputPlayer(Player player);
     
     void removeChatInputPlayer(Player player);
     boolean isChatInputPlayer(Player player);
     
+    IndependentTaskHandler getTaskHandler();
     PermissionHandler getPermissionHandler();
     File getJarFile();
     File getDataDirectory();
@@ -32,7 +37,6 @@ public interface DriveBackupInstance {
     LangConfigHandler getLangConfigHandler();
     void disable();
     Version getCurrentVersion();
-    TaskHandler getTaskHandler();
     PlayerHandler getPlayerHandler();
     UpdateHandler getUpdateHandler();
     APIHandler getAPIHandler();
