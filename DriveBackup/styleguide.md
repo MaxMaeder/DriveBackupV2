@@ -754,13 +754,8 @@ is useful for state/operation synchronization when a queue does not apply.
 
 #### Time-dependence
 Code that captures real wall time can be difficult to test repeatably, especially when time deltas
-are meaningful.  Therefore, try to avoid `new Date()`, `System.currentTimeMillis()`, and
-`System.nanoTime()`.  A suitable replacement for these is
-[Clock](https://github.com/twitter-archive/commons/blob/master/src/java/com/twitter/common/util/Clock.java); using
-[Clock.SYSTEM_CLOCK](https://github.com/twitter-archive/commons/blob/master/src/java/com/twitter/common/util/Clock.java#L32)
-when running normally, and
-[FakeClock](https://github.com/twitter-archive/commons/blob/master/src/java/com/twitter/common/util/testing/FakeClock.java)
-in tests.
+are meaningful.
+Therefore, try to avoid things like `new Date()` or `Date.now()` where reasonable.
 
 #### The hidden stress test
 Avoid writing unit tests that attempt to verify a certain amount of performance.  This type of
@@ -1176,26 +1171,16 @@ So before you spend a week writing your memory-mapped compressed huffman-encoded
 stock stuff first and *measure*.
 
 ### TODOs
-
-#### Leave TODOs early and often
 A TODO isn't a bad thing - it's signaling a future developer (possibly yourself) that a
 consideration was made, but omitted for various reasons.  It can also serve as a useful signal when
 debugging.
 
-#### Leave no TODO unassigned
-TODOs should have owners, otherwise they are unlikely to ever be resolved.
+#### Prefer issues
+If a bug is encountered that cannot be resolved directly, an issue for it should be created.
+A TODO should still be left to document that this problem has been found before, ideally with the issue number attached.
 
-```java
-// Bad.
-//   - TODO is unassigned.
-// TODO: Implement request backoff.
-
-// Good.
-// TODO(George Washington): Implement request backoff.
-```
-#### Adopt TODOs
-You should adopt an orphan if the owner has left the company/project, or if you make
-modifications to the code directly related to the TODO topic.
+#### Handle TODOs
+You should resolve TODOs if you make modifications to the code directly related to the TODO topic.
 
 ### Obey the Law of Demeter ([LoD](http://en.wikipedia.org/wiki/Law_of_Demeter))
 The Law of Demeter is most obviously violated by breaking the
