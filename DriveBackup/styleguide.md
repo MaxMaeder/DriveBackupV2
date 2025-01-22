@@ -520,11 +520,13 @@ Unused imports should be removed. IDEs will normally take care of this.
 
 ### Use annotations wisely
 
-#### @Nullable
+#### @Nullable @NotNull
 By default - disallow `null`.  When a variable, parameter, or method return value may be `null`,
 be explicit about it by marking
 [@Nullable](https://javadoc.io/doc/org.jetbrains/annotations/20.1.0/org/jetbrains/annotations/Nullable.html).
 This is advisable even for fields/methods with private visibility.
+
+Conversely if it cannot be `null` use [@NotNull](https://javadoc.io/doc/org.jetbrains/annotations/20.1.0/org/jetbrains/annotations/NotNull.html).
 
 ```java
 class Database {
@@ -794,7 +796,7 @@ Preconditions checks are a good practice, since they serve as a well-defined bar
 input from callers.  As a convention, object parameters to public constructors and methods should
 always be checked against null, unless null is explicitly allowed.
 
-*See also [be wary of null](#be-wary-of-null), [@Nullable](#nullable)*
+*See also [be wary of null](#be-wary-of-null), [@Nullable @NotNull](#nullable-notnull)*
 
 ```java
 // Bad.
@@ -894,9 +896,8 @@ public class User {
 }
 ```
 #### Be wary of null
-Use `@Nullable` where prudent, but favor
-[Optional](https://docs.oracle.com/javase/8/docs/api/index.html)
-over `@Nullable`.  `Optional` provides better semantics around absence of a value.
+Use `@Nullable` where prudent.
+But [Optional](https://docs.oracle.com/javase/8/docs/api/index.html) may provide better semantics around the absence of a value.
 
 #### Clean up resources
 
@@ -942,15 +943,17 @@ void example() {
     if (receivedBadMessage) {
         conn.sendMessage("Bad request.");
         conn.close();
+        return;
     }
 
     // Good.
-    if (receivedBadMessage) {
-        try {
+    try (Connection conn = new Connection(params)) {
+        //...
+        if (receivedBadMessage) {
             conn.sendMessage("Bad request.");
-        } finally {
-            conn.close();
+            return;
         }
+        //...
     }
 }
 ```
