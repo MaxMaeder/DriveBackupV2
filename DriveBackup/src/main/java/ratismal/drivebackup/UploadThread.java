@@ -381,6 +381,7 @@ public class UploadThread implements Runnable {
             return;
         } catch (Exception exception) {
             logger.log(intl("backup-local-failed"));
+            MessageUtil.sendConsoleException(exception);
             return;
         }
         locationsToBePruned.put(location, formatter);
