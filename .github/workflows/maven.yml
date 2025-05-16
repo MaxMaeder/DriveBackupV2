@@ -15,9 +15,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Set up JDK 8
-      uses: actions/setup-java@v3
+      uses: actions/setup-java@v4
       with:
         java-version: '8'
         distribution: 'adopt'
@@ -26,7 +26,7 @@ jobs:
       env:
         USER_NAME: ${{ secrets.CRED_SERVER_USERNAME }}
         ACCESS_TOKEN: ${{ secrets.CRED_SERVER_PASSWORD }}
-    - uses: actions/upload-artifact@v3
+    - uses: actions/upload-artifact@v4
       with:
         name: DriveBackupV2.jar
         path: DriveBackup/target/DriveBackupV2.jar
