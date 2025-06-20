@@ -70,7 +70,7 @@ Learn how to set up and use more advanced features in the [wiki](https://github.
 Since we need to access your Google Drive
 and/or OneDrive data to back up your world,
 we are required to provide a Privacy Policy.
- 
+
 All of the data this plugin uploads and downloads
 or otherwise accessed from your Google Drive
 and/or OneDrive stays on your Minecraft server,
@@ -78,3 +78,7 @@ so we never have access to it.
 This plugin physically cannot access any data in your Google Drive
 and/or OneDrive that is not related to backing up your Minecraft server.
 But don't take our word for it, all of this plugin's source code is available here!
+
+## Contributing
+
+For Information on how to contribute see [CONTRIBUTING.md](CONTRIBUTING.md)
