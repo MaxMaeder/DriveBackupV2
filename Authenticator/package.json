@@ -1,20 +1,20 @@
 {
   "name": "drivebackupv2-authenticator",
   "private": true,
-  "version": "1.0.1",
+  "version": "1.1.0",
   "engines": {
-    "node": "18.x"
+    "node": "22.x"
   },
   "scripts": {
     "start": "node app.js",
     "dev": "node dev.js"
   },
   "dependencies": {
-    "@googleapis/drive": "^8.11.0",
-    "compression": "^1.7.4",
+    "@googleapis/drive": "^13.0.1",
+    "compression": "^1.8.0",
     "cookie-parser": "^1.4.6",
-    "firebase-admin": "^12.3.0",
     "express": "^4.21.2",
+    "firebase-admin": "^12.3.0",
     "node-fetch": "^3"
   }
 }
