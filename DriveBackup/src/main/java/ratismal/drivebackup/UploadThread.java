@@ -391,7 +391,7 @@ public class UploadThread implements Runnable {
     private void uploadBackupFiles(List<Uploader> uploaders) {
         for (BackupListEntry set : backupList) {
             backupBackingUp++;
-            for(Path folder : set.location.getPaths()) {
+            for (Path folder : set.location.getPaths()) {
                 uploadFile(folder.toString(), set.formatter, uploaders);
             }
         }
@@ -583,12 +583,12 @@ public class UploadThread implements Runnable {
         }
         BackupListEntry[] backupList = config.backupList.list;
         int backup = 0;
-        //edge case when its in between backup steps where number is set to 0
-        int backupNumber = Math.max(0, backupBackingUp-1);
-        if (backupNumber <= backupList.length) {
-            backup = backupNumber;
-        }
-        String backupSetName = backupList[backup].location.toString();
+
+        int backupNumber = Math.max(0, backupBackingUp - 1);
+        int backupIndex = Math.min(backupNumber, backupList.length - 1);
+
+        String backupSetName = backupList[backupIndex].location.toString();
+
         return message
             .replace("<set-name>", backupSetName)
             .replace("<set-num>", String.valueOf(backupNumber+1))
