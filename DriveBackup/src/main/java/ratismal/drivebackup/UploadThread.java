@@ -5,6 +5,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import ratismal.drivebackup.config.ConfigParser;
 import ratismal.drivebackup.config.ConfigParser.Config;
 import ratismal.drivebackup.config.configSections.BackupList.BackupListEntry;
@@ -37,9 +38,12 @@ import ratismal.drivebackup.util.ServerUtil;
 import ratismal.drivebackup.util.Timer;
 
 import java.io.File;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
@@ -458,6 +462,11 @@ public class UploadThread implements Runnable {
                 externalBackup.passphrase,
                 "external-backups",
                 ".");
+        String tempFolderName = getTempFolderName(externalBackup);
+        if (tempFolderName == null) {
+            logger.log(intl("external-backup-failed"));
+            return;
+        }
         for (ExternalBackupListEntry backup : externalBackup.backupList) {
             ArrayList<BlacklistEntry> blacklist = new ArrayList<>();
             for (String blacklistGlob : backup.blacklist) {
@@ -488,7 +497,7 @@ public class UploadThread implements Runnable {
                 } else {
                     parentFolderPath = "";
                 }
-                ftpUploader.downloadFile(filePath, getTempFolderName(externalBackup) + "/" + backup.path + parentFolderPath);
+                ftpUploader.downloadFile(filePath, tempFolderName + "/" + backup.path + parentFolderPath);
             }
             for (BlacklistEntry blacklistEntry : blacklist) {
                 String globPattern = blacklistEntry.getGlobPattern();
@@ -503,7 +512,7 @@ public class UploadThread implements Runnable {
         }
         ftpUploader.close();
         BackupListEntry backup = new BackupListEntry(
-            new PathBackupLocation("external-backups" + "/" + getTempFolderName(externalBackup)),
+            new PathBackupLocation("external-backups" + "/" + tempFolderName),
             externalBackup.format,
             true,
             new String[0]
@@ -534,16 +543,21 @@ public class UploadThread implements Runnable {
                 externalBackup.username, 
                 externalBackup.password,
                 externalBackup.ssl);
+        String tempFolderName = getTempFolderName(externalBackup);
+        if (tempFolderName == null) {
+            logger.log(intl("external-backup-failed"));
+            return;
+        }
         for (MySQLDatabaseBackup database : externalBackup.databaseList) {
             for (String blacklistEntry : database.blacklist) {
                 logger.log(
                     intl("external-mysql-backup-blacklisted"), 
                     "blacklist-entry", blacklistEntry);
             }
-            mysqlUploader.downloadDatabase(database.name, getTempFolderName(externalBackup), Arrays.asList(database.blacklist));
+            mysqlUploader.downloadDatabase(database.name, tempFolderName, Arrays.asList(database.blacklist));
         }
         BackupListEntry backup = new BackupListEntry(
-            new PathBackupLocation("external-backups" + "/" + getTempFolderName(externalBackup)),
+            new PathBackupLocation("external-backups" + "/" + tempFolderName),
             externalBackup.format,
             true,
             new String[0]
@@ -643,12 +657,49 @@ public class UploadThread implements Runnable {
      * @param externalBackup the external backup settings
      * @return the folder name
      */
-    @NotNull
+    @Nullable
     private static String getTempFolderName(ExternalBackupSource externalBackup) {
+        // There is probably a better way to do this without modifying the config to have unique identifiers for each external backup.
+        StringBuilder base = new StringBuilder(getSocketAddress(externalBackup));
+        base.append(externalBackup.username);
+        base.append(externalBackup.password);
         if (externalBackup instanceof ExternalFTPSource) {
-            return "ftp-" + getSocketAddress(externalBackup);
+            ExternalFTPSource ftpSource = (ExternalFTPSource) externalBackup;
+            base.append(ftpSource.baseDirectory);
+            String hash2 = hash(base.toString());
+            if (hash2 == null) {
+                return null;
+            }
+            return "ftp-" + hash2;
+        } else if (externalBackup instanceof ExternalMySQLSource) {
+            ExternalMySQLSource mysqlSource = (ExternalMySQLSource) externalBackup;
+            for (MySQLDatabaseBackup database : mysqlSource.databaseList) {
+                base.append(database.name);
+            }
+            String hash3 = hash(base.toString());
+            if (hash3 == null) {
+                return null;
+            }
+            return "mysql-" + hash3;
         } else {
-            return "mysql-" + getSocketAddress(externalBackup);
+            return null;
         }
+    }
+    
+    @Nullable
+    private static String hash(String input) {
+        MessageDigest digest = null;
+        try {
+            digest = MessageDigest.getInstance("SHA-256");
+        } catch (NoSuchAlgorithmException e) {
+            MessageUtil.sendConsoleException(e);
+            return null;
+        }
+        byte[] hashBytes = digest.digest(input.getBytes(StandardCharsets.UTF_8));
+        StringBuilder sb = new StringBuilder();
+        for (byte b : hashBytes) {
+            sb.append(String.format("%02x", b));
+        }
+        return sb.toString();
     }
 }
