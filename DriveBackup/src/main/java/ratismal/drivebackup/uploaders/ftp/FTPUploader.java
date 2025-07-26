@@ -65,10 +65,11 @@ public class FTPUploader extends Uploader {
                 host = ftp.hostname;
             }
             _localBaseFolder = ".";
+            String remoteDir = ConfigParser.getConfig().backupStorage.remoteDirectory;
             if (Strings.isNullOrEmpty(ftp.remoteDirectory)) {
-                _remoteBaseFolder = ftp.remoteDirectory;
+                _remoteBaseFolder = remoteDir;
             } else {
-                _remoteBaseFolder = ftp.remoteDirectory + sep() + ftp.remoteDirectory;
+                _remoteBaseFolder = ftp.remoteDirectory + sep() + remoteDir;
             }
         } catch (Exception e) {
             MessageUtil.sendConsoleException(e);
