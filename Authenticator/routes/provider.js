@@ -3,19 +3,19 @@ const express = require('express');
 const router = express.Router();
 
 router.get('/:user_code', async function (req, res) {
-  var docRef = await db.collection('pins').doc(req.params.user_code.toUpperCase()).get();
+  let docRef = await db.collection('pins').doc(req.params.user_code.toUpperCase()).get();
 
   if (!docRef.exists) {
     res.send({
       success: false,
       msg: "code_not_valid"
     });
-  } else {
-    res.send({
-      success: true,
-      verifyURL: docRef.data().verifyURL
-    });
+    return;
   }
+  res.send({
+    success: true,
+    verifyURL: docRef.data().verifyURL
+  });
 });
 
 module.exports = router;

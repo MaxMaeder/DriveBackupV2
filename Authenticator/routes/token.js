@@ -1,6 +1,5 @@
 const { db } = require('../app.js');
 const express = require('express');
-const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
 const router = express.Router();
 
 const AUTH_URL = "https://auth.drivebackupv2.com";
@@ -11,7 +10,7 @@ router.post('/', async function (req, res) {
     msg: "missing_params"
   });
 
-  const docRef = await db.collection('pins').doc(req.body.user_code.toUpperCase()).get();
+  let docRef = await db.collection('pins').doc(req.body.user_code.toUpperCase()).get();
 
   // since /pin response is sent before doc creation (for speeeed) clients could potentially poll before the doc exists
   if (!docRef.exists) return res.send({
@@ -19,7 +18,7 @@ router.post('/', async function (req, res) {
     msg: "code_not_authenticated"
   });
 
-  const doc = docRef.data();
+  let doc = docRef.data();
 
   if (doc.auth_code === undefined) return res.send({
     success: false,

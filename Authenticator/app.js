@@ -1,9 +1,7 @@
-const admin = require('firebase-admin');
-admin.initializeApp({
-  credential: admin.credential.cert(JSON.parse(process.env.GOOGLE_CREDENTIALS))
-});
+const { credential, firestore, initializeApp } = require('firebase-admin/app');
+initializeApp({ credential: credential.cert(JSON.parse(process.env.GOOGLE_CREDENTIALS)) });
 
-const db = admin.firestore();
+const db = firestore();
 exports.db = db;
 
 const express = require('express');
@@ -14,7 +12,7 @@ const providerRouter = require('./routes/provider');
 const callbackRouter = require('./routes/callback');
 const tokenRouter = require('./routes/token');
 
-var app = express();
+let app = express();
 
 app.use(compression());
 app.use(express.json());
@@ -34,20 +32,18 @@ app.use('/provider', providerRouter);
 app.use('/callback', callbackRouter);
 app.use('/token', authMiddleware, tokenRouter);
 
-app.get('/', function (req, res) {
-  res.sendFile(__dirname + '/views/index.html');
-});
+const pages = {
+  "/": "index.html",
+  "/privacy-policy": "privacy-policy.html",
+  "/about": "about.html"
+};
 
-app.get('/privacy-policy', function(req, res) {
-  res.sendFile(__dirname + '/views/privacy-policy.html');
-});
-
-app.get('/about', function(req, res) {
-  res.sendFile(__dirname + '/views/about.html');
+app.get(Object.keys(pages), (req, res) => {
+  res.sendFile(`${__dirname}/views/${pages[req.path]}`);
 });
 
 app.get('/:user_code', async function (req, res) {
-  var docRef = await db.collection('pins').doc(req.params.user_code.toUpperCase()).get();
+  let docRef = await db.collection('pins').doc(req.params.user_code.toUpperCase()).get();
   
   if (!docRef.exists) {
     res.send({ success: false, msg: "code_not_valid" });
@@ -57,15 +53,12 @@ app.get('/:user_code', async function (req, res) {
 })
 
 app.listen(process.env.PORT, () => {
-   console.log("App listening");
+  console.log("App listening");
 })
 
 setInterval(async () => {
-  var pinsRef = db.collection("pins");
-  var allInvalidRefs = await pinsRef.where("timestamp", "<", Date.now() - 300000).get();
-  if (allInvalidRefs.empty) {
-    return;
-  }
+  let pinsRef = db.collection("pins");
+  let allInvalidRefs = await pinsRef.where("timestamp", "<", Date.now() - 300000).get();
 
-  allInvalidRefs.forEach(doc => doc.ref.delete());
+  if (!allInvalidRefs.empty) allInvalidRefs.forEach(doc => doc.ref.delete());
 }, 150000);
