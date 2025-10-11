@@ -1,7 +1,8 @@
-const { credential, firestore, initializeApp } = require('firebase-admin/app');
-initializeApp({ credential: credential.cert(JSON.parse(process.env.GOOGLE_CREDENTIALS)) });
+const { cert, initializeApp } = require('firebase-admin/app');
+const { getFirestore } = require('firebase-admin/firestore');
+initializeApp({ credential: cert(JSON.parse(process.env.GOOGLE_CREDENTIALS)) });
 
-const db = firestore();
+const db = getFirestore();
 exports.db = db;
 
 const express = require('express');
