@@ -2,6 +2,7 @@ package ratismal.drivebackup.uploaders.onedrive;
 
 import okhttp3.Response;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.json.JSONObject;
 import org.json.JSONException;
 
@@ -18,11 +19,11 @@ public class GraphApiErrorException extends Exception {
     /** status code of the response */
     public final int statusCode;
     /** an error code string for the error that occurred */
-    public final String errorCode;
+    public final @NotNull String errorCode;
     /** a developer ready message about the error that occurred. this shouldn't be displayed to the user directly */
-    public final String errorMessage;
+    public final @NotNull String errorMessage;
     /** the full error object */
-    public final JSONObject errorObject;
+    public final @Nullable JSONObject errorObject;
 
     /**
      * create the exception from a response
@@ -33,34 +34,64 @@ public class GraphApiErrorException extends Exception {
      * @throws JSONException        if the body does not contain the expected json values
      */
     public GraphApiErrorException(@NotNull Response response) throws IOException {
-        this(response.code(), new JSONObject(response.body().string()).getJSONObject(ERROR_OBJ_KEY));
+        this(response.code(), response.body().string());
     }
 
     /**
      * create the exception from a status code and response body
      *
-     * @param statusCode of the response
-     * @param responseBody of the response
+     * @param statusCode   of the response
+     * @param jsonResponse string of the response body
      * @throws JSONException if the body does not contain the expected json values
      */
-    public GraphApiErrorException(int statusCode, @NotNull String responseBody) {
-        this(statusCode, new JSONObject(responseBody).getJSONObject(ERROR_OBJ_KEY));
+    public GraphApiErrorException(int statusCode, @NotNull String jsonResponse) {
+        this(statusCode, new ParsedError(jsonResponse));
     }
 
-    private GraphApiErrorException(int statusCode, @NotNull JSONObject error) {
-        this(statusCode, error.getString(CODE_STR_KEY), error.getString(MESSAGE_STR_KEY), error);
+    /** parsing logic that needs to happen before calling this/super constructor */
+    private static class ParsedError {
+        public final @NotNull String errorCode;
+        public final @NotNull String errorMessage;
+        public final @Nullable JSONObject errorObject;
+
+        public ParsedError(@NotNull String responseBody) {
+            JSONObject errorResponse;
+            try {
+                errorResponse = new JSONObject(responseBody);
+            } catch (JSONException jsonException) {
+                this.errorCode = "invalidErrorResponse";
+                this.errorMessage = String.valueOf(jsonException.getMessage());
+                this.errorObject = null;
+                return;
+            }
+            JSONObject errorObject = errorResponse.optJSONObject(ERROR_OBJ_KEY);
+            if (errorObject == null) {
+                this.errorCode = "invalidErrorResponse";
+                this.errorMessage = "error response does not contain an json object 'error'";
+                this.errorObject = null;
+                return;
+            }
+
+            this.errorCode = errorObject.optString(CODE_STR_KEY, "invalid/missing member 'code'");
+            this.errorMessage = errorObject.optString(MESSAGE_STR_KEY, "invalid/missing member 'message'");
+            this.errorObject = errorObject;
+        }
     }
 
-    private static String toMessage(int statusCode, String errorCode, String errorMessage, JSONObject errorObject) {
-        String format = "%d %s : \"%s\"\n%s";
-        return String.format(format, statusCode, errorCode, errorMessage, errorObject.toString(2));
+    private static String toMessage(int statusCode, @NotNull ParsedError error) {
+        String format = "%d %s : \"%s\"";
+        if (error.errorObject == null) {
+            return String.format(format, statusCode, error.errorCode, error.errorMessage);
+        }
+        return String.format(format + "\n%s", statusCode, error.errorCode, error.errorMessage,
+            error.errorObject.toString(2));
     }
 
-    private GraphApiErrorException(int statusCode, String errorCode, String errorMessage, JSONObject errorObject) {
-        super(toMessage(statusCode, errorCode, errorMessage, errorObject));
+    private GraphApiErrorException(int statusCode, @NotNull ParsedError error) {
+        super(toMessage(statusCode, error));
         this.statusCode = statusCode;
-        this.errorCode = errorCode;
-        this.errorMessage = errorMessage;
-        this.errorObject = errorObject;
+        this.errorCode = error.errorCode;
+        this.errorMessage = error.errorMessage;
+        this.errorObject = error.errorObject;
     }
 }
