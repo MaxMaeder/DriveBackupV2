@@ -1,12 +1,9 @@
 package ratismal.drivebackup.uploaders.onedrive;
 
-import okhttp3.Response;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.json.JSONObject;
 import org.json.JSONException;
-
-import java.io.IOException;
 
 /**
  * an exception representing a microsoft graph api error
@@ -24,18 +21,6 @@ public class GraphApiErrorException extends Exception {
     public final @NotNull String errorMessage;
     /** the full error object */
     public final @Nullable JSONObject errorObject;
-
-    /**
-     * create the exception from a response
-     *
-     * @param response to parse error from its body
-     * @throws IOException          if the body string could not be loaded
-     * @throws NullPointerException if the body could not be loaded
-     * @throws JSONException        if the body does not contain the expected json values
-     */
-    public GraphApiErrorException(@NotNull Response response) throws IOException {
-        this(response.code(), response.body().string());
-    }
 
     /**
      * create the exception from a status code and response body

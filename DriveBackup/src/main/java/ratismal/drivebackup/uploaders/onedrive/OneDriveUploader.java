@@ -87,6 +87,7 @@ public class OneDriveUploader extends Uploader {
             .post(requestBody)
             .build();
         try (Response response = DriveBackup.httpClient.newCall(request).execute()) {
+            //noinspection DataFlowIssue (response.body() is non-null after Call.execute())
             JSONObject parsedResponse = new JSONObject(response.body().string());
             if (!response.isSuccessful()) {
                 String error = parsedResponse.optString("error");
@@ -263,10 +264,12 @@ public class OneDriveUploader extends Uploader {
             .post(requestBody)
             .build();
         try (Response response = DriveBackup.httpClient.newCall(request).execute()) {
+            //noinspection DataFlowIssue (response.body() is non-null after Call.execute())
+            String jsonResponse = response.body().string();
             if (response.code() != 201) {
-                throw new GraphApiErrorException(response);
+                throw new GraphApiErrorException(response.code(), jsonResponse);
             }
-            JSONObject parsedResponse = new JSONObject(response.body().string());
+            JSONObject parsedResponse = new JSONObject(jsonResponse);
             String driveId = parsedResponse.getJSONObject("parentReference").getString("driveId");
             String itemId = parsedResponse.getString("id");
             return new FQID(driveId, itemId);
@@ -295,10 +298,12 @@ public class OneDriveUploader extends Uploader {
             .post(requestBody)
             .build();
         try (Response response = DriveBackup.httpClient.newCall(request).execute()) {
+            //noinspection DataFlowIssue (response.body() is non-null after Call.execute())
+            String responseBody = response.body().string();
             if (response.code() != 201) {
-                throw new GraphApiErrorException(response);
+                throw new GraphApiErrorException(response.code(), responseBody);
             }
-            JSONObject parsedResponse = new JSONObject(response.body().string());
+            JSONObject parsedResponse = new JSONObject(responseBody);
             String driveId = parsedResponse.getJSONObject("parentReference").getString("driveId");
             String itemId = parsedResponse.getString("id");
             return new FQID(driveId, itemId);
@@ -322,13 +327,15 @@ public class OneDriveUploader extends Uploader {
             .build();
         JSONObject parsedResponse;
         try (Response response = DriveBackup.httpClient.newCall(request).execute()) {
+            //noinspection DataFlowIssue (response.body() is non-null after Call.execute())
+            String responseBody = response.body().string();
             if (response.code() == 404) {
                 return null;
             }
             if (!response.isSuccessful()) {
-                throw new GraphApiErrorException(response);
+                throw new GraphApiErrorException(response.code(), responseBody);
             }
-            parsedResponse = new JSONObject(response.body().string());
+            parsedResponse = new JSONObject(responseBody);
         }
         if (parsedResponse.has("remoteItem")) {
            parsedResponse = parsedResponse.getJSONObject("remoteItem");
@@ -386,10 +393,12 @@ public class OneDriveUploader extends Uploader {
                     .url(targetUrl)
                     .build();
             try (Response response = DriveBackup.httpClient.newCall(request).execute()) {
+                //noinspection DataFlowIssue (response.body() is non-null after Call.execute())
+                String responseBody = response.body().string();
                 if (!response.isSuccessful()) {
-                    throw new GraphApiErrorException(response);
+                    throw new GraphApiErrorException(response.code(), responseBody);
                 }
-                JSONObject parsedResponse = new JSONObject(response.body().string());
+                JSONObject parsedResponse = new JSONObject(responseBody);
                 JSONArray someChildren = parsedResponse.getJSONArray("value");
                 allChildren.ensureCapacity(parsedResponse.optInt("@odata.count", someChildren.length()));
                 for (int i = 0; i < someChildren.length(); i++) {
@@ -419,7 +428,8 @@ public class OneDriveUploader extends Uploader {
             .build();
         try (Response response = DriveBackup.httpClient.newCall(delteRequest).execute()) {
             if (response.code() != 204 && response.code() != 404) {
-                throw new GraphApiErrorException(response);
+                //noinspection DataFlowIssue (response.body() is non-null after Call.execute())
+                throw new GraphApiErrorException(response.code(), response.body().string());
             }
         }
     }
@@ -441,10 +451,12 @@ public class OneDriveUploader extends Uploader {
             .put(RequestBody.create(file, textMediaType))
             .build();
         try (Response response = DriveBackup.httpClient.newCall(uploadRequest).execute()) {
+            //noinspection DataFlowIssue (response.body() is non-null after Call.execute())
+            String responseBody = response.body().string();
             if (response.code() != 201) {
-                throw new GraphApiErrorException(response);
+                throw new GraphApiErrorException(response.code(), responseBody);
             }
-            JSONObject parsedResponse = new JSONObject(response.body().string());
+            JSONObject parsedResponse = new JSONObject(responseBody);
             return new FQID(destinationFolder.driveId, parsedResponse.getString("id"));
         }
     }
@@ -468,10 +480,12 @@ public class OneDriveUploader extends Uploader {
             .post(RequestBody.create("{}", jsonMediaType))
             .build();
         try (Response response = DriveBackup.httpClient.newCall(request).execute()) {
+            //noinspection DataFlowIssue (response.body() is non-null after Call.execute())
+            String responseBody = response.body().string();
             if (!response.isSuccessful()) {
-                throw new GraphApiErrorException(response);
+                throw new GraphApiErrorException(response.code(), responseBody);
             }
-            return new JSONObject(response.body().string()).getString("uploadUrl");
+            return new JSONObject(responseBody).getString("uploadUrl");
         }
     }
 
@@ -501,8 +515,10 @@ public class OneDriveUploader extends Uploader {
                 .put(RequestBody.create(bytesToUpload, zipMediaType))
                 .build();
             try (Response uploadResponse = DriveBackup.httpClient.newCall(uploadRequest).execute()) {
+                //noinspection DataFlowIssue (response.body() is non-null after Call.execute())
+                String uploadResponseBody = uploadResponse.body().string();
                 if (uploadResponse.code() == 202) {
-                    JSONObject responseObject = new JSONObject(uploadResponse.body().string());
+                    JSONObject responseObject = new JSONObject(uploadResponseBody);
                     JSONArray expectedRanges = responseObject.getJSONArray("nextExpectedRanges");
                     range = new Range(expectedRanges.getString(0), UPLOAD_CHUNK_SIZE);
                     exponentialBackoffMillis = EXPONENTIAL_BACKOFF_MILLIS_DEFAULT;
@@ -513,13 +529,15 @@ public class OneDriveUploader extends Uploader {
                     if (retryCount > MAX_RETRY_ATTEMPTS || uploadResponse.code() == 409) {
                         Request cancelRequest = new Request.Builder().url(uploadURL).delete().build();
                         DriveBackup.httpClient.newCall(cancelRequest).execute().close();
-                        throw new GraphApiErrorException(uploadResponse);
+                        throw new GraphApiErrorException(uploadResponse.code(), uploadResponseBody);
                     } else if (uploadResponse.code() == 404) {
-                        throw new GraphApiErrorException(uploadResponse);
+                        throw new GraphApiErrorException(uploadResponse.code(), uploadResponseBody);
                     } else if (uploadResponse.code() == 416) {
                         Request statusRequest = new Request.Builder().url(uploadURL).build();
                         try (Response statusResponse = DriveBackup.httpClient.newCall(statusRequest).execute()) {
-                            JSONObject responseObject = new JSONObject(statusResponse.body().string());
+                            //noinspection DataFlowIssue (response.body() is non-null after Call.execute())
+                            String statusResponseBody = statusResponse.body().string();
+                            JSONObject responseObject = new JSONObject(statusResponseBody);
                             JSONArray expectedRanges = responseObject.getJSONArray("nextExpectedRanges");
                             range = new Range(expectedRanges.getString(0), UPLOAD_CHUNK_SIZE);
                         }
