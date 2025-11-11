@@ -5,6 +5,9 @@ import org.jetbrains.annotations.Nullable;
 import org.json.JSONObject;
 import org.json.JSONException;
 
+import static ratismal.drivebackup.util.JsonUtil.optJsonObjectIgnoreCase;
+import static ratismal.drivebackup.util.JsonUtil.optStringIgnoreCase;
+
 /**
  * an exception representing a microsoft graph api error
  */
@@ -49,7 +52,7 @@ public class GraphApiErrorException extends Exception {
                 this.errorObject = null;
                 return;
             }
-            JSONObject errorObject = errorResponse.optJSONObject(ERROR_OBJ_KEY);
+            JSONObject errorObject = optJsonObjectIgnoreCase(errorResponse, ERROR_OBJ_KEY);
             if (errorObject == null) {
                 this.errorCode = "invalidErrorResponse";
                 this.errorMessage = "error response does not contain an json object 'error'";
@@ -57,8 +60,8 @@ public class GraphApiErrorException extends Exception {
                 return;
             }
 
-            this.errorCode = errorObject.optString(CODE_STR_KEY, "invalid/missing member 'code'");
-            this.errorMessage = errorObject.optString(MESSAGE_STR_KEY, "invalid/missing member 'message'");
+            this.errorCode = optStringIgnoreCase(errorObject, CODE_STR_KEY, "invalid/missing member 'code'");
+            this.errorMessage = optStringIgnoreCase(errorObject, MESSAGE_STR_KEY, "invalid/missing member 'message'");
             this.errorObject = errorObject;
         }
     }
