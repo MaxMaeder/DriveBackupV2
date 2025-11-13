@@ -66,13 +66,17 @@ public class GraphApiErrorException extends Exception {
         }
     }
 
-    private static String toMessage(int statusCode, @NotNull ParsedError error) {
+    /**
+     * constructs a formatted error message string using the provided status code and error details.
+     * if ParsedError.errorObject is non-null, its included as pretty-printed json.
+     */
+    private static @NotNull String toMessage(int statusCode, @NotNull ParsedError error) {
         String format = "%d %s : \"%s\"";
+        String common = String.format(format, statusCode, error.errorCode, error.errorMessage);
         if (error.errorObject == null) {
-            return String.format(format, statusCode, error.errorCode, error.errorMessage);
+            return common;
         }
-        return String.format(format + "\n%s", statusCode, error.errorCode, error.errorMessage,
-            error.errorObject.toString(2));
+        return common + '\n' + error.errorObject.toString(2);
     }
 
     private GraphApiErrorException(int statusCode, @NotNull ParsedError error) {

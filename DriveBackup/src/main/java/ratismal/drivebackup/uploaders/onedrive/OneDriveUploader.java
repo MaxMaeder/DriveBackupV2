@@ -503,55 +503,69 @@ public class OneDriveUploader extends Uploader {
      */
     private void uploadToSession(@NotNull String uploadURL, @NotNull RandomAccessFile randomAccessFile)
         throws IOException, GraphApiErrorException, InterruptedException {
-        int exponentialBackoffMillis = EXPONENTIAL_BACKOFF_MILLIS_DEFAULT;
-        int retryCount = 0;
-        Range range = new Range(0, UPLOAD_CHUNK_SIZE);
+        UploadSessionState state = new UploadSessionState();
         while (true) {
-            byte[] bytesToUpload = getChunk(randomAccessFile, range);
+            byte[] bytesToUpload = getChunk(randomAccessFile, state.range);
             Request uploadRequest = new Request.Builder()
                 .addHeader("Content-Range", String.format("bytes %d-%d/%d",
-                    range.start, range.start + bytesToUpload.length - 1, randomAccessFile.length()))
+                    state.range.start, state.range.start + bytesToUpload.length - 1, randomAccessFile.length()))
                 .url(uploadURL)
                 .put(RequestBody.create(bytesToUpload, zipMediaType))
                 .build();
             try (Response uploadResponse = DriveBackup.httpClient.newCall(uploadRequest).execute()) {
                 //noinspection DataFlowIssue (response.body() is non-null after Call.execute())
-                String uploadResponseBody = uploadResponse.body().string();
-                if (uploadResponse.code() == 202) {
-                    JSONObject responseObject = new JSONObject(uploadResponseBody);
-                    JSONArray expectedRanges = responseObject.getJSONArray("nextExpectedRanges");
-                    range = new Range(expectedRanges.getString(0), UPLOAD_CHUNK_SIZE);
-                    exponentialBackoffMillis = EXPONENTIAL_BACKOFF_MILLIS_DEFAULT;
-                    retryCount = 0;
-                } else if (uploadResponse.code() == 201 || uploadResponse.code() == 200) {
+                String responseBody = uploadResponse.body().string();
+                int statusCode = uploadResponse.code();
+                if (statusCode == 202) {
+                    uploadAccepted(state, responseBody);
+                } else if (statusCode == 201 || statusCode == 200) {
                     break;
                 } else {
-                    if (retryCount > MAX_RETRY_ATTEMPTS || uploadResponse.code() == 409) {
-                        Request cancelRequest = new Request.Builder().url(uploadURL).delete().build();
-                        DriveBackup.httpClient.newCall(cancelRequest).execute().close();
-                        throw new GraphApiErrorException(uploadResponse.code(), uploadResponseBody);
-                    } else if (uploadResponse.code() == 404) {
-                        throw new GraphApiErrorException(uploadResponse.code(), uploadResponseBody);
-                    } else if (uploadResponse.code() == 416) {
-                        Request statusRequest = new Request.Builder().url(uploadURL).build();
-                        try (Response statusResponse = DriveBackup.httpClient.newCall(statusRequest).execute()) {
-                            //noinspection DataFlowIssue (response.body() is non-null after Call.execute())
-                            String statusResponseBody = statusResponse.body().string();
-                            if (!statusResponse.isSuccessful()) {
-                                throw new GraphApiErrorException(statusResponse.code(), statusResponseBody);
-                            }
-                            JSONObject responseObject = new JSONObject(statusResponseBody);
-                            JSONArray expectedRanges = responseObject.getJSONArray("nextExpectedRanges");
-                            range = new Range(expectedRanges.getString(0), UPLOAD_CHUNK_SIZE);
-                        }
-                    } else if (uploadResponse.code() >= 500 && uploadResponse.code() < 600) {
-                        TimeUnit.MILLISECONDS.sleep(exponentialBackoffMillis);
-                        exponentialBackoffMillis *= EXPONENTIAL_BACKOFF_FACTOR;
-                    }
-                    retryCount++;
+                    uploadRetryOrFailure(state, uploadURL, statusCode, responseBody);
                 }
             }
         }
+    }
+
+    /**
+     * handles 202:Accepted upload responses
+     */
+    private void uploadAccepted(@NotNull UploadSessionState state, @NotNull String uploadResponseBody) {
+        JSONObject responseObject = new JSONObject(uploadResponseBody);
+        JSONArray expectedRanges = responseObject.getJSONArray("nextExpectedRanges");
+        state.range = new Range(expectedRanges.getString(0), UPLOAD_CHUNK_SIZE);
+        state.exponentialBackoffMillis = EXPONENTIAL_BACKOFF_MILLIS_DEFAULT;
+        state.retryCount = 0;
+    }
+
+    /**
+     * handles non-success upload responses
+     */
+    private void uploadRetryOrFailure(@NotNull UploadSessionState state, @NotNull String uploadURL, int statusCode,
+        @NotNull String uploadResponseBody) throws IOException, GraphApiErrorException, InterruptedException {
+        if (state.retryCount > MAX_RETRY_ATTEMPTS || statusCode == 409) {
+            Request cancelRequest = new Request.Builder().url(uploadURL).delete().build();
+            DriveBackup.httpClient.newCall(cancelRequest).execute().close();
+            throw new GraphApiErrorException(statusCode, uploadResponseBody);
+        } else if (statusCode == 404) {
+            throw new GraphApiErrorException(statusCode, uploadResponseBody);
+        } else if (statusCode == 416) {
+            Request statusRequest = new Request.Builder().url(uploadURL).build();
+            try (Response statusResponse = DriveBackup.httpClient.newCall(statusRequest).execute()) {
+                //noinspection DataFlowIssue (response.body() is non-null after Call.execute())
+                String statusResponseBody = statusResponse.body().string();
+                if (!statusResponse.isSuccessful()) {
+                    throw new GraphApiErrorException(statusResponse.code(), statusResponseBody);
+                }
+                JSONObject responseObject = new JSONObject(statusResponseBody);
+                JSONArray expectedRanges = responseObject.getJSONArray("nextExpectedRanges");
+                state.range = new Range(expectedRanges.getString(0), UPLOAD_CHUNK_SIZE);
+            }
+        } else if (statusCode >= 500 && statusCode < 600) {
+            TimeUnit.MILLISECONDS.sleep(state.exponentialBackoffMillis);
+            state.exponentialBackoffMillis *= EXPONENTIAL_BACKOFF_FACTOR;
+        }
+        state.retryCount++;
     }
 
     /**
@@ -583,6 +597,15 @@ public class OneDriveUploader extends Uploader {
             String itemId = childItems.get(i).getString("id");
             recycleItem(parent.driveId, itemId);
         }
+    }
+
+    /**
+     * upload session state
+     */
+    private static final class UploadSessionState {
+        private int exponentialBackoffMillis = EXPONENTIAL_BACKOFF_MILLIS_DEFAULT;
+        private int retryCount = 0;
+        private Range range = new Range(0, UPLOAD_CHUNK_SIZE);
     }
 
     /**
