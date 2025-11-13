@@ -537,6 +537,9 @@ public class OneDriveUploader extends Uploader {
                         try (Response statusResponse = DriveBackup.httpClient.newCall(statusRequest).execute()) {
                             //noinspection DataFlowIssue (response.body() is non-null after Call.execute())
                             String statusResponseBody = statusResponse.body().string();
+                            if (!statusResponse.isSuccessful()) {
+                                throw new GraphApiErrorException(statusResponse.code(), statusResponseBody);
+                            }
                             JSONObject responseObject = new JSONObject(statusResponseBody);
                             JSONArray expectedRanges = responseObject.getJSONArray("nextExpectedRanges");
                             range = new Range(expectedRanges.getString(0), UPLOAD_CHUNK_SIZE);
