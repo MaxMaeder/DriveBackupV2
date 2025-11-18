@@ -55,13 +55,13 @@ public class GraphApiErrorException extends Exception {
             JSONObject errorObject = optJsonObjectIgnoreCase(errorResponse, ERROR_OBJ_KEY);
             if (errorObject == null) {
                 this.errorCode = "invalidErrorResponse";
-                this.errorMessage = "error response does not contain an json object 'error'";
+                this.errorMessage = String.format("error response has no json object '%s'", ERROR_OBJ_KEY);
                 this.errorObject = null;
                 return;
             }
 
-            this.errorCode = optStringIgnoreCase(errorObject, CODE_STR_KEY, "invalid/missing member 'code'");
-            this.errorMessage = optStringIgnoreCase(errorObject, MESSAGE_STR_KEY, "invalid/missing member 'message'");
+            this.errorCode = optStringIgnoreCase(errorObject, CODE_STR_KEY, "null");
+            this.errorMessage = optStringIgnoreCase(errorObject, MESSAGE_STR_KEY, "null");
             this.errorObject = errorObject;
         }
     }
