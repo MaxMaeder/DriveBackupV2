@@ -71,7 +71,7 @@ public class DriveBackup extends JavaPlugin {
         localizationConfig = new CustomConfig("intl.yml");
         localizationConfig.saveDefaultConfig();
         Localization.set(localizationConfig.getConfig());
-        ConfigMigrator configMigrator = new ConfigMigrator(getConfig(), localizationConfig.getConfig(), configPlayers);
+        ConfigMigrator configMigrator = new ConfigMigrator(getConfig(), localizationConfig, configPlayers);
         configMigrator.migrate();
         config = new ConfigParser(getConfig());
         config.reload(configPlayers);

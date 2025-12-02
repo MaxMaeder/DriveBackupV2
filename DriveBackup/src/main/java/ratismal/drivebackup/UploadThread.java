@@ -596,7 +596,6 @@ public class UploadThread implements Runnable {
                 return intl("backup-status-not-running");
         }
         BackupListEntry[] backupList = config.backupList.list;
-        int backup = 0;
 
         int backupNumber = Math.max(0, backupBackingUp - 1);
         int backupIndex = Math.min(backupNumber, backupList.length - 1);
