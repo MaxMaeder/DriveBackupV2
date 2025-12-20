@@ -17,7 +17,7 @@
         <adventure.platform.version>4.3.4</adventure.platform.version>
     </properties>
     <build>
-        <!--<finalName>${project.artifactId}</finalName>-->
+        <finalName>${project.artifactId}</finalName>
         <resources>
             <resource>
                 <directory>src/main/resources</directory>

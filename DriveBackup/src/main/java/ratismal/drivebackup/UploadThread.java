@@ -508,7 +508,7 @@ public final class UploadThread implements Runnable {
     
     private void uploadBackupFiles(List<Uploader> uploaders) {
         for (BackupListEntry set : backupList) {
-            for(Path folder : set.location.getPaths()) {
+            for (Path folder : set.location.getPaths()) {
                 uploadFile(folder.toString(), set.formatter, uploaders);
             }
         }
@@ -683,13 +683,9 @@ public final class UploadThread implements Runnable {
             default:
                 return instance.getMessageHandler().getLangString("backup-status-not-running");
         }
-        int backup = 0;
-        //edge case when its in between backup steps where number is set to 0
-        int backupNumber = Math.max(0, backupBackingUp-1);
-        if (backupNumber <= backupList.size()) {
-            backup = backupNumber;
-        }
-        String backupSetName = backupList.get(backup).location.toString();
+        int backupNumber = Math.max(0, backupBackingUp - 1);
+        int backupIndex = Math.min(backupNumber, backupList.size() - 1);
+        String backupSetName = backupList.get(backupIndex).location.toString();
         return message
             .replace("<set-name>", backupSetName)
             .replace("<set-num>", String.valueOf(backupNumber+1))
