@@ -16,6 +16,7 @@ import ratismal.drivebackup.config.configSections.ExternalBackups.ExternalFTPSou
 import ratismal.drivebackup.config.configSections.ExternalBackups.ExternalMySQLSource;
 import ratismal.drivebackup.config.configSections.ExternalBackups.ExternalMySQLSource.MySQLDatabaseBackup;
 import ratismal.drivebackup.constants.Permission;
+import ratismal.drivebackup.exceptions.AbsolutePathException;
 import ratismal.drivebackup.handler.listeners.PlayerListener;
 import ratismal.drivebackup.plugin.Scheduler;
 import ratismal.drivebackup.uploaders.Authenticator;
@@ -377,7 +378,7 @@ public class UploadThread implements Runnable {
         try {
             ServerUtil.setAutoSave(false);
             fileUtil.makeBackup(location, formatter, blackList);
-        } catch (IllegalArgumentException exception) {
+        } catch (AbsolutePathException exception) {
             logger.log(intl("backup-failed-absolute-path"));
             return;
         } catch (SecurityException exception) {

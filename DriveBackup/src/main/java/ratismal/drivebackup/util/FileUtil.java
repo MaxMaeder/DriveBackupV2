@@ -5,6 +5,7 @@ import org.jetbrains.annotations.NotNull;
 import ratismal.drivebackup.UploadThread.UploadLogger;
 import ratismal.drivebackup.config.ConfigParser;
 import ratismal.drivebackup.config.ConfigParser.Config;
+import ratismal.drivebackup.exceptions.AbsolutePathException;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -72,7 +73,7 @@ public class FileUtil {
     public void makeBackup(@NotNull String location, LocalDateTimeFormatter formatter, List<String> blacklistGlobs) throws Exception {
         Config config = ConfigParser.getConfig();
         if (location.charAt(0) == '/') {
-            throw new IllegalArgumentException("Location cannot start with a slash");
+            throw new AbsolutePathException("Location cannot start with a slash");
         }
         ZonedDateTime now = ZonedDateTime.now(config.advanced.dateTimezone);
         String fileName = formatter.format(now);
