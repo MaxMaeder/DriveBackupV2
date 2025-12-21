@@ -1,16 +1,12 @@
 package ratismal.drivebackup.uploaders.onedrive;
 
-import okhttp3.Response;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONException;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
+import static ratismal.drivebackup.util.JsonUtil.optJsonObjectIgnoreCase;
+import static ratismal.drivebackup.util.JsonUtil.optStringIgnoreCase;
 
 /**
  * an exception representing a microsoft graph api error
@@ -18,97 +14,76 @@ import java.util.stream.Collectors;
 public class GraphApiErrorException extends Exception {
     private static final String ERROR_OBJ_KEY = "error";
     private static final String CODE_STR_KEY = "code";
-    private static final String INNERERROR_OBJ_KEY = "innererror";
     private static final String MESSAGE_STR_KEY = "message";
-    private static final String DETAILS_ARR_KEY = "details";
 
-    /** status code of the response or -1 if not available */
+    /** status code of the response */
     public final int statusCode;
     /** an error code string for the error that occurred */
-    public final String errorCode;
+    public final @NotNull String errorCode;
     /** a developer ready message about the error that occurred. this shouldn't be displayed to the user directly */
-    public final String errorMessage;
-    /** optional list of additional error objects that might be more specific than the top-level error */
-    public final List<String> innerErrors;
-    /**
-     * optional list of additional error objects that might provide a breakdown of multiple errors encountered
-     * while processing the request
-     */
-    public final List<GraphApiErrorException> details;
-
-    /**
-     * create the exception from a response
-     *
-     * @param response to parse error from its body
-     * @throws IOException          if the body string could not be loaded
-     * @throws NullPointerException if the body could not be loaded
-     * @throws JSONException        if the body does not contain the expected json values
-     */
-    public GraphApiErrorException(@NotNull Response response) throws IOException {
-        this(response.code(), new JSONObject(response.body().string()).getJSONObject(ERROR_OBJ_KEY));
-    }
+    public final @NotNull String errorMessage;
+    /** the full error object */
+    public final @Nullable JSONObject errorObject;
 
     /**
      * create the exception from a status code and response body
      *
-     * @param statusCode of the response
-     * @param responseBody of the response
+     * @param statusCode   of the response
+     * @param jsonResponse string of the response body
      * @throws JSONException if the body does not contain the expected json values
      */
-    public GraphApiErrorException(int statusCode, @NotNull String responseBody) {
-        this(statusCode, new JSONObject(responseBody).getJSONObject(ERROR_OBJ_KEY));
+    public GraphApiErrorException(int statusCode, @NotNull String jsonResponse) {
+        this(statusCode, new ParsedError(jsonResponse));
     }
 
-    private static List<String> parseInnerErrors(@Nullable JSONObject innerErrors) {
-        List<String> list = new ArrayList<>();
-        while (innerErrors != null) {
-            String errorCode = innerErrors.optString(CODE_STR_KEY);
-            if (errorCode != null) {
-                list.add(errorCode);
+    /** parsing logic that needs to happen before calling this/super constructor */
+    private static class ParsedError {
+        public final @NotNull String errorCode;
+        public final @NotNull String errorMessage;
+        public final @Nullable JSONObject errorObject;
+
+        public ParsedError(@NotNull String responseBody) {
+            JSONObject errorResponse;
+            try {
+                errorResponse = new JSONObject(responseBody);
+            } catch (JSONException jsonException) {
+                this.errorCode = "invalidErrorResponse";
+                this.errorMessage = String.valueOf(jsonException.getMessage());
+                this.errorObject = null;
+                return;
             }
-            innerErrors = innerErrors.optJSONObject(INNERERROR_OBJ_KEY);
+            JSONObject errorObject = optJsonObjectIgnoreCase(errorResponse, ERROR_OBJ_KEY);
+            if (errorObject == null) {
+                this.errorCode = "invalidErrorResponse";
+                this.errorMessage = String.format("error response has no json object '%s'", ERROR_OBJ_KEY);
+                this.errorObject = null;
+                return;
+            }
+
+            this.errorCode = optStringIgnoreCase(errorObject, CODE_STR_KEY, "null");
+            this.errorMessage = optStringIgnoreCase(errorObject, MESSAGE_STR_KEY, "null");
+            this.errorObject = errorObject;
         }
-        return list;
     }
 
-    private static List<GraphApiErrorException> parseDetails(@Nullable JSONArray details) {
-        if (details == null) {
-            return new ArrayList<>();
+    /**
+     * constructs a formatted error message string using the provided status code and error details.
+     * if ParsedError.errorObject is non-null, its included as pretty-printed json.
+     */
+    private static @NotNull String toMessage(int statusCode, @NotNull ParsedError error) {
+        String format = "%d %s : \"%s\"";
+        String common = String.format(format, statusCode, error.errorCode, error.errorMessage);
+        if (error.errorObject == null) {
+            return common;
         }
-        List<GraphApiErrorException> list = new ArrayList<>(details.length());
-        for (int detailIdx = 0; detailIdx < details.length(); detailIdx++) {
-            list.add(new GraphApiErrorException(-1, details.getJSONObject(detailIdx).getJSONObject(ERROR_OBJ_KEY)));
-        }
-        return list;
+        return common + '\n' + error.errorObject.toString(2);
     }
 
-    private GraphApiErrorException(int statusCode, @NotNull JSONObject error) {
-        this(statusCode, error.getString(CODE_STR_KEY), error.getString(MESSAGE_STR_KEY),
-            parseInnerErrors(error.optJSONObject(INNERERROR_OBJ_KEY)),
-            parseDetails(error.optJSONArray(DETAILS_ARR_KEY)));
-    }
-
-    private static String toMessage(int statusCode, String errorCode, String errorMessage, List<String> innerErrors,
-        List<GraphApiErrorException> details) {
-        String format = "%d %s : \"%s\"%s%s";
-        String inner = String.join("\", \"", innerErrors);
-        String detail = details.stream().map(GraphApiErrorException::getMessage).collect(Collectors.joining(" }, { "));
-        if (!inner.isEmpty()) {
-            inner = " inner:[ \"" + inner + "\" ]";
-        }
-        if (!detail.isEmpty()) {
-            detail = " details:[ { " + detail + " } ]";
-        }
-        return String.format(format, statusCode, errorCode, errorMessage, inner, detail);
-    }
-
-    private GraphApiErrorException(int statusCode, String errorCode, String errorMessage, List<String> innerErrors,
-        List<GraphApiErrorException> details) {
-        super(toMessage(statusCode, errorCode, errorMessage, innerErrors, details));
+    private GraphApiErrorException(int statusCode, @NotNull ParsedError error) {
+        super(toMessage(statusCode, error));
         this.statusCode = statusCode;
-        this.errorCode = errorCode;
-        this.errorMessage = errorMessage;
-        this.innerErrors = innerErrors;
-        this.details = details;
+        this.errorCode = error.errorCode;
+        this.errorMessage = error.errorMessage;
+        this.errorObject = error.errorObject;
     }
 }
