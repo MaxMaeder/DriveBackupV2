@@ -83,7 +83,8 @@ public class S3Uploader extends Uploader {
     public void uploadFile(File file, String type) {
         type = normalizeType(type);
         try {
-            String key = type + "/" + file.getName();
+            String destination = ConfigParser.getConfig().backupStorage.remoteDirectory;
+            String key = destination + "/" + type + "/" + file.getName();
             minioClient.uploadObject(UploadObjectArgs.builder().bucket(_bucket).object(key).filename(file.getAbsolutePath()).build());
             try {
                 pruneBackups(type);
