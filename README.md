@@ -30,7 +30,7 @@ and/or a remote storage server with (S)FTP or S3 compatible api.
 
 #### Bukkit/Spigot/Paper/Purpur
 
-- Minecraft 1.8 - 1.20.X
+- Minecraft 1.8 - 1.21.X
 
 ## Where can I download it?
 
