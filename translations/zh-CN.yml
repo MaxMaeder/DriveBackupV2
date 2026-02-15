@@ -3,185 +3,218 @@
 #
 # If not, feel free to contribute!
 
-plugin-stop: "关闭插件中！"
-metrics-started: "Metrics 已启用"
-metrics-error: "Metrics 启动失败了"
-update-checker-started: "检查更新中..."
-update-checker-new-release: |-
-  DriveBackup <latest-version> 已经发布啦, 你目前正在使用 <current-version>
-  从这里下载更新: <gold><click:open_url:http://bit.ly/2VGtF7L>http://bit.ly/2VGtF7L</click></gold>" 或者点击 <gold><click:run_command:/drivebackup update>/drivebackup update</click></gold> 来更新
-update-checker-unsupported-release: |-
-  你正在运行一个不支持的版本!
-  推荐的版本是 <latest-version>，而你正在运行 <current-version>。
-  如果你最近才更新此插件，请忽略此信息
-update-checker-failed: "在尝试检查 DriveBackupV2 的更新时出现了问题"
-updater-start: "尝试下载 DriveBackupV2 最新版"
-updater-no-updates: "你正在使用最新版 DriveBackupV2！"
-updater-fetch-failed: "无法获取最新版 DriveBackupV2"
-updater-update-failed: "插件更新失败，更多信息请查看控制台"
-updater-successful: "成功更新了插件! 重启您的服务器以生效。"
-config-loaded: "配置已加载！"
-config-reloaded: "配置已重置！"
-date-format-invalid: "日期格式时区无效，使用 UTC"
-backup-list-glob-invalid: "世界无效，跳过备份策略 <entry>"
-backup-list-path-invalid: "路径无效，跳过备份策略 <entry>"
-backup-list-no-dest-specified: "没有指定路径或世界，跳过备份策略 <entry>"
-backup-list-format-invalid: "格式无效，跳过备份策略 <entry>"
-backup-list-blacklist-invalid: "备份策略 <entry> 中的黑名单无效，留空"
-ftp-method-pubic-key-invalid: "公钥存放路径对 FTP 备份方式无效，留空"
-ftp-method-passphrase-invalid: "密码对 FTP 备份方式无效，留空"
-backup-schedule-days-invalid: "Days list invalid, skipping schedule entry <entry>"
-backup-schedule-day-invalid: "Day of week invalid, skipping day of week \"<day>\""  
-backup-schedule-day-empty: "Day of week list empty, skipping schedule entry <entry>"
-backup-schedule-time-invalid: "时间无效，跳过时间表策略 <entry>"
-backup-schedule-empty: "备份时间表为空，禁用基于时间的备份"
-invalid-backup-delay: "填入的备份延迟无效，使用默认值"
-thread-priority-too-low: "填入的线程优先级小于最小值，使用默认值"
-thread-priority-too-high: "填入的线程优先级超过最大值，使用默认值"
-keep-count-invalid: "保留份数无效，使用默认值"
-local-keep-count-invalid: "本地保留份数无效，使用默认值"
-zip-compression-too-low: "填入的 zip 压缩等级小于最小值，使用默认值"
-zip-compression-too-high: "填入的 zip 压缩等级大于最大值，使用默认值"
-external-backup-type-invalid: "备份类型无效，跳过外部备份策略 <entry>"
-external-backup-host-port-invalid: "主机名/端口无效，跳过外部备份策略 <entry>"
-external-backup-user-pass-invalid: "用户名/密码无效，跳过外部备份策略 <entry>"
-external-backup-format-invalid: "格式无效，跳过外部备份策略 <entry>"
-external-backup-public-key-invalid: "外部备份策略 <entry> 中的公钥路径无效，留空"
-external-backup-passphrase-invalid: "外部备份策略 <entry> 中的密码无效，留空"
-external-backup-base-dir-invalid: "外部备份策略 <entry> 中的基础目录路径无效，留空"
-external-backup-list-invalid: "备份无效，跳过外部备份策略 <entry>。"
-external-backup-list-path-invalid: "路径无效，跳过外部备份策略 <entry-backup>。"
-external-backup-list-blacklist-invalid: "外部备份策略 <entry-backup> 中的黑名单无效，留空"
-external-database-ssl-invalid: "外部备份条目 <entry> 中的 SSL 设置无效，禁用 SSL"
-external-database-list-invalid: "数据库无效，跳过外部备份策略 <entry>。"
-external-database-list-name-invalid: "名称无效，跳过外部备份数据库策略 <entry-database>"
-external-database-list-blacklist-invalid: "外部备份数据库策略 <entry-backup> 中的黑名单无效，留空"
-backups-scheduled: "计划在 <days> 的 <time> 进行一次备份"
-backups-interval-scheduled: "计划每隔 <delay> 分钟进行一次备份"
-no-perm: "权限呢，没有权限你也敢这么做？"
-link-account-code: "要链接 <provider> 账户, 请前往 <gold><click:open_url:'<link-url>'><link-url></click></gold> 然后填入 <gold><click:copy_to_clipboard:'<link-code>'><link-code></click></gold>"
-link-provider-failed: "无法链接 <provider> 账户, 请再试试吧"
-link-provider-complete: "你的 <provider> 账户已链接！"
-unlink-provider-failed: "无法取消链接 <provider> 账户, 请再试试吧"
-unlink-provider-complete: "你的 <provider> 账户已断开链接！"
-google-pick-shared-drive: "您可以已链接一个或多个云端账户，如果您想使用其中一个，请选择它或在聊天中回复它的编号。"
-default-google-drive-name: "我的云盘"
-google-shared-drive-option: "<bold>[<drive-num>]</bold> <gold><hover:show_text:选择云盘><click:run_command:'<select-command>'><drive-name></click></hover></gold>"
-file-upload-message: "上传文件花费了 <length> 秒 (<speed>KB/s)"
-backup-forced: "强制备份中"
+auto-backups-disabled: "自动备份已禁用"
 backup-already-running: |-
-  一个备份任务已经在运行啦
+  已有备份任务正在运行
   <backup-status>
-backup-no-methods: "没有启用任何备份策略呢"
-backup-empty-list: "备份列表是空的欸"
-backup-start: "正在创建备份，服务器可能会卡顿小段时间哦..."
-external-ftp-backup-start: "正在从 (S)FTP 服务器 (<socket-addr>) 下载文件以包括在备份列表中"
-external-ftp-backup-blacklisted: "未在 (S)FTP 服务器的备份列表中包括 <blacklisted-files>， 因为它们被 \"<glob-pattern>\" 列入黑名单"
-external-ftp-backup-failed: 未能在备份列表中包括来自 (S)FTP 服务器 (<socket-addr>) 的文件，请检查<gold>config.yml</gold> 中的服务器证书。
-external-ftp-backup-complete: "来自 (S)FTP 服务器 (<socket-addr>) 的文件已成功包括在备份列表中"
-external-mysql-backup-start: "从MySQL服务器 (<socket-addr>) 下载数据库以包括在备份列表中"
-external-mysql-backup-blacklisted: "在备份列表中没有包括表 \"<blacklist-entry>\"，因为它被列入了黑名单。"
-external-mysql-backup-failed: 未能在备份列表中包括来自MySQL服务器 (<socket-addr>) 的数据库，请检查<gold>config.yml</gold>中的服务器凭证。
-external-mysql-backup-complete: "来自MySQL服务器(<socket-addr>) 的数据库被成功包括在备份列表中。"
-local-backup-date-format-invalid: |-
-  无法解析备份 "<file-name>" 的日期格式，这可能是由于日期格式在 config.yml 中被更新。
-  此备份会被删除
-local-backup-backlisted: "备份列表中未包含 <blacklisted-files-count> 文件，因为它们已被 \"<glob-pattern>\" 列入黑名单"
-local-backup-in-backup-folder: "在备份列表中未包括 <files-in-backup-folder-count> 文件，因为它们在用于备份的文件夹中。"
-local-backup-failed-to-include: "未能在备份列表中包含 \"<file-path>\"，是否已锁定？ 你有访问权限吗？"
-local-backup-limit-reached: "已存在 <backup-count> 个备份文件，已超过 <backup-limit> 个的限制，删除最旧的"
-local-backup-file-failed-to-delete: "无法删除本地备份 \"<local-backup-name>\""
-local-backup-failed-to-delete: "本地备份删除失败"
-backup-location-start: "正在备份 \"<location>\""
+backup-complete: "备份完成"
+backup-disabled-inactivity: "由于服务器无活动，禁用自动备份"
+backup-empty-list: "备份列表为空"
 backup-failed-absolute-path: |-
-  创建备份失败，备份文件夹的路径需要使用绝对路径，而不是相对路径
-  绝对路径可能会覆盖敏感文件，更多信息请参见文档。
-  已跳过备份此位置
+  创建备份失败，要备份的文件夹路径是绝对路径，应为相对路径
+  绝对路径可能覆盖敏感文件，请查阅文档获取更多信息
+  跳过此备份位置
+backup-file-upload-complete: '文件"<file-name>"的上传完成'
+backup-file-upload-start: '开始为文件"<file-name>"执行上传'
+backup-forced: "正在强制执行备份"
+backup-list-blacklist-invalid: "备份条目 <entry> 中的黑名单无效，留空处理"
+backup-list-format-invalid: "格式无效，跳过备份列表条目 <entry>"
+backup-list-glob-invalid: "Glob模式无效，跳过备份列表条目 <entry>"
+backup-list-no-dest-specified: "未指定路径或Glob模式，跳过备份列表条目 <entry>"
+backup-list-path-invalid: "路径无效，跳过备份列表条目 <entry>"
+backup-local-complete: "本地备份已创建并压缩"
 backup-local-failed: |-
   创建本地备份失败
-  即使 local-keep-count 被设置为零，该插件也需要临时创建一个本地备份。
-  已跳过备份此位置
-backup-method-uploading: "正在上传文件至 <upload-method>"
-backup-method-limit-reached: "在 <upload-method> 中的当前备份位置已有 <file-count> 个文件，超过了 <file-limit> 个的限制，删除中"
-backup-method-prune-failed: "删除超过限制的备份失败"
-backup-method-shared-drive-prune-failed: |-
-  删除超过限制的备份失败
-  尝试提升云端账户的账户权限，或将 keep-count 设置为 0 以禁止删除备份。
-backup-method-upload-failed: "上传失败啦"
-backup-method-not-linked: |-
-  跳过到 <upload-method> 的备份，账户尚未链接
-  要链接你的账户，请点击 <gold><click:run_command:'<link-command>'><link-command></click></gold>。
+  即使 local-keep-count 设置为零，插件也需要临时创建一个本地备份
+  跳过此备份位置
+backup-local-file-complete: '位置"<location>"的本地备份已创建'
+backup-local-file-start: '正在为位置"<location>"创建本地备份'
+backup-local-prune-complete: "本地备份清理完成"
+backup-local-prune-start: "正在清理本地备份"
+backup-local-start: "正在创建本地备份并压缩..."
+backup-method-complete: "备份到 <gold><upload-method></gold> 完成"
+backup-method-error-occurred: "备份到 <upload-method> 失败，请验证所有凭据是否正确，或使用命令 <gold><click:run_command:'<diagnose-command>'><diagnose-command></click></gold> 诊断问题"
+backup-method-limit-reached: "<upload-method> 中当前备份位置的文件数(<file-count>)已超出限制(<file-limit>)，正在删除"
 backup-method-not-auth: |-
-  跳过到 <upload-method> 的备份，认证失败
-  请检查<gold>config.yml<gold>中的凭证是否正确。
-backup-method-error-occurred: "备份到 <upload-method> 失败，验证凭证是否正确或用 <gold><click:run_command:'<diagnose-command></click></gold> 诊断问题。"
+  跳过备份到 <upload-method>，身份验证失败
+  请在 <gold>config.yml<gold> 中检查所有凭据是否正确
 backup-method-not-auth-authenticator: |-
-  跳过到 <upload-method> 的备份，认证失败
-  请尝试重新链接您的账户，请点击 <gold><click:run_command:'<link-command>'><link-command></click></gold>。
-backup-method-complete: "已成功上传备份至 <gold><upload-method></gold>"
-backup-complete: "备份已完成"
-backup-disabled-inactivity: "由于你的服务器太不活跃了而停用自动备份"
-backup-status-not-running: "没有备份正在运行呢"
-backup-status-compressing: "压缩 \"<set-name>\" 中, <set-count> 个中的第 <set-num> 个"
-backup-status-uploading: "上传 \"<set-name>\" 中, <set-count> 个中的第 <set-num> 个"
-next-backup: "下次备份将在 %TIME 分钟后运行"
-next-schedule-backup: "下次备份将在 %DATE 运行"
-next-schedule-backup-format: "h:mm a EEE, MMM d O"
-auto-backups-disabled: "自动备份已关闭"
-test-method-not-specified: "请指定要测试的备份策略"
-test-method-invalid: "\"<specified-method>\" 不是一个有效的策略"
-test-method-not-enabled: "<upload-method> 备份已被禁用，您可以在 <gold>config.yml</gold> 中启用它们"
-test-method-begin: "正在测试 <upload-method> 备份策略"
-test-file-creation-failed: "测试文件创建失败，请重试"
-test-method-failed: "<upload-method> 测试失败，请检查 <gold>config.yml</gold>"
-test-method-successful: "备份策略 <upload-method> 测试成功啦"
-player-join-backup-enable: "正在启用自动备份"
-player-join-update-available: |-
-  有更新啦，点击链接下载: <gold><click:open_url:http://bit.ly/2M14uVD>http://bit.ly/2M14uVD</click></gold>
-  或者运行 <gold><click:run_command:/drivebackup update>/drivebackup update</click></gold> 来更新
-player-join-backup-failed: |-
-  <red>最后一次备份失败！<red>。
-  检查控制台以获得更多信息
-debug-log-creating: "生成调试日志中"
-debug-log-created: "日志链接: <url>"
-connection-error: "连接到 <domain> 失败，检查您的网络连接和服务器防火墙"
-brief-backup-list: "DriveBackupV2 目前将备份 <list>。"
-brief-backup-list-empty: "什么都没有？！"
+  跳过备份到 <upload-method>，身份验证失败
+  请尝试重新关联您的账户，运行命令 <gold><click:run_command:'<link-command>'><link-command></click></gold>
+backup-method-not-linked: |-
+  跳过备份到 <upload-method>，账户尚未关联
+  要关联您的账户，请运行 <gold><click:run_command:'<link-command>'><link-command></click></gold>
+backup-method-prune-failed: "删除超出限制的备份失败"
+backup-method-shared-drive-prune-failed: |-
+  删除超出限制的备份失败
+  请尝试请求共享网盘的所有者提升您账户的权限，或将 keep-count 设置为 0 以禁用删除备份
+backup-method-upload-failed: "上传失败"
+backup-method-uploading: "正在上传文件到 <upload-method>"
+backup-no-methods: "未启用任何备份方法"
+backup-schedule-day-empty: "星期列表为空，跳过计划条目 <entry>"
+backup-schedule-day-invalid: '星期值无效，跳过"<day>"'
+backup-schedule-days-invalid: "天数列表无效，跳过计划条目 <entry>"
+backup-schedule-empty: "备份计划为空，禁用基于计划的备份"
+backup-schedule-time-invalid: "时间无效，跳过计划条目 <entry>"
+backup-start: "正在创建备份，服务器可能会出现短暂的卡顿..."
+backup-status-compressing: '正在压缩备份集"<set-name>"，第 <set-num> 集，共 <set-count> 集'
+backup-status-not-running: "没有备份任务正在运行"
+backup-status-pruning: "正在清理备份"
+backup-status-starting: "备份任务正在启动"
+backup-status-uploading: '正在上传备份集"<set-name>"，第 <set-num> 集，共 <set-count> 集'
+backup-total-time: "备份共耗时 <time> 秒"
+backup-upload-complete: "备份已上传"
+backup-upload-start: "正在上传备份..."
+backups-interval-scheduled: "计划每 <delay> 分钟运行一次备份"
+backups-scheduled: "计划在 <time> 于 <days> 运行备份"
+brief-backup-list: "DriveBackupV2 当前将备份 <list>"
+brief-backup-list-empty: "无内容"
 brief-backup-list-external-backups: "一些外部备份"
-brief-backup-list-help: "想备份其他东西吗？参见： <gold><click:open_url:http://bit.ly/3xoHRAs>http://bit.ly/3xoHRAs</click></gold>"
-drivebackup-command-header: <gold>|====== <dark_red>DriveBackupV2</dark_red> <gold>|</gold> <yellow><click:open_url:http://github.com/JohnsonRan>JohnsonRan</click> 汉化</yellow> ======|</gold>
+brief-backup-list-help: "想备份其他内容？请查看 <gold><click:open_url:https://bit.ly/3xoHRAs>https://bit.ly/3xoHRAs</click></gold>"
+config-loaded: "配置文件已加载！"
+config-reloaded: "配置文件已重新加载！"
+connection-error: "无法连接到 <domain>，请检查您的网络连接和服务器防火墙"
+date-format-invalid: "日期格式的时区无效，使用UTC"
+debug-log-created: "调试日志URL：<url>"
+debug-log-creating: "正在生成调试日志"
+default-google-drive-name: "我的云端硬盘"
+drivebackup-command-header: <gold>|====== <dark_red>DriveBackupV2</dark_red> ======|</gold>
 drivebackup-docs-command: |-
   <header>
-  需要帮助？ 下方了解更多！
-  Wiki: <gold><click:open_url:http://bit.ly/3dDdmwK>http://bit.ly/3dDdmwK</click></gold>
-  Discord: <gold><click:open_url:http://bit.ly/3f4VuuT>http://bit.ly/3f4VuuT</click></gold>
-drivebackup-version-command: |-
-  <header>
-  插件版本: <gold><plugin-version></gold>
-  Java 版本: <gold><java-version></gold>
-  服务端类型: <gold><server-software></gold>
-  服务端版本: <gold><server-version></gold>
-drivebackup-version-update: <gold>有更新可用咯！
+  需要帮助？查看这些有用的资源！
+  维基：<gold><click:open_url:https://bit.ly/3dDdmwK>https://bit.ly/3dDdmwK</click></gold>
+  Discord：<gold><click:open_url:https://bit.ly/3f4VuuT>https://bit.ly/3f4VuuT</click></gold>
 drivebackup-help-command: |-
   <header>
   <gold><click:run_command:/drivebackup>/drivebackup</click></gold> - 显示此菜单
   <gold><click:run_command:/drivebackup help>/drivebackup help</click></gold> - 显示帮助资源
-  <gold><click:run_command:/drivebackup commands>/drivebackup commands</click></gold> - 显示此命令的帮助页面
+  <gold><click:run_command:/drivebackup commands>/drivebackup commands</click></gold> - 显示此命令帮助页面
   <gold><click:run_command:/drivebackup v>/drivebackup [v|version]</click></gold> - 显示插件版本
-  <gold><click:run_command:/drivebackup linkaccount googledrive>/drivebackup [link|linkaccount] googledrive</click></gold> - 链接你的 Google 云盘账户进行备份
-  <gold><click:run_command:/drivebackup linkaccount onedrive>/drivebackup [link|linkaccount] onedrive</click></gold> - 链接你的 OneDrive 账户进行备份
-  <gold><click:run_command:/drivebackup linkaccount dropbox>/drivebackup [link|linkaccount] dropbox</click></gold> - 链接你的 Dropbox 账户进行备份
-  <gold><click:run_command:/drivebackup linkaccount googledrive>/drivebackup [unlink|unlinkaccount] googledrive</click></gold> - 解除链接你的 Google 云盘账户并禁用备份策略
-  <gold><click:run_command:/drivebackup linkaccount onedrive>/drivebackup [unlink|unlinkaccount] onedrive</click></gold> - 解除链接你的 OneDrive 账户并禁用备份策略
-  <gold><click:run_command:/drivebackup linkaccount dropbox>/drivebackup [unlink|unlinkaccount] dropbox</click></gold> - 解除链接你的 Dropbox 账户并禁用备份策略
-  <gold><click:run_command:/drivebackup reloadconfig>/drivebackup reloadconfig</click></gold> - 重载配置文件
-  <gold><click:run_command:/drivebackup nextbackup>/drivebackup nextbackup</click></gold> - 获取下一次自动备份的时间/日期
-  <gold><click:run_command:/drivebackup status>/drivebackup status</click></gold> - 获取运行中的备份的状态
-  <gold><click:run_command:/drivebackup backup>/drivebackup backup</click></gold> - 手动运行备份
-  <gold><click:run_command:/drivebackup test ftp>/drivebackup test ftp</click></gold> - 测试与 (S)FTP 服务器的连接
-  <gold><click:run_command:/drivebackup test googledrive>/drivebackup test googledrive</click></gold> - 测试与 Google 云盘的连接
-  <gold><click:run_command:/drivebackup test onedrive>/drivebackup test onedrive</click></gold> - 测试与 OneDrive 的连接
-  <gold><click:run_command:/drivebackup test dropbox>/drivebackup test dropbox</click></gold> - 测试与 Dropbox 的连接
-  <gold><click:run_command:/drivebackup update>/drivebackup update</click></gold> - 如果有新的版本，则下载并更新此插件
-list-delimiter: ", "
+  <gold><click:run_command:/drivebackup linkaccount googledrive>/drivebackup [link|linkaccount] googledrive</click></gold> - 关联您的 Google Drive 账户用于备份
+  <gold><click:run_command:/drivebackup linkaccount onedrive>/drivebackup [link|linkaccount] onedrive</click></gold> - 关联您的 OneDrive 账户用于备份
+  <gold><click:run_command:/drivebackup linkaccount dropbox>/drivebackup [link|linkaccount] dropbox</click></gold> - 关联您的 Dropbox 账户用于备份
+  <gold><click:run_command:/drivebackup linkaccount googledrive>/drivebackup [unlink|unlinkaccount] googledrive</click></gold> - 取消关联您的 Google Drive 账户并禁用该方法
+  <gold><click:run_command:/drivebackup linkaccount onedrive>/drivebackup [unlink|unlinkaccount] onedrive</click></gold> - 取消关联您的 OneDrive 账户并禁用该方法
+  <gold><click:run_command:/drivebackup linkaccount dropbox>/drivebackup [unlink|unlinkaccount] dropbox</click></gold> - 取消关联您的 Dropbox 账户并禁用该方法
+  <gold><click:run_command:/drivebackup reloadconfig>/drivebackup reloadconfig</click></gold> - 重新加载 config.yml
+  <gold><click:run_command:/drivebackup debug>/drivebackup debug</click></gold> - 收集用于插件故障排除的有用信息
+  <gold><click:run_command:/drivebackup nextbackup>/drivebackup nextbackup</click></gold> - 获取下次自动备份的时间/日期
+  <gold><click:run_command:/drivebackup status>/drivebackup status</click></gold> - 获取正在运行的备份状态
+  <gold><click:run_command:/drivebackup backup>/drivebackup backup</click></gold> - 手动启动备份
+  <gold><click:run_command:/drivebackup test ftp>/drivebackup test ftp</click></gold> - 测试连接到 (S)FTP 服务器
+  <gold><click:run_command:/drivebackup test googledrive>/drivebackup test googledrive</click></gold> - 测试连接到 Google Drive
+  <gold><click:run_command:/drivebackup test onedrive>/drivebackup test onedrive</click></gold> - 测试连接到 OneDrive
+  <gold><click:run_command:/drivebackup test dropbox>/drivebackup test dropbox</click></gold> - 测试连接到 Dropbox
+  <gold><click:run_command:/drivebackup update>/drivebackup update</click></gold> - 如果有新版本则更新插件
+drivebackup-version-command: |-
+  <header>
+  插件版本：<gold><plugin-version></gold>
+  Java 版本：<gold><java-version></gold>
+  服务器软件：<gold><server-software></gold>
+  服务器软件版本：<gold><server-version></gold>
+drivebackup-version-update: <gold>插件有可用更新！
+external-backup-base-dir-invalid: "外部备份条目 <entry> 中的基础目录路径键无效，留空处理"
+external-backup-format-invalid: "格式无效，跳过外部备份条目 <entry>"
+external-backup-host-port-invalid: "主机名/端口无效，跳过外部备份条目 <entry>"
+external-backup-list-blacklist-invalid: "外部备份列表条目 <entry-backup> 中的黑名单无效，留空处理"
+external-backup-list-invalid: "备份列表无效，跳过外部备份条目 <entry>"
+external-backup-list-path-invalid: "路径无效，跳过外部备份列表条目 <entry-backup>"
+external-backup-passphrase-invalid: "外部备份条目 <entry> 中的密码无效，留空处理"
+external-backup-public-key-invalid: "外部备份条目 <entry> 中的公钥路径无效，留空处理"
+external-backup-type-invalid: "备份类型无效，跳过外部备份条目 <entry>"
+external-backup-user-pass-invalid: "用户名/密码无效，跳过外部备份条目 <entry>"
+external-database-list-blacklist-invalid: "外部备份数据库列表条目 <entry-backup> 中的黑名单无效，留空处理"
+external-database-list-invalid: "数据库列表无效，跳过外部备份条目 <entry>"
+external-database-list-name-invalid: "名称无效，跳过外部备份数据库列表条目 <entry-database>"
+external-database-ssl-invalid: "外部备份条目 <entry> 中的SSL启用设置无效，不使用SSL"
+external-ftp-backup-blacklisted: '未将外部 (S)FTP 服务器中的 <blacklisted-files> 个文件包含在备份中，因为它们被"<glob-pattern>"列入黑名单'
+external-ftp-backup-complete: "来自 (S)FTP 服务器 (<socket-addr>) 的文件已成功包含在备份中"
+external-ftp-backup-failed: "未能将来自 (S)FTP 服务器 (<socket-addr>) 的文件包含在备份中，请检查 <gold>config.yml</gold> 中的服务器凭据"
+external-ftp-backup-start: "正在从 (S)FTP 服务器 (<socket-addr>) 下载文件以包含在备份中"
+external-mysql-backup-blacklisted: '未将表"<blacklist-entry>"包含在备份中，因为它被列入黑名单'
+external-mysql-backup-complete: "来自 MySQL 服务器 (<socket-addr>) 的数据库已成功包含在备份中"
+external-mysql-backup-failed: "未能将来自 MySQL 服务器 (<socket-addr>) 的数据库包含在备份中，请检查 <gold>config.yml</gold> 中的服务器凭据"
+external-mysql-backup-start: "正在从 MySQL 服务器 (<socket-addr>) 下载数据库以包含在备份中"
+file-upload-message: "文件在 <length> 秒内上传完毕 (<speed>KB/s)"
+ftp-method-passphrase-invalid: "FTP备份方法的密码无效，留空处理"
+ftp-method-pubic-key-invalid: "FTP备份方法的公钥路径无效，留空处理"
+google-pick-shared-drive: "您有权访问一个或多个共享网盘，如果您想使用其中之一，请在聊天中选择或回复其编号。"
+google-shared-drive-option: "<bold>[<drive-num>]</bold> <gold><hover:show_text:选择网盘><click:run_command:'<select-command>'><drive-name></click></hover></gold>"
+invalid-backup-delay: "输入的备份延迟无效，使用默认值"
+keep-count-invalid: "保留计数无效，使用默认值"
+link-account-code: "要关联您的 <provider> 账户，请访问 <gold><click:open_url:'<link-url>'><link-url></click></gold> 并输入 <gold><click:copy_to_clipboard:'<link-code>'><link-code></click></gold>"
+link-provider-complete: "您的 <provider> 账户已关联成功！"
+link-provider-failed: "关联您的 <provider> 账户失败，请重试"
+list-delimiter: "、"
 list-last-delimiter: " 和 "
+local-backup-backlisted: '未将 <blacklisted-files-count> 个文件包含在备份中，因为它们被"<glob-pattern>"列入黑名单'
+local-backup-date-format-invalid: |-
+  无法解析存储的备份"<file-name>"的日期格式，原因可能是 config.yml 中的日期格式已更新
+  该备份将被优先删除
+local-backup-failed-attributes: '无法读取"<file-path>"的属性，改用默认值。您是否有访问权限？'
+local-backup-failed-permissions: |-
+  创建本地备份失败，插件无权写入所需的文件系统位置
+  即使 local-keep-count 设置为零，插件也需要临时创建一个本地备份
+  跳过此备份位置
+local-backup-failed-to-delete: "本地备份删除失败"
+local-backup-failed-to-include: '未能将"<file-path>"包含在备份中，它是否被锁定？您是否有访问权限？'
+local-backup-file-deleted: '已删除本地备份"<local-backup-name>"'
+local-backup-file-failed-to-delete: '删除本地备份"<local-backup-name>"失败'
+local-backup-in-backup-folder: "未将 <files-in-backup-folder-count> 个文件包含在备份中，因为它们位于用于备份的文件夹中"
+local-backup-limit-not-reached: "本地备份数量(<backup-count>)未达到限制(<backup-limit>)，跳过清理"
+local-backup-limit-reached: "有 <backup-count> 个文件，超出了本地限制 <backup-limit>，正在删除最旧的"
+local-backup-no-limit: "本地备份限制设置为0，跳过清理"
+local-backup-pruning-complete: '位置"<location>"的本地备份清理完成'
+local-backup-pruning-start: '正在清理位置"<location>"的本地备份'
+local-keep-count-invalid: "输入的本地保留计数无效，使用默认值"
+local-save-directory-not-relative: "本地保存目录不是相对路径，将改为相对于服务器目录"
+location-empty: "位置 <location> 为空，跳过"
+metrics-error: "指标统计启动失败"
+metrics-started: "指标统计已启动"
+next-backup: "下一次备份将在 %TIME 分钟后进行"
+next-schedule-backup: "下一次备份将于 %DATE 进行"
+next-schedule-backup-format: "ah:mm EEE, MMM d日 O"
+no-perm: "您没有权限执行此操作！"
+player-join-backup-enable: "正在启用自动备份"
+player-join-backup-failed: |-
+  <red>上次备份失败！<red>
+  请查看控制台获取更多信息
+player-join-update-available: |-
+  有可用更新，请在此获取：<gold><click:open_url:https://bit.ly/2M14uVD>https://bit.ly/2M14uVD</click></gold>
+  或运行命令 <gold><click:run_command:/drivebackup update>/drivebackup update</click></gold>
+plugin-stop: "正在停止插件！"
+shared-drive-deprecated: |-
+  由于谷歌的新限制，我们无法再在新账户关联中支持共享网盘。
+  任何现有的关联目前仍可继续使用此功能。
+shared-drive-error: |-
+  获取您的共享网盘时出错。
+  请确保 shared-drive-id 正确或删除它以继续使用您的个人网盘。"
+test-file-creation-failed: "测试文件创建失败，请重试"
+test-method-begin: "开始在 <upload-method> 上进行测试"
+test-method-failed: "<upload-method> 测试未成功，请检查 <gold>config.yml</gold>"
+test-method-invalid: '"<specified-method>" 不是有效的备份方法'
+test-method-not-enabled: "<upload-method> 备份已禁用，您可以在 <gold>config.yml</gold> 中启用它们"
+test-method-not-specified: "请指定要测试的备份方法"
+test-method-successful: "<upload-method> 测试成功"
+thread-priority-too-high: "输入的线程优先级超过最大值，使用最大值"
+thread-priority-too-low: "输入的线程优先级低于最小值，使用最小值"
+unlink-provider-complete: "您的 <provider> 账户已取消关联！"
+unlink-provider-failed: "取消关联您的 <provider> 账户失败，请重试"
+update-checker-failed: "检查最新 DriveBackupV2 版本时出现问题"
+update-checker-new-release: |-
+  DriveBackup 版本 <latest-version> 已发布，您当前运行的是版本 <current-version>
+  更新地址：<gold><click:open_url:https://bit.ly/2VGtF7L>https://bit.ly/2VGtF7L</click></gold> 或使用命令 <gold><click:run_command:/drivebackup update>/drivebackup update</click></gold>
+update-checker-started: "正在检查更新..."
+update-checker-unsupported-release: |-
+  您正在运行不受支持的版本！
+  推荐版本是 <latest-version>，而您运行的是 <current-version>
+  如果插件刚刚更新，请忽略此消息
+updater-fetch-failed: "无法获取最新版本的 DriveBackupV2"
+updater-no-updates: "您正在使用最新版本的 DriveBackupV2！"
+updater-start: "正在尝试下载最新版本的 DriveBackupV2"
+updater-successful: "成功更新插件！请重启服务器以使更改生效"
+updater-update-failed: "插件更新失败，请查看控制台获取更多信息"
+upload-error-check: "正在检查上传错误..."
+upload-no-errors: "未发现上传错误"
+zip-compression-too-high: "输入的ZIP压缩级别超过最大值，使用最大值"
+zip-compression-too-low: "输入的ZIP压缩级别低于最小值，使用最小值"
