@@ -32,15 +32,16 @@ jobs:
     - name: Authorize Docker push
       run: gcloud auth configure-docker
 
-    - name: Build and Push Container
+    - id: build
+      name: Build and Push Container
       run: |-
-        docker build -t us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/authenticator/authenticator:${{ github.sha }} .
-        docker push us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/authenticator/authenticator:${{ github.sha }}
+        docker build -t gcr.io/${{ secrets.GCP_PROJECT_ID }}/authenticator/authenticator:${{ github.sha }} .
+        docker push gcr.io/${{ secrets.GCP_PROJECT_ID }}/authenticator/authenticator:${{ github.sha }}
 
     - name: Deploy to Cloud Run
       id: deploy
       uses: google-github-actions/deploy-cloudrun@v2
       with:
         service: authenticator
-        image: us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/authenticator/authenticator:${{ github.sha }}
+        image: ${{ steps.build.outputs.image }}
         region: us-central1
