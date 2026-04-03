@@ -164,7 +164,7 @@
         <dependency>
             <groupId>com.github.lookfirst</groupId>
             <artifactId>sardine</artifactId>
-            <version>5.12</version>
+            <version>5.12</version> <!-- 5.12 is last to support java 8 -->
         </dependency>
         <dependency>
             <groupId>net.kyori</groupId>
