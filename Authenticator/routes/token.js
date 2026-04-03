@@ -1,4 +1,4 @@
-const { db } = require('../app.js');
+const { getDb } = require('../app.js');
 const express = require('express');
 const router = express.Router();
 
@@ -10,6 +10,7 @@ router.post('/', async function (req, res) {
     msg: "missing_params"
   });
 
+  const db = getDb();
   let docRef = await db.collection('pins').doc(req.body.user_code.toUpperCase()).get();
 
   // since /pin response is sent before doc creation (for speeeed) clients could potentially poll before the doc exists

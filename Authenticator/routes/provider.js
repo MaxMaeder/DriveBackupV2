@@ -1,8 +1,9 @@
-const { db } = require('../app.js');
+const { getDb } = require('../app.js');
 const express = require('express');
 const router = express.Router();
 
 router.get('/:user_code', async function (req, res) {
+  const db = getDb();
   let docRef = await db.collection('pins').doc(req.params.user_code.toUpperCase()).get();
 
   if (!docRef.exists) {

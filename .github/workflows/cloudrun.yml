@@ -27,20 +27,20 @@ jobs:
     - name: Setup Cloud SDK
       uses: google-github-actions/setup-gcloud@v2
       with:
-        project_id: drivebackup-276620
+        project_id: ${{ secrets.GCP_PROJECT_ID }}
 
     - name: Authorize Docker push
       run: gcloud auth configure-docker
 
     - name: Build and Push Container
       run: |-
-        docker build -t gcr.io/drivebackup-276620/authenticator:${{ github.sha }} .
-        docker push gcr.io/drivebackup-276620/authenticator:${{ github.sha }}
+        docker build -t gcr.io/${{ secrets.GCP_PROJECT_ID }}/authenticator:${{ github.sha }} .
+        docker push gcr.io/${{ secrets.GCP_PROJECT_ID }}/authenticator:${{ github.sha }}
 
     - name: Deploy to Cloud Run
       id: deploy
       uses: google-github-actions/deploy-cloudrun@v2
       with:
         service: authenticator
-        image: gcr.io/drivebackup-276620/authenticator:${{ github.sha }}
+        image: gcr.io/${{ secrets.GCP_PROJECT_ID }}/authenticator:${{ github.sha }}
         region: us-central1

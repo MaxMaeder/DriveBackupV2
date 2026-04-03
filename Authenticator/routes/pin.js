@@ -1,11 +1,10 @@
-const { db } = require('../app.js');
+const { getDb } = require('../app.js');
 const alphabet = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
 const express = require('express');
 const router = express.Router();
 
 const AUTH_URL = "https://auth.drivebackupv2.com";
-
 const interval = 5;
 
 router.post('/', async function (req, res) {
@@ -39,6 +38,7 @@ router.post('/', async function (req, res) {
     interval
   });
 
+  const db = getDb();
   let docRef = db.collection('pins').doc(user_code);
 
   await docRef.set({
