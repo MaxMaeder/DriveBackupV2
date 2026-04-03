@@ -30,13 +30,13 @@ jobs:
         project_id: ${{ secrets.GCP_PROJECT_ID }}
 
     - name: Authorize Docker push
-      run: gcloud auth configure-docker
+      run: gcloud auth configure-docker us-central1-docker.pkg.dev
 
     - id: build
       name: Build and Push Container
       run: |-
-        docker build -t gcr.io/${{ secrets.GCP_PROJECT_ID }}/authenticator/authenticator:${{ github.sha }} .
-        docker push gcr.io/${{ secrets.GCP_PROJECT_ID }}/authenticator/authenticator:${{ github.sha }}
+        docker build -t us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/authenticator/authenticator:${{ github.sha }} .
+        docker push us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/authenticator/authenticator:${{ github.sha }}
 
     - name: Deploy to Cloud Run
       id: deploy
