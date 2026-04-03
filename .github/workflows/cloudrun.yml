@@ -34,13 +34,13 @@ jobs:
 
     - name: Build and Push Container
       run: |-
-        docker build -t gcr.io/${{ secrets.GCP_PROJECT_ID }}/authenticator:${{ github.sha }} .
-        docker push gcr.io/${{ secrets.GCP_PROJECT_ID }}/authenticator:${{ github.sha }}
+        docker build -t us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/authenticator/authenticator:${{ github.sha }} .
+        docker push us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/authenticator/authenticator:${{ github.sha }}
 
     - name: Deploy to Cloud Run
       id: deploy
       uses: google-github-actions/deploy-cloudrun@v2
       with:
         service: authenticator
-        image: gcr.io/${{ secrets.GCP_PROJECT_ID }}/authenticator:${{ github.sha }}
+        image: us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/authenticator/authenticator:${{ github.sha }}
         region: us-central1
