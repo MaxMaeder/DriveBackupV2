@@ -63,7 +63,8 @@ public final class S3Uploader extends Uploader {
     public void uploadFile(File file, String type) {
         type = normalizeType(type);
         try {
-            String key = type + "/" + file.getName();
+            String destination = getRemoteSaveDirectory();
+            String key = destination + "/" + type + "/" + file.getName();
             minioClient.uploadObject(UploadObjectArgs.builder().bucket(bucket).object(key).filename(file.getAbsolutePath()).build());
             try {
                 pruneBackups(type);
@@ -87,7 +88,8 @@ public final class S3Uploader extends Uploader {
         if (fileLimit == -1) {
             return;
         }
-        TreeMap<ZonedDateTime, Item> files = getZipFiles(type);
+        String destination = getRemoteSaveDirectory();
+        TreeMap<ZonedDateTime, Item> files = getZipFiles(destination + "/" +type);
         if (files.size() > fileLimit) {
             Map<String, String> placeholders = new HashMap<>(3);
             placeholders.put("file-count", String.valueOf(files.size()));
