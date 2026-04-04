@@ -108,7 +108,8 @@ public class S3Uploader extends Uploader {
         if (fileLimit == -1) {
             return;
         }
-        TreeMap<ZonedDateTime, Item> files = getZipFiles(type);
+        String destination = ConfigParser.getConfig().backupStorage.remoteDirectory;
+        TreeMap<ZonedDateTime, Item> files = getZipFiles(destination + "/" +type);
         if (files.size() > fileLimit) {
             logger.info(
                     intl("backup-method-limit-reached"),
