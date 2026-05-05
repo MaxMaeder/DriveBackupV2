@@ -36,7 +36,7 @@ public class UpdateChecker {
         DriveBackup plugin = DriveBackup.getInstance();
         UpdateChecker checker = new UpdateChecker();
         if (ConfigParser.getConfig().advanced.updateCheckEnabled) {
-            plugin.getServer().getScheduler().runTaskTimerAsynchronously(plugin, () -> {
+            DriveBackup.getFoliaLib().getScheduler().runTimerAsync(() -> {
                 Logger logger = (input, placeholders) -> MessageUtil.Builder().mmText(input, placeholders).send();
                 try {
                     if (!hasSentStartMessage) {

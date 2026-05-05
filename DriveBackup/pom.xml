@@ -127,8 +127,8 @@
             <url>https://repo.codemc.org/repository/maven-public</url>
         </repository>
         <repository>
-            <id>devmart-other</id>
-            <url>https://nexus.devmart.objot.com/repository/maven-other/</url>
+            <id>nexomc-releases</id>
+            <url>https://repo.nexomc.com/releases/</url>
         </repository>
     </repositories>
     <dependencies>

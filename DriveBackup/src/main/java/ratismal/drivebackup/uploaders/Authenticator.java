@@ -1,9 +1,9 @@
 package ratismal.drivebackup.uploaders;
 
+import com.tcoded.folialib.wrapper.task.WrappedTask;
 import okhttp3.FormBody;
 import okhttp3.Request;
 import okhttp3.Response;
-import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONObject;
@@ -37,7 +37,7 @@ public class Authenticator {
      */
     private static String CLIENT_SECRET = "fyKCRZRyJeHW5PzGJvQkL4dr2zRHRmwTaOutG7BBhQM=";
 
-    private static int taskId = -1;
+    private static WrappedTask taskId = null;
 
     public enum AuthenticationProvider {
         GOOGLE_DRIVE("Google Drive", "googledrive", "/GoogleDriveCredential.json", "qWd2xXC/ORzdZvUotXoWhHC0POkMNuO/xuwcKWc9s1LLodayZXvkdKimmpOQqWYS6I+qGSrYNb8UCJWMhrgDXhIWEbDvytkQTwq+uNcnfw8=", "pasQz0KvtyC7o6CrlLPSMVV9Y0RMX76cXzsAbBoCBxI="),
@@ -118,7 +118,7 @@ public class Authenticator {
                 "link-url", verificationUri,
                 "link-code", userCode,
                 "provider", provider.getName());
-            taskId = plugin.getServer().getScheduler().scheduleSyncRepeatingTask(plugin, new Runnable() {
+            taskId = DriveBackup.getFoliaLib().getScheduler().runTimer(new Runnable() {
                 @Override
                 public void run() {
                     try {
@@ -183,9 +183,9 @@ public class Authenticator {
     }
 
     private static void cancelPollTask() {
-        if (taskId != -1) {
-            Bukkit.getScheduler().cancelTask(taskId);
-            taskId = -1;
+        if (taskId != null) {
+            taskId.cancel();
+            taskId = null;
         }
     }
 

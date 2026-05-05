@@ -20,6 +20,7 @@ import ratismal.drivebackup.plugin.updater.Updater;
 import ratismal.drivebackup.util.CustomConfig;
 import ratismal.drivebackup.util.HttpLogger;
 import ratismal.drivebackup.util.MessageUtil;
+import com.tcoded.folialib.FoliaLib;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,6 +35,8 @@ public class DriveBackup extends JavaPlugin {
     private static ConfigParser config;
 
     private static CustomConfig localizationConfig;
+
+    private static FoliaLib foliaLib;
 
     public static Updater updater;
 
@@ -58,6 +61,14 @@ public class DriveBackup extends JavaPlugin {
     @Override
     public void onEnable() {
         plugin = this;
+        foliaLib = new FoliaLib(this);
+        String platform = "Spigot/Other";
+        if (foliaLib.isFolia()) {
+            platform = "Folia";
+        } else if (foliaLib.isPaper()) {
+            platform = "Paper";
+        }
+        getLogger().info("Detected server: " + platform);
         httpClient = new OkHttpClient.Builder()
             .connectTimeout(1, TimeUnit.MINUTES)
             .writeTimeout(3, TimeUnit.MINUTES)
@@ -110,6 +121,15 @@ public class DriveBackup extends JavaPlugin {
      */
     public static DriveBackup getInstance() {
         return plugin;
+    }
+
+    /**
+     * Gets an instance of FoliaLib
+     *
+     * @return FoliaLib instance
+     */
+    public static FoliaLib getFoliaLib() {
+        return foliaLib;
     }
 
     /**

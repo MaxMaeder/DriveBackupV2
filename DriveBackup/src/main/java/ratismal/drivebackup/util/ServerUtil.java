@@ -5,6 +5,8 @@ import org.bukkit.World;
 import ratismal.drivebackup.config.ConfigParser;
 import ratismal.drivebackup.plugin.DriveBackup;
 
+import java.util.concurrent.CompletableFuture;
+
 public class ServerUtil {
     /**
      * Turns the server auto save on/off
@@ -16,12 +18,14 @@ public class ServerUtil {
         }
 
         try {
-            Bukkit.getScheduler().callSyncMethod(DriveBackup.getInstance(), () -> {
+            CompletableFuture<Void> future = new CompletableFuture<>();
+            DriveBackup.getFoliaLib().getScheduler().runNextTick((task) -> {
                 for (World world : Bukkit.getWorlds()) {
                     world.setAutoSave(autoSave);
                 }
-                return Boolean.TRUE;
-            }).get();
+                future.complete(null);
+            });
+            future.join();
         } catch (Exception ignored) {
         
         }
