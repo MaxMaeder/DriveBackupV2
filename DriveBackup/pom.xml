@@ -92,6 +92,10 @@
                             <pattern>com.fasterxml</pattern>
                             <shadedPattern>ratismal.drivebackup.DriveBackup.lib</shadedPattern>
                         </relocation>
+                        <relocation>
+                            <pattern>com.tcoded.folialib</pattern>
+                            <shadedPattern>ratismal.drivebackup.lib.folialib</shadedPattern>
+                        </relocation>
                     </relocations>
                     <filters>
                         <filter>
@@ -121,6 +125,10 @@
         <repository>
             <id>CodeMC</id>
             <url>https://repo.codemc.org/repository/maven-public</url>
+        </repository>
+        <repository>
+            <id>devmart-other</id>
+            <url>https://nexus.devmart.objot.com/repository/maven-other/</url>
         </repository>
     </repositories>
     <dependencies>
@@ -185,6 +193,12 @@
             <groupId>io.minio</groupId>
             <artifactId>minio</artifactId>
             <version>8.6.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.tcoded</groupId>
+            <artifactId>FoliaLib</artifactId>
+            <version>0.5.1</version>
+            <scope>compile</scope>
         </dependency>
     </dependencies>
 </project>
