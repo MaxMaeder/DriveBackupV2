@@ -11,8 +11,8 @@ import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.tcoded.folialib.wrapper.task.WrappedTask;
 import org.bukkit.Bukkit;
-import org.bukkit.scheduler.BukkitScheduler;
 
 import ratismal.drivebackup.UploadThread;
 import ratismal.drivebackup.config.ConfigParser;
@@ -32,12 +32,12 @@ public class Scheduler {
     /**
      * List of the IDs of the scheduled backup tasks
      */
-    private static ArrayList<Integer> backupTasks = new ArrayList<>();
+    private static List<WrappedTask> backupTasks = new ArrayList<>();
 
     /**
      * ID of the schedule drift correction task
      */
-    private static int scheduleDriftTask = -1;
+    private static WrappedTask scheduleDriftTask = null;
 
     /**
      * List of Dates representing each time a scheduled backup will occur.
@@ -49,9 +49,11 @@ public class Scheduler {
      */
     public static void startBackupThread() {
         Config config = ConfigParser.getConfig();
-        BukkitScheduler taskScheduler = Bukkit.getServer().getScheduler();
         if (config.backupScheduling.enabled) {
-            SchedulerUtil.cancelTasks(backupTasks);
+            for (WrappedTask task : backupTasks) {
+                task.cancel();
+            }
+            backupTasks.clear();
             backupDatesList.clear();
             for (BackupScheduleEntry entry : config.backupScheduling.schedule) {
                 ZoneId timezone = config.advanced.dateTimezone;
@@ -74,12 +76,11 @@ public class Scheduler {
                     if (now.isAfter(startingOccurrence)) {
                         startingOccurrence = startingOccurrence.plusWeeks(1);
                     }
-                    backupTasks.add(taskScheduler.runTaskTimerAsynchronously(
-                        DriveBackup.getInstance(), 
+                    backupTasks.add(DriveBackup.getFoliaLib().getScheduler().runTimerAsync(
                         new UploadThread(),
                         SchedulerUtil.sToTicks(ChronoUnit.SECONDS.between(now, startingOccurrence)),
                         SchedulerUtil.sToTicks(ChronoUnit.SECONDS.between(previousOccurrence, nextOccurrence))
-                    ).getTaskId());
+                    ));
                     backupDatesList.add(startingOccurrence);
                 }
                 ZonedDateTime scheduleMessageTime = ZonedDateTime.now(timezone)
@@ -103,27 +104,30 @@ public class Scheduler {
                     .toConsole(true)
                     .send();
             }
-            if (scheduleDriftTask != -1) {
-                Bukkit.getScheduler().cancelTask(scheduleDriftTask);
+            if (scheduleDriftTask != null) {
+                scheduleDriftTask.cancel();
             }
             long driftInt = SchedulerUtil.sToTicks(SCHEDULE_DRIFT_CORRECTION_INTERVAL);
-            scheduleDriftTask = taskScheduler.runTaskTimer(DriveBackup.getInstance(), () -> startBackupThread(), driftInt, driftInt).getTaskId();
+            scheduleDriftTask = DriveBackup.getFoliaLib().getScheduler().runTimer(() -> startBackupThread(), driftInt, driftInt);
         } else if (config.backupStorage.delay != -1) {
-            SchedulerUtil.cancelTasks(backupTasks);
-            if (scheduleDriftTask != -1) {
-                Bukkit.getScheduler().cancelTask(scheduleDriftTask);
+            for (WrappedTask task : backupTasks) {
+                task.cancel();
+            }
+            backupTasks.clear();
+            if (scheduleDriftTask != null) {
+                scheduleDriftTask.cancel();
+                scheduleDriftTask = null;
             }
             MessageUtil.Builder()
                 .mmText(intl("backups-interval-scheduled"), "delay", String.valueOf(config.backupStorage.delay))
                 .toConsole(true)
                 .send();
             long interval = SchedulerUtil.sToTicks(config.backupStorage.delay * 60);
-            backupTasks.add(taskScheduler.runTaskTimerAsynchronously(
-                    DriveBackup.getInstance(),
+            backupTasks.add(DriveBackup.getFoliaLib().getScheduler().runTimerAsync(
                     new UploadThread(),
                     interval,
                     interval
-            ).getTaskId());
+            ));
             UploadThread.updateNextIntervalBackupTime();
         }
     }
@@ -132,8 +136,14 @@ public class Scheduler {
      * Stops the backup thread
      */
     public static void stopBackupThread() {
-        BukkitScheduler scheduler = Bukkit.getServer().getScheduler();
-        scheduler.cancelTasks(DriveBackup.getInstance());
+        for (WrappedTask task : backupTasks) {
+            task.cancel();
+        }
+        backupTasks.clear();
+        if (scheduleDriftTask != null) {
+            scheduleDriftTask.cancel();
+            scheduleDriftTask = null;
+        }
     }
 
     /**
