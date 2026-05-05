@@ -1,12 +1,12 @@
 package ratismal.drivebackup.util;
 
+import com.tcoded.folialib.wrapper.task.WrappedTask;
+import org.jetbrains.annotations.NotNull;
+
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.temporal.TemporalAccessor;
 import java.util.List;
-
-import org.bukkit.Bukkit;
-import org.jetbrains.annotations.NotNull;
 
 public class SchedulerUtil {
     private static final int TICKS_PER_SECOND = 20;
@@ -17,9 +17,9 @@ public class SchedulerUtil {
      * Cancels the specified tasks
      * @param taskList a List of the IDs of the tasks
      */
-    public static void cancelTasks(@NotNull List<Integer> taskList) {
-        for (int task : taskList) {
-            Bukkit.getScheduler().cancelTask(task);
+    public static void cancelTasks(@NotNull List<WrappedTask> taskList) {
+        for (WrappedTask task : taskList) {
+            task.cancel();
         }
 
         taskList.clear();
