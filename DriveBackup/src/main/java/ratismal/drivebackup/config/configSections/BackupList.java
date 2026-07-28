@@ -12,6 +12,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -63,18 +65,21 @@ public class BackupList {
         public final LocalDateTimeFormatter formatter;
         public final boolean create;
         public final String[] blacklist;
+        public final Map<String, String> replace;
         
         public BackupListEntry(
             BackupLocation location,
             LocalDateTimeFormatter formatter, 
             boolean create, 
-            String[] blacklist
+            String[] blacklist,
+            Map<String, String> replace
             ) {
 
             this.location = location;
             this.formatter = formatter;
             this.create = create;
             this.blacklist = blacklist;
+            this.replace = replace;
         }
     }
 
@@ -134,7 +139,23 @@ public class BackupList {
                     logger.log(intl("backup-list-blacklist-invalid"), ENTRY, entryIndex);
                 }
             }
-            list.add(new BackupListEntry(location, formatter, create, blacklist));
+            Map<String, String> replace = new LinkedHashMap<>();
+            if (rawListEntry.containsKey("path") && rawListEntry.containsKey("replace")) {
+                try {
+                    List<Map<String, String>> replaceList = (List<Map<String, String>>) rawListEntry.get("replace");
+                    for (Map<String, String> replaceListEntry : replaceList) {
+                        if (replaceListEntry.containsKey("file") && replaceListEntry.containsKey("with")) {
+                            replace.put(replaceListEntry.get("file"), replaceListEntry.get("with"));
+                        } else {
+                            replace.clear();
+                            throw new IllegalArgumentException();
+                        }
+                    }
+                } catch (IllegalArgumentException | ClassCastException e) {
+                    logger.log(intl("backup-list-replace-invalid"), ENTRY, entryIndex);
+                }
+            }
+            list.add(new BackupListEntry(location, formatter, create, blacklist, replace));
         }
         return new BackupList(list.toArray(new BackupListEntry[0]));
     }

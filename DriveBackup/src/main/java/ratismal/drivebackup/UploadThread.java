@@ -257,7 +257,7 @@ public class UploadThread implements Runnable {
             backupBackingUp++;
             for (Path folder : set.location.getPaths()) {
                 if (set.create) {
-                    makeBackupFile(folder.toString(), set.formatter, Arrays.asList(set.blacklist));
+                    makeBackupFile(folder.toString(), set.formatter, Arrays.asList(set.blacklist), set.replace);
                 }
             }
         }
@@ -381,11 +381,11 @@ public class UploadThread implements Runnable {
      * @param formatter save format configuration
      * @param blackList a configured blacklist (with globs)
      */
-    private void makeBackupFile(String location, LocalDateTimeFormatter formatter, List<String> blackList) {
+    private void makeBackupFile(String location, LocalDateTimeFormatter formatter, List<String> blackList, Map<String, String> replace) {
         logger.info(intl("backup-local-file-start"), "location", location);
         try {
             ServerUtil.setAutoSave(false);
-            fileUtil.makeBackup(location, formatter, blackList);
+            fileUtil.makeBackup(location, formatter, blackList, replace);
         } catch (AbsolutePathException exception) {
             logger.log(intl("backup-failed-absolute-path"));
             return;
@@ -524,7 +524,8 @@ public class UploadThread implements Runnable {
             new PathBackupLocation("external-backups" + "/" + tempFolderName),
             externalBackup.format,
             true,
-            new String[0]
+            new String[0],
+            new HashMap<>()
         );
         backupList.add(backup);
         if (ftpUploader.isErrorWhileUploading()) {
@@ -569,7 +570,8 @@ public class UploadThread implements Runnable {
             new PathBackupLocation("external-backups" + "/" + tempFolderName),
             externalBackup.format,
             true,
-            new String[0]
+            new String[0],
+            new HashMap<>()
         );
         backupList.add(backup);
         if (mysqlUploader.isErrorWhileUploading()) {

@@ -17,6 +17,8 @@ backup-failed-absolute-path: |-
 backup-file-upload-complete: 'Upload(s) for file "<file-name>" complete'
 backup-file-upload-start: 'Starting upload(s) for file "<file-name>"'
 backup-forced: "Forcing a backup"
+backup-list-replace-invalid: "Replace invalid in backup entry <entry>, leaving blank"
+backup-list-replace-unsafe-path: 'Skipping unsafe replace path "<file-path>", it must be a relative path without ".."'
 backup-list-blacklist-invalid: "Blacklist invalid in backup entry <entry>, leaving blank"
 backup-list-format-invalid: "Format invalid, skipping backup list entry <entry>"
 backup-list-glob-invalid: "Glob invalid, skipping backup list entry <entry>"
@@ -198,6 +200,10 @@ local-backup-limit-reached: "There are <backup-count> file(s) which exceeds the
 local-backup-no-limit: "Local backup limit is set to 0, skipping pruning"
 local-backup-pruning-complete: 'Local backup pruning complete for "<location>"'
 local-backup-pruning-start: 'Pruning local backups for "<location>"'
+local-backup-replace-duplicate: 'Multiple replace entries target "<file-path>" in the backup, using the first one'
+local-backup-replace-escapes-location: 'Skipping replace of "<file-path>", it resolves outside of location "<location>" (possibly via a symlink)'
+local-backup-replace-not-folder: 'Ignoring replace for "<location>", it must be a folder to use replace'
+local-backup-replace-skipped: 'Skipping replace of "<file-path>" with "<with-path>", make sure both files exist and "<file-path>" is not blacklisted'
 local-keep-count-invalid: "Inputted local keep count invalid, using default"
 local-save-directory-not-relative: "Local save directory is not relative, making relative to server directory"
 location-empty: "Location <location> is empty, skipping"

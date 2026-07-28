@@ -20,7 +20,9 @@ import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -71,7 +73,7 @@ public class FileUtil {
      * @param blacklistGlobs a list of glob patterns of files/folders to not include in the backup.
      * @throws Exception
      */
-    public void makeBackup(@NotNull String location, LocalDateTimeFormatter formatter, List<String> blacklistGlobs) throws Exception {
+    public void makeBackup(@NotNull String location, LocalDateTimeFormatter formatter, List<String> blacklistGlobs, Map<String, String> replace) throws Exception {
         Config config = ConfigParser.getConfig();
         if (location.charAt(0) == '/') {
             throw new AbsolutePathException("Location cannot start with a slash");
@@ -105,6 +107,41 @@ public class FileUtil {
                     "glob-pattern", globPattern);
             }
         }
+        Map<String, String> checkedReplace = new HashMap<>();
+        if (Files.isDirectory(Paths.get(location))) {
+            Map<Path, String> fileListPaths = fileList.getList().stream()
+                .collect(Collectors.toMap(Paths::get, s -> s, (a, b) -> a));
+            replace.forEach((key, value) -> {
+                if (isUnsafeRelativePath(key) || isUnsafeRelativePath(value)) {
+                    logger.info(intl("backup-list-replace-unsafe-path"), "file-path", key + " -> " + value);
+                    return;
+                }
+                File file = new File(location + "/" + key);
+                File with = new File(location + "/" + value);
+                if (!isWithinLocation(location, with)) {
+                    logger.info(intl("local-backup-replace-escapes-location"), "file-path", key + " -> " + value, "location", location);
+                    return;
+                }
+                Path filePath = Paths.get(key);
+                Path withPath = Paths.get(value);
+                String matched = fileListPaths.get(filePath);
+                if (file.isFile() && with.isFile() && matched != null) {
+                    if (isWithinLocation(config.backupStorage.localDirectory, with)) {
+                        fileList.incFilesInBackupFolder();
+                        return;
+                    }
+                    if (checkedReplace.containsKey(matched)) {
+                        logger.info(intl("local-backup-replace-duplicate"), "file-path", matched);
+                        return;
+                    }
+                    checkedReplace.put(matched, withPath.toString());
+                    return;
+                }
+                logger.info(intl("local-backup-replace-skipped"), "file-path", file.getPath(), "with-path", with.getPath());
+            });
+        } else if (!replace.isEmpty()) {
+            logger.info(intl("local-backup-replace-not-folder"), "location", location);
+        }
         int filesInBackupFolder = fileList.getFilesInBackupFolder();
         if (filesInBackupFolder > 0) {
             logger.info(
@@ -116,7 +153,7 @@ public class FileUtil {
             String lastFolderName = location.substring(lastSeparatorIndex + 1);
             fileName = fileName.replace(NAME_KEYWORD, lastFolderName);
         }
-        zipIt(location, path.getPath() + "/" + fileName, fileList);
+        zipIt(location, path.getPath() + "/" + fileName, fileList, checkedReplace);
     }
 
     /**
@@ -176,7 +213,7 @@ public class FileUtil {
      * @param outputFilePath the path of the folder to put it in
      * @param fileList file to include in the zip
      */
-    private void zipIt(String inputFolderPath, String outputFilePath, BackupFileList fileList) throws Exception {
+    private void zipIt(String inputFolderPath, String outputFilePath, BackupFileList fileList, Map<String, String> replace) throws Exception {
         byte[] buffer = new byte[1024];
         FileOutputStream fileOutputStream;
         ZipOutputStream zipOutputStream = null;
@@ -190,7 +227,7 @@ public class FileUtil {
             zipOutputStream.setLevel(ConfigParser.getConfig().backupStorage.zipCompression);
             for (String file : fileList.getList()) {
                 ZipEntry entry = new ZipEntry(formattedInputFolderPath + "/" + file);
-                String filePath = inputFolderPath + "/" + file;
+                String filePath = inputFolderPath + "/" + replace.getOrDefault(file, file);
                 BasicFileAttributes fileAttributes = null;
                 try {
                     fileAttributes = Files.readAttributes(Paths.get(filePath), BasicFileAttributes.class);
@@ -323,6 +360,31 @@ public class FileUtil {
     @Contract (pure = true)
     private static String escapeBackupLocation(@NotNull String location) {
         return location.replace("../", "");
+    }
+
+    private static boolean isUnsafeRelativePath(@NotNull String path) {
+        if (path.isEmpty()) return true;
+        Path p = Paths.get(path);
+        if (p.isAbsolute()) return true;
+        for (Path seg : p) {
+            if (seg.toString().equals("..")) return true;
+        }
+        return false;
+    }
+
+    /**
+     * Whether the target file's real (symlink-resolved) path is still contained within location.
+     * Guards against a symlink inside location pointing outside of it, which a purely
+     * string-based check like {@link #isUnsafeRelativePath} cannot detect.
+     */
+    private static boolean isWithinLocation(String location, File target) {
+        try {
+            Path root = new File(location).getCanonicalFile().toPath();
+            Path real = target.getCanonicalFile().toPath();
+            return real.startsWith(root);
+        } catch (IOException e) {
+            return false;
+        }
     }
 
     /**
